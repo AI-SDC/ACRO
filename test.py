@@ -1,9 +1,15 @@
 """Testing."""
 
 import os
-import pandas
+
+import pandas as pd
 
 if __name__ == "__main__":
     path = os.path.join("data", "test_data.dta")
-    data = pandas.read_stata(path)
-    print(data.head())
+    df = pd.read_stata(path)
+    print("HEAD:")
+    print(df.head())
+
+    print("CROSSTAB: year, grant_type:")
+    table = pd.crosstab(df["year"], df["grant_type"])
+    print(table)

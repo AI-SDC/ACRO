@@ -8,6 +8,7 @@ from pandas import DataFrame
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("safe")
 
+
 def safe_crosstab(
     index,
     columns,

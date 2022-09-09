@@ -13,8 +13,12 @@ logger = logging.getLogger("safe")
 
 def apply_threshold(data: DataFrame, threshold: int) -> DataFrame:
     """Suppresses numerical values below a given threshold."""
-    cols = data.select_dtypes(include=["number"]).columns
-    data[cols] = data[cols].mask(data[cols] < threshold, "n/a")
+    cols: DataFrame = data.select_dtypes(include=["number"]).columns
+    mask: DataFrame = data[cols] < threshold
+    n_cells: int = mask.sum().sum()
+    if n_cells > 0:
+        logger.debug(f"suppressing {n_cells} cells where value < threshold")
+        data[cols] = data[cols].mask(mask, "n/a")
     return data
 
 
@@ -70,14 +74,8 @@ def safe_crosstab(  # pylint: disable=too-many-arguments
 
     logger.debug("crosstab()")
 
-    args: dict = safe_setup()
-    logger.debug("args: %s", args)
-
-    if values is None and aggfunc is not None:
-        raise ValueError("aggfunc cannot be used without values.")
-
-    if values is not None and aggfunc is None:
-        raise ValueError("values cannot be used without an aggfunc.")
+    if aggfunc is not None:
+        raise ValueError("aggfunc disallowed.")
 
     table = pd.crosstab(
         index,
@@ -91,6 +89,9 @@ def safe_crosstab(  # pylint: disable=too-many-arguments
         dropna,
         normalize,
     )
+
+    args: dict = safe_setup()
+    logger.debug("args: %s", args)
 
     table = apply_threshold(table, args["safe_threshold"])
     return table

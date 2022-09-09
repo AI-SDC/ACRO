@@ -8,7 +8,7 @@ from pandas import DataFrame
 from .safe_setup import safe_setup
 
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger("safe")
+logger = logging.getLogger("acro")
 
 
 def apply_threshold(data: DataFrame, threshold: int) -> DataFrame:

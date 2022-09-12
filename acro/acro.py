@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("acro")
 
 
-def apply_threshold(data: DataFrame, threshold: int) -> DataFrame:
+def apply_threshold(data: DataFrame, threshold: int) -> tuple[DataFrame, bool]:
     """
     Suppresses numerical values below a given threshold.
 
@@ -28,14 +28,18 @@ def apply_threshold(data: DataFrame, threshold: int) -> DataFrame:
     ----------
     DataFrame
         DataFrame after threshold suppression has been applied.
+    bool
+        Whether suppression has been applied.
     """
+    suppressed: bool = False
     cols: DataFrame = data.select_dtypes(include=["number"]).columns
     mask: DataFrame = data[cols] < threshold
     n_cells: int = mask.sum().sum()
     if n_cells > 0:
         logger.debug("suppressing %d cells where value < threshold", n_cells)
         data[cols] = data[cols].mask(mask, "n/a")
-    return data
+        suppressed = True
+    return data, suppressed
 
 
 class ACRO:
@@ -59,16 +63,24 @@ class ACRO:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
         logger.debug("config: %s", self.config)
 
-    def finalise(self) -> None:
-        """Creates a results file for checking."""
+    def finalise(self) -> dict:
+        """
+        Creates a results file for checking.
+
+        Returns
+        ----------
+        dict
+            Dictionary representation of the output.
+        """
         logger.debug("finalise()")
         json_output: str = json.dumps(self.results, indent=4)
         logger.debug("filename: %s.json", self.filename)
         logger.debug("output: %s", json_output)
         with open(self.filename + ".json", "wt", encoding="utf-8") as file:
             file.write(json_output)
+        return self.results
 
-    def add_output(self, command: str, output: dict) -> None:
+    def add_output(self, command: str, outcome: str, output: dict) -> None:
         """
         Adds an output to the results dictionary.
 
@@ -76,16 +88,19 @@ class ACRO:
         ----------
         command : str
             String representation of the operation performed.
+        outcome : str
+            Outcome of ACRO checks.
         output : dict
             Dictionary representation of the result of the operation.
         """
         name: str = f"output_{len(self.results)}"
         self.results[name] = {
             "command": command,
+            "outcome": outcome,
             "output": output,
         }
 
-    def crosstab(  # pylint: disable=too-many-arguments
+    def crosstab(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         index,
         columns,
@@ -159,6 +174,7 @@ class ACRO:
             normalize,
         )
 
-        table = apply_threshold(table, self.config["safe_threshold"])
-        self.add_output(command, table.to_dict())
+        table, suppressed = apply_threshold(table, self.config["safe_threshold"])
+        outcome: str = "fail; suppression applied" if suppressed else "pass"
+        self.add_output(command, outcome, table.to_dict())
         return table

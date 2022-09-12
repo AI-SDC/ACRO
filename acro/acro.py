@@ -3,6 +3,7 @@
 import json
 import logging
 import pathlib
+from inspect import getframeinfo, stack
 
 import pandas as pd
 import yaml
@@ -138,6 +139,9 @@ class ACRO:
         """
 
         logger.debug("crosstab()")
+        frame_info = getframeinfo(stack()[1][0])
+        command: str = "\n".join(frame_info.code_context).strip()
+        logger.debug("caller: %s", command)
 
         if aggfunc is not None:
             raise ValueError("aggfunc disallowed.")
@@ -156,5 +160,5 @@ class ACRO:
         )
 
         table = apply_threshold(table, self.config["safe_threshold"])
-        self.add_output("crosstab()", table.to_dict())
+        self.add_output(command, table.to_dict())
         return table

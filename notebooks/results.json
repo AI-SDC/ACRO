@@ -1,6 +1,6 @@
 {
     "output_0": {
-        "command": "crosstab()",
+        "command": "safe_table = acro.crosstab(df[\"year\"], df[\"grant_type\"])",
         "output": {
             "G": {
                 "2010": 15,

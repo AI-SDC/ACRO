@@ -67,6 +67,23 @@ class ACRO:
         with open(self.filename + ".json", "wt", encoding="utf-8") as file:
             file.write(json_output)
 
+    def add_output(self, command: str, output: dict) -> None:
+        """
+        Adds an output to the results dictionary.
+
+        Parameters
+        ----------
+        command : str
+            String representation of the operation performed.
+        output : dict
+            Dictionary representation of the result of the operation.
+        """
+        name: str = f"output_{len(self.results)}"
+        self.results[name] = {
+            "command": command,
+            "output": output,
+        }
+
     def crosstab(  # pylint: disable=too-many-arguments
         self,
         index,
@@ -139,8 +156,5 @@ class ACRO:
         )
 
         table = apply_threshold(table, self.config["safe_threshold"])
-
-        name: str = f"output_{len(self.results)}"
-        self.results[name] = table.to_dict()
-
+        self.add_output("crosstab()", table.to_dict())
         return table

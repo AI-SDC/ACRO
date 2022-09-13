@@ -40,9 +40,7 @@ def get_aggfunc(aggfunc: str | None) -> Callable | None:
     logger.debug("get_aggfunc()")
     func = None
     if aggfunc is not None:
-        if not isinstance(aggfunc, str):
-            raise ValueError("aggfunc must be a string.")
-        if aggfunc not in AGGFUNC:
+        if not isinstance(aggfunc, str) or aggfunc not in AGGFUNC:
             raise ValueError(f"aggfunc must be: {', '.join(AGGFUNC.keys())}")
         func = AGGFUNC[aggfunc]
     logger.debug("aggfunc: %s", func)

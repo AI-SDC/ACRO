@@ -129,6 +129,7 @@ class ACRO:
         self.config: dict = {}
         self.results: dict = {}
         self.filename: str = filename
+        self.output_id: int = 0
         path = pathlib.Path(__file__).with_name("default.yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
@@ -165,7 +166,8 @@ class ACRO:
         output : str
             JSON encoded string representation of the result of the operation.
         """
-        name: str = f"output_{len(self.results)}"
+        name: str = f"output_{self.output_id}"
+        self.output_id += 1
         self.results[name] = {
             "command": command,
             "outcome": outcome,

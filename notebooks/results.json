@@ -1,6 +1,6 @@
 {
     "output_0": {
-        "command": "safe_table = acro.crosstab(df[\"year\"], df[\"grant_type\"])",
+        "command": "safe_table = acro.crosstab(df.year, df.grant_type)",
         "outcome": "fail; suppression applied",
         "output": {
             "G": {
@@ -34,6 +34,24 @@
                 "2013": "n/a",
                 "2014": "n/a",
                 "2015": "n/a"
+            }
+        }
+    },
+    "output_2": {
+        "command": "table = acro.pivot_table(",
+        "outcome": "pass",
+        "output": {
+            "('mean', 'inc_grants')": {
+                "G": 11412787.0,
+                "N": 134431.890625,
+                "R": 8098502.0,
+                "R/G": 16648273.0
+            },
+            "('std', 'inc_grants')": {
+                "G": 22832202.734991174,
+                "N": 198873.7266560157,
+                "R": 32044950.990858816,
+                "R/G": 15835323.99322482
             }
         }
     }

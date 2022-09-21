@@ -22,6 +22,117 @@ AGGFUNC: dict = {
 }
 
 
+def agg_threshold(vals: pd.Series) -> bool:
+    """
+    Aggregation function that returns whether the number of contributors is
+    below a threshold.
+
+    Parameters
+    ----------
+    vals : pd.Series
+        Series to calculate the p percent value.
+
+    Returns
+    ----------
+    bool
+        Whether the threshold rule is violated.
+    """
+
+    threshold: int = 10  # self.config["safe_threshold"]
+
+    count: int = vals.count()
+    return count < threshold
+
+
+def agg_p_percent(vals: pd.Series) -> bool:
+    """
+    Aggregation function that returns whether the p percent rule is violated.
+
+    That is, the uncertainty (as a fraction) of the estimate that the second
+    highest respondent can make of the highest value. Assuming there are n
+    items in the series, they are first sorted in descending order and then we
+    calculate the value p = (sum - N-2 highest values)/highest value. If all
+    values are 0, returns 1.
+
+    Parameters
+    ----------
+    vals : pd.Series
+        Series to calculate the p percent value.
+
+    Returns
+    ----------
+    bool
+        whether the p percent rule is violated.
+    """
+
+    safe_pratio_p: float = 0.1  # self.config["safe_pratio_p"]
+
+    sorted_vals = vals.sort_values(ascending=False)
+    total: float = sorted_vals.sum()
+    sub_total = total - sorted_vals.iloc[0] - sorted_vals.iloc[1]
+    p_val: float = sub_total / sorted_vals.iloc[0] if total > 0 else 1
+    return p_val < safe_pratio_p
+
+
+def agg_nk(vals: pd.Series) -> bool:
+    """
+    Aggregation function that returns whether the top n items account for more
+    than k percent of the total.
+
+    Parameters
+    ----------
+    vals : pd.Series
+        Series to calculate the nk value.
+
+    Returns
+    ----------
+    bool
+        Whether the nk rule is violated.
+    """
+
+    safe_nk_n: int = 2  # self.config["safe_nk_n"]
+    safe_nk_k: float = 0.9  # self.config["safe_nk_k"]
+
+    total: float = vals.sum()
+    if total > 0:
+        sorted_vals = vals.sort_values(ascending=False)
+        n_total = sorted_vals.iloc[0:safe_nk_n].sum()
+        return (n_total / total) > safe_nk_k
+    return False
+
+
+def apply_suppression(
+    table: pd.DataFrame, masks: dict[pd.DataFrame]
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Applies suppression to a table.
+
+    Parameters
+    ----------
+    table : pd.DataFrame
+        Table to apply suppression.
+    masks : dict[pd.DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+
+    Returns
+    ----------
+    pd.DataFrame
+        Table to output with any suppression applied.
+    pd.DataFrame
+        Table with outcomes of suppression checks.
+    """
+    logger.debug("apply_suppression()")
+    safe_df = table.copy()
+    outcome_df = pd.DataFrame().reindex_like(table)
+    outcome_df.fillna("", inplace=True)
+    for name, mask in masks.items():
+        safe_df[mask] = np.NaN
+        outcome_df[mask] += name + "; "
+    outcome_df = outcome_df.replace({"": "ok"})
+    logger.debug("outcome_df:\n%s", outcome_df)
+    return safe_df, outcome_df
+
+
 def get_aggfunc(aggfunc: str | None) -> Callable | None:
     """
     Checks whether an aggregation function is allowed and returns the
@@ -83,35 +194,6 @@ def get_aggfuncs(aggfuncs: str | list[str] | None) -> Callable | list[Callable] 
     raise ValueError("aggfuncs must be: either str or list[str]")
 
 
-def apply_threshold(data: DataFrame, threshold: int) -> tuple[DataFrame, str]:
-    """
-    Suppresses numerical values below a given threshold.
-
-    Parameters
-    ----------
-    data : DataFrame
-        DataFrame to apply threshold suppression.
-    threshold : int
-        Values below this threshold are replaced with n/a.
-
-    Returns
-    ----------
-    DataFrame
-        DataFrame after threshold suppression has been applied.
-    str
-        Whether suppression has been applied.
-    """
-    outcome: str = "pass"
-    cols: DataFrame = data.select_dtypes(include=["number"]).columns
-    mask: DataFrame = data[cols] < threshold
-    n_cells: int = mask.sum().sum()
-    if n_cells > 0:
-        logger.debug("suppressing %d cells where value < threshold", n_cells)
-        data[cols] = data[cols].mask(mask, "n/a")
-        outcome = "fail; suppression applied"
-    return data, outcome
-
-
 class ACRO:
     """ACRO."""
 
@@ -151,7 +233,7 @@ class ACRO:
             file.write(json_output)
         return self.results
 
-    def add_output(self, command: str, outcome: str, output: str) -> None:
+    def add_output(self, command: str, outcome: pd.DataFrame, output: str) -> None:
         """
         Adds an output to the results dictionary.
 
@@ -159,8 +241,8 @@ class ACRO:
         ----------
         command : str
             String representation of the operation performed.
-        outcome : str
-            Outcome of ACRO checks.
+        outcome : pd.DataFrame
+            DataFrame describing the outcome of ACRO checks.
         output : str
             JSON encoded string representation of the result of the operation.
         """
@@ -259,8 +341,9 @@ class ACRO:
         logger.debug("crosstab()")
         logger.debug("caller: %s", command)
 
-        aggfunc = get_aggfunc(aggfunc)
+        aggfunc = get_aggfunc(aggfunc)  # convert string to function
 
+        # requested table
         table: DataFrame = pd.crosstab(
             index,
             columns,
@@ -274,10 +357,35 @@ class ACRO:
             normalize,
         )
 
-        outcome = "pass"
-        if aggfunc is None:
-            table, outcome = apply_threshold(table, self.config["safe_threshold"])
-        self.add_output(command, outcome, table.to_json())
+        # suppression masks to apply based on the following checks
+        masks: dict[pd.DataFrame] = {}
+
+        # threshold check
+        t_values = pd.crosstab(
+            index,
+            columns,
+            None,
+            rownames,
+            colnames,
+            None,
+            margins,
+            margins_name,
+            dropna,
+            normalize,
+        )
+        t_values = t_values < self.config["safe_threshold"]
+        masks["threshold"] = t_values
+
+        if aggfunc is not None:
+            # p-percent check
+            p_values = pd.crosstab(index, columns, values, aggfunc=agg_p_percent)
+            masks["p-ratio"] = p_values
+            # nk values check
+            nk_values = pd.crosstab(index, columns, values, aggfunc=agg_nk)
+            masks["nk-rule"] = nk_values
+
+        table, outcome = apply_suppression(table, masks)
+        self.add_output(command, outcome.to_json(), table.to_json())
         return table
 
     def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
@@ -350,8 +458,10 @@ class ACRO:
         logger.debug("pivot_table()")
         logger.debug("caller: %s", command)
 
-        aggfunc = get_aggfuncs(aggfunc)
+        aggfunc = get_aggfuncs(aggfunc)  # convert string(s) to function(s)
+        n_agg: int = 1 if not isinstance(aggfunc, list) else len(aggfunc)
 
+        # requested table
         table: DataFrame = pd.pivot_table(  # pylint: disable=too-many-function-args
             data,
             values,
@@ -366,8 +476,24 @@ class ACRO:
             sort,
         )
 
-        outcome = "pass"
-        if aggfunc is None:
-            table, outcome = apply_threshold(table, self.config["safe_threshold"])
-        self.add_output(command, outcome, table.to_json())
+        # suppression masks to apply based on the following checks
+        masks: dict[pd.DataFrame] = {}
+
+        # threshold check
+        agg_check = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
+        t_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
+        masks["threshold"] = t_values
+
+        if aggfunc is not None:
+            # p-percent check
+            agg_check = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
+            p_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
+            masks["p-ratio"] = p_values
+            # nk values check
+            agg_check = [agg_nk] * n_agg if n_agg > 1 else agg_nk
+            nk_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
+            masks["nk-rule"] = nk_values
+
+        table, outcome = apply_suppression(table, masks)
+        self.add_output(command, outcome.to_json(), table.to_json())
         return table

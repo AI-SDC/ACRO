@@ -133,6 +133,33 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
+def get_summary(masks: dict[pd.DataFrame]) -> str:
+    """
+    Returns a string summarising the suppression masks.
+
+    Parameters
+    ----------
+    masks : dict[pd.DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+
+    Returns
+    ----------
+    str
+        Summary of the suppression masks.
+    """
+    summary: str = ""
+    for name, mask in masks.items():
+        n_cells = mask.to_numpy().sum()
+        if n_cells > 0:
+            summary += f"{name}: {n_cells} cells suppressed; "
+    if summary == "":
+        summary = "pass"
+    else:
+        summary = "fail; " + summary
+    logger.debug("get_summary(): %s", summary)
+    return summary
+
+
 def get_aggfunc(aggfunc: str | None) -> Callable | None:
     """
     Checks whether an aggregation function is allowed and returns the
@@ -233,7 +260,9 @@ class ACRO:
             file.write(json_output)
         return self.results
 
-    def add_output(self, command: str, outcome: pd.DataFrame, output: str) -> None:
+    def add_output(
+        self, command: str, summary: str, outcome: pd.DataFrame, output: str
+    ) -> None:
         """
         Adds an output to the results dictionary.
 
@@ -241,6 +270,8 @@ class ACRO:
         ----------
         command : str
             String representation of the operation performed.
+        summary : str
+            String summarising the suppression checks.
         outcome : pd.DataFrame
             DataFrame describing the outcome of ACRO checks.
         output : str
@@ -250,6 +281,7 @@ class ACRO:
         self.output_id += 1
         self.results[name] = {
             "command": command,
+            "summary": summary,
             "outcome": outcome,
             "output": json.loads(output),  # JSON to dict
         }
@@ -385,7 +417,8 @@ class ACRO:
             masks["nk-rule"] = nk_values
 
         table, outcome = apply_suppression(table, masks)
-        self.add_output(command, outcome.to_json(), table.to_json())
+        summary = get_summary(masks)
+        self.add_output(command, summary, outcome.to_json(), table.to_json())
         return table
 
     def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
@@ -495,5 +528,6 @@ class ACRO:
             masks["nk-rule"] = nk_values
 
         table, outcome = apply_suppression(table, masks)
-        self.add_output(command, outcome.to_json(), table.to_json())
+        summary = get_summary(masks)
+        self.add_output(command, summary, outcome.to_json(), table.to_json())
         return table

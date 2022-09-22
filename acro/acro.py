@@ -21,6 +21,12 @@ AGGFUNC: dict = {
     "std": np.std,
 }
 
+# aggregation function parameters
+THRESHOLD: int = 10
+SAFE_PRATIO_P: float = 0.1
+SAFE_NK_N: int = 2
+SAFE_NK_K: float = 0.9
+
 
 def agg_threshold(vals: pd.Series) -> bool:
     """
@@ -37,11 +43,8 @@ def agg_threshold(vals: pd.Series) -> bool:
     bool
         Whether the threshold rule is violated.
     """
-
-    threshold: int = 10  # self.config["safe_threshold"]
-
     count: int = vals.count()
-    return count < threshold
+    return count < THRESHOLD
 
 
 def agg_p_percent(vals: pd.Series) -> bool:
@@ -64,14 +67,11 @@ def agg_p_percent(vals: pd.Series) -> bool:
     bool
         whether the p percent rule is violated.
     """
-
-    safe_pratio_p: float = 0.1  # self.config["safe_pratio_p"]
-
     sorted_vals = vals.sort_values(ascending=False)
     total: float = sorted_vals.sum()
     sub_total = total - sorted_vals.iloc[0] - sorted_vals.iloc[1]
     p_val: float = sub_total / sorted_vals.iloc[0] if total > 0 else 1
-    return p_val < safe_pratio_p
+    return p_val < SAFE_PRATIO_P
 
 
 def agg_nk(vals: pd.Series) -> bool:
@@ -89,15 +89,11 @@ def agg_nk(vals: pd.Series) -> bool:
     bool
         Whether the nk rule is violated.
     """
-
-    safe_nk_n: int = 2  # self.config["safe_nk_n"]
-    safe_nk_k: float = 0.9  # self.config["safe_nk_k"]
-
     total: float = vals.sum()
     if total > 0:
         sorted_vals = vals.sort_values(ascending=False)
-        n_total = sorted_vals.iloc[0:safe_nk_n].sum()
-        return (n_total / total) > safe_nk_k
+        n_total = sorted_vals.iloc[0:SAFE_NK_N].sum()
+        return (n_total / total) > SAFE_NK_K
     return False
 
 
@@ -242,6 +238,15 @@ class ACRO:
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
         logger.debug("config: %s", self.config)
+        # set globals needed for aggregation functions
+        global THRESHOLD  # pylint: disable=global-statement
+        global SAFE_PRATIO_P  # pylint: disable=global-statement
+        global SAFE_NK_N  # pylint: disable=global-statement
+        global SAFE_NK_K  # pylint: disable=global-statement
+        THRESHOLD = self.config["safe_threshold"]
+        SAFE_PRATIO_P = self.config["safe_pratio_p"]
+        SAFE_NK_N = self.config["safe_nk_n"]
+        SAFE_NK_K = self.config["safe_nk_k"]
 
     def finalise(self) -> dict:
         """
@@ -405,7 +410,7 @@ class ACRO:
             dropna,
             normalize,
         )
-        t_values = t_values < self.config["safe_threshold"]
+        t_values = t_values < THRESHOLD
         masks["threshold"] = t_values
 
         if aggfunc is not None:

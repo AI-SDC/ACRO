@@ -1,0 +1,56 @@
+---
+################################################################################
+# SYSTEM MANAGERS - EDIT THESE VALUES FOR YOUR ORGANISATIONAL SETUP            #
+################################################################################
+
+################################################################################
+# Template for output spreadsheet - include the full path name                 #
+################################################################################
+
+output_template_file: "ACRO output template v01b.xlsm"
+
+################################################################################
+# SDC parameters                                                               #
+################################################################################
+# 1. Default values                                                            #
+################################################################################
+
+# name to denote that default (ie not dataset specific values) are being used
+safe_SDC_set: "Default"
+
+# tests to run: include any or all of "threshold", "maxmin", "nk", or "pratio"
+safe_tests: "threshold nk pratio maxmin"
+
+# frequency and degrees-of-freedom thresholds (latter for safe analytical stats)
+safe_threshold: 10
+safe_dof_threshold: 10
+
+# params for n, k tes: largest n values account for less than k% of the total
+safe_nk_n: 2
+safe_nk_k: 0.90
+
+# parameter for p-ration test: sum of smallest N-2 values accounts for at least
+# p% of largest
+safe_pratio_p: 0.10
+
+################################################################################
+# 2. Insert here values for particular datasets                                #
+# Note follow exactly the examples below - add dataset name to end of macro    #
+# Omit any value you don't want to change                                      #
+################################################################################
+
+# These are the datasets that have specific SDC rules
+safe_SDC_variations: "CIS ESS"
+
+safe_thresholdCIS: 60
+safe_nk_nCIS: 5
+safe_nk_kCIS: 0.50
+safe_testsCIS: "threshold nk pratio"
+
+safe_thresholdESS: 15
+safe_dof_thresholdESS: 10
+safe_nk_nESS: 2
+safe_nk_kESS: 0.90
+safe_pratio_pESS: 0.15
+safe_testsESS: "nk pratio"
+...

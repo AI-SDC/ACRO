@@ -3,6 +3,7 @@
 import json
 import logging
 import pathlib
+import warnings
 from collections.abc import Callable
 from inspect import getframeinfo, stack
 
@@ -270,9 +271,7 @@ class ACRO:
             file.write(json_output)
         return self.results
 
-    def add_output(
-        self, command: str, summary: str, outcome: pd.DataFrame, output: str
-    ) -> None:
+    def add_output(self, command: str, summary: str, outcome: str, output: str) -> None:
         """
         Adds an output to the results dictionary.
 
@@ -284,8 +283,8 @@ class ACRO:
         summary : str
             String summarising the suppression checks.
 
-        outcome : pd.DataFrame
-            DataFrame describing the outcome of ACRO checks.
+        outcome : str
+            JSON encoded string describing the outcome of ACRO checks.
 
         output : str
             JSON encoded string representation of the result of the operation.
@@ -566,7 +565,7 @@ class ACRO:
 
     def ols(
         self, endog, exog=None, missing="none", hasconst=None, **kwargs
-    ) -> RegressionResultsWrapper | None:
+    ) -> RegressionResultsWrapper:
         """
         Fits Ordinary Least Squares Regression.
 
@@ -597,20 +596,30 @@ class ACRO:
 
         Returns
         -------
-        statsmodels.regression.linear_model.RegressionResultsWrapper | None
+        statsmodels.regression.linear_model.RegressionResultsWrapper
             Results.
         """
 
-        logger.debug("ols()")
-        results = None
+        code = getframeinfo(stack()[1][0]).code_context
+        command: str = "" if code is None else "\n".join(code).strip()
+
+        # fit model
         self.model = sm.OLS(
             endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs
         )
+        results = self.model.fit()
+
+        # check threshold
         dof: int = self.model.df_resid
         threshold: int = self.config["safe_dof_threshold"]
         if dof < threshold:
-            logger.warning("Unsafe to fit: dof=%d < %d", dof, threshold)
+            summary = "fail"
+            outcome = f"fail; dof={dof} < {threshold}"
+            warnings.warn(f"Unsafe OLS: {outcome}")
         else:
-            logger.debug("fit()")
-            results = self.model.fit()
+            summary = "pass"
+            outcome = f"pass; dof={dof} >= {threshold}"
+
+        logger.debug("ols() outcome: %s", outcome)
+        self.add_output(command, summary, outcome, "{}")
         return results

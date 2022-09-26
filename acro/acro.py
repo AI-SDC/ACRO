@@ -311,7 +311,7 @@ class ACRO:
             del self.results[key]
             logger.debug("remove_output(): %s removed", key)
         else:
-            logger.info("warning: unable to remove %s, key not found", key)
+            warnings.warn(f"unable to remove {key}, key not found")
 
     def get_outputs(self) -> dict:
         """

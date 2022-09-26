@@ -46,8 +46,7 @@ def agg_threshold(vals: pd.Series) -> bool:
     bool
         Whether the threshold rule is violated.
     """
-    count: int = vals.count()
-    return count < THRESHOLD
+    return vals.count() < THRESHOLD
 
 
 def agg_p_percent(vals: pd.Series) -> bool:

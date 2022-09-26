@@ -3,6 +3,7 @@
 import os
 
 import pandas as pd
+import pytest
 import statsmodels.api as sm
 
 from acro import ACRO
@@ -95,4 +96,4 @@ def test_ols():
     # ACRO OLS - auto fits
     results = acro.ols(y_train, x_train)
     assert results.df_resid == 43
-    assert results.rsquared == 0.5249181546907553
+    assert results.rsquared == pytest.approx(0.525, 0.001)

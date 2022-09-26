@@ -3,6 +3,7 @@
 import os
 
 import pandas as pd
+import statsmodels.api as sm
 
 from acro import ACRO
 
@@ -79,3 +80,19 @@ def test_pivot_table_pass():
     correct_summary: str = "pass"
     assert output["output_0"]["outcome"] == correct_output
     assert output["output_0"]["summary"] == correct_summary
+
+
+def test_ols():
+    """Ordinary Least Squares test."""
+    # test data
+    data = sm.datasets.get_rdataset("Duncan", "carData")  # pylint: disable=no-member
+    y_train = data.data["income"]  # pylint: disable=unsubscriptable-object
+    education = data.data["education"]  # pylint: disable=unsubscriptable-object
+    # model needs an intercept so we add a column of 1s
+    x_train = sm.add_constant(education)
+    # instantiate ACRO
+    acro = ACRO()
+    # ACRO OLS - auto fits
+    results = acro.ols(y_train, x_train)
+    assert results.df_resid == 43
+    assert results.rsquared == 0.5249181546907553

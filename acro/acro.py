@@ -8,13 +8,15 @@ from inspect import getframeinfo, stack
 
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 import yaml
 from pandas import DataFrame
+from statsmodels.regression.linear_model import OLS, RegressionResultsWrapper
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("acro")
 
-AGGFUNC: dict = {
+AGGFUNC: dict[str, Callable] = {
     "mean": np.mean,
     "median": np.median,
     "sum": np.sum,
@@ -98,7 +100,7 @@ def agg_nk(vals: pd.Series) -> bool:
 
 
 def apply_suppression(
-    table: pd.DataFrame, masks: dict[pd.DataFrame]
+    table: pd.DataFrame, masks: dict[str, pd.DataFrame]
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Applies suppression to a table.
@@ -107,13 +109,15 @@ def apply_suppression(
     ----------
     table : pd.DataFrame
         Table to apply suppression.
-    masks : dict[pd.DataFrame]
+
+    masks : dict[str, pd.DataFrame]
         Dictionary of tables specifying suppression masks for application.
 
     Returns
     ----------
     pd.DataFrame
         Table to output with any suppression applied.
+
     pd.DataFrame
         Table with outcomes of suppression checks.
     """
@@ -129,13 +133,13 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_summary(masks: dict[pd.DataFrame]) -> str:
+def get_summary(masks: dict[str, pd.DataFrame]) -> str:
     """
     Returns a string summarising the suppression masks.
 
     Parameters
     ----------
-    masks : dict[pd.DataFrame]
+    masks : dict[str, pd.DataFrame]
         Dictionary of tables specifying suppression masks for application.
 
     Returns
@@ -233,6 +237,7 @@ class ACRO:
         self.results: dict = {}
         self.filename: str = filename
         self.output_id: int = 0
+        self.model: OLS = None
         path = pathlib.Path(__file__).with_name("default.yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
@@ -275,10 +280,13 @@ class ACRO:
         ----------
         command : str
             String representation of the operation performed.
+
         summary : str
             String summarising the suppression checks.
+
         outcome : pd.DataFrame
             DataFrame describing the outcome of ACRO checks.
+
         output : str
             JSON encoded string representation of the result of the operation.
         """
@@ -341,24 +349,33 @@ class ACRO:
         ----------
         index : array-like, Series, or list of arrays/Series
             Values to group by in the rows.
+
         columns : array-like, Series, or list of arrays/Series
             Values to group by in the columns.
+
         values : array-like, optional
             Array of values to aggregate according to the factors.
             Requires `aggfunc` be specified.
+
         rownames : sequence, default None
             If passed, must match number of row arrays passed.
+
         colnames : sequence, default None
             If passed, must match number of column arrays passed.
+
         aggfunc : str, optional
             If specified, requires `values` be specified as well.
+
         margins : bool, default False
             Add row/column margins (subtotals).
+
         margins_name : str, default 'All'
             Name of the row/column that will contain the totals
             when margins is True.
+
         dropna : bool, default True
             Do not include columns whose entries are all NaN.
+
         normalize : bool, {'all', 'index', 'columns'}, or {0,1}, default False
             Normalize by dividing all values by the sum of values.
             - If passed 'all' or `True`, will normalize over all values.
@@ -395,7 +412,7 @@ class ACRO:
         )
 
         # suppression masks to apply based on the following checks
-        masks: dict[pd.DataFrame] = {}
+        masks: dict[str, pd.DataFrame] = {}
 
         # threshold check
         t_values = pd.crosstab(
@@ -451,36 +468,46 @@ class ACRO:
         ----------
         data : DataFrame
             The DataFrame to operate on.
+
         values : column, optional
             Column to aggregate, optional.
+
         index : column, Grouper, array, or list of the previous
             If an array is passed, it must be the same length as the data. The
             list can contain any of the other types (except list). Keys to
             group by on the pivot table index. If an array is passed, it is
             being used as the same manner as column values.
+
         columns : column, Grouper, array, or list of the previous
             If an array is passed, it must be the same length as the data. The
             list can contain any of the other types (except list). Keys to
             group by on the pivot table column. If an array is passed, it is
             being used as the same manner as column values.
+
         aggfunc : str | list[str], default 'mean'
             If list of strings passed, the resulting pivot table will have
             hierarchical columns whose top level are the function names
             (inferred from the function objects themselves).
+
         fill_value : scalar, default None
             Value to replace missing values with (in the resulting pivot table,
             after aggregation).
+
         margins : bool, default False
             Add all row / columns (e.g. for subtotal / grand totals).
+
         dropna : bool, default True
             Do not include columns whose entries are all NaN.
+
         margins_name : str, default 'All'
             Name of the row / column that will contain the totals when margins
             is True.
+
         observed : bool, default False
             This only applies if any of the groupers are Categoricals. If True:
             only show observed values for categorical groupers. If False: show
             all values for categorical groupers.
+
         sort : bool, default True
             Specifies if the result should be sorted.
 
@@ -515,7 +542,7 @@ class ACRO:
         )
 
         # suppression masks to apply based on the following checks
-        masks: dict[pd.DataFrame] = {}
+        masks: dict[str, pd.DataFrame] = {}
 
         # threshold check
         agg_check = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
@@ -536,3 +563,54 @@ class ACRO:
         summary = get_summary(masks)
         self.add_output(command, summary, outcome.to_json(), table.to_json())
         return table
+
+    def ols(
+        self, endog, exog=None, missing="none", hasconst=None, **kwargs
+    ) -> RegressionResultsWrapper | None:
+        """
+        Fits Ordinary Least Squares Regression.
+
+        Parameters
+        ----------
+        endog : array_like
+            A 1-d endogenous response variable. The dependent variable.
+
+        exog : array_like
+            A nobs x k array where `nobs` is the number of observations and `k`
+            is the number of regressors. An intercept is not included by
+            default and should be added by the user.
+
+        missing : str
+            Available options are 'none', 'drop', and 'raise'. If 'none', no
+            nan checking is done. If 'drop', any observations with nans are
+            dropped. If 'raise', an error is raised. Default is 'none'.
+
+        hasconst : None or bool
+            Indicates whether the RHS includes a user-supplied constant. If
+            True, a constant is not checked for and k_constant is set to 1 and
+            all result statistics are calculated as if a constant is present.
+            If False, a constant is not checked for and k_constant is set to 0.
+
+        **kwargs
+            Extra arguments that are used to set model properties when using
+            the formula interface.
+
+        Returns
+        -------
+        statsmodels.regression.linear_model.RegressionResultsWrapper | None
+            Results.
+        """
+
+        logger.debug("ols()")
+        results = None
+        self.model = sm.OLS(
+            endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs
+        )
+        dof: int = self.model.df_resid
+        threshold: int = self.config["safe_dof_threshold"]
+        if dof < threshold:
+            logger.warning("Unsafe to fit: dof=%d < %d", dof, threshold)
+        else:
+            logger.debug("fit()")
+            results = self.model.fit()
+        return results

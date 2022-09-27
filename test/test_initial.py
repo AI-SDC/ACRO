@@ -2,7 +2,6 @@
 
 import os
 
-import numpy as np
 import pandas as pd
 import pytest
 import statsmodels.api as sm
@@ -94,9 +93,7 @@ def test_ols():
     new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
     new_df = new_df.dropna()
     endog = new_df.inc_activity
-    exog = np.stack(
-        (new_df.inc_grants, new_df.inc_donations, new_df.total_costs), axis=1
-    )
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
     exog = sm.add_constant(exog)
     # ACRO OLS
     results = acro.ols(endog, exog)

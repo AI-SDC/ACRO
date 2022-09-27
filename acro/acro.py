@@ -562,7 +562,7 @@ class ACRO:
         self.add_output(command, summary, outcome.to_json(), table.to_json())
         return table
 
-    def ols(
+    def ols(  # pylint: disable=too-many-locals
         self, endog, exog=None, missing="none", hasconst=None, **kwargs
     ) -> RegressionResultsWrapper:
         """
@@ -620,5 +620,14 @@ class ACRO:
             outcome = f"pass; dof={dof} >= {threshold}"
 
         logger.debug("ols() outcome: %s", outcome)
-        self.add_output(command, summary, outcome, "{}")
+
+        # get summary tables
+        tables: dict[str, str] = {}
+        for i, table in enumerate(results.summary().tables):
+            name = f"table_{i}"
+            table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
+            tables[name] = table_df.to_json()
+
+        # add output
+        self.add_output(command, summary, outcome, json.dumps(tables, indent=4))
         return results

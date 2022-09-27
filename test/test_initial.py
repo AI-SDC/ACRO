@@ -2,6 +2,7 @@
 
 import os
 
+import numpy as np
 import pandas as pd
 import pytest
 import statsmodels.api as sm
@@ -85,15 +86,19 @@ def test_pivot_table_pass():
 
 def test_ols():
     """Ordinary Least Squares test."""
-    # test data
-    data = sm.datasets.get_rdataset("Duncan", "carData")  # pylint: disable=no-member
-    y_train = data.data["income"]  # pylint: disable=unsubscriptable-object
-    education = data.data["education"]  # pylint: disable=unsubscriptable-object
-    # model needs an intercept so we add a column of 1s
-    x_train = sm.add_constant(education)
     # instantiate ACRO
     acro = ACRO()
-    # ACRO OLS - auto fits
-    results = acro.ols(y_train, x_train)
-    assert results.df_resid == 43
-    assert results.rsquared == pytest.approx(0.525, 0.001)
+    # load test data
+    path = os.path.join("data", "test_data.dta")
+    data = pd.read_stata(path)
+    new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    new_df = new_df.dropna()
+    endog = new_df.inc_activity
+    exog = np.stack(
+        (new_df.inc_grants, new_df.inc_donations, new_df.total_costs), axis=1
+    )
+    exog = sm.add_constant(exog)
+    # ACRO OLS
+    results = acro.ols(endog, exog)
+    assert results.df_resid == 807
+    assert results.rsquared == pytest.approx(0.894, 0.001)

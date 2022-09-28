@@ -12,7 +12,9 @@ import pandas as pd
 import statsmodels.api as sm
 import yaml
 from pandas import DataFrame
-from statsmodels.regression.linear_model import OLS, RegressionResultsWrapper
+from statsmodels.discrete.discrete_model import BinaryResultsWrapper
+from statsmodels.iolib.table import SimpleTable
+from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("acro")
@@ -29,6 +31,28 @@ THRESHOLD: int = 10
 SAFE_PRATIO_P: float = 0.1
 SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
+
+
+def get_summary_json(results: list[SimpleTable]) -> str:
+    """
+    Returns a JSON encoded string of the results summary tables.
+
+    Parameters
+    ----------
+    results : list[statsmodels.iolib.table.SimpleTable]
+        Results from fitting statsmodel.
+
+    Returns
+    ----------
+    str
+        JSON encoded string representation of the results tables.
+    """
+    tables: dict[str, str] = {}
+    for i, table in enumerate(results):
+        name = f"table_{i}"
+        table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
+        tables[name] = table_df.to_json()
+    return json.dumps(tables, indent=4)
 
 
 def agg_threshold(vals: pd.Series) -> bool:
@@ -237,7 +261,6 @@ class ACRO:
         self.results: dict = {}
         self.filename: str = filename
         self.output_id: int = 0
-        self.model: OLS = None
         path = pathlib.Path(__file__).with_name("default.yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
@@ -562,6 +585,38 @@ class ACRO:
         self.add_output(command, summary, outcome.to_json(), table.to_json())
         return table
 
+    def __check_model_dof(self, name: str, model) -> tuple[str, str]:
+        """
+        Check model DOF.
+
+        Parameters
+        ----------
+        name : str
+            The name of the model.
+
+        model
+            A statsmodels model.
+
+        Returns
+        -------
+        str
+            Summary of the check.
+
+        str
+            Outcome of the check.
+        """
+        dof: int = model.df_resid
+        threshold: int = self.config["safe_dof_threshold"]
+        if dof < threshold:
+            summary = "fail"
+            outcome = f"fail; dof={dof} < {threshold}"
+            warnings.warn(f"Unsafe {name}: {outcome}")
+        else:
+            summary = "pass"
+            outcome = f"pass; dof={dof} >= {threshold}"
+        logger.debug("%s() outcome: %s", name, outcome)
+        return summary, outcome
+
     def ols(  # pylint: disable=too-many-locals
         self, endog, exog=None, missing="none", hasconst=None, **kwargs
     ) -> RegressionResultsWrapper:
@@ -598,36 +653,99 @@ class ACRO:
         statsmodels.regression.linear_model.RegressionResultsWrapper
             Results.
         """
-
         code = getframeinfo(stack()[1][0]).code_context
         command: str = "" if code is None else "\n".join(code).strip()
+        model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
+        results = model.fit()
+        summary, outcome = self.__check_model_dof("ols", model)
+        tables: list[SimpleTable] = results.summary().tables
+        self.add_output(command, summary, outcome, get_summary_json(tables))
+        return results
 
-        # fit model
-        self.model = sm.OLS(
-            endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs
-        )
-        results = self.model.fit()
+    def logit(  # pylint: disable=too-many-arguments,too-many-locals
+        self,
+        endog,
+        exog,
+        missing: str | None = None,
+        check_rank: bool = True,
+    ) -> BinaryResultsWrapper:
+        """
+        FIts Logit model.
 
-        # check threshold
-        dof: int = self.model.df_resid
-        threshold: int = self.config["safe_dof_threshold"]
-        if dof < threshold:
-            summary = "fail"
-            outcome = f"fail; dof={dof} < {threshold}"
-            warnings.warn(f"Unsafe OLS: {outcome}")
-        else:
-            summary = "pass"
-            outcome = f"pass; dof={dof} >= {threshold}"
+        Parameters
+        ----------
+        endog : array_like
+            A 1-d endogenous response variable. The dependent variable.
 
-        logger.debug("ols() outcome: %s", outcome)
+        exog : array_like
+            A nobs x k array where nobs is the number of observations and k is
+            the number of regressors. An intercept is not included by default
+            and should be added by the user.
 
-        # get summary tables
-        tables: dict[str, str] = {}
-        for i, table in enumerate(results.summary().tables):
-            name = f"table_{i}"
-            table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
-            tables[name] = table_df.to_json()
+        missing : str | None
+            Available options are ‘none’, ‘drop’, and ‘raise’. If ‘none’, no
+            nan checking is done. If ‘drop’, any observations with nans are
+            dropped. If ‘raise’, an error is raised. Default is ‘none’.
 
-        # add output
-        self.add_output(command, summary, outcome, json.dumps(tables, indent=4))
+        check_rank : bool
+            Check exog rank to determine model degrees of freedom. Default is
+            True. Setting to False reduces model initialization time when
+            exog.shape[1] is large.
+
+        Returns
+        -------
+        statsmodels.discrete.discrete_model.BinaryResultsWrapper
+            Results.
+        """
+        code = getframeinfo(stack()[1][0]).code_context
+        command: str = "" if code is None else "\n".join(code).strip()
+        model = sm.Logit(endog, exog, missing=missing, check_rank=check_rank)
+        results = model.fit()
+        summary, outcome = self.__check_model_dof("logit", model)
+        tables: list[SimpleTable] = results.summary().tables
+        self.add_output(command, summary, outcome, get_summary_json(tables))
+        return results
+
+    def probit(  # pylint: disable=too-many-arguments,too-many-locals
+        self,
+        endog,
+        exog,
+        missing: str | None = None,
+        check_rank: bool = True,
+    ) -> BinaryResultsWrapper:
+        """
+        Fits Probit model.
+
+        Parameters
+        ----------
+        endog : array_like
+            A 1-d endogenous response variable. The dependent variable.
+
+        exog : array_like
+            A nobs x k array where nobs is the number of observations and k is
+            the number of regressors. An intercept is not included by default
+            and should be added by the user.
+
+        missing : str | None
+            Available options are ‘none’, ‘drop’, and ‘raise’. If ‘none’, no
+            nan checking is done. If ‘drop’, any observations with nans are
+            dropped. If ‘raise’, an error is raised. Default is ‘none’.
+
+        check_rank : bool
+            Check exog rank to determine model degrees of freedom. Default is
+            True. Setting to False reduces model initialization time when
+            exog.shape[1] is large.
+
+        Returns
+        -------
+        statsmodels.discrete.discrete_model.BinaryResultsWrapper
+            Results.
+        """
+        code = getframeinfo(stack()[1][0]).code_context
+        command: str = "" if code is None else "\n".join(code).strip()
+        model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
+        results = model.fit()
+        summary, outcome = self.__check_model_dof("probit", model)
+        tables: list[SimpleTable] = results.summary().tables
+        self.add_output(command, summary, outcome, get_summary_json(tables))
         return results

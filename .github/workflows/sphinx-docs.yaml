@@ -2,7 +2,6 @@
 name: sphinx build
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -15,11 +14,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
 
       - name: Run sphinx
         uses: ammaraskar/sphinx-action@master

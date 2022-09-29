@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ACRO Class &mdash; ACRO 1.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -45,7 +46,18 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ACRO Class</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ACRO Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.ACRO"><code class="docutils literal notranslate"><span class="pre">ACRO</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.agg_nk"><code class="docutils literal notranslate"><span class="pre">agg_nk()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.agg_p_percent"><code class="docutils literal notranslate"><span class="pre">agg_p_percent()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.agg_threshold"><code class="docutils literal notranslate"><span class="pre">agg_threshold()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.apply_suppression"><code class="docutils literal notranslate"><span class="pre">apply_suppression()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.get_aggfunc"><code class="docutils literal notranslate"><span class="pre">get_aggfunc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.get_aggfuncs"><code class="docutils literal notranslate"><span class="pre">get_aggfuncs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.get_summary"><code class="docutils literal notranslate"><span class="pre">get_summary()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.get_summary_json"><code class="docutils literal notranslate"><span class="pre">get_summary_json()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -72,9 +84,532 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="acro-class">
-<h1>ACRO Class<a class="headerlink" href="#acro-class" title="Permalink to this heading"></a></h1>
-</div>
+  <section id="module-acro.acro">
+<span id="acro-class"></span><h1>ACRO Class<a class="headerlink" href="#module-acro.acro" title="Permalink to this heading"></a></h1>
+<p>ACRO.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="acro.acro.ACRO">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">ACRO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acro/acro.html#ACRO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO" title="Permalink to this definition"></a></dt>
+<dd><p>ACRO.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.add_output" title="acro.acro.ACRO.add_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_output</span></code></a>(command, summary, outcome, output)</p></td>
+<td><p>Adds an output to the results dictionary.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.crosstab" title="acro.acro.ACRO.crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crosstab</span></code></a>(index, columns[, values, rownames, ...])</p></td>
+<td><p>Compute a simple cross tabulation of two (or more) factors.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.finalise" title="acro.acro.ACRO.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>()</p></td>
+<td><p>Creates a results file for checking.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.get_outputs" title="acro.acro.ACRO.get_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_outputs</span></code></a>()</p></td>
+<td><p>Returns the current results dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.logit" title="acro.acro.ACRO.logit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
+<td><p>FIts Logit model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.ols" title="acro.acro.ACRO.ols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ols</span></code></a>(endog[, exog, missing, hasconst])</p></td>
+<td><p>Fits Ordinary Least Squares Regression.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.pivot_table" title="acro.acro.ACRO.pivot_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pivot_table</span></code></a>(data[, values, index, columns, ...])</p></td>
+<td><p>Create a spreadsheet-style pivot table as a DataFrame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.probit" title="acro.acro.ACRO.probit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
+<td><p>Fits Probit model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.remove_output" title="acro.acro.ACRO.remove_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_output</span></code></a>(key)</p></td>
+<td><p>Removes an output from the results dictionary.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.__check_model_dof">
+<span class="sig-name descname"><span class="pre">__check_model_dof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#acro.acro.ACRO.__check_model_dof" title="Permalink to this definition"></a></dt>
+<dd><p>Check model DOF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of the model.</p>
+</dd>
+<dt><strong>model</strong></dt><dd><p>A statsmodels model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>str</dt><dd><p>Summary of the check.</p>
+</dd>
+<dt>str</dt><dd><p>Outcome of the check.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs a new ACRO object and reads parameters from config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>Name of the output file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="acro.acro.ACRO.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#acro.acro.ACRO.__weakref__" title="Permalink to this definition"></a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.add_output">
+<span class="sig-name descname"><span class="pre">add_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcome</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.add_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.add_output" title="Permalink to this definition"></a></dt>
+<dd><p>Adds an output to the results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>command</strong><span class="classifier">str</span></dt><dd><p>String representation of the operation performed.</p>
+</dd>
+<dt><strong>summary</strong><span class="classifier">str</span></dt><dd><p>String summarising the suppression checks.</p>
+</dd>
+<dt><strong>outcome</strong><span class="classifier">str</span></dt><dd><p>JSON encoded string describing the outcome of ACRO checks.</p>
+</dd>
+<dt><strong>output</strong><span class="classifier">str</span></dt><dd><p>JSON encoded string representation of the result of the operation.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.crosstab">
+<span class="sig-name descname"><span class="pre">crosstab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rownames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggfunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margins_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'All'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropna</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.crosstab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.crosstab" title="Permalink to this definition"></a></dt>
+<dd><p>Compute a simple cross tabulation of two (or more) factors.
+By default, computes a frequency table of the factors unless an
+array of values and an aggregation function are passed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>index</strong><span class="classifier">array-like, Series, or list of arrays/Series</span></dt><dd><p>Values to group by in the rows.</p>
+</dd>
+<dt><strong>columns</strong><span class="classifier">array-like, Series, or list of arrays/Series</span></dt><dd><p>Values to group by in the columns.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">array-like, optional</span></dt><dd><p>Array of values to aggregate according to the factors.
+Requires <cite>aggfunc</cite> be specified.</p>
+</dd>
+<dt><strong>rownames</strong><span class="classifier">sequence, default None</span></dt><dd><p>If passed, must match number of row arrays passed.</p>
+</dd>
+<dt><strong>colnames</strong><span class="classifier">sequence, default None</span></dt><dd><p>If passed, must match number of column arrays passed.</p>
+</dd>
+<dt><strong>aggfunc</strong><span class="classifier">str, optional</span></dt><dd><p>If specified, requires <cite>values</cite> be specified as well.</p>
+</dd>
+<dt><strong>margins</strong><span class="classifier">bool, default False</span></dt><dd><p>Add row/column margins (subtotals).</p>
+</dd>
+<dt><strong>margins_name</strong><span class="classifier">str, default ‘All’</span></dt><dd><p>Name of the row/column that will contain the totals
+when margins is True.</p>
+</dd>
+<dt><strong>dropna</strong><span class="classifier">bool, default True</span></dt><dd><p>Do not include columns whose entries are all NaN.</p>
+</dd>
+<dt><strong>normalize</strong><span class="classifier">bool, {‘all’, ‘index’, ‘columns’}, or {0,1}, default False</span></dt><dd><p>Normalize by dividing all values by the sum of values.
+- If passed ‘all’ or <cite>True</cite>, will normalize over all values.
+- If passed ‘index’ will normalize over each row.
+- If passed ‘columns’ will normalize over each column.
+- If margins is <cite>True</cite>, will also normalize margin values.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>DataFrame</dt><dd><p>Cross tabulation of the data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.finalise">
+<span class="sig-name descname"><span class="pre">finalise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.finalise" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a results file for checking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>dict</dt><dd><p>Dictionary representation of the output.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.get_outputs">
+<span class="sig-name descname"><span class="pre">get_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.get_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.get_outputs" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the current results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>dict</dt><dd><p>Dictionary of current outputs and their status.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.logit">
+<span class="sig-name descname"><span class="pre">logit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryResultsWrapper</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.logit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.logit" title="Permalink to this definition"></a></dt>
+<dd><p>FIts Logit model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>endog</strong><span class="classifier">array_like</span></dt><dd><p>A 1-d endogenous response variable. The dependent variable.</p>
+</dd>
+<dt><strong>exog</strong><span class="classifier">array_like</span></dt><dd><p>A nobs x k array where nobs is the number of observations and k is
+the number of regressors. An intercept is not included by default
+and should be added by the user.</p>
+</dd>
+<dt><strong>missing</strong><span class="classifier">str | None</span></dt><dd><p>Available options are ‘none’, ‘drop’, and ‘raise’. If ‘none’, no
+nan checking is done. If ‘drop’, any observations with nans are
+dropped. If ‘raise’, an error is raised. Default is ‘none’.</p>
+</dd>
+<dt><strong>check_rank</strong><span class="classifier">bool</span></dt><dd><p>Check exog rank to determine model degrees of freedom. Default is
+True. Setting to False reduces model initialization time when
+exog.shape[1] is large.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>statsmodels.discrete.discrete_model.BinaryResultsWrapper</dt><dd><p>Results.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.ols">
+<span class="sig-name descname"><span class="pre">ols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hasconst</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RegressionResultsWrapper</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.ols"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.ols" title="Permalink to this definition"></a></dt>
+<dd><p>Fits Ordinary Least Squares Regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>endog</strong><span class="classifier">array_like</span></dt><dd><p>A 1-d endogenous response variable. The dependent variable.</p>
+</dd>
+<dt><strong>exog</strong><span class="classifier">array_like</span></dt><dd><p>A nobs x k array where <cite>nobs</cite> is the number of observations and <cite>k</cite>
+is the number of regressors. An intercept is not included by
+default and should be added by the user.</p>
+</dd>
+<dt><strong>missing</strong><span class="classifier">str</span></dt><dd><p>Available options are ‘none’, ‘drop’, and ‘raise’. If ‘none’, no
+nan checking is done. If ‘drop’, any observations with nans are
+dropped. If ‘raise’, an error is raised. Default is ‘none’.</p>
+</dd>
+<dt><strong>hasconst</strong><span class="classifier">None or bool</span></dt><dd><p>Indicates whether the RHS includes a user-supplied constant. If
+True, a constant is not checked for and k_constant is set to 1 and
+all result statistics are calculated as if a constant is present.
+If False, a constant is not checked for and k_constant is set to 0.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Extra arguments that are used to set model properties when using
+the formula interface.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>statsmodels.regression.linear_model.RegressionResultsWrapper</dt><dd><p>Results.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.pivot_table">
+<span class="sig-name descname"><span class="pre">pivot_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggfunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropna</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margins_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'All'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.pivot_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.pivot_table" title="Permalink to this definition"></a></dt>
+<dd><p>Create a spreadsheet-style pivot table as a DataFrame.</p>
+<p>The levels in the pivot table will be stored in MultiIndex objects
+(hierarchical indexes) on the index and columns of the result
+DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">DataFrame</span></dt><dd><p>The DataFrame to operate on.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">column, optional</span></dt><dd><p>Column to aggregate, optional.</p>
+</dd>
+<dt><strong>index</strong><span class="classifier">column, Grouper, array, or list of the previous</span></dt><dd><p>If an array is passed, it must be the same length as the data. The
+list can contain any of the other types (except list). Keys to
+group by on the pivot table index. If an array is passed, it is
+being used as the same manner as column values.</p>
+</dd>
+<dt><strong>columns</strong><span class="classifier">column, Grouper, array, or list of the previous</span></dt><dd><p>If an array is passed, it must be the same length as the data. The
+list can contain any of the other types (except list). Keys to
+group by on the pivot table column. If an array is passed, it is
+being used as the same manner as column values.</p>
+</dd>
+<dt><strong>aggfunc</strong><span class="classifier">str | list[str], default ‘mean’</span></dt><dd><p>If list of strings passed, the resulting pivot table will have
+hierarchical columns whose top level are the function names
+(inferred from the function objects themselves).</p>
+</dd>
+<dt><strong>fill_value</strong><span class="classifier">scalar, default None</span></dt><dd><p>Value to replace missing values with (in the resulting pivot table,
+after aggregation).</p>
+</dd>
+<dt><strong>margins</strong><span class="classifier">bool, default False</span></dt><dd><p>Add all row / columns (e.g. for subtotal / grand totals).</p>
+</dd>
+<dt><strong>dropna</strong><span class="classifier">bool, default True</span></dt><dd><p>Do not include columns whose entries are all NaN.</p>
+</dd>
+<dt><strong>margins_name</strong><span class="classifier">str, default ‘All’</span></dt><dd><p>Name of the row / column that will contain the totals when margins
+is True.</p>
+</dd>
+<dt><strong>observed</strong><span class="classifier">bool, default False</span></dt><dd><p>This only applies if any of the groupers are Categoricals. If True:
+only show observed values for categorical groupers. If False: show
+all values for categorical groupers.</p>
+</dd>
+<dt><strong>sort</strong><span class="classifier">bool, default True</span></dt><dd><p>Specifies if the result should be sorted.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>DataFrame</dt><dd><p>Cross tabulation of the data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.probit">
+<span class="sig-name descname"><span class="pre">probit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryResultsWrapper</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.probit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.probit" title="Permalink to this definition"></a></dt>
+<dd><p>Fits Probit model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>endog</strong><span class="classifier">array_like</span></dt><dd><p>A 1-d endogenous response variable. The dependent variable.</p>
+</dd>
+<dt><strong>exog</strong><span class="classifier">array_like</span></dt><dd><p>A nobs x k array where nobs is the number of observations and k is
+the number of regressors. An intercept is not included by default
+and should be added by the user.</p>
+</dd>
+<dt><strong>missing</strong><span class="classifier">str | None</span></dt><dd><p>Available options are ‘none’, ‘drop’, and ‘raise’. If ‘none’, no
+nan checking is done. If ‘drop’, any observations with nans are
+dropped. If ‘raise’, an error is raised. Default is ‘none’.</p>
+</dd>
+<dt><strong>check_rank</strong><span class="classifier">bool</span></dt><dd><p>Check exog rank to determine model degrees of freedom. Default is
+True. Setting to False reduces model initialization time when
+exog.shape[1] is large.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>statsmodels.discrete.discrete_model.BinaryResultsWrapper</dt><dd><p>Results.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.remove_output">
+<span class="sig-name descname"><span class="pre">remove_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.remove_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.remove_output" title="Permalink to this definition"></a></dt>
+<dd><p>Removes an output from the results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>Key specifying which output to remove, e.g., ‘output_0’.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.agg_nk">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">agg_nk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#agg_nk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.agg_nk" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregation function that returns whether the top n items account for more
+than k percent of the total.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vals</strong><span class="classifier">pd.Series</span></dt><dd><p>Series to calculate the nk value.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>bool</dt><dd><p>Whether the nk rule is violated.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.agg_p_percent">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">agg_p_percent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#agg_p_percent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.agg_p_percent" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregation function that returns whether the p percent rule is violated.</p>
+<p>That is, the uncertainty (as a fraction) of the estimate that the second
+highest respondent can make of the highest value. Assuming there are n
+items in the series, they are first sorted in descending order and then we
+calculate the value p = (sum - N-2 highest values)/highest value. If all
+values are 0, returns 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vals</strong><span class="classifier">pd.Series</span></dt><dd><p>Series to calculate the p percent value.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>bool</dt><dd><p>whether the p percent rule is violated.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.agg_threshold">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">agg_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#agg_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.agg_threshold" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregation function that returns whether the number of contributors is
+below a threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vals</strong><span class="classifier">pd.Series</span></dt><dd><p>Series to calculate the p percent value.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>bool</dt><dd><p>Whether the threshold rule is violated.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.apply_suppression">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">apply_suppression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/acro/acro.html#apply_suppression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.apply_suppression" title="Permalink to this definition"></a></dt>
+<dd><p>Applies suppression to a table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>table</strong><span class="classifier">pd.DataFrame</span></dt><dd><p>Table to apply suppression.</p>
+</dd>
+<dt><strong>masks</strong><span class="classifier">dict[str, pd.DataFrame]</span></dt><dd><p>Dictionary of tables specifying suppression masks for application.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>Table to output with any suppression applied.</p>
+</dd>
+<dt>pd.DataFrame</dt><dd><p>Table with outcomes of suppression checks.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.get_aggfunc">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">get_aggfunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggfunc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#get_aggfunc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.get_aggfunc" title="Permalink to this definition"></a></dt>
+<dd><p>Checks whether an aggregation function is allowed and returns the
+appropriate function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>aggfunc</strong><span class="classifier">str | None</span></dt><dd><p>Name of the aggregation function to apply.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Callable | None</dt><dd><p>The aggregation function to apply.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.get_aggfuncs">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">get_aggfuncs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggfuncs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#get_aggfuncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.get_aggfuncs" title="Permalink to this definition"></a></dt>
+<dd><p>Checks whether a list of aggregation functions is allowed and returns the
+appropriate functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>aggfuncs</strong><span class="classifier">str | list[str] | None</span></dt><dd><p>List of names of the aggregation functions to apply.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Callable | list[Callable] | None</dt><dd><p>The aggregation functions to apply.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.get_summary">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">get_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/acro/acro.html#get_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.get_summary" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a string summarising the suppression masks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>masks</strong><span class="classifier">dict[str, pd.DataFrame]</span></dt><dd><p>Dictionary of tables specifying suppression masks for application.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>str</dt><dd><p>Summary of the suppression masks.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.get_summary_json">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">get_summary_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">statsmodels.iolib.table.SimpleTable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/acro/acro.html#get_summary_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.get_summary_json" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a JSON encoded string of the results summary tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>results</strong><span class="classifier">list[statsmodels.iolib.table.SimpleTable]</span></dt><dd><p>Results from fitting statsmodel.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>str</dt><dd><p>JSON encoded string representation of the results tables.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 
 
            </div>

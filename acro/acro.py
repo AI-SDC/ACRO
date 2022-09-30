@@ -365,9 +365,14 @@ class ACRO:
         SAFE_NK_N = self.config["safe_nk_n"]
         SAFE_NK_K = self.config["safe_nk_k"]
 
-    def finalise(self, filename: str = "results.json") -> None:
+    def finalise(self, filename: str = "results.json") -> dict:
         """
         Creates a results file for checking.
+
+        Returns
+        ----------
+        dict
+            Dictionary representation of the output.
         """
         logger.debug("finalise()")
         _, extension = os.path.splitext(filename)
@@ -378,6 +383,7 @@ class ACRO:
         else:
             raise ValueError("Invalid file extension. Options: {.json, .xlsx}")
         logger.debug("output written to: %s", filename)
+        return self.results
 
     def __add_output(
         self, command: str, summary: str, outcome: DataFrame, output: list[DataFrame]

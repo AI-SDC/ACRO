@@ -369,6 +369,11 @@ class ACRO:
         """
         Creates a results file for checking.
 
+        Parameters
+        ----------
+        filename : str
+            Name of the output file. Valid extensions: {.json, .xlsx}.
+
         Returns
         ----------
         dict

@@ -115,17 +115,17 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.finalise" title="acro.acro.ACRO.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>([filename])</p></td>
 <td><p>Creates a results file for checking.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.get_outputs" title="acro.acro.ACRO.get_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_outputs</span></code></a>()</p></td>
-<td><p>Returns the current results dictionary.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.logit" title="acro.acro.ACRO.logit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.logit" title="acro.acro.ACRO.logit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
 <td><p>FIts Logit model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.ols" title="acro.acro.ACRO.ols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ols</span></code></a>(endog[, exog, missing, hasconst])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.ols" title="acro.acro.ACRO.ols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ols</span></code></a>(endog[, exog, missing, hasconst])</p></td>
 <td><p>Fits Ordinary Least Squares Regression.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.pivot_table" title="acro.acro.ACRO.pivot_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pivot_table</span></code></a>(data[, values, index, columns, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.pivot_table" title="acro.acro.ACRO.pivot_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pivot_table</span></code></a>(data[, values, index, columns, ...])</p></td>
 <td><p>Create a spreadsheet-style pivot table as a DataFrame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.print_outputs" title="acro.acro.ACRO.print_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_outputs</span></code></a>()</p></td>
+<td><p>Prints the current results dictionary.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.probit" title="acro.acro.ACRO.probit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
 <td><p>Fits Probit model.</p></td>
@@ -196,20 +196,6 @@ when margins is True.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="acro.acro.ACRO.get_outputs">
-<span class="sig-name descname"><span class="pre">get_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.get_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.get_outputs" title="Permalink to this definition"></a></dt>
-<dd><p>Returns the current results dictionary.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><dl class="simple">
-<dt>dict</dt><dd><p>Dictionary of current outputs and their status.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.logit">
 <span class="sig-name descname"><span class="pre">logit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryResultsWrapper</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.logit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.logit" title="Permalink to this definition"></a></dt>
 <dd><p>FIts Logit model.</p>
@@ -234,7 +220,7 @@ exog.shape[1] is large.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt>statsmodels.discrete.discrete_model.BinaryResultsWrapper</dt><dd><p>Results.</p>
+<dt>BinaryResultsWrapper</dt><dd><p>Results.</p>
 </dd>
 </dl>
 </dd>
@@ -270,7 +256,7 @@ the formula interface.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt>statsmodels.regression.linear_model.RegressionResultsWrapper</dt><dd><p>Results.</p>
+<dt>RegressionResultsWrapper</dt><dd><p>Results.</p>
 </dd>
 </dl>
 </dd>
@@ -333,6 +319,12 @@ all values for categorical groupers.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.print_outputs">
+<span class="sig-name descname"><span class="pre">print_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.print_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.print_outputs" title="Permalink to this definition"></a></dt>
+<dd><p>Prints the current results dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.probit">
 <span class="sig-name descname"><span class="pre">probit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryResultsWrapper</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.probit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.probit" title="Permalink to this definition"></a></dt>
 <dd><p>Fits Probit model.</p>
@@ -357,7 +349,7 @@ exog.shape[1] is large.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt>statsmodels.discrete.discrete_model.BinaryResultsWrapper</dt><dd><p>Results.</p>
+<dt>BinaryResultsWrapper</dt><dd><p>Results.</p>
 </dd>
 </dl>
 </dd>

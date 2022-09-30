@@ -1,5 +1,6 @@
 """ACRO: Automatic Checking of Research Outputs."""
 
+import copy
 import json
 import logging
 import os
@@ -12,7 +13,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import yaml
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from statsmodels.discrete.discrete_model import BinaryResultsWrapper
 from statsmodels.iolib.table import SimpleTable
 from statsmodels.regression.linear_model import RegressionResultsWrapper
@@ -34,36 +35,101 @@ SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
 
 
-def _get_summary_json(results: list[SimpleTable]) -> str:
+def _finalise_json(filename: str, results: dict) -> None:
     """
-    Returns a JSON encoded string of the results summary tables.
+    Writes outputs to a JSON file.
 
     Parameters
     ----------
-    results : list[statsmodels.iolib.table.SimpleTable]
+    filename : str
+        Name of the output file.
+
+    results : dict
+        Outputs to write.
+    """
+    # convert dataframes to json
+    outputs: dict = copy.deepcopy(results)
+    for _, output in outputs.items():
+        if output["outcome"] is not None:
+            output["outcome"] = output["outcome"].to_json()
+        for i, _ in enumerate(output["output"]):
+            output["output"][i] = output["output"][i].to_json()
+    # write to disk
+    with open(filename, "wt", encoding="utf-8") as file:
+        json.dump(outputs, file, indent=4, sort_keys=False)
+
+
+def _finalise_excel(filename: str, results: dict) -> None:
+    """
+    Writes outputs to an excel spreadsheet.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the output file.
+
+    results : dict
+        Outputs to write.
+    """
+    with pd.ExcelWriter(  # pylint: disable=abstract-class-instantiated
+        filename, engine="openpyxl"
+    ) as writer:
+        # description sheet
+        sheet = []
+        summary = []
+        command = []
+        for output_id, output in results.items():
+            sheet.append(output_id)
+            command.append(output["command"])
+            summary.append(output["summary"])
+        tmp_df = pd.DataFrame({"Sheet": sheet, "Command": command, "Summary": summary})
+        tmp_df.to_excel(writer, sheet_name="description", index=False, startrow=0)
+        # individual sheets
+        for output_id, output in results.items():
+            # command and summary
+            start = 0
+            tmp_df = pd.DataFrame(
+                [output["command"], output["summary"]], index=["Command", "Summary"]
+            )
+            tmp_df.to_excel(writer, sheet_name=output_id, startrow=start)
+            # outcome
+            if output["outcome"] is not None:
+                output["outcome"].to_excel(writer, sheet_name=output_id, startrow=4)
+            # output
+            for table in output["output"]:
+                start = 1 + writer.sheets[output_id].max_row
+                table.to_excel(writer, sheet_name=output_id, startrow=start)
+
+
+def _get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
+    """
+    Converts a list of SimpleTable objects to a list of DataFrame objects.
+
+    Parameters
+    ----------
+    results : list[SimpleTable]
         Results from fitting statsmodel.
 
     Returns
     ----------
-    str
-        JSON encoded string representation of the results tables.
+    list[DataFrame]
+        List of DataFrame objects.
     """
-    tables: dict[str, str] = {}
-    for i, table in enumerate(results):
-        name = f"table_{i}"
+    tables: list[DataFrame] = []
+    for table in results:
         table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
-        tables[name] = table_df.to_json()
-    return json.dumps(tables, indent=4)
+        tables.append(table_df)
+    return tables
 
 
-def _agg_threshold(vals: pd.Series) -> bool:
+def _agg_threshold(vals: Series) -> bool:
     """
     Aggregation function that returns whether the number of contributors is
     below a threshold.
 
     Parameters
     ----------
-    vals : pd.Series
+    vals : Series
         Series to calculate the p percent value.
 
     Returns
@@ -74,7 +140,7 @@ def _agg_threshold(vals: pd.Series) -> bool:
     return vals.count() < THRESHOLD
 
 
-def _agg_p_percent(vals: pd.Series) -> bool:
+def _agg_p_percent(vals: Series) -> bool:
     """
     Aggregation function that returns whether the p percent rule is violated.
 
@@ -86,7 +152,7 @@ def _agg_p_percent(vals: pd.Series) -> bool:
 
     Parameters
     ----------
-    vals : pd.Series
+    vals : Series
         Series to calculate the p percent value.
 
     Returns
@@ -101,14 +167,14 @@ def _agg_p_percent(vals: pd.Series) -> bool:
     return p_val < SAFE_PRATIO_P
 
 
-def _agg_nk(vals: pd.Series) -> bool:
+def _agg_nk(vals: Series) -> bool:
     """
     Aggregation function that returns whether the top n items account for more
     than k percent of the total.
 
     Parameters
     ----------
-    vals : pd.Series
+    vals : Series
         Series to calculate the nk value.
 
     Returns
@@ -125,30 +191,30 @@ def _agg_nk(vals: pd.Series) -> bool:
 
 
 def _apply_suppression(
-    table: pd.DataFrame, masks: dict[str, pd.DataFrame]
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+    table: DataFrame, masks: dict[str, DataFrame]
+) -> tuple[DataFrame, DataFrame]:
     """
     Applies suppression to a table.
 
     Parameters
     ----------
-    table : pd.DataFrame
+    table : DataFrame
         Table to apply suppression.
 
-    masks : dict[str, pd.DataFrame]
+    masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
 
     Returns
     ----------
-    pd.DataFrame
+    DataFrame
         Table to output with any suppression applied.
 
-    pd.DataFrame
+    DataFrame
         Table with outcomes of suppression checks.
     """
     logger.debug("_apply_suppression()")
     safe_df = table.copy()
-    outcome_df = pd.DataFrame().reindex_like(table)
+    outcome_df = DataFrame().reindex_like(table)
     outcome_df.fillna("", inplace=True)
     for name, mask in masks.items():
         safe_df[mask] = np.NaN
@@ -158,13 +224,13 @@ def _apply_suppression(
     return safe_df, outcome_df
 
 
-def _get_summary(masks: dict[str, pd.DataFrame]) -> str:
+def _get_summary(masks: dict[str, DataFrame]) -> str:
     """
     Returns a string summarising the suppression masks.
 
     Parameters
     ----------
-    masks : dict[str, pd.DataFrame]
+    masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
 
     Returns
@@ -309,20 +375,18 @@ class ACRO:
             Dictionary representation of the output.
         """
         logger.debug("finalise()")
-        logger.debug("filename: %s", filename)
-        output: str = ""
         _, extension = os.path.splitext(filename)
         if extension == ".json":
-            output = json.dumps(self.results, indent=4)
-            logger.debug("JSON output: %s", output)
+            _finalise_json(filename, self.results)
+        elif extension == ".xlsx":
+            _finalise_excel(filename, self.results)
         else:
-            raise ValueError("Invalid file extension. Options: {json}")
-        with open(filename, "wt", encoding="utf-8") as file:
-            file.write(output)
+            raise ValueError("Invalid file extension. Options: {.json, .xlsx}")
+        logger.debug("output written to: %s", filename)
         return self.results
 
     def __add_output(
-        self, command: str, summary: str, outcome: str, output: str
+        self, command: str, summary: str, outcome: DataFrame, output: list[DataFrame]
     ) -> None:
         """
         Adds an output to the results dictionary.
@@ -333,13 +397,13 @@ class ACRO:
             String representation of the operation performed.
 
         summary : str
-            String summarising the suppression checks.
+            String summarising the ACRO checks.
 
-        outcome : str
-            JSON encoded string describing the outcome of ACRO checks.
+        outcome : DataFrame
+            DataFrame describing the details of ACRO checks.
 
-        output : str
-            JSON encoded string representation of the result of the operation.
+        output : list[DataFrame]
+            List of output DataFrames.
         """
         name: str = f"output_{self.output_id}"
         self.output_id += 1
@@ -347,7 +411,7 @@ class ACRO:
             "command": command,
             "summary": summary,
             "outcome": outcome,
-            "output": json.loads(output),  # JSON to dict
+            "output": output,  # json.loads(output),  # JSON to dict
         }
         logger.debug("__add_output(): %s", name)
 
@@ -366,17 +430,12 @@ class ACRO:
         else:
             warnings.warn(f"unable to remove {key}, key not found")
 
-    def get_outputs(self) -> dict:
+    def print_outputs(self) -> None:
         """
-        Returns the current results dictionary.
-
-        Returns
-        -------
-        dict
-            Dictionary of current outputs and their status.
+        Prints the current results dictionary.
         """
-        logger.debug("get_outputs()")
-        return self.results
+        logger.debug("print_outputs()")
+        print(self.results)
 
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals
         self,
@@ -463,7 +522,7 @@ class ACRO:
         )
 
         # suppression masks to apply based on the following checks
-        masks: dict[str, pd.DataFrame] = {}
+        masks: dict[str, DataFrame] = {}
 
         # threshold check
         t_values = pd.crosstab(
@@ -491,7 +550,7 @@ class ACRO:
 
         table, outcome = _apply_suppression(table, masks)
         summary = _get_summary(masks)
-        self.__add_output(command, summary, outcome.to_json(), table.to_json())
+        self.__add_output(command, summary, outcome, [table])
         return table
 
     def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
@@ -593,7 +652,7 @@ class ACRO:
         )
 
         # suppression masks to apply based on the following checks
-        masks: dict[str, pd.DataFrame] = {}
+        masks: dict[str, DataFrame] = {}
 
         # threshold check
         agg_check = [_agg_threshold] * n_agg if n_agg > 1 else _agg_threshold
@@ -612,10 +671,10 @@ class ACRO:
 
         table, outcome = _apply_suppression(table, masks)
         summary = _get_summary(masks)
-        self.__add_output(command, summary, outcome.to_json(), table.to_json())
+        self.__add_output(command, summary, outcome, [table])
         return table
 
-    def __check_model_dof(self, name: str, model) -> tuple[str, str]:
+    def __check_model_dof(self, name: str, model) -> str:
         """
         Check model DOF.
 
@@ -631,21 +690,16 @@ class ACRO:
         -------
         str
             Summary of the check.
-
-        str
-            Outcome of the check.
         """
         dof: int = model.df_resid
         threshold: int = self.config["safe_dof_threshold"]
         if dof < threshold:
-            summary = "fail"
-            outcome = f"fail; dof={dof} < {threshold}"
-            warnings.warn(f"Unsafe {name}: {outcome}")
+            summary = f"fail; dof={dof} < {threshold}"
+            warnings.warn(f"Unsafe {name}: {summary}")
         else:
-            summary = "pass"
-            outcome = f"pass; dof={dof} >= {threshold}"
-        logger.debug("%s() outcome: %s", name, outcome)
-        return summary, outcome
+            summary = f"pass; dof={dof} >= {threshold}"
+        logger.debug("%s() outcome: %s", name, summary)
+        return summary
 
     def ols(  # pylint: disable=too-many-locals
         self, endog, exog=None, missing="none", hasconst=None, **kwargs
@@ -680,16 +734,18 @@ class ACRO:
 
         Returns
         -------
-        statsmodels.regression.linear_model.RegressionResultsWrapper
+        RegressionResultsWrapper
             Results.
         """
         code = getframeinfo(stack()[1][0]).code_context
         command: str = "" if code is None else "\n".join(code).strip()
         model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
         results = model.fit()
-        summary, outcome = self.__check_model_dof("ols", model)
+        summary = self.__check_model_dof("ols", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(command, summary, outcome, _get_summary_json(tables))
+        self.__add_output(
+            command, summary, DataFrame(), _get_summary_dataframes(tables)
+        )
         return results
 
     def logit(  # pylint: disable=too-many-arguments,too-many-locals
@@ -724,16 +780,18 @@ class ACRO:
 
         Returns
         -------
-        statsmodels.discrete.discrete_model.BinaryResultsWrapper
+        BinaryResultsWrapper
             Results.
         """
         code = getframeinfo(stack()[1][0]).code_context
         command: str = "" if code is None else "\n".join(code).strip()
         model = sm.Logit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
-        summary, outcome = self.__check_model_dof("logit", model)
+        summary = self.__check_model_dof("logit", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(command, summary, outcome, _get_summary_json(tables))
+        self.__add_output(
+            command, summary, DataFrame(), _get_summary_dataframes(tables)
+        )
         return results
 
     def probit(  # pylint: disable=too-many-arguments,too-many-locals
@@ -768,14 +826,16 @@ class ACRO:
 
         Returns
         -------
-        statsmodels.discrete.discrete_model.BinaryResultsWrapper
+        BinaryResultsWrapper
             Results.
         """
         code = getframeinfo(stack()[1][0]).code_context
         command: str = "" if code is None else "\n".join(code).strip()
         model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
-        summary, outcome = self.__check_model_dof("probit", model)
+        summary = self.__check_model_dof("probit", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(command, summary, outcome, _get_summary_json(tables))
+        self.__add_output(
+            command, summary, DataFrame(), _get_summary_dataframes(tables)
+        )
         return results

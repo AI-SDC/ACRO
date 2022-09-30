@@ -1,7 +1,8 @@
-"""ACRO."""
+"""ACRO: Automatic Checking of Research Outputs."""
 
 import json
 import logging
+import os
 import pathlib
 import warnings
 from collections.abc import Callable
@@ -33,7 +34,7 @@ SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
 
 
-def get_summary_json(results: list[SimpleTable]) -> str:
+def _get_summary_json(results: list[SimpleTable]) -> str:
     """
     Returns a JSON encoded string of the results summary tables.
 
@@ -55,7 +56,7 @@ def get_summary_json(results: list[SimpleTable]) -> str:
     return json.dumps(tables, indent=4)
 
 
-def agg_threshold(vals: pd.Series) -> bool:
+def _agg_threshold(vals: pd.Series) -> bool:
     """
     Aggregation function that returns whether the number of contributors is
     below a threshold.
@@ -73,7 +74,7 @@ def agg_threshold(vals: pd.Series) -> bool:
     return vals.count() < THRESHOLD
 
 
-def agg_p_percent(vals: pd.Series) -> bool:
+def _agg_p_percent(vals: pd.Series) -> bool:
     """
     Aggregation function that returns whether the p percent rule is violated.
 
@@ -100,7 +101,7 @@ def agg_p_percent(vals: pd.Series) -> bool:
     return p_val < SAFE_PRATIO_P
 
 
-def agg_nk(vals: pd.Series) -> bool:
+def _agg_nk(vals: pd.Series) -> bool:
     """
     Aggregation function that returns whether the top n items account for more
     than k percent of the total.
@@ -123,7 +124,7 @@ def agg_nk(vals: pd.Series) -> bool:
     return False
 
 
-def apply_suppression(
+def _apply_suppression(
     table: pd.DataFrame, masks: dict[str, pd.DataFrame]
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -145,7 +146,7 @@ def apply_suppression(
     pd.DataFrame
         Table with outcomes of suppression checks.
     """
-    logger.debug("apply_suppression()")
+    logger.debug("_apply_suppression()")
     safe_df = table.copy()
     outcome_df = pd.DataFrame().reindex_like(table)
     outcome_df.fillna("", inplace=True)
@@ -157,7 +158,7 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_summary(masks: dict[str, pd.DataFrame]) -> str:
+def _get_summary(masks: dict[str, pd.DataFrame]) -> str:
     """
     Returns a string summarising the suppression masks.
 
@@ -180,11 +181,11 @@ def get_summary(masks: dict[str, pd.DataFrame]) -> str:
         summary = "pass"
     else:
         summary = "fail; " + summary
-    logger.debug("get_summary(): %s", summary)
+    logger.debug("_get_summary(): %s", summary)
     return summary
 
 
-def get_aggfunc(aggfunc: str | None) -> Callable | None:
+def _get_aggfunc(aggfunc: str | None) -> Callable | None:
     """
     Checks whether an aggregation function is allowed and returns the
     appropriate function.
@@ -199,7 +200,7 @@ def get_aggfunc(aggfunc: str | None) -> Callable | None:
     Callable | None
         The aggregation function to apply.
     """
-    logger.debug("get_aggfunc()")
+    logger.debug("_get_aggfunc()")
     func = None
     if aggfunc is not None:
         if not isinstance(aggfunc, str) or aggfunc not in AGGFUNC:
@@ -209,7 +210,9 @@ def get_aggfunc(aggfunc: str | None) -> Callable | None:
     return func
 
 
-def get_aggfuncs(aggfuncs: str | list[str] | None) -> Callable | list[Callable] | None:
+def _get_aggfuncs(
+    aggfuncs: str | list[str] | None,
+) -> Callable | list[Callable] | None:
     """
     Checks whether a list of aggregation functions is allowed and returns the
     appropriate functions.
@@ -224,18 +227,18 @@ def get_aggfuncs(aggfuncs: str | list[str] | None) -> Callable | list[Callable] 
     Callable | list[Callable] | None
         The aggregation functions to apply.
     """
-    logger.debug("get_aggfuncs()")
+    logger.debug("_get_aggfuncs()")
     if aggfuncs is None:
         logger.debug("aggfuncs: None")
         return None
     if isinstance(aggfuncs, str):
-        function = get_aggfunc(aggfuncs)
+        function = _get_aggfunc(aggfuncs)
         logger.debug("aggfuncs: %s", function)
         return function
     if isinstance(aggfuncs, list):
         functions: list[Callable] = []
         for function_name in aggfuncs:
-            function = get_aggfunc(function_name)
+            function = _get_aggfunc(function_name)
             if function is not None:
                 functions.append(function)
         logger.debug("aggfuncs: %s", functions)
@@ -246,22 +249,42 @@ def get_aggfuncs(aggfuncs: str | list[str] | None) -> Callable | list[Callable] 
 
 
 class ACRO:
-    """ACRO."""
+    """
+    ACRO: Automatic Checking of Research Outputs.
 
-    def __init__(self, filename: str = "results") -> None:
+    Attributes
+    ----------
+
+    config : dict
+        Safe parameters and their values.
+
+    results : dict
+        The current outputs including the results of checks.
+
+    output_id : int
+        The next identifier to be assigned to an output.
+
+    Examples
+    --------
+    >>> acro = ACRO()
+    >>> results = acro.ols(y, x)
+    >>> results.summary()
+    >>> acro.finalise("my_results.json")
+    """
+
+    def __init__(self, config: str = "default") -> None:
         """
         Constructs a new ACRO object and reads parameters from config.
 
         Parameters
         ----------
-        filename : str
-            Name of the output file.
+        config : str
+            Name of a yaml configuration file with safe parameters.
         """
         self.config: dict = {}
         self.results: dict = {}
-        self.filename: str = filename
         self.output_id: int = 0
-        path = pathlib.Path(__file__).with_name("default.yaml")
+        path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
@@ -276,7 +299,7 @@ class ACRO:
         SAFE_NK_N = self.config["safe_nk_n"]
         SAFE_NK_K = self.config["safe_nk_k"]
 
-    def finalise(self) -> dict:
+    def finalise(self, filename: str = "results.json") -> dict:
         """
         Creates a results file for checking.
 
@@ -286,11 +309,17 @@ class ACRO:
             Dictionary representation of the output.
         """
         logger.debug("finalise()")
-        json_output: str = json.dumps(self.results, indent=4)
-        logger.debug("filename: %s.json", self.filename)
-        logger.debug("output: %s", json_output)
-        with open(self.filename + ".json", "wt", encoding="utf-8") as file:
-            file.write(json_output)
+        logger.debug("filename: %s", filename)
+        output: str = ""
+        _, extension = os.path.splitext(filename)
+        print(extension)
+        if extension == ".json":
+            output = json.dumps(self.results, indent=4)
+            logger.debug("JSON output: %s", output)
+        else:
+            raise ValueError("Invalid file extension. Options: {json}")
+        with open(filename, "wt", encoding="utf-8") as file:
+            file.write(output)
         return self.results
 
     def add_output(self, command: str, summary: str, outcome: str, output: str) -> None:
@@ -416,7 +445,7 @@ class ACRO:
         logger.debug("crosstab()")
         logger.debug("caller: %s", command)
 
-        aggfunc = get_aggfunc(aggfunc)  # convert string to function
+        aggfunc = _get_aggfunc(aggfunc)  # convert string to function
 
         # requested table
         table: DataFrame = pd.crosstab(
@@ -453,14 +482,14 @@ class ACRO:
 
         if aggfunc is not None:
             # p-percent check
-            p_values = pd.crosstab(index, columns, values, aggfunc=agg_p_percent)
+            p_values = pd.crosstab(index, columns, values, aggfunc=_agg_p_percent)
             masks["p-ratio"] = p_values
             # nk values check
-            nk_values = pd.crosstab(index, columns, values, aggfunc=agg_nk)
+            nk_values = pd.crosstab(index, columns, values, aggfunc=_agg_nk)
             masks["nk-rule"] = nk_values
 
-        table, outcome = apply_suppression(table, masks)
-        summary = get_summary(masks)
+        table, outcome = _apply_suppression(table, masks)
+        summary = _get_summary(masks)
         self.add_output(command, summary, outcome.to_json(), table.to_json())
         return table
 
@@ -544,7 +573,7 @@ class ACRO:
         logger.debug("pivot_table()")
         logger.debug("caller: %s", command)
 
-        aggfunc = get_aggfuncs(aggfunc)  # convert string(s) to function(s)
+        aggfunc = _get_aggfuncs(aggfunc)  # convert string(s) to function(s)
         n_agg: int = 1 if not isinstance(aggfunc, list) else len(aggfunc)
 
         # requested table
@@ -566,22 +595,22 @@ class ACRO:
         masks: dict[str, pd.DataFrame] = {}
 
         # threshold check
-        agg_check = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
+        agg_check = [_agg_threshold] * n_agg if n_agg > 1 else _agg_threshold
         t_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
         masks["threshold"] = t_values
 
         if aggfunc is not None:
             # p-percent check
-            agg_check = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
+            agg_check = [_agg_p_percent] * n_agg if n_agg > 1 else _agg_p_percent
             p_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
             masks["p-ratio"] = p_values
             # nk values check
-            agg_check = [agg_nk] * n_agg if n_agg > 1 else agg_nk
+            agg_check = [_agg_nk] * n_agg if n_agg > 1 else _agg_nk
             nk_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
             masks["nk-rule"] = nk_values
 
-        table, outcome = apply_suppression(table, masks)
-        summary = get_summary(masks)
+        table, outcome = _apply_suppression(table, masks)
+        summary = _get_summary(masks)
         self.add_output(command, summary, outcome.to_json(), table.to_json())
         return table
 
@@ -659,7 +688,7 @@ class ACRO:
         results = model.fit()
         summary, outcome = self.__check_model_dof("ols", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.add_output(command, summary, outcome, get_summary_json(tables))
+        self.add_output(command, summary, outcome, _get_summary_json(tables))
         return results
 
     def logit(  # pylint: disable=too-many-arguments,too-many-locals
@@ -703,7 +732,7 @@ class ACRO:
         results = model.fit()
         summary, outcome = self.__check_model_dof("logit", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.add_output(command, summary, outcome, get_summary_json(tables))
+        self.add_output(command, summary, outcome, _get_summary_json(tables))
         return results
 
     def probit(  # pylint: disable=too-many-arguments,too-many-locals
@@ -747,5 +776,5 @@ class ACRO:
         results = model.fit()
         summary, outcome = self.__check_model_dof("probit", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.add_output(command, summary, outcome, get_summary_json(tables))
+        self.add_output(command, summary, outcome, _get_summary_json(tables))
         return results

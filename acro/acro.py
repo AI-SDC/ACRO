@@ -321,7 +321,9 @@ class ACRO:
             file.write(output)
         return self.results
 
-    def add_output(self, command: str, summary: str, outcome: str, output: str) -> None:
+    def __add_output(
+        self, command: str, summary: str, outcome: str, output: str
+    ) -> None:
         """
         Adds an output to the results dictionary.
 
@@ -347,7 +349,7 @@ class ACRO:
             "outcome": outcome,
             "output": json.loads(output),  # JSON to dict
         }
-        logger.debug("add_output(): %s", name)
+        logger.debug("__add_output(): %s", name)
 
     def remove_output(self, key: str) -> None:
         """
@@ -489,7 +491,7 @@ class ACRO:
 
         table, outcome = _apply_suppression(table, masks)
         summary = _get_summary(masks)
-        self.add_output(command, summary, outcome.to_json(), table.to_json())
+        self.__add_output(command, summary, outcome.to_json(), table.to_json())
         return table
 
     def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
@@ -610,7 +612,7 @@ class ACRO:
 
         table, outcome = _apply_suppression(table, masks)
         summary = _get_summary(masks)
-        self.add_output(command, summary, outcome.to_json(), table.to_json())
+        self.__add_output(command, summary, outcome.to_json(), table.to_json())
         return table
 
     def __check_model_dof(self, name: str, model) -> tuple[str, str]:
@@ -687,7 +689,7 @@ class ACRO:
         results = model.fit()
         summary, outcome = self.__check_model_dof("ols", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.add_output(command, summary, outcome, _get_summary_json(tables))
+        self.__add_output(command, summary, outcome, _get_summary_json(tables))
         return results
 
     def logit(  # pylint: disable=too-many-arguments,too-many-locals
@@ -731,7 +733,7 @@ class ACRO:
         results = model.fit()
         summary, outcome = self.__check_model_dof("logit", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.add_output(command, summary, outcome, _get_summary_json(tables))
+        self.__add_output(command, summary, outcome, _get_summary_json(tables))
         return results
 
     def probit(  # pylint: disable=too-many-arguments,too-many-locals
@@ -775,5 +777,5 @@ class ACRO:
         results = model.fit()
         summary, outcome = self.__check_model_dof("probit", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.add_output(command, summary, outcome, _get_summary_json(tables))
+        self.__add_output(command, summary, outcome, _get_summary_json(tables))
         return results

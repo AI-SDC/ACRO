@@ -312,7 +312,6 @@ class ACRO:
         logger.debug("filename: %s", filename)
         output: str = ""
         _, extension = os.path.splitext(filename)
-        print(extension)
         if extension == ".json":
             output = json.dumps(self.results, indent=4)
             logger.debug("JSON output: %s", output)

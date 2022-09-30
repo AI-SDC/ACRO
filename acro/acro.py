@@ -101,7 +101,7 @@ def _finalise_excel(filename: str, results: dict) -> None:
                 table.to_excel(writer, sheet_name=output_id, startrow=start)
 
 
-def _get_summary_dataframes(results: list[SimpleTable]) -> str:
+def _get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
     """
     Converts a list of SimpleTable objects to a list of DataFrame objects.
 

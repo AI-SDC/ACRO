@@ -48,14 +48,14 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ACRO Class</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#acro.acro.ACRO"><code class="docutils literal notranslate"><span class="pre">ACRO</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acro.acro.agg_nk"><code class="docutils literal notranslate"><span class="pre">agg_nk()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acro.acro.agg_p_percent"><code class="docutils literal notranslate"><span class="pre">agg_p_percent()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acro.acro.agg_threshold"><code class="docutils literal notranslate"><span class="pre">agg_threshold()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acro.acro.apply_suppression"><code class="docutils literal notranslate"><span class="pre">apply_suppression()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acro.acro.get_aggfunc"><code class="docutils literal notranslate"><span class="pre">get_aggfunc()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acro.acro.get_aggfuncs"><code class="docutils literal notranslate"><span class="pre">get_aggfuncs()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acro.acro.get_summary"><code class="docutils literal notranslate"><span class="pre">get_summary()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#acro.acro.get_summary_json"><code class="docutils literal notranslate"><span class="pre">get_summary_json()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro._agg_nk"><code class="docutils literal notranslate"><span class="pre">_agg_nk()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro._agg_p_percent"><code class="docutils literal notranslate"><span class="pre">_agg_p_percent()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro._agg_threshold"><code class="docutils literal notranslate"><span class="pre">_agg_threshold()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro._apply_suppression"><code class="docutils literal notranslate"><span class="pre">_apply_suppression()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro._get_aggfunc"><code class="docutils literal notranslate"><span class="pre">_get_aggfunc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro._get_aggfuncs"><code class="docutils literal notranslate"><span class="pre">_get_aggfuncs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro._get_summary"><code class="docutils literal notranslate"><span class="pre">_get_summary()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro._get_summary_json"><code class="docutils literal notranslate"><span class="pre">_get_summary_json()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -86,11 +86,30 @@
              
   <section id="module-acro.acro">
 <span id="acro-class"></span><h1>ACRO Class<a class="headerlink" href="#module-acro.acro" title="Permalink to this heading"></a></h1>
-<p>ACRO.</p>
+<p>ACRO: Automatic Checking of Research Outputs.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="acro.acro.ACRO">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">ACRO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acro/acro.html#ACRO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO" title="Permalink to this definition"></a></dt>
-<dd><p>ACRO.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">ACRO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acro/acro.html#ACRO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO" title="Permalink to this definition"></a></dt>
+<dd><p>ACRO: Automatic Checking of Research Outputs.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">acro</span> <span class="o">=</span> <span class="n">ACRO</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">acro</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span><span class="s2">&quot;my_results.json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>config</strong><span class="classifier">dict</span></dt><dd><p>Safe parameters and their values.</p>
+</dd>
+<dt><strong>results</strong><span class="classifier">dict</span></dt><dd><p>The current outputs including the results of checks.</p>
+</dd>
+<dt><strong>output_id</strong><span class="classifier">int</span></dt><dd><p>The next identifier to be assigned to an output.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -104,7 +123,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.crosstab" title="acro.acro.ACRO.crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crosstab</span></code></a>(index, columns[, values, rownames, ...])</p></td>
 <td><p>Compute a simple cross tabulation of two (or more) factors.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.finalise" title="acro.acro.ACRO.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.finalise" title="acro.acro.ACRO.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>([filename])</p></td>
 <td><p>Creates a results file for checking.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.get_outputs" title="acro.acro.ACRO.get_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_outputs</span></code></a>()</p></td>
@@ -153,12 +172,12 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.__init__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.__init__" title="Permalink to this definition"></a></dt>
 <dd><p>Constructs a new ACRO object and reads parameters from config.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>Name of the output file.</p>
+<dt><strong>config</strong><span class="classifier">str</span></dt><dd><p>Name of a yaml configuration file with safe parameters.</p>
 </dd>
 </dl>
 </dd>
@@ -239,7 +258,7 @@ when margins is True.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.finalise">
-<span class="sig-name descname"><span class="pre">finalise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.finalise" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">finalise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results.json'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.finalise" title="Permalink to this definition"></a></dt>
 <dd><p>Creates a results file for checking.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -437,8 +456,8 @@ exog.shape[1] is large.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="acro.acro.agg_nk">
-<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">agg_nk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#agg_nk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.agg_nk" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="acro.acro._agg_nk">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">_agg_nk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#_agg_nk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro._agg_nk" title="Permalink to this definition"></a></dt>
 <dd><p>Aggregation function that returns whether the top n items account for more
 than k percent of the total.</p>
 <dl class="field-list simple">
@@ -458,8 +477,8 @@ than k percent of the total.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="acro.acro.agg_p_percent">
-<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">agg_p_percent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#agg_p_percent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.agg_p_percent" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="acro.acro._agg_p_percent">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">_agg_p_percent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#_agg_p_percent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro._agg_p_percent" title="Permalink to this definition"></a></dt>
 <dd><p>Aggregation function that returns whether the p percent rule is violated.</p>
 <p>That is, the uncertainty (as a fraction) of the estimate that the second
 highest respondent can make of the highest value. Assuming there are n
@@ -483,8 +502,8 @@ values are 0, returns 1.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="acro.acro.agg_threshold">
-<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">agg_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#agg_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.agg_threshold" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="acro.acro._agg_threshold">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">_agg_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/acro/acro.html#_agg_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro._agg_threshold" title="Permalink to this definition"></a></dt>
 <dd><p>Aggregation function that returns whether the number of contributors is
 below a threshold.</p>
 <dl class="field-list simple">
@@ -504,8 +523,8 @@ below a threshold.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="acro.acro.apply_suppression">
-<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">apply_suppression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/acro/acro.html#apply_suppression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.apply_suppression" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="acro.acro._apply_suppression">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">_apply_suppression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/acro/acro.html#_apply_suppression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro._apply_suppression" title="Permalink to this definition"></a></dt>
 <dd><p>Applies suppression to a table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -528,8 +547,8 @@ below a threshold.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="acro.acro.get_aggfunc">
-<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">get_aggfunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggfunc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#get_aggfunc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.get_aggfunc" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="acro.acro._get_aggfunc">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">_get_aggfunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggfunc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#_get_aggfunc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro._get_aggfunc" title="Permalink to this definition"></a></dt>
 <dd><p>Checks whether an aggregation function is allowed and returns the
 appropriate function.</p>
 <dl class="field-list simple">
@@ -549,8 +568,8 @@ appropriate function.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="acro.acro.get_aggfuncs">
-<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">get_aggfuncs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggfuncs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#get_aggfuncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.get_aggfuncs" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="acro.acro._get_aggfuncs">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">_get_aggfuncs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggfuncs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#_get_aggfuncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro._get_aggfuncs" title="Permalink to this definition"></a></dt>
 <dd><p>Checks whether a list of aggregation functions is allowed and returns the
 appropriate functions.</p>
 <dl class="field-list simple">
@@ -570,8 +589,8 @@ appropriate functions.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="acro.acro.get_summary">
-<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">get_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/acro/acro.html#get_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.get_summary" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="acro.acro._get_summary">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">_get_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/acro/acro.html#_get_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro._get_summary" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a string summarising the suppression masks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -590,8 +609,8 @@ appropriate functions.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="acro.acro.get_summary_json">
-<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">get_summary_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">statsmodels.iolib.table.SimpleTable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/acro/acro.html#get_summary_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.get_summary_json" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="acro.acro._get_summary_json">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">_get_summary_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">statsmodels.iolib.table.SimpleTable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/acro/acro.html#_get_summary_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro._get_summary_json" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a JSON encoded string of the results summary tables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

@@ -72,10 +72,11 @@
            <div itemprop="articleBody">
              
   <h1>Source code for acro.acro</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;ACRO.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;ACRO: Automatic Checking of Research Outputs.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
@@ -107,7 +108,7 @@
 <span class="n">SAFE_NK_K</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span>
 
 
-<div class="viewcode-block" id="get_summary_json"><a class="viewcode-back" href="../../acro.html#acro.acro.get_summary_json">[docs]</a><span class="k">def</span> <span class="nf">get_summary_json</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="_get_summary_json"><a class="viewcode-back" href="../../acro.html#acro.acro._get_summary_json">[docs]</a><span class="k">def</span> <span class="nf">_get_summary_json</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a JSON encoded string of the results summary tables.</span>
 
@@ -129,7 +130,7 @@
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tables</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="agg_threshold"><a class="viewcode-back" href="../../acro.html#acro.acro.agg_threshold">[docs]</a><span class="k">def</span> <span class="nf">agg_threshold</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="_agg_threshold"><a class="viewcode-back" href="../../acro.html#acro.acro._agg_threshold">[docs]</a><span class="k">def</span> <span class="nf">_agg_threshold</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Aggregation function that returns whether the number of contributors is</span>
 <span class="sd">    below a threshold.</span>
@@ -147,7 +148,7 @@
     <span class="k">return</span> <span class="n">vals</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">THRESHOLD</span></div>
 
 
-<div class="viewcode-block" id="agg_p_percent"><a class="viewcode-back" href="../../acro.html#acro.acro.agg_p_percent">[docs]</a><span class="k">def</span> <span class="nf">agg_p_percent</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="_agg_p_percent"><a class="viewcode-back" href="../../acro.html#acro.acro._agg_p_percent">[docs]</a><span class="k">def</span> <span class="nf">_agg_p_percent</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Aggregation function that returns whether the p percent rule is violated.</span>
 
@@ -174,7 +175,7 @@
     <span class="k">return</span> <span class="n">p_val</span> <span class="o">&lt;</span> <span class="n">SAFE_PRATIO_P</span></div>
 
 
-<div class="viewcode-block" id="agg_nk"><a class="viewcode-back" href="../../acro.html#acro.acro.agg_nk">[docs]</a><span class="k">def</span> <span class="nf">agg_nk</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="_agg_nk"><a class="viewcode-back" href="../../acro.html#acro.acro._agg_nk">[docs]</a><span class="k">def</span> <span class="nf">_agg_nk</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Aggregation function that returns whether the top n items account for more</span>
 <span class="sd">    than k percent of the total.</span>
@@ -197,7 +198,7 @@
     <span class="k">return</span> <span class="kc">False</span></div>
 
 
-<div class="viewcode-block" id="apply_suppression"><a class="viewcode-back" href="../../acro.html#acro.acro.apply_suppression">[docs]</a><span class="k">def</span> <span class="nf">apply_suppression</span><span class="p">(</span>
+<div class="viewcode-block" id="_apply_suppression"><a class="viewcode-back" href="../../acro.html#acro.acro._apply_suppression">[docs]</a><span class="k">def</span> <span class="nf">_apply_suppression</span><span class="p">(</span>
     <span class="n">table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -219,7 +220,7 @@
 <span class="sd">    pd.DataFrame</span>
 <span class="sd">        Table with outcomes of suppression checks.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;apply_suppression()&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_apply_suppression()&quot;</span><span class="p">)</span>
     <span class="n">safe_df</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span><span class="o">.</span><span class="n">reindex_like</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
     <span class="n">outcome_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -231,7 +232,7 @@
     <span class="k">return</span> <span class="n">safe_df</span><span class="p">,</span> <span class="n">outcome_df</span></div>
 
 
-<div class="viewcode-block" id="get_summary"><a class="viewcode-back" href="../../acro.html#acro.acro.get_summary">[docs]</a><span class="k">def</span> <span class="nf">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="_get_summary"><a class="viewcode-back" href="../../acro.html#acro.acro._get_summary">[docs]</a><span class="k">def</span> <span class="nf">_get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a string summarising the suppression masks.</span>
 
@@ -254,11 +255,11 @@
         <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;pass&quot;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;fail; &quot;</span> <span class="o">+</span> <span class="n">summary</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_summary(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_get_summary(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">summary</span></div>
 
 
-<div class="viewcode-block" id="get_aggfunc"><a class="viewcode-back" href="../../acro.html#acro.acro.get_aggfunc">[docs]</a><span class="k">def</span> <span class="nf">get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="_get_aggfunc"><a class="viewcode-back" href="../../acro.html#acro.acro._get_aggfunc">[docs]</a><span class="k">def</span> <span class="nf">_get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Checks whether an aggregation function is allowed and returns the</span>
 <span class="sd">    appropriate function.</span>
@@ -273,7 +274,7 @@
 <span class="sd">    Callable | None</span>
 <span class="sd">        The aggregation function to apply.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_aggfunc()&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_get_aggfunc()&quot;</span><span class="p">)</span>
     <span class="n">func</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">aggfunc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AGGFUNC</span><span class="p">:</span>
@@ -283,7 +284,9 @@
     <span class="k">return</span> <span class="n">func</span></div>
 
 
-<div class="viewcode-block" id="get_aggfuncs"><a class="viewcode-back" href="../../acro.html#acro.acro.get_aggfuncs">[docs]</a><span class="k">def</span> <span class="nf">get_aggfuncs</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="_get_aggfuncs"><a class="viewcode-back" href="../../acro.html#acro.acro._get_aggfuncs">[docs]</a><span class="k">def</span> <span class="nf">_get_aggfuncs</span><span class="p">(</span>
+    <span class="n">aggfuncs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Checks whether a list of aggregation functions is allowed and returns the</span>
 <span class="sd">    appropriate functions.</span>
@@ -298,18 +301,18 @@
 <span class="sd">    Callable | list[Callable] | None</span>
 <span class="sd">        The aggregation functions to apply.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_aggfuncs()&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_get_aggfuncs()&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">aggfuncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;aggfuncs: None&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">function</span> <span class="o">=</span> <span class="n">get_aggfunc</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">)</span>
+        <span class="n">function</span> <span class="o">=</span> <span class="n">_get_aggfunc</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;aggfuncs: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">function</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">functions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">function_name</span> <span class="ow">in</span> <span class="n">aggfuncs</span><span class="p">:</span>
-            <span class="n">function</span> <span class="o">=</span> <span class="n">get_aggfunc</span><span class="p">(</span><span class="n">function_name</span><span class="p">)</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">_get_aggfunc</span><span class="p">(</span><span class="n">function_name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">functions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;aggfuncs: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">functions</span><span class="p">)</span>
@@ -320,22 +323,42 @@
 
 
 <div class="viewcode-block" id="ACRO"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO">[docs]</a><span class="k">class</span> <span class="nc">ACRO</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;ACRO.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ACRO: Automatic Checking of Research Outputs.</span>
 
-<div class="viewcode-block" id="ACRO.__init__"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    config : dict</span>
+<span class="sd">        Safe parameters and their values.</span>
+
+<span class="sd">    results : dict</span>
+<span class="sd">        The current outputs including the results of checks.</span>
+
+<span class="sd">    output_id : int</span>
+<span class="sd">        The next identifier to be assigned to an output.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; acro = ACRO()</span>
+<span class="sd">    &gt;&gt;&gt; results = acro.ols(y, x)</span>
+<span class="sd">    &gt;&gt;&gt; results.summary()</span>
+<span class="sd">    &gt;&gt;&gt; acro.finalise(&quot;my_results.json&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ACRO.__init__"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructs a new ACRO object and reads parameters from config.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        filename : str</span>
-<span class="sd">            Name of the output file.</span>
+<span class="sd">        config : str</span>
+<span class="sd">            Name of a yaml configuration file with safe parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="s2">&quot;default.yaml&quot;</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">config</span> <span class="o">+</span> <span class="s2">&quot;.yaml&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;path: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">SafeLoader</span><span class="p">)</span>
@@ -350,7 +373,7 @@
         <span class="n">SAFE_NK_N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_n&quot;</span><span class="p">]</span>
         <span class="n">SAFE_NK_K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_k&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="ACRO.finalise"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="ACRO.finalise"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results.json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a results file for checking.</span>
 
@@ -360,11 +383,17 @@
 <span class="sd">            Dictionary representation of the output.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;finalise()&quot;</span><span class="p">)</span>
-        <span class="n">json_output</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;filename: </span><span class="si">%s</span><span class="s2">.json&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;output: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">json_output</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json_output</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;filename: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">extension</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">extension</span> <span class="o">==</span> <span class="s2">&quot;.json&quot;</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;JSON output: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid file extension. Options: </span><span class="si">{json}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
 <div class="viewcode-block" id="ACRO.add_output"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.add_output">[docs]</a>    <span class="k">def</span> <span class="nf">add_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">outcome</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -490,7 +519,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;crosstab()&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;caller: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
 
-        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string to function</span>
+        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">_get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string to function</span>
 
         <span class="c1"># requested table</span>
         <span class="n">table</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
@@ -527,14 +556,14 @@
 
         <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># p-percent check</span>
-            <span class="n">p_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg_p_percent</span><span class="p">)</span>
+            <span class="n">p_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_p_percent</span><span class="p">)</span>
             <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_values</span>
             <span class="c1"># nk values check</span>
-            <span class="n">nk_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg_nk</span><span class="p">)</span>
+            <span class="n">nk_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_nk</span><span class="p">)</span>
             <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nk_values</span>
 
-        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">_apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">_get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span> <span class="n">table</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">table</span></div>
 
@@ -618,7 +647,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;pivot_table()&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;caller: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
 
-        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">get_aggfuncs</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string(s) to function(s)</span>
+        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">_get_aggfuncs</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string(s) to function(s)</span>
         <span class="n">n_agg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>
 
         <span class="c1"># requested table</span>
@@ -640,22 +669,22 @@
         <span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># threshold check</span>
-        <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">agg_threshold</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">agg_threshold</span>
+        <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_threshold</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_threshold</span>
         <span class="n">t_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg_check</span><span class="p">)</span>
         <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_values</span>
 
         <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># p-percent check</span>
-            <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">agg_p_percent</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">agg_p_percent</span>
+            <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_p_percent</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_p_percent</span>
             <span class="n">p_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg_check</span><span class="p">)</span>
             <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_values</span>
             <span class="c1"># nk values check</span>
-            <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">agg_nk</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">agg_nk</span>
+            <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_nk</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_nk</span>
             <span class="n">nk_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg_check</span><span class="p">)</span>
             <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nk_values</span>
 
-        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">_apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">_get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span> <span class="n">table</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">table</span></div>
 
@@ -733,7 +762,7 @@
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">get_summary_json</span><span class="p">(</span><span class="n">tables</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">_get_summary_json</span><span class="p">(</span><span class="n">tables</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
 <div class="viewcode-block" id="ACRO.logit"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.logit">[docs]</a>    <span class="k">def</span> <span class="nf">logit</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments,too-many-locals</span>
@@ -777,7 +806,7 @@
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;logit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">get_summary_json</span><span class="p">(</span><span class="n">tables</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">_get_summary_json</span><span class="p">(</span><span class="n">tables</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
 <div class="viewcode-block" id="ACRO.probit"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.probit">[docs]</a>    <span class="k">def</span> <span class="nf">probit</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments,too-many-locals</span>
@@ -821,7 +850,7 @@
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;probit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">get_summary_json</span><span class="p">(</span><span class="n">tables</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">_get_summary_json</span><span class="p">(</span><span class="n">tables</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">results</span></div></div>
 </pre></div>
 

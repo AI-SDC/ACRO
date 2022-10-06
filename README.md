@@ -1,4 +1,4 @@
-# ACRO: Tools for the Automatic Checking of Research Outputs
+## ACRO: Tools for the Automatic Checking of Research Outputs
 
 This project builds on work done by UWE on behalf of Eurostat.
 

@@ -35,6 +35,31 @@ SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
 
 
+def _get_command(stack_list: list[tuple]) -> str:
+    """
+    Returns the calling source line as a string.
+
+    Parameters
+    ----------
+    stack_list : list[tuple]
+         A list of frame records for the caller's stack. The first entry in the
+         returned list represents the caller; the last entry represents the
+         outermost call on the stack.
+
+    Returns
+    ----------
+    str
+        The calling source line.
+    """
+    command: str = ""
+    if len(stack_list) > 0:
+        code = getframeinfo(stack_list[1][0]).code_context
+        if code is not None:
+            command = "\n".join(code).strip()
+    logger.debug("command: %s", command)
+    return command
+
+
 def _finalise_json(filename: str, results: dict) -> None:
     """
     Writes outputs to a JSON file.
@@ -314,6 +339,39 @@ def _get_aggfuncs(
     raise ValueError("aggfuncs must be: either str or list[str]")
 
 
+def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
+    """
+    Add a column of ones to an array.
+
+    Parameters:
+    ----------
+    data : array_like
+        A column-ordered design matrix.
+
+    prepend : bool
+        If true, the constant is in the first column. Else the constant is
+        appended (last column).
+
+    has_constant: str {'raise', 'add', 'skip'}
+        Behavior if data already has a constant. The default will return
+        data without adding another constant. If 'raise', will raise an
+        error if any column has a constant value. Using 'add' will add a
+        column of 1s if a constant column is present.
+
+    Returns:
+    ----------
+    array_like
+        The original values with a constant (column of ones) as the first
+        or last column. Returned value type depends on input type.
+
+    Notes
+    ----------
+    When the input is a pandas Series or DataFrame, the added column's name
+    is 'const'.
+    """
+    return sm.add_constant(data, prepend=prepend, has_constant=has_constant)
+
+
 class ACRO:
     """
     ACRO: Automatic Checking of Research Outputs.
@@ -503,12 +561,8 @@ class ACRO:
         DataFrame
             Cross tabulation of the data.
         """
-
-        code = getframeinfo(stack()[1][0]).code_context
-        command: str = "" if code is None else "\n".join(code).strip()
-
         logger.debug("crosstab()")
-        logger.debug("caller: %s", command)
+        command: str = _get_command(stack())
 
         aggfunc = _get_aggfunc(aggfunc)  # convert string to function
 
@@ -631,12 +685,8 @@ class ACRO:
         DataFrame
             Cross tabulation of the data.
         """
-
-        code = getframeinfo(stack()[1][0]).code_context
-        command: str = "" if code is None else "\n".join(code).strip()
-
         logger.debug("pivot_table()")
-        logger.debug("caller: %s", command)
+        command: str = _get_command(stack())
 
         aggfunc = _get_aggfuncs(aggfunc)  # convert string(s) to function(s)
         n_agg: int = 1 if not isinstance(aggfunc, list) else len(aggfunc)
@@ -742,8 +792,8 @@ class ACRO:
         RegressionResultsWrapper
             Results.
         """
-        code = getframeinfo(stack()[1][0]).code_context
-        command: str = "" if code is None else "\n".join(code).strip()
+        logger.debug("ols()")
+        command: str = _get_command(stack())
         model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
         results = model.fit()
         summary = self.__check_model_dof("ols", model)
@@ -788,8 +838,8 @@ class ACRO:
         BinaryResultsWrapper
             Results.
         """
-        code = getframeinfo(stack()[1][0]).code_context
-        command: str = "" if code is None else "\n".join(code).strip()
+        logger.debug("logit()")
+        command: str = _get_command(stack())
         model = sm.Logit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
         summary = self.__check_model_dof("logit", model)
@@ -834,8 +884,8 @@ class ACRO:
         BinaryResultsWrapper
             Results.
         """
-        code = getframeinfo(stack()[1][0]).code_context
-        command: str = "" if code is None else "\n".join(code).strip()
+        logger.debug("probit()")
+        command: str = _get_command(stack())
         model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
         summary = self.__check_model_dof("probit", model)

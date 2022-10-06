@@ -4,9 +4,8 @@ import os
 
 import pandas as pd
 import pytest
-import statsmodels.api as sm
 
-from acro import ACRO
+from acro import ACRO, add_constant
 
 
 def test_crosstab_threshold():
@@ -71,7 +70,7 @@ def test_ols():
     new_df = new_df.dropna()
     endog = new_df.inc_activity
     exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
-    exog = sm.add_constant(exog)
+    exog = add_constant(exog)
     # ACRO OLS
     results = acro.ols(endog, exog)
     assert results.df_resid == 807

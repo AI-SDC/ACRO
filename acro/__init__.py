@@ -1,2 +1,2 @@
 """ACRO."""
-from .acro import ACRO
+from .acro import *

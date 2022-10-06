@@ -1,24 +1,25 @@
 ---
-name: pylint and unit test
+name: lint and test
 
-on: [push]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
@@ -26,11 +27,14 @@ jobs:
           pip install pylint pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Lint with pylint
+      - name: pylint
         run: |
           pylint **/*.py --fail-under 10
 
-      - name: Test with pytest
+      - name: pytest and report coverage
         run: |
-          pytest .
+          pytest --cov=./ --cov-report=xml
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov
 ...

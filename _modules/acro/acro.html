@@ -109,6 +109,31 @@
 <span class="n">SAFE_NK_K</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span>
 
 
+<span class="k">def</span> <span class="nf">_get_command</span><span class="p">(</span><span class="n">stack_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the calling source line as a string.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stack_list : list[tuple]</span>
+<span class="sd">         A list of frame records for the caller&#39;s stack. The first entry in the</span>
+<span class="sd">         returned list represents the caller; the last entry represents the</span>
+<span class="sd">         outermost call on the stack.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    str</span>
+<span class="sd">        The calling source line.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">getframeinfo</span><span class="p">(</span><span class="n">stack_list</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">code_context</span>
+        <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">command</span>
+
+
 <span class="k">def</span> <span class="nf">_finalise_json</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Writes outputs to a JSON file.</span>
@@ -388,6 +413,39 @@
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;aggfuncs must be: either str or list[str]&quot;</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="add_constant"><a class="viewcode-back" href="../../acro.html#acro.acro.add_constant">[docs]</a><span class="k">def</span> <span class="nf">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">has_constant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;skip&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a column of ones to an array.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : array_like</span>
+<span class="sd">        A column-ordered design matrix.</span>
+
+<span class="sd">    prepend : bool</span>
+<span class="sd">        If true, the constant is in the first column. Else the constant is</span>
+<span class="sd">        appended (last column).</span>
+
+<span class="sd">    has_constant: str {&#39;raise&#39;, &#39;add&#39;, &#39;skip&#39;}</span>
+<span class="sd">        Behavior if data already has a constant. The default will return</span>
+<span class="sd">        data without adding another constant. If &#39;raise&#39;, will raise an</span>
+<span class="sd">        error if any column has a constant value. Using &#39;add&#39; will add a</span>
+<span class="sd">        column of 1s if a constant column is present.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        The original values with a constant (column of ones) as the first</span>
+<span class="sd">        or last column. Returned value type depends on input type.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    When the input is a pandas Series or DataFrame, the added column&#39;s name</span>
+<span class="sd">    is &#39;const&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span> <span class="n">has_constant</span><span class="o">=</span><span class="n">has_constant</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ACRO"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO">[docs]</a><span class="k">class</span> <span class="nc">ACRO</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ACRO: Automatic Checking of Research Outputs.</span>
@@ -577,12 +635,8 @@
 <span class="sd">        DataFrame</span>
 <span class="sd">            Cross tabulation of the data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">code</span> <span class="o">=</span> <span class="n">getframeinfo</span><span class="p">(</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">code_context</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;crosstab()&quot;</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;caller: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="n">stack</span><span class="p">())</span>
 
         <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">_get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string to function</span>
 
@@ -705,12 +759,8 @@
 <span class="sd">        DataFrame</span>
 <span class="sd">            Cross tabulation of the data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">code</span> <span class="o">=</span> <span class="n">getframeinfo</span><span class="p">(</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">code_context</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;pivot_table()&quot;</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;caller: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="n">stack</span><span class="p">())</span>
 
         <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">_get_aggfuncs</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string(s) to function(s)</span>
         <span class="n">n_agg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>
@@ -816,8 +866,8 @@
 <span class="sd">        RegressionResultsWrapper</span>
 <span class="sd">            Results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">code</span> <span class="o">=</span> <span class="n">getframeinfo</span><span class="p">(</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">code_context</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ols()&quot;</span><span class="p">)</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="o">=</span><span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">hasconst</span><span class="o">=</span><span class="n">hasconst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
@@ -862,8 +912,8 @@
 <span class="sd">        BinaryResultsWrapper</span>
 <span class="sd">            Results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">code</span> <span class="o">=</span> <span class="n">getframeinfo</span><span class="p">(</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">code_context</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;logit()&quot;</span><span class="p">)</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Logit</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">check_rank</span><span class="o">=</span><span class="n">check_rank</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;logit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
@@ -908,8 +958,8 @@
 <span class="sd">        BinaryResultsWrapper</span>
 <span class="sd">            Results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">code</span> <span class="o">=</span> <span class="n">getframeinfo</span><span class="p">(</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">code_context</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;probit()&quot;</span><span class="p">)</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Probit</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">check_rank</span><span class="o">=</span><span class="n">check_rank</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;probit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>

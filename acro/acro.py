@@ -52,7 +52,7 @@ def _get_command(stack_list: list[tuple]) -> str:
         The calling source line.
     """
     command: str = ""
-    if len(stack_list) > 0:
+    if len(stack_list) > 1:
         code = getframeinfo(stack_list[1][0]).code_context
         if code is not None:
             command = "\n".join(code).strip()

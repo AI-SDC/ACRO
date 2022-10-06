@@ -75,3 +75,37 @@ def test_ols():
     results = acro.ols(endog, exog)
     assert results.df_resid == 807
     assert results.rsquared == pytest.approx(0.894, 0.001)
+    # finalise
+    output: dict = acro.finalise()
+    correct_summary: str = "pass; dof=807.0 >= 10"
+    assert output["output_0"]["summary"] == correct_summary
+
+
+def test_probit_logit():
+    """Probit and Logit tests."""
+    # instantiate ACRO
+    acro = ACRO()
+    # load test data
+    path = os.path.join("data", "test_data.dta")
+    data = pd.read_stata(path)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ]
+    new_df = new_df.dropna()
+    endog = new_df["survivor"].astype("category").cat.codes  # numeric
+    endog.name = "survivor"
+    exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    # ACRO Probit
+    results = acro.probit(endog, exog)
+    assert results.df_resid == 806
+    assert results.prsquared == pytest.approx(0.208, 0.01)
+    # ACRO Logit
+    results = acro.logit(endog, exog)
+    assert results.df_resid == 806
+    assert results.prsquared == pytest.approx(0.214, 0.01)
+    # finalise
+    output: dict = acro.finalise()
+    correct_summary: str = "pass; dof=806.0 >= 10"
+    assert output["output_0"]["summary"] == correct_summary
+    assert output["output_1"]["summary"] == correct_summary

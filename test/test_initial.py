@@ -109,3 +109,21 @@ def test_probit_logit():
     correct_summary: str = "pass; dof=806.0 >= 10"
     assert output["output_0"]["summary"] == correct_summary
     assert output["output_1"]["summary"] == correct_summary
+
+
+def test_finalise_excel():
+    """Finalise excel test."""
+    # instantiate ACRO
+    acro = ACRO()
+    # load test data
+    path = os.path.join("data", "test_data.dta")
+    data = pd.read_stata(path)
+    # ACRO crosstab
+    _ = acro.crosstab(data.year, data.grant_type)
+    # finalise
+    _ = acro.finalise("test.xlsx")
+    # read saved xlsx and compare
+    load_data = pd.read_excel("test.xlsx", sheet_name="output_0")
+    correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
+    assert load_data.iloc[0, 0] == "Command"
+    assert load_data.iloc[0, 1] == correct_cell

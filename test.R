@@ -16,13 +16,13 @@ y = unlist(df["inc_activity"])
 model = lm(y ~ ., data=df[c(2,3,4)])
 summary(model)
 
-# data frames are autoconverted to pandas dataframes
-y = data.frame(y)
-str(y)
 # import acro
 acro = import("acro")
 ac = acro$ACRO()
-#fit linear model
-#y = acro$add_constant(y)
-model = ac$ols(y, y)
+# data frames are auto-converted to pandas dataframes
+y = data.frame(y=df[c(1)])
+x = data.frame(x1=df[c(2)], x2=df[c(3)], x3=df[c(4)])
+x = acro$add_constant(x)
+# fit linear model
+model = ac$ols(y, x)
 model$summary()

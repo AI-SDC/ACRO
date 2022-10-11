@@ -378,16 +378,27 @@ exog.shape[1] is large.</p>
 <dt class="sig sig-object py" id="acro.acro.add_constant">
 <span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">add_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_constant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'skip'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acro/acro.html#add_constant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.add_constant" title="Permalink to this definition"></a></dt>
 <dd><p>Add a column of ones to an array.</p>
-<dl class="simple">
-<dt>data<span class="classifier">array_like</span></dt><dd><p>A column-ordered design matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">array_like</span></dt><dd><p>A column-ordered design matrix.</p>
 </dd>
-<dt>prepend<span class="classifier">bool</span></dt><dd><p>If true, the constant is in the first column. Else the constant is
+<dt><strong>prepend</strong><span class="classifier">bool</span></dt><dd><p>If true, the constant is in the first column. Else the constant is
 appended (last column).</p>
 </dd>
-<dt>has_constant: str {‘raise’, ‘add’, ‘skip’}</dt><dd><p>Behavior if data already has a constant. The default will return
+<dt><strong>has_constant: str {‘raise’, ‘add’, ‘skip’}</strong></dt><dd><p>Behavior if data already has a constant. The default will return
 data without adding another constant. If ‘raise’, will raise an
 error if any column has a constant value. Using ‘add’ will add a
 column of 1s if a constant column is present.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>array_like</dt><dd><p>The original values with a constant (column of ones) as the first
+or last column. Returned value type depends on input type.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 <p class="rubric">Notes</p>

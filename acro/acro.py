@@ -165,6 +165,23 @@ def _agg_threshold(vals: Series) -> bool:
     return vals.count() < THRESHOLD
 
 
+def _agg_negative(vals: Series) -> bool:
+    """
+    Aggregation function that returns whether any values are negative.
+
+    Parameters
+    ----------
+    vals : Series
+        Series to check for negative values.
+
+    Returns
+    ----------
+    bool
+        Whether a negative value was found.
+    """
+    return vals.min() < 0
+
+
 def _agg_p_percent(vals: Series) -> bool:
     """
     Aggregation function that returns whether the p percent rule is violated.
@@ -241,10 +258,16 @@ def _apply_suppression(
     safe_df = table.copy()
     outcome_df = DataFrame().reindex_like(table)
     outcome_df.fillna("", inplace=True)
-    for name, mask in masks.items():
-        safe_df[mask] = np.NaN
-        outcome_df[mask] += name + "; "
-    outcome_df = outcome_df.replace({"": "ok"})
+    # don't apply suppression if negatives are present
+    if "negative" in masks:
+        mask = masks["negative"]
+        outcome_df[mask.values] = "negative"
+    # apply suppression masks
+    else:
+        for name, mask in masks.items():
+            safe_df[mask.values] = np.NaN
+            outcome_df[mask.values] += name + "; "
+        outcome_df = outcome_df.replace({"": "ok"})
     logger.debug("outcome_df:\n%s", outcome_df)
     return safe_df, outcome_df
 
@@ -264,14 +287,17 @@ def _get_summary(masks: dict[str, DataFrame]) -> str:
         Summary of the suppression masks.
     """
     summary: str = ""
-    for name, mask in masks.items():
-        n_cells = mask.to_numpy().sum()
-        if n_cells > 0:
-            summary += f"{name}: {n_cells} cells suppressed; "
-    if summary == "":
-        summary = "pass"
+    if "negative" in masks:
+        summary = "review; negative values found"
     else:
-        summary = "fail; " + summary
+        for name, mask in masks.items():
+            n_cells = mask.to_numpy().sum()
+            if n_cells > 0:
+                summary += f"{name}: {n_cells} cells suppressed; "
+        if summary == "":
+            summary = "pass"
+        else:
+            summary = "fail; " + summary
     logger.debug("_get_summary(): %s", summary)
     return summary
 
@@ -498,7 +524,11 @@ class ACRO:
         Prints the current results dictionary.
         """
         logger.debug("print_outputs()")
-        print(self.results)
+        for name, result in self.results.items():
+            print(f"{name}:")
+            for key, item in result.items():
+                print(f"{key}: {item}")
+            print("\n")
 
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals
         self,
@@ -600,12 +630,16 @@ class ACRO:
         masks["threshold"] = t_values
 
         if aggfunc is not None:
+            # check for negative values -- currently unsupported
+            negative = pd.crosstab(index, columns, values, aggfunc=_agg_negative)
+            if negative.to_numpy().sum() > 0:
+                masks["negative"] = negative
             # p-percent check
-            p_values = pd.crosstab(index, columns, values, aggfunc=_agg_p_percent)
-            masks["p-ratio"] = p_values
+            masks["p-ratio"] = pd.crosstab(
+                index, columns, values, aggfunc=_agg_p_percent
+            )
             # nk values check
-            nk_values = pd.crosstab(index, columns, values, aggfunc=_agg_nk)
-            masks["nk-rule"] = nk_values
+            masks["nk-rule"] = pd.crosstab(index, columns, values, aggfunc=_agg_nk)
 
         table, outcome = _apply_suppression(table, masks)
         summary = _get_summary(masks)
@@ -710,19 +744,22 @@ class ACRO:
         masks: dict[str, DataFrame] = {}
 
         # threshold check
-        agg_check = [_agg_threshold] * n_agg if n_agg > 1 else _agg_threshold
-        t_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
+        agg = [_agg_threshold] * n_agg if n_agg > 1 else _agg_threshold
+        t_values = pd.pivot_table(data, values, index, columns, aggfunc=agg)
         masks["threshold"] = t_values
 
         if aggfunc is not None:
+            # check for negative values -- currently unsupported
+            agg = [_agg_negative] * n_agg if n_agg > 1 else _agg_negative
+            negative = pd.pivot_table(data, values, index, columns, aggfunc=agg)
+            if negative.to_numpy().sum() > 0:
+                masks["negative"] = negative
             # p-percent check
-            agg_check = [_agg_p_percent] * n_agg if n_agg > 1 else _agg_p_percent
-            p_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
-            masks["p-ratio"] = p_values
+            agg = [_agg_p_percent] * n_agg if n_agg > 1 else _agg_p_percent
+            masks["p-ratio"] = pd.pivot_table(data, values, index, columns, aggfunc=agg)
             # nk values check
-            agg_check = [_agg_nk] * n_agg if n_agg > 1 else _agg_nk
-            nk_values = pd.pivot_table(data, values, index, columns, aggfunc=agg_check)
-            masks["nk-rule"] = nk_values
+            agg = [_agg_nk] * n_agg if n_agg > 1 else _agg_nk
+            masks["nk-rule"] = pd.pivot_table(data, values, index, columns, aggfunc=agg)
 
         table, outcome = _apply_suppression(table, masks)
         summary = _get_summary(masks)

@@ -8,16 +8,18 @@ import pytest
 from acro import ACRO, add_constant
 
 
-def test_crosstab_threshold():
-    """Crosstab threshold test."""
-    # instantiate ACRO
-    acro = ACRO()
-    # load test data
+def get_data() -> pd.DataFrame:
+    """Load test data."""
     path = os.path.join("data", "test_data.dta")
     data = pd.read_stata(path)
-    # ACRO crosstab
+    return data
+
+
+def test_crosstab_threshold():
+    """Crosstab threshold test."""
+    data = get_data()
+    acro = ACRO()
     _ = acro.crosstab(data.year, data.grant_type)
-    # finalise
     output: dict = acro.finalise()
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
     assert output["output_0"]["summary"] == correct_summary
@@ -25,16 +27,11 @@ def test_crosstab_threshold():
 
 def test_crosstab_multiple():
     """Crosstab multiple rule test."""
-    # instantiate ACRO
+    data = get_data()
     acro = ACRO()
-    # load test data
-    path = os.path.join("data", "test_data.dta")
-    data = pd.read_stata(path)
-    # ACRO crosstab
     _ = acro.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
     )
-    # finalise
     output: dict = acro.finalise()
     correct_summary: str = (
         "fail; threshold: 6 cells suppressed; p-ratio: 1 cells suppressed; "
@@ -43,17 +40,30 @@ def test_crosstab_multiple():
     assert output["output_0"]["summary"] == correct_summary
 
 
-def test_pivot_table_pass():
-    """Pivot table pass test."""
-    # instantiate ACRO
+def test_negatives():
+    """Pivot table and Crosstab with negative values."""
+    data = get_data()
+    data.loc[0:10, "inc_grants"] = -10
     acro = ACRO()
-    # load test data
-    path = os.path.join("data", "test_data.dta")
-    data = pd.read_stata(path)
+    _ = acro.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
+    )
     _ = acro.pivot_table(
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
-    # finalise
+    output: dict = acro.finalise()
+    correct_summary: str = "review; negative values found"
+    assert output["output_0"]["summary"] == correct_summary
+    assert output["output_1"]["summary"] == correct_summary
+
+
+def test_pivot_table_pass():
+    """Pivot table pass test."""
+    data = get_data()
+    acro = ACRO()
+    _ = acro.pivot_table(
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+    )
     output: dict = acro.finalise()
     correct_summary: str = "pass"
     assert output["output_0"]["summary"] == correct_summary
@@ -61,21 +71,16 @@ def test_pivot_table_pass():
 
 def test_ols():
     """Ordinary Least Squares test."""
-    # instantiate ACRO
+    data = get_data()
     acro = ACRO()
-    # load test data
-    path = os.path.join("data", "test_data.dta")
-    data = pd.read_stata(path)
     new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
     new_df = new_df.dropna()
     endog = new_df.inc_activity
     exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
     exog = add_constant(exog)
-    # ACRO OLS
     results = acro.ols(endog, exog)
     assert results.df_resid == 807
     assert results.rsquared == pytest.approx(0.894, 0.001)
-    # finalise
     output: dict = acro.finalise()
     correct_summary: str = "pass; dof=807.0 >= 10"
     assert output["output_0"]["summary"] == correct_summary
@@ -83,11 +88,8 @@ def test_ols():
 
 def test_probit_logit():
     """Probit and Logit tests."""
-    # instantiate ACRO
+    data = get_data()
     acro = ACRO()
-    # load test data
-    path = os.path.join("data", "test_data.dta")
-    data = pd.read_stata(path)
     new_df = data[
         ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
     ]
@@ -96,15 +98,12 @@ def test_probit_logit():
     endog.name = "survivor"
     exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
     exog = add_constant(exog)
-    # ACRO Probit
     results = acro.probit(endog, exog)
     assert results.df_resid == 806
     assert results.prsquared == pytest.approx(0.208, 0.01)
-    # ACRO Logit
     results = acro.logit(endog, exog)
     assert results.df_resid == 806
     assert results.prsquared == pytest.approx(0.214, 0.01)
-    # finalise
     output: dict = acro.finalise()
     correct_summary: str = "pass; dof=806.0 >= 10"
     assert output["output_0"]["summary"] == correct_summary
@@ -113,16 +112,12 @@ def test_probit_logit():
 
 def test_finalise_excel():
     """Finalise excel test."""
-    # instantiate ACRO
+    data = get_data()
     acro = ACRO()
-    # load test data
     path = os.path.join("data", "test_data.dta")
     data = pd.read_stata(path)
-    # ACRO crosstab
     _ = acro.crosstab(data.year, data.grant_type)
-    # finalise
     _ = acro.finalise("test.xlsx")
-    # read saved xlsx and compare
     load_data = pd.read_excel("test.xlsx", sheet_name="output_0")
     correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
     assert load_data.iloc[0, 0] == "Command"

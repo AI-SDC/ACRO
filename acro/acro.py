@@ -369,7 +369,7 @@ def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
     """
     Add a column of ones to an array.
 
-    Parameters:
+    Parameters
     ----------
     data : array_like
         A column-ordered design matrix.
@@ -384,7 +384,7 @@ def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
         error if any column has a constant value. Using 'add' will add a
         column of 1s if a constant column is present.
 
-    Returns:
+    Returns
     ----------
     array_like
         The original values with a constant (column of ones) as the first

@@ -125,7 +125,7 @@ def test_finalise_excel():
 
 
 def test_output_removal():
-    """Output removal test."""
+    """Output removal and print test."""
     data = get_data()
     acro = ACRO()
     _ = acro.crosstab(data.year, data.grant_type)
@@ -137,3 +137,4 @@ def test_output_removal():
     assert "output_0" not in output
     assert "output_1" in output
     assert output["output_1"]["summary"] == correct_summary
+    acro.print_outputs()

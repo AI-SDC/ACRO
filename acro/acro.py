@@ -36,8 +36,7 @@ SAFE_NK_K: float = 0.9
 
 
 def _get_command(stack_list: list[tuple]) -> str:
-    """
-    Returns the calling source line as a string.
+    """Returns the calling source line as a string.
 
     Parameters
     ----------
@@ -61,14 +60,12 @@ def _get_command(stack_list: list[tuple]) -> str:
 
 
 def _finalise_json(filename: str, results: dict) -> None:
-    """
-    Writes outputs to a JSON file.
+    """Writes outputs to a JSON file.
 
     Parameters
     ----------
     filename : str
         Name of the output file.
-
     results : dict
         Outputs to write.
     """
@@ -85,14 +82,12 @@ def _finalise_json(filename: str, results: dict) -> None:
 
 
 def _finalise_excel(filename: str, results: dict) -> None:
-    """
-    Writes outputs to an excel spreadsheet.
+    """Writes outputs to an excel spreadsheet.
 
     Parameters
     ----------
     filename : str
         Name of the output file.
-
     results : dict
         Outputs to write.
     """
@@ -127,8 +122,7 @@ def _finalise_excel(filename: str, results: dict) -> None:
 
 
 def _get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
-    """
-    Converts a list of SimpleTable objects to a list of DataFrame objects.
+    """Converts a list of SimpleTable objects to a list of DataFrame objects.
 
     Parameters
     ----------
@@ -148,8 +142,7 @@ def _get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
 
 
 def _agg_threshold(vals: Series) -> bool:
-    """
-    Aggregation function that returns whether the number of contributors is
+    """Aggregation function that returns whether the number of contributors is
     below a threshold.
 
     Parameters
@@ -166,8 +159,7 @@ def _agg_threshold(vals: Series) -> bool:
 
 
 def _agg_negative(vals: Series) -> bool:
-    """
-    Aggregation function that returns whether any values are negative.
+    """Aggregation function that returns whether any values are negative.
 
     Parameters
     ----------
@@ -183,8 +175,7 @@ def _agg_negative(vals: Series) -> bool:
 
 
 def _agg_p_percent(vals: Series) -> bool:
-    """
-    Aggregation function that returns whether the p percent rule is violated.
+    """Aggregation function that returns whether the p percent rule is violated.
 
     That is, the uncertainty (as a fraction) of the estimate that the second
     highest respondent can make of the highest value. Assuming there are n
@@ -210,9 +201,8 @@ def _agg_p_percent(vals: Series) -> bool:
 
 
 def _agg_nk(vals: Series) -> bool:
-    """
-    Aggregation function that returns whether the top n items account for more
-    than k percent of the total.
+    """Aggregation function that returns whether the top n items account for
+    more than k percent of the total.
 
     Parameters
     ----------
@@ -235,14 +225,12 @@ def _agg_nk(vals: Series) -> bool:
 def _apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]
 ) -> tuple[DataFrame, DataFrame]:
-    """
-    Applies suppression to a table.
+    """Applies suppression to a table.
 
     Parameters
     ----------
     table : DataFrame
         Table to apply suppression.
-
     masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
 
@@ -250,7 +238,6 @@ def _apply_suppression(
     ----------
     DataFrame
         Table to output with any suppression applied.
-
     DataFrame
         Table with outcomes of suppression checks.
     """
@@ -273,8 +260,7 @@ def _apply_suppression(
 
 
 def _get_summary(masks: dict[str, DataFrame]) -> str:
-    """
-    Returns a string summarising the suppression masks.
+    """Returns a string summarising the suppression masks.
 
     Parameters
     ----------
@@ -303,8 +289,7 @@ def _get_summary(masks: dict[str, DataFrame]) -> str:
 
 
 def _get_aggfunc(aggfunc: str | None) -> Callable | None:
-    """
-    Checks whether an aggregation function is allowed and returns the
+    """Checks whether an aggregation function is allowed and returns the
     appropriate function.
 
     Parameters
@@ -330,9 +315,8 @@ def _get_aggfunc(aggfunc: str | None) -> Callable | None:
 def _get_aggfuncs(
     aggfuncs: str | list[str] | None,
 ) -> Callable | list[Callable] | None:
-    """
-    Checks whether a list of aggregation functions is allowed and returns the
-    appropriate functions.
+    """Checks whether a list of aggregation functions is allowed and returns
+    the appropriate functions.
 
     Parameters
     ----------
@@ -366,18 +350,15 @@ def _get_aggfuncs(
 
 
 def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
-    """
-    Add a column of ones to an array.
+    """Add a column of ones to an array.
 
     Parameters
     ----------
     data : array_like
         A column-ordered design matrix.
-
     prepend : bool
         If true, the constant is in the first column. Else the constant is
         appended (last column).
-
     has_constant: str {'raise', 'add', 'skip'}
         Behavior if data already has a constant. The default will return
         data without adding another constant. If 'raise', will raise an
@@ -399,18 +380,14 @@ def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
 
 
 class ACRO:
-    """
-    ACRO: Automatic Checking of Research Outputs.
+    """ACRO: Automatic Checking of Research Outputs.
 
     Attributes
     ----------
-
     config : dict
         Safe parameters and their values.
-
     results : dict
         The current outputs including the results of checks.
-
     output_id : int
         The next identifier to be assigned to an output.
 
@@ -423,8 +400,7 @@ class ACRO:
     """
 
     def __init__(self, config: str = "default") -> None:
-        """
-        Constructs a new ACRO object and reads parameters from config.
+        """Constructs a new ACRO object and reads parameters from config.
 
         Parameters
         ----------
@@ -450,8 +426,7 @@ class ACRO:
         SAFE_NK_K = self.config["safe_nk_k"]
 
     def finalise(self, filename: str = "results.json") -> dict:
-        """
-        Creates a results file for checking.
+        """Creates a results file for checking.
 
         Parameters
         ----------
@@ -477,20 +452,16 @@ class ACRO:
     def __add_output(
         self, command: str, summary: str, outcome: DataFrame, output: list[DataFrame]
     ) -> None:
-        """
-        Adds an output to the results dictionary.
+        """Adds an output to the results dictionary.
 
         Parameters
         ----------
         command : str
             String representation of the operation performed.
-
         summary : str
             String summarising the ACRO checks.
-
         outcome : DataFrame
             DataFrame describing the details of ACRO checks.
-
         output : list[DataFrame]
             List of output DataFrames.
         """
@@ -505,8 +476,7 @@ class ACRO:
         logger.debug("__add_output(): %s", name)
 
     def remove_output(self, key: str) -> None:
-        """
-        Removes an output from the results dictionary.
+        """Removes an output from the results dictionary.
 
         Parameters
         ----------
@@ -520,9 +490,7 @@ class ACRO:
             warnings.warn(f"unable to remove {key}, key not found")
 
     def print_outputs(self) -> None:
-        """
-        Prints the current results dictionary.
-        """
+        """Prints the current results dictionary."""
         logger.debug("print_outputs()")
         for name, result in self.results.items():
             print(f"{name}:")
@@ -543,42 +511,32 @@ class ACRO:
         dropna: bool = True,
         normalize=False,
     ) -> DataFrame:
-        """
-        Compute a simple cross tabulation of two (or more) factors.
-        By default, computes a frequency table of the factors unless an
-        array of values and an aggregation function are passed.
+        """Compute a simple cross tabulation of two (or more) factors.  By
+        default, computes a frequency table of the factors unless an array of
+        values and an aggregation function are passed.
 
         Parameters
         ----------
         index : array-like, Series, or list of arrays/Series
             Values to group by in the rows.
-
         columns : array-like, Series, or list of arrays/Series
             Values to group by in the columns.
-
         values : array-like, optional
             Array of values to aggregate according to the factors.
             Requires `aggfunc` be specified.
-
         rownames : sequence, default None
             If passed, must match number of row arrays passed.
-
         colnames : sequence, default None
             If passed, must match number of column arrays passed.
-
         aggfunc : str, optional
             If specified, requires `values` be specified as well.
-
         margins : bool, default False
             Add row/column margins (subtotals).
-
         margins_name : str, default 'All'
             Name of the row/column that will contain the totals
             when margins is True.
-
         dropna : bool, default True
             Do not include columns whose entries are all NaN.
-
         normalize : bool, {'all', 'index', 'columns'}, or {0,1}, default False
             Normalize by dividing all values by the sum of values.
             - If passed 'all' or `True`, will normalize over all values.
@@ -660,8 +618,7 @@ class ACRO:
         observed: bool = False,
         sort: bool = True,
     ) -> DataFrame:
-        """
-        Create a spreadsheet-style pivot table as a DataFrame.
+        """Create a spreadsheet-style pivot table as a DataFrame.
 
         The levels in the pivot table will be stored in MultiIndex objects
         (hierarchical indexes) on the index and columns of the result
@@ -671,46 +628,36 @@ class ACRO:
         ----------
         data : DataFrame
             The DataFrame to operate on.
-
         values : column, optional
             Column to aggregate, optional.
-
         index : column, Grouper, array, or list of the previous
             If an array is passed, it must be the same length as the data. The
             list can contain any of the other types (except list). Keys to
             group by on the pivot table index. If an array is passed, it is
             being used as the same manner as column values.
-
         columns : column, Grouper, array, or list of the previous
             If an array is passed, it must be the same length as the data. The
             list can contain any of the other types (except list). Keys to
             group by on the pivot table column. If an array is passed, it is
             being used as the same manner as column values.
-
         aggfunc : str | list[str], default 'mean'
             If list of strings passed, the resulting pivot table will have
             hierarchical columns whose top level are the function names
             (inferred from the function objects themselves).
-
         fill_value : scalar, default None
             Value to replace missing values with (in the resulting pivot table,
             after aggregation).
-
         margins : bool, default False
             Add all row / columns (e.g. for subtotal / grand totals).
-
         dropna : bool, default True
             Do not include columns whose entries are all NaN.
-
         margins_name : str, default 'All'
             Name of the row / column that will contain the totals when margins
             is True.
-
         observed : bool, default False
             This only applies if any of the groupers are Categoricals. If True:
             only show observed values for categorical groupers. If False: show
             all values for categorical groupers.
-
         sort : bool, default True
             Specifies if the result should be sorted.
 
@@ -767,14 +714,12 @@ class ACRO:
         return table
 
     def __check_model_dof(self, name: str, model) -> str:
-        """
-        Check model DOF.
+        """Check model DOF.
 
         Parameters
         ----------
         name : str
             The name of the model.
-
         model
             A statsmodels model.
 
@@ -796,30 +741,25 @@ class ACRO:
     def ols(  # pylint: disable=too-many-locals
         self, endog, exog=None, missing="none", hasconst=None, **kwargs
     ) -> RegressionResultsWrapper:
-        """
-        Fits Ordinary Least Squares Regression.
+        """Fits Ordinary Least Squares Regression.
 
         Parameters
         ----------
         endog : array_like
             A 1-d endogenous response variable. The dependent variable.
-
         exog : array_like
             A nobs x k array where `nobs` is the number of observations and `k`
             is the number of regressors. An intercept is not included by
             default and should be added by the user.
-
         missing : str
             Available options are 'none', 'drop', and 'raise'. If 'none', no
             nan checking is done. If 'drop', any observations with nans are
             dropped. If 'raise', an error is raised. Default is 'none'.
-
         hasconst : None or bool
             Indicates whether the RHS includes a user-supplied constant. If
             True, a constant is not checked for and k_constant is set to 1 and
             all result statistics are calculated as if a constant is present.
             If False, a constant is not checked for and k_constant is set to 0.
-
         **kwargs
             Extra arguments that are used to set model properties when using
             the formula interface.
@@ -847,24 +787,20 @@ class ACRO:
         missing: str | None = None,
         check_rank: bool = True,
     ) -> BinaryResultsWrapper:
-        """
-        FIts Logit model.
+        """Fits Logit model.
 
         Parameters
         ----------
         endog : array_like
             A 1-d endogenous response variable. The dependent variable.
-
         exog : array_like
             A nobs x k array where nobs is the number of observations and k is
             the number of regressors. An intercept is not included by default
             and should be added by the user.
-
         missing : str | None
             Available options are ‘none’, ‘drop’, and ‘raise’. If ‘none’, no
             nan checking is done. If ‘drop’, any observations with nans are
             dropped. If ‘raise’, an error is raised. Default is ‘none’.
-
         check_rank : bool
             Check exog rank to determine model degrees of freedom. Default is
             True. Setting to False reduces model initialization time when
@@ -893,24 +829,20 @@ class ACRO:
         missing: str | None = None,
         check_rank: bool = True,
     ) -> BinaryResultsWrapper:
-        """
-        Fits Probit model.
+        """Fits Probit model.
 
         Parameters
         ----------
         endog : array_like
             A 1-d endogenous response variable. The dependent variable.
-
         exog : array_like
             A nobs x k array where nobs is the number of observations and k is
             the number of regressors. An intercept is not included by default
             and should be added by the user.
-
         missing : str | None
             Available options are ‘none’, ‘drop’, and ‘raise’. If ‘none’, no
             nan checking is done. If ‘drop’, any observations with nans are
             dropped. If ‘raise’, an error is raised. Default is ‘none’.
-
         check_rank : bool
             Check exog rank to determine model degrees of freedom. Default is
             True. Setting to False reduces model initialization time when

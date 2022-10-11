@@ -239,6 +239,23 @@
     <span class="k">return</span> <span class="n">vals</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">THRESHOLD</span>
 
 
+<span class="k">def</span> <span class="nf">_agg_negative</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aggregation function that returns whether any values are negative.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vals : Series</span>
+<span class="sd">        Series to check for negative values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bool</span>
+<span class="sd">        Whether a negative value was found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">vals</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">0</span>
+
+
 <span class="k">def</span> <span class="nf">_agg_p_percent</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Aggregation function that returns whether the p percent rule is violated.</span>
@@ -315,10 +332,16 @@
     <span class="n">safe_df</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">()</span><span class="o">.</span><span class="n">reindex_like</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
     <span class="n">outcome_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">safe_df</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
-        <span class="n">outcome_df</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;; &quot;</span>
-    <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">})</span>
+    <span class="c1"># don&#39;t apply suppression if negatives are present</span>
+    <span class="k">if</span> <span class="s2">&quot;negative&quot;</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span>
+        <span class="n">outcome_df</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;negative&quot;</span>
+    <span class="c1"># apply suppression masks</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">safe_df</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
+            <span class="n">outcome_df</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">]</span> <span class="o">+=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;; &quot;</span>
+        <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">})</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;outcome_df:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">outcome_df</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">safe_df</span><span class="p">,</span> <span class="n">outcome_df</span>
 
@@ -338,14 +361,17 @@
 <span class="sd">        Summary of the suppression masks.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">n_cells</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">n_cells</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">summary</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">n_cells</span><span class="si">}</span><span class="s2"> cells suppressed; &quot;</span>
-    <span class="k">if</span> <span class="n">summary</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;pass&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;negative&quot;</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;review; negative values found&quot;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;fail; &quot;</span> <span class="o">+</span> <span class="n">summary</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">n_cells</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">n_cells</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">summary</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">n_cells</span><span class="si">}</span><span class="s2"> cells suppressed; &quot;</span>
+        <span class="k">if</span> <span class="n">summary</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;pass&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;fail; &quot;</span> <span class="o">+</span> <span class="n">summary</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_get_summary(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">summary</span>
 
@@ -572,7 +598,11 @@
 <span class="sd">        Prints the current results dictionary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;print_outputs()&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span></div>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ACRO.crosstab"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.crosstab">[docs]</a>    <span class="k">def</span> <span class="nf">crosstab</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments,too-many-locals</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -674,12 +704,16 @@
         <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_values</span>
 
         <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># check for negative values -- currently unsupported</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_negative</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">negative</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">negative</span>
             <span class="c1"># p-percent check</span>
-            <span class="n">p_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_p_percent</span><span class="p">)</span>
-            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_values</span>
+            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+                <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_p_percent</span>
+            <span class="p">)</span>
             <span class="c1"># nk values check</span>
-            <span class="n">nk_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_nk</span><span class="p">)</span>
-            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nk_values</span>
+            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_nk</span><span class="p">)</span>
 
         <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">_apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="n">_get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
@@ -784,19 +818,22 @@
         <span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># threshold check</span>
-        <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_threshold</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_threshold</span>
-        <span class="n">t_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg_check</span><span class="p">)</span>
+        <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_threshold</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_threshold</span>
+        <span class="n">t_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span><span class="p">)</span>
         <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_values</span>
 
         <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># check for negative values -- currently unsupported</span>
+            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_negative</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_negative</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">negative</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">negative</span>
             <span class="c1"># p-percent check</span>
-            <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_p_percent</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_p_percent</span>
-            <span class="n">p_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg_check</span><span class="p">)</span>
-            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_values</span>
+            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_p_percent</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_p_percent</span>
+            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span><span class="p">)</span>
             <span class="c1"># nk values check</span>
-            <span class="n">agg_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_nk</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_nk</span>
-            <span class="n">nk_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg_check</span><span class="p">)</span>
-            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nk_values</span>
+            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_nk</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_nk</span>
+            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span><span class="p">)</span>
 
         <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">_apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="n">_get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>

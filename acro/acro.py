@@ -46,7 +46,7 @@ def _get_command(stack_list: list[tuple]) -> str:
          outermost call on the stack.
 
     Returns
-    ----------
+    -------
     str
         The calling source line.
     """
@@ -130,7 +130,7 @@ def _get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
         Results from fitting statsmodel.
 
     Returns
-    ----------
+    -------
     list[DataFrame]
         List of DataFrame objects.
     """
@@ -151,7 +151,7 @@ def _agg_threshold(vals: Series) -> bool:
         Series to calculate the p percent value.
 
     Returns
-    ----------
+    -------
     bool
         Whether the threshold rule is violated.
     """
@@ -167,7 +167,7 @@ def _agg_negative(vals: Series) -> bool:
         Series to check for negative values.
 
     Returns
-    ----------
+    -------
     bool
         Whether a negative value was found.
     """
@@ -189,7 +189,7 @@ def _agg_p_percent(vals: Series) -> bool:
         Series to calculate the p percent value.
 
     Returns
-    ----------
+    -------
     bool
         whether the p percent rule is violated.
     """
@@ -210,7 +210,7 @@ def _agg_nk(vals: Series) -> bool:
         Series to calculate the nk value.
 
     Returns
-    ----------
+    -------
     bool
         Whether the nk rule is violated.
     """
@@ -235,7 +235,7 @@ def _apply_suppression(
         Dictionary of tables specifying suppression masks for application.
 
     Returns
-    ----------
+    -------
     DataFrame
         Table to output with any suppression applied.
     DataFrame
@@ -268,7 +268,7 @@ def _get_summary(masks: dict[str, DataFrame]) -> str:
         Dictionary of tables specifying suppression masks for application.
 
     Returns
-    ----------
+    -------
     str
         Summary of the suppression masks.
     """
@@ -298,7 +298,7 @@ def _get_aggfunc(aggfunc: str | None) -> Callable | None:
         Name of the aggregation function to apply.
 
     Returns
-    ----------
+    -------
     Callable | None
         The aggregation function to apply.
     """
@@ -324,7 +324,7 @@ def _get_aggfuncs(
         List of names of the aggregation functions to apply.
 
     Returns
-    ----------
+    -------
     Callable | list[Callable] | None
         The aggregation functions to apply.
     """
@@ -366,13 +366,13 @@ def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
         column of 1s if a constant column is present.
 
     Returns
-    ----------
+    -------
     array_like
         The original values with a constant (column of ones) as the first
         or last column. Returned value type depends on input type.
 
     Notes
-    ----------
+    -----
     When the input is a pandas Series or DataFrame, the added column's name
     is 'const'.
     """
@@ -434,7 +434,7 @@ class ACRO:
             Name of the output file. Valid extensions: {.json, .xlsx}.
 
         Returns
-        ----------
+        -------
         dict
             Dictionary representation of the output.
         """

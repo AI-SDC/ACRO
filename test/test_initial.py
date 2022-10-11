@@ -122,3 +122,18 @@ def test_finalise_excel():
     correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
     assert load_data.iloc[0, 0] == "Command"
     assert load_data.iloc[0, 1] == correct_cell
+
+
+def test_output_removal():
+    """Output removal test."""
+    data = get_data()
+    acro = ACRO()
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.remove_output("output_0")
+    output: dict = acro.finalise()
+    correct_summary: str = "fail; threshold: 6 cells suppressed; "
+    assert "output_0" not in output
+    assert "output_1" in output
+    assert output["output_1"]["summary"] == correct_summary

@@ -81,6 +81,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
+<span class="kn">import</span> <span class="nn">statsmodels.formula.api</span> <span class="k">as</span> <span class="nn">smf</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">Series</span>
 <span class="kn">from</span> <span class="nn">statsmodels.discrete.discrete_model</span> <span class="kn">import</span> <span class="n">BinaryResultsWrapper</span>
@@ -841,6 +842,63 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ols()&quot;</span><span class="p">)</span>
         <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="o">=</span><span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">hasconst</span><span class="o">=</span><span class="n">hasconst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
+            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="ACRO.olsr"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.olsr">[docs]</a>    <span class="k">def</span> <span class="nf">olsr</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-locals,keyword-arg-before-vararg</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegressionResultsWrapper</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Fits Ordinary Least Squares Regression from a formula and dataframe.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        formula : str or generic Formula object</span>
+<span class="sd">            The formula specifying the model.</span>
+<span class="sd">        data : array_like</span>
+<span class="sd">            The data for the model. See Notes.</span>
+<span class="sd">        subset : array_like</span>
+<span class="sd">            An array-like object of booleans, integers, or index values that</span>
+<span class="sd">            indicate the subset of df to use in the model. Assumes df is a</span>
+<span class="sd">            `pandas.DataFrame`.</span>
+<span class="sd">        drop_cols : array_like</span>
+<span class="sd">            Columns to drop from the design matrix.  Cannot be used to</span>
+<span class="sd">            drop terms involving categoricals.</span>
+<span class="sd">        *args</span>
+<span class="sd">            Additional positional argument that are passed to the model.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            These are passed to the model with one exception. The</span>
+<span class="sd">            ``eval_env`` keyword is passed to patsy. It can be either a</span>
+<span class="sd">            :class:`patsy:patsy.EvalEnvironment` object or an integer</span>
+<span class="sd">            indicating the depth of the namespace to use. For example, the</span>
+<span class="sd">            default ``eval_env=0`` uses the calling namespace. If you wish</span>
+<span class="sd">            to use a &quot;clean&quot; environment set ``eval_env=-1``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        RegressionResultsWrapper</span>
+<span class="sd">            Results.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        data must define __getitem__ with the keys in the formula terms</span>
+<span class="sd">        args and kwargs are passed on to the model instantiation. E.g.,</span>
+<span class="sd">        a numpy structured or rec array, a dictionary, or a pandas DataFrame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;olsr()&quot;</span><span class="p">)</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="n">stack</span><span class="p">())</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">smf</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span>
+            <span class="n">formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">subset</span><span class="o">=</span><span class="n">subset</span><span class="p">,</span>
+            <span class="n">drop_cols</span><span class="o">=</span><span class="n">drop_cols</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>

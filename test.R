@@ -10,21 +10,17 @@ head(data)
 df = data[, c("inc_activity", "inc_grants", "inc_donations", "total_costs")]
 # drop rows with missing values
 df = df[complete.cases(df), ]
-# prepare exog, endog
-y = unlist(data.frame(y=df[c(1)]))
-x = data.frame(x1=df[c(2)], x2=df[c(3)], x3=df[c(4)])
 # fit linear model
-model = lm(y ~ ., data=x)
+model = lm(formula="inc_activity ~ inc_grants + inc_donations + total_costs", data=df)
 summary(model)
 
 #' ACRO linear model
-acro_lm <- function(y, x)
+acro_lm <- function(formula, data)
 {
   acro = import("acro")
   ac = acro$ACRO()
-  x = acro$add_constant(x)
-  model = ac$ols(y, x)
+  model = ac$olsr(formula, data)
   model$summary()
 }
 
-acro_lm(y, x)
+acro_lm(formula="inc_activity ~ inc_grants + inc_donations + total_costs", data=df)

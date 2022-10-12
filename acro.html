@@ -114,20 +114,26 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.logit" title="acro.acro.ACRO.logit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
 <td><p>Fits Logit model.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.ols" title="acro.acro.ACRO.ols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ols</span></code></a>(endog[, exog, missing, hasconst])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.logitr" title="acro.acro.ACRO.logitr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logitr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
+<td><p>Fits Logit model from a formula and dataframe.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.ols" title="acro.acro.ACRO.ols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ols</span></code></a>(endog[, exog, missing, hasconst])</p></td>
 <td><p>Fits Ordinary Least Squares Regression.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.olsr" title="acro.acro.ACRO.olsr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">olsr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.olsr" title="acro.acro.ACRO.olsr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">olsr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
 <td><p>Fits Ordinary Least Squares Regression from a formula and dataframe.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.pivot_table" title="acro.acro.ACRO.pivot_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pivot_table</span></code></a>(data[, values, index, columns, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.pivot_table" title="acro.acro.ACRO.pivot_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pivot_table</span></code></a>(data[, values, index, columns, ...])</p></td>
 <td><p>Create a spreadsheet-style pivot table as a DataFrame.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.print_outputs" title="acro.acro.ACRO.print_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_outputs</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.print_outputs" title="acro.acro.ACRO.print_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_outputs</span></code></a>()</p></td>
 <td><p>Prints the current results dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.probit" title="acro.acro.ACRO.probit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.probit" title="acro.acro.ACRO.probit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
 <td><p>Fits Probit model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.probitr" title="acro.acro.ACRO.probitr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probitr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
+<td><p>Fits Probit model from a formula and dataframe.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.remove_output" title="acro.acro.ACRO.remove_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_output</span></code></a>(key)</p></td>
 <td><p>Removes an output from the results dictionary.</p></td>
@@ -230,6 +236,48 @@ exog.shape[1] is large.</p>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.logitr">
+<span class="sig-name descname"><span class="pre">logitr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RegressionResultsWrapper</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.logitr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.logitr" title="Permalink to this definition"></a></dt>
+<dd><p>Fits Logit model from a formula and dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>formula</strong><span class="classifier">str or generic Formula object</span></dt><dd><p>The formula specifying the model.</p>
+</dd>
+<dt><strong>data</strong><span class="classifier">array_like</span></dt><dd><p>The data for the model. See Notes.</p>
+</dd>
+<dt><strong>subset</strong><span class="classifier">array_like</span></dt><dd><p>An array-like object of booleans, integers, or index values that
+indicate the subset of df to use in the model. Assumes df is a
+<cite>pandas.DataFrame</cite>.</p>
+</dd>
+<dt><strong>drop_cols</strong><span class="classifier">array_like</span></dt><dd><p>Columns to drop from the design matrix.  Cannot be used to
+drop terms involving categoricals.</p>
+</dd>
+<dt><strong>*args</strong></dt><dd><p>Additional positional argument that are passed to the model.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>These are passed to the model with one exception. The
+<code class="docutils literal notranslate"><span class="pre">eval_env</span></code> keyword is passed to patsy. It can be either a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">patsy:patsy.EvalEnvironment</span></code> object or an integer
+indicating the depth of the namespace to use. For example, the
+default <code class="docutils literal notranslate"><span class="pre">eval_env=0</span></code> uses the calling namespace. If you wish
+to use a “clean” environment set <code class="docutils literal notranslate"><span class="pre">eval_env=-1</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>RegressionResultsWrapper</dt><dd><p>Results.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>data must define __getitem__ with the keys in the formula terms
+args and kwargs are passed on to the model instantiation. E.g.,
+a numpy structured or rec array, a dictionary, or a pandas DataFrame.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -401,6 +449,48 @@ exog.shape[1] is large.</p>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.probitr">
+<span class="sig-name descname"><span class="pre">probitr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RegressionResultsWrapper</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.probitr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.probitr" title="Permalink to this definition"></a></dt>
+<dd><p>Fits Probit model from a formula and dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>formula</strong><span class="classifier">str or generic Formula object</span></dt><dd><p>The formula specifying the model.</p>
+</dd>
+<dt><strong>data</strong><span class="classifier">array_like</span></dt><dd><p>The data for the model. See Notes.</p>
+</dd>
+<dt><strong>subset</strong><span class="classifier">array_like</span></dt><dd><p>An array-like object of booleans, integers, or index values that
+indicate the subset of df to use in the model. Assumes df is a
+<cite>pandas.DataFrame</cite>.</p>
+</dd>
+<dt><strong>drop_cols</strong><span class="classifier">array_like</span></dt><dd><p>Columns to drop from the design matrix.  Cannot be used to
+drop terms involving categoricals.</p>
+</dd>
+<dt><strong>*args</strong></dt><dd><p>Additional positional argument that are passed to the model.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>These are passed to the model with one exception. The
+<code class="docutils literal notranslate"><span class="pre">eval_env</span></code> keyword is passed to patsy. It can be either a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">patsy:patsy.EvalEnvironment</span></code> object or an integer
+indicating the depth of the namespace to use. For example, the
+default <code class="docutils literal notranslate"><span class="pre">eval_env=0</span></code> uses the calling namespace. If you wish
+to use a “clean” environment set <code class="docutils literal notranslate"><span class="pre">eval_env=-1</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>RegressionResultsWrapper</dt><dd><p>Results.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>data must define __getitem__ with the keys in the formula terms
+args and kwargs are passed on to the model instantiation. E.g.,
+a numpy structured or rec array, a dictionary, or a pandas DataFrame.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -1,4 +1,6 @@
-
-
+---
+# Configuration file for https://app.codecov.io
 ignore:
   - "test/*"
+  - "setup.py"
+...

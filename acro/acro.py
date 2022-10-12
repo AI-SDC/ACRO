@@ -12,6 +12,7 @@ from inspect import getframeinfo, stack
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+import statsmodels.formula.api as smf
 import yaml
 from pandas import DataFrame, Series
 from statsmodels.discrete.discrete_model import BinaryResultsWrapper
@@ -772,6 +773,63 @@ class ACRO:
         logger.debug("ols()")
         command: str = _get_command(stack())
         model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
+        results = model.fit()
+        summary = self.__check_model_dof("ols", model)
+        tables: list[SimpleTable] = results.summary().tables
+        self.__add_output(
+            command, summary, DataFrame(), _get_summary_dataframes(tables)
+        )
+        return results
+
+    def olsr(  # pylint: disable=too-many-locals,keyword-arg-before-vararg
+        self, formula, data, subset=None, drop_cols=None, *args, **kwargs
+    ) -> RegressionResultsWrapper:
+        """Fits Ordinary Least Squares Regression from a formula and dataframe.
+
+        Parameters
+        ----------
+        formula : str or generic Formula object
+            The formula specifying the model.
+        data : array_like
+            The data for the model. See Notes.
+        subset : array_like
+            An array-like object of booleans, integers, or index values that
+            indicate the subset of df to use in the model. Assumes df is a
+            `pandas.DataFrame`.
+        drop_cols : array_like
+            Columns to drop from the design matrix.  Cannot be used to
+            drop terms involving categoricals.
+        *args
+            Additional positional argument that are passed to the model.
+        **kwargs
+            These are passed to the model with one exception. The
+            ``eval_env`` keyword is passed to patsy. It can be either a
+            :class:`patsy:patsy.EvalEnvironment` object or an integer
+            indicating the depth of the namespace to use. For example, the
+            default ``eval_env=0`` uses the calling namespace. If you wish
+            to use a "clean" environment set ``eval_env=-1``.
+
+        Returns
+        -------
+        RegressionResultsWrapper
+            Results.
+
+        Notes
+        -----
+        data must define __getitem__ with the keys in the formula terms
+        args and kwargs are passed on to the model instantiation. E.g.,
+        a numpy structured or rec array, a dictionary, or a pandas DataFrame.
+        """
+        logger.debug("olsr()")
+        command: str = _get_command(stack())
+        model = smf.ols(
+            formula=formula,
+            data=data,
+            subset=subset,
+            drop_cols=drop_cols,
+            *args,
+            **kwargs,
+        )
         results = model.fit()
         summary = self.__check_model_dof("ols", model)
         tables: list[SimpleTable] = results.summary().tables

@@ -75,15 +75,24 @@ def test_ols():
     acro = ACRO()
     new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
     new_df = new_df.dropna()
+    # OLS
     endog = new_df.inc_activity
     exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
     exog = add_constant(exog)
     results = acro.ols(endog, exog)
     assert results.df_resid == 807
     assert results.rsquared == pytest.approx(0.894, 0.001)
+    # OLSR
+    results = acro.olsr(
+        formula="inc_activity ~ inc_grants + inc_donations + total_costs", data=new_df
+    )
+    assert results.df_resid == 807
+    assert results.rsquared == pytest.approx(0.894, 0.001)
+    # Finalise
     output: dict = acro.finalise()
     correct_summary: str = "pass; dof=807.0 >= 10"
     assert output["output_0"]["summary"] == correct_summary
+    assert output["output_1"]["summary"] == correct_summary
 
 
 def test_probit_logit():

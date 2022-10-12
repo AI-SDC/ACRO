@@ -20,6 +20,7 @@ setup(
     packages=find_packages(),
     package_data={"acro": ["default.yaml"]},
     python_requires=">=3.10",
+    install_requires=["lxml", "numpy", "openpyxl", "pandas", "PyYAML", "statsmodels"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

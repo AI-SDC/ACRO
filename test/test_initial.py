@@ -107,16 +107,36 @@ def test_probit_logit():
     endog.name = "survivor"
     exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
     exog = add_constant(exog)
+    # Probit
     results = acro.probit(endog, exog)
     assert results.df_resid == 806
     assert results.prsquared == pytest.approx(0.208, 0.01)
+    # Logit
     results = acro.logit(endog, exog)
     assert results.df_resid == 806
     assert results.prsquared == pytest.approx(0.214, 0.01)
+    # ProbitR
+    new_df["survivor"] = new_df["survivor"].astype("category").cat.codes
+    results = acro.probitr(
+        formula="survivor ~ inc_activity + inc_grants + inc_donations + total_costs",
+        data=new_df,
+    )
+    assert results.df_resid == 806
+    assert results.prsquared == pytest.approx(0.208, 0.01)
+    # LogitR
+    results = acro.logitr(
+        formula="survivor ~ inc_activity + inc_grants + inc_donations + total_costs",
+        data=new_df,
+    )
+    assert results.df_resid == 806
+    assert results.prsquared == pytest.approx(0.214, 0.01)
+    # Finalise
     output: dict = acro.finalise()
     correct_summary: str = "pass; dof=806.0 >= 10"
     assert output["output_0"]["summary"] == correct_summary
     assert output["output_1"]["summary"] == correct_summary
+    assert output["output_2"]["summary"] == correct_summary
+    assert output["output_3"]["summary"] == correct_summary
 
 
 def test_finalise_excel():

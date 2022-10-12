@@ -1,4 +1,4 @@
-"""ACRO: Automatic Checking of Research Outputs."""
+"""ACRO: Automatic Checking of Research Outputs."""  # pylint:disable=too-many-lines
 
 import copy
 import json
@@ -831,7 +831,7 @@ class ACRO:
             **kwargs,
         )
         results = model.fit()
-        summary = self.__check_model_dof("ols", model)
+        summary = self.__check_model_dof("olsr", model)
         tables: list[SimpleTable] = results.summary().tables
         self.__add_output(
             command, summary, DataFrame(), _get_summary_dataframes(tables)
@@ -880,6 +880,63 @@ class ACRO:
         )
         return results
 
+    def logitr(  # pylint: disable=too-many-locals,keyword-arg-before-vararg
+        self, formula, data, subset=None, drop_cols=None, *args, **kwargs
+    ) -> RegressionResultsWrapper:
+        """Fits Logit model from a formula and dataframe.
+
+        Parameters
+        ----------
+        formula : str or generic Formula object
+            The formula specifying the model.
+        data : array_like
+            The data for the model. See Notes.
+        subset : array_like
+            An array-like object of booleans, integers, or index values that
+            indicate the subset of df to use in the model. Assumes df is a
+            `pandas.DataFrame`.
+        drop_cols : array_like
+            Columns to drop from the design matrix.  Cannot be used to
+            drop terms involving categoricals.
+        *args
+            Additional positional argument that are passed to the model.
+        **kwargs
+            These are passed to the model with one exception. The
+            ``eval_env`` keyword is passed to patsy. It can be either a
+            :class:`patsy:patsy.EvalEnvironment` object or an integer
+            indicating the depth of the namespace to use. For example, the
+            default ``eval_env=0`` uses the calling namespace. If you wish
+            to use a "clean" environment set ``eval_env=-1``.
+
+        Returns
+        -------
+        RegressionResultsWrapper
+            Results.
+
+        Notes
+        -----
+        data must define __getitem__ with the keys in the formula terms
+        args and kwargs are passed on to the model instantiation. E.g.,
+        a numpy structured or rec array, a dictionary, or a pandas DataFrame.
+        """
+        logger.debug("logitr()")
+        command: str = _get_command(stack())
+        model = smf.logit(
+            formula=formula,
+            data=data,
+            subset=subset,
+            drop_cols=drop_cols,
+            *args,
+            **kwargs,
+        )
+        results = model.fit()
+        summary = self.__check_model_dof("logitr", model)
+        tables: list[SimpleTable] = results.summary().tables
+        self.__add_output(
+            command, summary, DataFrame(), _get_summary_dataframes(tables)
+        )
+        return results
+
     def probit(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         endog,
@@ -916,6 +973,63 @@ class ACRO:
         model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
         summary = self.__check_model_dof("probit", model)
+        tables: list[SimpleTable] = results.summary().tables
+        self.__add_output(
+            command, summary, DataFrame(), _get_summary_dataframes(tables)
+        )
+        return results
+
+    def probitr(  # pylint: disable=too-many-locals,keyword-arg-before-vararg
+        self, formula, data, subset=None, drop_cols=None, *args, **kwargs
+    ) -> RegressionResultsWrapper:
+        """Fits Probit model from a formula and dataframe.
+
+        Parameters
+        ----------
+        formula : str or generic Formula object
+            The formula specifying the model.
+        data : array_like
+            The data for the model. See Notes.
+        subset : array_like
+            An array-like object of booleans, integers, or index values that
+            indicate the subset of df to use in the model. Assumes df is a
+            `pandas.DataFrame`.
+        drop_cols : array_like
+            Columns to drop from the design matrix.  Cannot be used to
+            drop terms involving categoricals.
+        *args
+            Additional positional argument that are passed to the model.
+        **kwargs
+            These are passed to the model with one exception. The
+            ``eval_env`` keyword is passed to patsy. It can be either a
+            :class:`patsy:patsy.EvalEnvironment` object or an integer
+            indicating the depth of the namespace to use. For example, the
+            default ``eval_env=0`` uses the calling namespace. If you wish
+            to use a "clean" environment set ``eval_env=-1``.
+
+        Returns
+        -------
+        RegressionResultsWrapper
+            Results.
+
+        Notes
+        -----
+        data must define __getitem__ with the keys in the formula terms
+        args and kwargs are passed on to the model instantiation. E.g.,
+        a numpy structured or rec array, a dictionary, or a pandas DataFrame.
+        """
+        logger.debug("probitr()")
+        command: str = _get_command(stack())
+        model = smf.probit(
+            formula=formula,
+            data=data,
+            subset=subset,
+            drop_cols=drop_cols,
+            *args,
+            **kwargs,
+        )
+        results = model.fit()
+        summary = self.__check_model_dof("probitr", model)
         tables: list[SimpleTable] = results.summary().tables
         self.__add_output(
             command, summary, DataFrame(), _get_summary_dataframes(tables)

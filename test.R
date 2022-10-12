@@ -17,11 +17,14 @@ x = data.frame(x1=df[c(2)], x2=df[c(3)], x3=df[c(4)])
 model = lm(y ~ ., data=x)
 summary(model)
 
-# import acro
-acro = import("acro")
-ac = acro$ACRO()
-# data frames are auto-converted to pandas dataframes
-x = acro$add_constant(x)
-# fit linear model
-model = ac$ols(y, x)
-model$summary()
+#' ACRO linear model
+acro_lm <- function(y, x)
+{
+  acro = import("acro")
+  ac = acro$ACRO()
+  x = acro$add_constant(x)
+  model = ac$ols(y, x)
+  model$summary()
+}
+
+acro_lm(y, x)

@@ -49,7 +49,7 @@ summary(model)
 acro_glm(formula=formula, data=df, family="logit")
 
 # fit probit model
-model = glm(formula=formula, data=df, family = binomial(link="probit"))
+model = glm(formula=formula, data=df, family=binomial(link="probit"))
 summary(model)
 
 # ACRO probit model

@@ -1,54 +1,69 @@
-# install.packages("reticulate")
-# install.packages("haven")
-# install.packages("dplyr")
+---
+title: "ACRO R Notebook"
+output: html_notebook
+---
 
+## Import Libraries
+
+```{r}
 library(haven)   # read .dta
 library(dplyr)   # pivot tables
 source("acro.R")  # ACRO
+```
 
-#############
-# Load data #
-#############
+## Load Data
 
+```{r}
 data = read_dta("data/test_data.dta")
+data = as.data.frame(data)
+data = zap_labels(data)  # Stata data files include extra labels
+
 head(data)
+```
 
-################
-# Pivot Tables #
-################
+## Pivot Tables
 
-df = as.data.frame(data)
-df = zap_labels(df)
+### ACRO Pivot Table
 
+```{r}
 index = "grant_type"
 values = "inc_grants"
 aggfunc = list("mean", "std")
 
-# ACRO pivot table
-table = acro_pivot_table(df, index=index, values=values, aggfunc=aggfunc)
+table = acro_pivot_table(data, index=index, values=values, aggfunc=aggfunc)
+```
 
-#################
-# Linear Models #
-#################
+```{r}
+table
+```
 
+## Linear Models
+
+```{r}
 # extract relevant columns
 df = data[, c("inc_activity", "inc_grants", "inc_donations", "total_costs")]
 # drop rows with missing values
 df = df[complete.cases(df), ]
 # formula to fit
 formula = "inc_activity ~ inc_grants + inc_donations + total_costs"
+```
 
-# fit linear model
+### Fit Linear Model
+
+```{r}
 model = lm(formula=formula, data=df)
 summary(model)
+```
 
-# ACRO linear model
+### ACRO Linear Model
+
+```{r}
 acro_lm(formula=formula, data=df)
+```
 
-#######################
-# Logit/Probit Models #
-#######################
+## Logit/Probit Models
 
+```{r}
 # extract relevant columns
 df = data[, c("survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs")]
 # drop rows with missing values
@@ -57,23 +72,36 @@ df = df[complete.cases(df), ]
 df = transform(df, survivor = as.numeric(survivor))
 # formula to fit
 formula = "survivor ~ inc_activity + inc_grants + inc_donations + total_costs"
+```
 
-# fit logit model
+### Fit Logit Model
+
+```{r}
 model = glm(formula=formula, data=df, family=binomial(link="logit"))
 summary(model)
+```
 
-# ACRO logit model
+### ACRO Logit Model
+
+```{r}
 acro_glm(formula=formula, data=df, family="logit")
+```
 
-# fit probit model
+### Fit Probit Model
+
+```{r}
 model = glm(formula=formula, data=df, family=binomial(link="probit"))
 summary(model)
+```
 
-# ACRO probit model
+### ACRO Probit Model
+
+```{r}
 acro_glm(formula=formula, data=df, family="probit")
+```
 
-############
-# Finalise #
-############
+## Finalise
 
+```{r}
 acro_finalise("r_test.xlsx")
+```

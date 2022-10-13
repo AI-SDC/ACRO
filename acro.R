@@ -15,15 +15,15 @@ acro_glm = function(formula, data, family)
 {
     "ACRO logit/probit model"
     if (family == "logit") {
-      model = ac$logitr(formula, data)
+        model = ac$logitr(formula, data)
     } else {
-      model = ac$probitr(formula, data)
+        model = ac$probitr(formula, data)
     }
     model$summary()
 }
 
 acro_finalise = function(filename)
 {
-  "Write outputs to file"
-  ac$finalise(filename)
+    "Write outputs to file"
+    ac$finalise(filename)
 }

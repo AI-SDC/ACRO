@@ -31,6 +31,8 @@ extensions = [
 
 exclude_patterns = []
 
+html_static_path = ["_static"]
+
 # -- Options for HTML output -------------------------------------------------
 
 html_theme = "sphinx_rtd_theme"

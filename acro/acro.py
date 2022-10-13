@@ -36,11 +36,13 @@ SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
 
 
-def _get_command(stack_list: list[tuple]) -> str:
+def _get_command(default: str, stack_list: list[tuple]) -> str:
     """Returns the calling source line as a string.
 
     Parameters
     ----------
+    default : str
+        Default string to return if unable to extract the stack.
     stack_list : list[tuple]
          A list of frame records for the caller's stack. The first entry in the
          returned list represents the caller; the last entry represents the
@@ -51,7 +53,7 @@ def _get_command(stack_list: list[tuple]) -> str:
     str
         The calling source line.
     """
-    command: str = ""
+    command: str = default
     if len(stack_list) > 1:
         code = getframeinfo(stack_list[1][0]).code_context
         if code is not None:
@@ -551,7 +553,7 @@ class ACRO:
             Cross tabulation of the data.
         """
         logger.debug("crosstab()")
-        command: str = _get_command(stack())
+        command: str = _get_command("crosstab()", stack())
 
         aggfunc = _get_aggfunc(aggfunc)  # convert string to function
 
@@ -668,7 +670,7 @@ class ACRO:
             Cross tabulation of the data.
         """
         logger.debug("pivot_table()")
-        command: str = _get_command(stack())
+        command: str = _get_command("pivot_table()", stack())
 
         aggfunc = _get_aggfuncs(aggfunc)  # convert string(s) to function(s)
         n_agg: int = 1 if not isinstance(aggfunc, list) else len(aggfunc)
@@ -771,7 +773,7 @@ class ACRO:
             Results.
         """
         logger.debug("ols()")
-        command: str = _get_command(stack())
+        command: str = _get_command("ols()", stack())
         model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
         results = model.fit()
         summary = self.__check_model_dof("ols", model)
@@ -821,7 +823,7 @@ class ACRO:
         a numpy structured or rec array, a dictionary, or a pandas DataFrame.
         """
         logger.debug("olsr()")
-        command: str = _get_command(stack())
+        command: str = _get_command("olsr()", stack())
         model = smf.ols(
             formula=formula,
             data=data,
@@ -870,7 +872,7 @@ class ACRO:
             Results.
         """
         logger.debug("logit()")
-        command: str = _get_command(stack())
+        command: str = _get_command("logit()", stack())
         model = sm.Logit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
         summary = self.__check_model_dof("logit", model)
@@ -920,7 +922,7 @@ class ACRO:
         a numpy structured or rec array, a dictionary, or a pandas DataFrame.
         """
         logger.debug("logitr()")
-        command: str = _get_command(stack())
+        command: str = _get_command("logitr()", stack())
         model = smf.logit(
             formula=formula,
             data=data,
@@ -969,7 +971,7 @@ class ACRO:
             Results.
         """
         logger.debug("probit()")
-        command: str = _get_command(stack())
+        command: str = _get_command("probit()", stack())
         model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
         summary = self.__check_model_dof("probit", model)
@@ -1019,7 +1021,7 @@ class ACRO:
         a numpy structured or rec array, a dictionary, or a pandas DataFrame.
         """
         logger.debug("probitr()")
-        command: str = _get_command(stack())
+        command: str = _get_command("probitr()", stack())
         model = smf.probit(
             formula=formula,
             data=data,

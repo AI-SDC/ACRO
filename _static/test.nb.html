@@ -1838,7 +1838,7 @@ DEBUG:acro:_apply_suppression()
 DEBUG:acro:outcome_df:
                  mean        std
            inc_grants inc_grants
-grant_type                      
+grant_type
 G                  ok         ok
 N                  ok         ok
 R                  ok         ok
@@ -1892,12 +1892,12 @@ Call:
 lm(formula = formula, data = df)
 
 Residuals:
-      Min        1Q    Median        3Q       Max 
--74574494   -633828   -396927   -259424 277064227 
+      Min        1Q    Median        3Q       Max
+-74574494   -633828   -396927   -259424 277064227
 
 Coefficients:
-                Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)    3.994e+05  5.313e+05   0.752    0.452    
+                Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)    3.994e+05  5.313e+05   0.752    0.452
 inc_grants    -8.856e-01  2.451e-02 -36.128   &lt;2e-16 ***
 inc_donations -6.659e-01  1.628e-02 -40.905   &lt;2e-16 ***
 total_costs    8.318e-01  1.054e-02  78.937   &lt;2e-16 ***
@@ -1905,7 +1905,7 @@ total_costs    8.318e-01  1.054e-02  78.937   &lt;2e-16 ***
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Residual standard error: 13990000 on 807 degrees of freedom
-Multiple R-squared:  0.8943,    Adjusted R-squared:  0.8939 
+Multiple R-squared:  0.8943,    Adjusted R-squared:  0.8939
 F-statistic:  2276 on 3 and 807 DF,  p-value: &lt; 2.2e-16</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
@@ -1927,7 +1927,7 @@ DEBUG:acro:__add_output(): output_1</code></pre>
 <!-- rnb-output-begin eyJkYXRhIjoiPGNsYXNzICdzdGF0c21vZGVscy5pb2xpYi5zdW1tYXJ5LlN1bW1hcnknPlxuXCJcIlwiXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgT0xTIFJlZ3Jlc3Npb24gUmVzdWx0cyAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuRGVwLiBWYXJpYWJsZTogICAgICAgICAgIGluY19hY3Rpdml0eSAgIFItc3F1YXJlZDogICAgICAgICAgICAgICAgICAgICAgIDAuODk0XG5Nb2RlbDogICAgICAgICAgICAgICAgICAgICAgICAgICAgT0xTICAgQWRqLiBSLXNxdWFyZWQ6ICAgICAgICAgICAgICAgICAgMC44OTRcbk1ldGhvZDogICAgICAgICAgICAgICAgIExlYXN0IFNxdWFyZXMgICBGLXN0YXRpc3RpYzogICAgICAgICAgICAgICAgICAgICAyMjc2LlxuRGF0ZTogICAgICAgICAgICAgICAgVGh1LCAxMyBPY3QgMjAyMiAgIFByb2IgKEYtc3RhdGlzdGljKTogICAgICAgICAgICAgICAwLjAwXG5UaW1lOiAgICAgICAgICAgICAgICAgICAgICAgIDE2OjQ3OjIxICAgTG9nLUxpa2VsaWhvb2Q6ICAgICAgICAgICAgICAgIC0xNDQ5My5cbk5vLiBPYnNlcnZhdGlvbnM6ICAgICAgICAgICAgICAgICA4MTEgICBBSUM6ICAgICAgICAgICAgICAgICAgICAgICAgIDIuODk5ZSswNFxuRGYgUmVzaWR1YWxzOiAgICAgICAgICAgICAgICAgICAgIDgwNyAgIEJJQzogICAgICAgICAgICAgICAgICAgICAgICAgMi45MDFlKzA0XG5EZiBNb2RlbDogICAgICAgICAgICAgICAgICAgICAgICAgICAzICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbkNvdmFyaWFuY2UgVHlwZTogICAgICAgICAgICBub25yb2J1c3QgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG4gICAgICAgICAgICAgICAgICAgIGNvZWYgICAgc3RkIGVyciAgICAgICAgICB0ICAgICAgUD58dHwgICAgICBbMC4wMjUgICAgICAwLjk3NV1cbi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuSW50ZXJjZXB0ICAgICAgMy45OTRlKzA1ICAgNS4zMWUrMDUgICAgICAwLjc1MiAgICAgIDAuNDUyICAgLTYuNDNlKzA1ICAgIDEuNDRlKzA2XG5pbmNfZ3JhbnRzICAgICAgIC0wLjg4NTYgICAgICAwLjAyNSAgICAtMzYuMTI4ICAgICAgMC4wMDAgICAgICAtMC45MzQgICAgICAtMC44MzdcbmluY19kb25hdGlvbnMgICAgLTAuNjY1OSAgICAgIDAuMDE2ICAgIC00MC45MDUgICAgICAwLjAwMCAgICAgIC0wLjY5OCAgICAgIC0wLjYzNFxudG90YWxfY29zdHMgICAgICAgMC44MzE4ICAgICAgMC4wMTEgICAgIDc4LjkzNyAgICAgIDAuMDAwICAgICAgIDAuODExICAgICAgIDAuODUzXG49PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbk9tbmlidXM6ICAgICAgICAgICAgICAgICAgICAgMTM0OC42MzcgICBEdXJiaW4tV2F0c29uOiAgICAgICAgICAgICAgICAgICAxLjQyNFxuUHJvYihPbW5pYnVzKTogICAgICAgICAgICAgICAgICAwLjAwMCAgIEphcnF1ZS1CZXJhIChKQik6ICAgICAgICAgIDEyOTgxNjEuNTQ2XG5Ta2V3OiAgICAgICAgICAgICAgICAgICAgICAgICAgMTAuMDI2ICAgUHJvYihKQik6ICAgICAgICAgICAgICAgICAgICAgICAgIDAuMDBcbkt1cnRvc2lzOiAgICAgICAgICAgICAgICAgICAgIDE5Ny45NzMgICBDb25kLiBOby4gICAgICAgICAgICAgICAgICAgICAxLjA2ZSswOFxuPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5cbk5vdGVzOlxuWzFdIFN0YW5kYXJkIEVycm9ycyBhc3N1bWUgdGhhdCB0aGUgY292YXJpYW5jZSBtYXRyaXggb2YgdGhlIGVycm9ycyBpcyBjb3JyZWN0bHkgc3BlY2lmaWVkLlxuWzJdIFRoZSBjb25kaXRpb24gbnVtYmVyIGlzIGxhcmdlLCAxLjA2ZSswOC4gVGhpcyBtaWdodCBpbmRpY2F0ZSB0aGF0IHRoZXJlIGFyZVxuc3Ryb25nIG11bHRpY29sbGluZWFyaXR5IG9yIG90aGVyIG51bWVyaWNhbCBwcm9ibGVtcy5cblwiXCJcIlxuIn0= -->
 <pre><code>&lt;class &#39;statsmodels.iolib.summary.Summary&#39;&gt;
 &quot;&quot;&quot;
-                            OLS Regression Results                            
+                            OLS Regression Results
 ==============================================================================
 Dep. Variable:           inc_activity   R-squared:                       0.894
 Model:                            OLS   Adj. R-squared:                  0.894
@@ -1936,8 +1936,8 @@ Date:                Thu, 13 Oct 2022   Prob (F-statistic):               0.00
 Time:                        16:47:21   Log-Likelihood:                -14493.
 No. Observations:                 811   AIC:                         2.899e+04
 Df Residuals:                     807   BIC:                         2.901e+04
-Df Model:                           3                                         
-Covariance Type:            nonrobust                                         
+Df Model:                           3
+Covariance Type:            nonrobust
 =================================================================================
                     coef    std err          t      P&gt;|t|      [0.025      0.975]
 ---------------------------------------------------------------------------------
@@ -1996,17 +1996,17 @@ formula = &quot;survivor ~ inc_activity + inc_grants + inc_donations + total_cos
 Call:
 glm(formula = formula, family = binomial(link = &quot;logit&quot;), data = df)
 
-Deviance Residuals: 
-    Min       1Q   Median       3Q      Max  
--3.5701  -1.1953   0.0203   1.0948   1.3215  
+Deviance Residuals:
+    Min       1Q   Median       3Q      Max
+-3.5701  -1.1953   0.0203   1.0948   1.3215
 
 Coefficients:
-                Estimate Std. Error z value Pr(&gt;|z|)   
-(Intercept)    4.364e-02  9.091e-02   0.480  0.63123   
-inc_activity   5.790e-08  1.129e-07   0.513  0.60807   
-inc_grants    -7.977e-08  1.045e-07  -0.764  0.44513   
+                Estimate Std. Error z value Pr(&gt;|z|)
+(Intercept)    4.364e-02  9.091e-02   0.480  0.63123
+inc_activity   5.790e-08  1.129e-07   0.513  0.60807
+inc_grants    -7.977e-08  1.045e-07  -0.764  0.44513
 inc_donations  3.638e-07  1.312e-07   2.772  0.00557 **
-total_costs    5.649e-08  1.002e-07   0.564  0.57273   
+total_costs    5.649e-08  1.002e-07   0.564  0.57273
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -2037,7 +2037,7 @@ DEBUG:acro:__add_output(): output_2</code></pre>
 <!-- rnb-output-begin eyJkYXRhIjoiPGNsYXNzICdzdGF0c21vZGVscy5pb2xpYi5zdW1tYXJ5LlN1bW1hcnknPlxuXCJcIlwiXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBMb2dpdCBSZWdyZXNzaW9uIFJlc3VsdHMgICAgICAgICAgICAgICAgICAgICAgICAgICBcbj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuRGVwLiBWYXJpYWJsZTogICAgICAgICAgICAgICBzdXJ2aXZvciAgIE5vLiBPYnNlcnZhdGlvbnM6ICAgICAgICAgICAgICAgICAgODExXG5Nb2RlbDogICAgICAgICAgICAgICAgICAgICAgICAgIExvZ2l0ICAgRGYgUmVzaWR1YWxzOiAgICAgICAgICAgICAgICAgICAgICA4MDZcbk1ldGhvZDogICAgICAgICAgICAgICAgICAgICAgICAgICBNTEUgICBEZiBNb2RlbDogICAgICAgICAgICAgICAgICAgICAgICAgICAgNFxuRGF0ZTogICAgICAgICAgICAgICAgVGh1LCAxMyBPY3QgMjAyMiAgIFBzZXVkbyBSLXNxdS46ICAgICAgICAgICAgICAgICAgMC4yMTQwXG5UaW1lOiAgICAgICAgICAgICAgICAgICAgICAgIDE2OjQ3OjIyICAgTG9nLUxpa2VsaWhvb2Q6ICAgICAgICAgICAgICAgIC00MDAuNDZcbmNvbnZlcmdlZDogICAgICAgICAgICAgICAgICAgICAgIFRydWUgICBMTC1OdWxsOiAgICAgICAgICAgICAgICAgICAgICAgLTUwOS41MFxuQ292YXJpYW5jZSBUeXBlOiAgICAgICAgICAgIG5vbnJvYnVzdCAgIExMUiBwLXZhbHVlOiAgICAgICAgICAgICAgICAgNC44NjJlLTQ2XG49PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbiAgICAgICAgICAgICAgICAgICAgY29lZiAgICBzdGQgZXJyICAgICAgICAgIHogICAgICBQPnx6fCAgICAgIFswLjAyNSAgICAgIDAuOTc1XVxuLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG5JbnRlcmNlcHQgICAgICAgICAwLjA0MzYgICAgICAwLjA5MSAgICAgIDAuNDgwICAgICAgMC42MzEgICAgICAtMC4xMzUgICAgICAgMC4yMjJcbmluY19hY3Rpdml0eSAgICA1Ljc5ZS0wOCAgIDEuMTNlLTA3ICAgICAgMC41MTMgICAgICAwLjYwOCAgIC0xLjYzZS0wNyAgICAyLjc5ZS0wN1xuaW5jX2dyYW50cyAgICAtNy45NzdlLTA4ICAgMS4wNGUtMDcgICAgIC0wLjc2NCAgICAgIDAuNDQ1ICAgLTIuODVlLTA3ICAgIDEuMjVlLTA3XG5pbmNfZG9uYXRpb25zICAzLjYzOGUtMDcgICAxLjMxZS0wNyAgICAgIDIuNzcyICAgICAgMC4wMDYgICAgMS4wN2UtMDcgICAgNi4yMWUtMDdcbnRvdGFsX2Nvc3RzICAgIDUuNjQ5ZS0wOCAgICAgIDFlLTA3ICAgICAgMC41NjQgICAgICAwLjU3MyAgICAtMS40ZS0wNyAgICAyLjUzZS0wN1xuPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5cblBvc3NpYmx5IGNvbXBsZXRlIHF1YXNpLXNlcGFyYXRpb246IEEgZnJhY3Rpb24gMC4xNyBvZiBvYnNlcnZhdGlvbnMgY2FuIGJlXG5wZXJmZWN0bHkgcHJlZGljdGVkLiBUaGlzIG1pZ2h0IGluZGljYXRlIHRoYXQgdGhlcmUgaXMgY29tcGxldGVcbnF1YXNpLXNlcGFyYXRpb24uIEluIHRoaXMgY2FzZSBzb21lIHBhcmFtZXRlcnMgd2lsbCBub3QgYmUgaWRlbnRpZmllZC5cblwiXCJcIlxuT3B0aW1pemF0aW9uIHRlcm1pbmF0ZWQgc3VjY2Vzc2Z1bGx5LlxuICAgICAgICAgQ3VycmVudCBmdW5jdGlvbiB2YWx1ZTogMC40OTM3ODhcbiAgICAgICAgIEl0ZXJhdGlvbnMgMTJcbiJ9 -->
 <pre><code>&lt;class &#39;statsmodels.iolib.summary.Summary&#39;&gt;
 &quot;&quot;&quot;
-                           Logit Regression Results                           
+                           Logit Regression Results
 ==============================================================================
 Dep. Variable:               survivor   No. Observations:                  811
 Model:                          Logit   Df Residuals:                      806
@@ -2085,17 +2085,17 @@ Optimization terminated successfully.
 Call:
 glm(formula = formula, family = binomial(link = &quot;probit&quot;), data = df)
 
-Deviance Residuals: 
-    Min       1Q   Median       3Q      Max  
--3.3475  -1.2076   0.0083   1.1017   1.2938  
+Deviance Residuals:
+    Min       1Q   Median       3Q      Max
+-3.3475  -1.2076   0.0083   1.1017   1.2938
 
 Coefficients:
-                Estimate Std. Error z value Pr(&gt;|z|)  
-(Intercept)    4.454e-02  5.628e-02   0.791   0.4288  
-inc_activity   4.114e-08  6.351e-08   0.648   0.5171  
-inc_grants    -4.297e-08  5.884e-08  -0.730   0.4652  
+                Estimate Std. Error z value Pr(&gt;|z|)
+(Intercept)    4.454e-02  5.628e-02   0.791   0.4288
+inc_activity   4.114e-08  6.351e-08   0.648   0.5171
+inc_grants    -4.297e-08  5.884e-08  -0.730   0.4652
 inc_donations  1.358e-07  6.392e-08   2.124   0.0337 *
-total_costs    3.473e-08  5.657e-08   0.614   0.5393  
+total_costs    3.473e-08  5.657e-08   0.614   0.5393
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -2126,7 +2126,7 @@ DEBUG:acro:__add_output(): output_3</code></pre>
 <!-- rnb-output-begin eyJkYXRhIjoiPGNsYXNzICdzdGF0c21vZGVscy5pb2xpYi5zdW1tYXJ5LlN1bW1hcnknPlxuXCJcIlwiXG4gICAgICAgICAgICAgICAgICAgICAgICAgIFByb2JpdCBSZWdyZXNzaW9uIFJlc3VsdHMgICAgICAgICAgICAgICAgICAgICAgICAgICBcbj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuRGVwLiBWYXJpYWJsZTogICAgICAgICAgICAgICBzdXJ2aXZvciAgIE5vLiBPYnNlcnZhdGlvbnM6ICAgICAgICAgICAgICAgICAgODExXG5Nb2RlbDogICAgICAgICAgICAgICAgICAgICAgICAgUHJvYml0ICAgRGYgUmVzaWR1YWxzOiAgICAgICAgICAgICAgICAgICAgICA4MDZcbk1ldGhvZDogICAgICAgICAgICAgICAgICAgICAgICAgICBNTEUgICBEZiBNb2RlbDogICAgICAgICAgICAgICAgICAgICAgICAgICAgNFxuRGF0ZTogICAgICAgICAgICAgICAgVGh1LCAxMyBPY3QgMjAyMiAgIFBzZXVkbyBSLXNxdS46ICAgICAgICAgICAgICAgICAgMC4yMDg2XG5UaW1lOiAgICAgICAgICAgICAgICAgICAgICAgIDE2OjQ3OjIyICAgTG9nLUxpa2VsaWhvb2Q6ICAgICAgICAgICAgICAgIC00MDMuMjRcbmNvbnZlcmdlZDogICAgICAgICAgICAgICAgICAgICAgIFRydWUgICBMTC1OdWxsOiAgICAgICAgICAgICAgICAgICAgICAgLTUwOS41MFxuQ292YXJpYW5jZSBUeXBlOiAgICAgICAgICAgIG5vbnJvYnVzdCAgIExMUiBwLXZhbHVlOiAgICAgICAgICAgICAgICAgNy42NDhlLTQ1XG49PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbiAgICAgICAgICAgICAgICAgICAgY29lZiAgICBzdGQgZXJyICAgICAgICAgIHogICAgICBQPnx6fCAgICAgIFswLjAyNSAgICAgIDAuOTc1XVxuLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG5JbnRlcmNlcHQgICAgICAgICAwLjA0NDUgICAgICAwLjA1NiAgICAgIDAuNzkxICAgICAgMC40MjkgICAgICAtMC4wNjYgICAgICAgMC4xNTVcbmluY19hY3Rpdml0eSAgIDQuMTE0ZS0wOCAgIDYuNTRlLTA4ICAgICAgMC42MjkgICAgICAwLjUzMCAgIC04LjcxZS0wOCAgICAxLjY5ZS0wN1xuaW5jX2dyYW50cyAgICAtNC4yOTdlLTA4ICAgNi4wN2UtMDggICAgIC0wLjcwOCAgICAgIDAuNDc5ICAgLTEuNjJlLTA3ICAgICA3LjZlLTA4XG5pbmNfZG9uYXRpb25zICAxLjM1N2UtMDcgICA2LjI3ZS0wOCAgICAgIDIuMTYzICAgICAgMC4wMzEgICAgMS4yOGUtMDggICAgMi41OWUtMDdcbnRvdGFsX2Nvc3RzICAgIDMuNDczZS0wOCAgIDUuODRlLTA4ICAgICAgMC41OTUgICAgICAwLjU1MiAgIC03Ljk2ZS0wOCAgICAxLjQ5ZS0wN1xuPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5cblBvc3NpYmx5IGNvbXBsZXRlIHF1YXNpLXNlcGFyYXRpb246IEEgZnJhY3Rpb24gMC4xOCBvZiBvYnNlcnZhdGlvbnMgY2FuIGJlXG5wZXJmZWN0bHkgcHJlZGljdGVkLiBUaGlzIG1pZ2h0IGluZGljYXRlIHRoYXQgdGhlcmUgaXMgY29tcGxldGVcbnF1YXNpLXNlcGFyYXRpb24uIEluIHRoaXMgY2FzZSBzb21lIHBhcmFtZXRlcnMgd2lsbCBub3QgYmUgaWRlbnRpZmllZC5cblwiXCJcIlxuT3B0aW1pemF0aW9uIHRlcm1pbmF0ZWQgc3VjY2Vzc2Z1bGx5LlxuICAgICAgICAgQ3VycmVudCBmdW5jdGlvbiB2YWx1ZTogMC40OTcyMThcbiAgICAgICAgIEl0ZXJhdGlvbnMgMTBcbiJ9 -->
 <pre><code>&lt;class &#39;statsmodels.iolib.summary.Summary&#39;&gt;
 &quot;&quot;&quot;
-                          Probit Regression Results                           
+                          Probit Regression Results
 ==============================================================================
 Dep. Variable:               survivor   No. Observations:                  811
 Model:                         Probit   Df Residuals:                      806
@@ -2179,7 +2179,7 @@ $output_0$summary
 $output_0$outcome
                  mean        std
            inc_grants inc_grants
-grant_type                      
+grant_type
 G                  ok         ok
 N                  ok         ok
 R                  ok         ok
@@ -2189,7 +2189,7 @@ $output_0$output
 $output_0$output[[1]]
                     mean           std
               inc_grants    inc_grants
-grant_type                            
+grant_type
 G           1.141279e+07  2.283220e+07
 N           1.344319e+05  1.988737e+05
 R           8.098502e+06  3.204495e+07
@@ -2212,7 +2212,7 @@ Index: []
 $output_1$output
 $output_1$output[[1]]
                        inc_activity           R-squared:      0.894
-Dep. Variable:                                                     
+Dep. Variable:
 Model:                          OLS      Adj. R-squared:      0.894
 Method:               Least Squares         F-statistic:   2276.000
 Date:              Thu, 13 Oct 2022  Prob (F-statistic):      0.000
@@ -2231,7 +2231,7 @@ total_costs         0.8318       0.011  78.937  0.000       0.811        0.853
 
 $output_1$output[[3]]
                 1348.637     Durbin-Watson:         1.424
-Omnibus:                                                 
+Omnibus:
 Prob(Omnibus):     0.000  Jarque-Bera (JB):  1.298162e+06
 Skew:             10.026          Prob(JB):  0.000000e+00
 Kurtosis:        197.973          Cond. No.  1.060000e+08
@@ -2253,7 +2253,7 @@ Index: []
 $output_2$output
 $output_2$output[[1]]
                           survivor No. Observations:           811
-Dep. Variable:                                                    
+Dep. Variable:
 Model:                       Logit     Df Residuals:  8.060000e+02
 Method:                        MLE         Df Model:  4.000000e+00
 Date:             Thu, 13 Oct 2022    Pseudo R-squ.:  2.140000e-01
@@ -2288,7 +2288,7 @@ Index: []
 $output_3$output
 $output_3$output[[1]]
                           survivor No. Observations:           811
-Dep. Variable:                                                    
+Dep. Variable:
 Model:                      Probit     Df Residuals:  8.060000e+02
 Method:                        MLE         Df Model:  4.000000e+00
 Date:             Thu, 13 Oct 2022    Pseudo R-squ.:  2.086000e-01

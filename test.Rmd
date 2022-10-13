@@ -1,7 +1,14 @@
 ---
 title: "ACRO R Notebook"
-output: rmarkdown::github_document
+output: github_document
 ---
+
+```{r}
+# install.packages("rmarkdown")
+# install.packages("haven")
+# install.packages("dplyr")
+# install.packages("reticulate")
+```
 
 ## Import Libraries
 

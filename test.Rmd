@@ -1,6 +1,6 @@
 ---
 title: "ACRO R Notebook"
-output: html_notebook
+output: rmarkdown::github_document
 ---
 
 ## Import Libraries

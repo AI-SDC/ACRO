@@ -1,13 +1,9 @@
 ---
 title: "ACRO R Notebook"
-output:
-  github_document:
-    toc: true
-    toc_depth: 2
+output: html_notebook
 ---
 
 ```{r}
-# install.packages("rmarkdown")
 # install.packages("haven")
 # install.packages("dplyr")
 # install.packages("reticulate")

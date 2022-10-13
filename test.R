@@ -25,7 +25,7 @@ values = "inc_grants"
 aggfunc = list("mean", "std")
 
 # ACRO pivot table
-acro_pivot_table(df, index=index, values=values, aggfunc=aggfunc)
+table = acro_pivot_table(df, index=index, values=values, aggfunc=aggfunc)
 
 #################
 # Linear Models #

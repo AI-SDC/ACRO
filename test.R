@@ -1,7 +1,10 @@
 # install.packages("reticulate")
 # install.packages("haven")
-library(haven)  # read .dta
-source("acro.R")
+# install.packages("dplyr")
+
+library(haven)   # read .dta
+library(dplyr)   # pivot tables
+source("acro.R")  # ACRO
 
 #############
 # Load data #
@@ -9,6 +12,20 @@ source("acro.R")
 
 data = read_dta("data/test_data.dta")
 head(data)
+
+################
+# Pivot Tables #
+################
+
+df = as.data.frame(data)
+df = zap_labels(df)
+
+index = "grant_type"
+values = "inc_grants"
+aggfunc = list("mean", "std")
+
+# ACRO pivot table
+acro_pivot_table(df, index=index, values=values, aggfunc=aggfunc)
 
 #################
 # Linear Models #

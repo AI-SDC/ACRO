@@ -4,6 +4,13 @@ library(reticulate)  # import Python modules
 acro = import("acro")
 ac = acro$ACRO()
 
+acro_pivot_table = function(data, index, values, aggfunc)
+{
+    "ACRO pivot table"
+    table = ac$pivot_table(data, index=index, values=values, aggfunc=aggfunc)
+    return(table)
+}
+
 acro_lm = function(formula, data)
 {
     "ACRO linear model"

@@ -42,14 +42,14 @@ df = transform(df, survivor = as.numeric(survivor))
 formula = "survivor ~ inc_activity + inc_grants + inc_donations + total_costs"
 
 # fit logit model
-model = glm(formula=formula, data=df, family = binomial(link = "logit"))
+model = glm(formula=formula, data=df, family=binomial(link="logit"))
 summary(model)
 
 # ACRO logit model
 acro_glm(formula=formula, data=df, family="logit")
 
 # fit probit model
-model = glm(formula=formula, data=df, family = binomial(link = "probit"))
+model = glm(formula=formula, data=df, family = binomial(link="probit"))
 summary(model)
 
 # ACRO probit model

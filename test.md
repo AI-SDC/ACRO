@@ -1,6 +1,15 @@
 ACRO R Notebook
 ================
 
+- <a href="#import-libraries" id="toc-import-libraries">Import
+  Libraries</a>
+- <a href="#load-data" id="toc-load-data">Load Data</a>
+- <a href="#pivot-tables" id="toc-pivot-tables">Pivot Tables</a>
+- <a href="#linear-models" id="toc-linear-models">Linear Models</a>
+- <a href="#logitprobit-models" id="toc-logitprobit-models">Logit/Probit
+  Models</a>
+- <a href="#finalise" id="toc-finalise">Finalise</a>
+
 ``` r
 # install.packages("rmarkdown")
 # install.packages("haven")
@@ -193,7 +202,7 @@ acro_lm(formula=formula, data=df)
     ## Model:                            OLS   Adj. R-squared:                  0.894
     ## Method:                 Least Squares   F-statistic:                     2276.
     ## Date:                Thu, 13 Oct 2022   Prob (F-statistic):               0.00
-    ## Time:                        16:30:34   Log-Likelihood:                -14493.
+    ## Time:                        16:35:02   Log-Likelihood:                -14493.
     ## No. Observations:                 811   AIC:                         2.899e+04
     ## Df Residuals:                     807   BIC:                         2.901e+04
     ## Df Model:                           3
@@ -283,7 +292,7 @@ acro_glm(formula=formula, data=df, family="logit")
     ## Model:                          Logit   Df Residuals:                      806
     ## Method:                           MLE   Df Model:                            4
     ## Date:                Thu, 13 Oct 2022   Pseudo R-squ.:                  0.2140
-    ## Time:                        16:30:34   Log-Likelihood:                -400.46
+    ## Time:                        16:35:02   Log-Likelihood:                -400.46
     ## converged:                       True   LL-Null:                       -509.50
     ## Covariance Type:            nonrobust   LLR p-value:                 4.862e-46
     ## =================================================================================
@@ -353,7 +362,7 @@ acro_glm(formula=formula, data=df, family="probit")
     ## Model:                         Probit   Df Residuals:                      806
     ## Method:                           MLE   Df Model:                            4
     ## Date:                Thu, 13 Oct 2022   Pseudo R-squ.:                  0.2086
-    ## Time:                        16:30:34   Log-Likelihood:                -403.24
+    ## Time:                        16:35:02   Log-Likelihood:                -403.24
     ## converged:                       True   LL-Null:                       -509.50
     ## Covariance Type:            nonrobust   LLR p-value:                 7.648e-45
     ## =================================================================================
@@ -424,7 +433,7 @@ acro_finalise("r_test.xlsx")
     ## Model:                          OLS      Adj. R-squared:      0.894
     ## Method:               Least Squares         F-statistic:   2276.000
     ## Date:              Thu, 13 Oct 2022  Prob (F-statistic):      0.000
-    ## Time:                      16:30:33      Log-Likelihood: -14493.000
+    ## Time:                      16:35:02      Log-Likelihood: -14493.000
     ## No. Observations:               811                 AIC:  28990.000
     ## Df Residuals:                   807                 BIC:  29010.000
     ## Df Model:                         3                  NaN        NaN
@@ -465,7 +474,7 @@ acro_finalise("r_test.xlsx")
     ## Model:                       Logit     Df Residuals:  8.060000e+02
     ## Method:                        MLE         Df Model:  4.000000e+00
     ## Date:             Thu, 13 Oct 2022    Pseudo R-squ.:  2.140000e-01
-    ## Time:                     16:30:34   Log-Likelihood: -4.004600e+02
+    ## Time:                     16:35:02   Log-Likelihood: -4.004600e+02
     ## converged:                    True          LL-Null: -5.095000e+02
     ## Covariance Type:         nonrobust      LLR p-value:  4.862000e-46
     ##
@@ -500,7 +509,7 @@ acro_finalise("r_test.xlsx")
     ## Model:                      Probit     Df Residuals:  8.060000e+02
     ## Method:                        MLE         Df Model:  4.000000e+00
     ## Date:             Thu, 13 Oct 2022    Pseudo R-squ.:  2.086000e-01
-    ## Time:                     16:30:34   Log-Likelihood: -4.032400e+02
+    ## Time:                     16:35:02   Log-Likelihood: -4.032400e+02
     ## converged:                    True          LL-Null: -5.095000e+02
     ## Covariance Type:         nonrobust      LLR p-value:  7.648000e-45
     ##

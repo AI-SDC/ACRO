@@ -38,6 +38,10 @@ aggfunc = "mean"
 table = acro_crosstab(index, columns, values=values, aggfunc=aggfunc)
 ```
 
+```{r}
+table
+```
+
 ### ACRO Pivot Table
 
 ```{r}

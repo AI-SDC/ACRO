@@ -236,7 +236,7 @@ def apply_suppression(
     DataFrame
         Table with outcomes of suppression checks.
     """
-    logger.debug("_apply_suppression()")
+    logger.debug("apply_suppression()")
     safe_df = table.copy()
     outcome_df = DataFrame().reindex_like(table)
     outcome_df.fillna("", inplace=True)
@@ -247,8 +247,8 @@ def apply_suppression(
     # apply suppression masks
     else:
         for name, mask in masks.items():
-            safe_df[mask.values] = np.NaN
-            outcome_df[mask.values] += name + "; "
+            safe_df[mask] = np.NaN
+            outcome_df[mask] += name + "; "
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", outcome_df)
     return safe_df, outcome_df

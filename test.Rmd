@@ -5,7 +5,6 @@ output: html_notebook
 
 ```{r}
 # install.packages("haven")
-# install.packages("dplyr")
 # install.packages("reticulate")
 ```
 
@@ -13,7 +12,6 @@ output: html_notebook
 
 ```{r}
 library(haven)   # read .dta
-library(dplyr)   # pivot tables
 source("acro.R")  # ACRO
 ```
 
@@ -27,7 +25,18 @@ data = zap_labels(data)  # Stata data files include extra labels
 head(data)
 ```
 
-## Pivot Tables
+## Tables
+
+### ACRO Crosstab
+
+```{r}
+index = data[, c("year")]
+columns = data[, c("grant_type")]
+values = data[, c("inc_grants")]
+aggfunc = "mean"
+
+table = acro_crosstab(index, columns, values=values, aggfunc=aggfunc)
+```
 
 ### ACRO Pivot Table
 
@@ -36,7 +45,7 @@ index = "grant_type"
 values = "inc_grants"
 aggfunc = list("mean", "std")
 
-table = acro_pivot_table(data, index=index, values=values, aggfunc=aggfunc)
+table = acro_pivot_table(data, values=values, index=index, aggfunc=aggfunc)
 ```
 
 ```{r}

@@ -4,10 +4,17 @@ library(reticulate)  # import Python modules
 acro = import("acro")
 ac = acro$ACRO()
 
-acro_pivot_table = function(data, index, values, aggfunc)
+acro_crosstab = function(index, columns, values=NULL, aggfunc=NULL)
+{
+    "ACRO crosstab"
+    table = ac$crosstab(index, columns, values=values, aggfunc=aggfunc)
+    return(table)
+}
+
+acro_pivot_table = function(data, values=NULL, index=NULL, columns=NULL, aggfunc="mean")
 {
     "ACRO pivot table"
-    table = ac$pivot_table(data, index=index, values=values, aggfunc=aggfunc)
+    table = ac$pivot_table(data, values=values, index=index, columns=columns, aggfunc=aggfunc)
     return(table)
 }
 

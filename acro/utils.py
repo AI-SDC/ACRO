@@ -247,8 +247,11 @@ def apply_suppression(
     # apply suppression masks
     else:
         for name, mask in masks.items():
-            safe_df[mask] = np.NaN
-            outcome_df[mask] += name + "; "
+            safe_df[mask.values] = np.NaN
+            tmp_df = DataFrame().reindex_like(outcome_df)
+            tmp_df.fillna("", inplace=True)
+            tmp_df[mask.values] = name + "; "
+            outcome_df += tmp_df
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", outcome_df)
     return safe_df, outcome_df

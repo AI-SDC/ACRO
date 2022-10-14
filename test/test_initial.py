@@ -69,6 +69,25 @@ def test_pivot_table_pass():
     assert output["output_0"]["summary"] == correct_summary
 
 
+def test_pivot_table_cols():
+    """Pivot table with columns test."""
+    data = get_data()
+    acro = ACRO()
+    _ = acro.pivot_table(
+        data,
+        index=["grant_type"],
+        columns=["year"],
+        values=["inc_grants"],
+        aggfunc=["mean", "std"],
+    )
+    output: dict = acro.finalise()
+    correct_summary: str = (
+        "fail; threshold: 14 cells suppressed; "
+        "p-ratio: 2 cells suppressed; nk-rule: 2 cells suppressed; "
+    )
+    assert output["output_0"]["summary"] == correct_summary
+
+
 def test_ols():
     """Ordinary Least Squares test."""
     data = get_data()

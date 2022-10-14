@@ -67,388 +67,27 @@
            <div itemprop="articleBody">
              
   <h1>Source code for acro.acro</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;ACRO: Automatic Checking of Research Outputs.&quot;&quot;&quot;</span>  <span class="c1"># pylint:disable=too-many-lines</span>
+<span></span><span class="sd">&quot;&quot;&quot;ACRO: Automatic Checking of Research Outputs.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
-<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">getframeinfo</span><span class="p">,</span> <span class="n">stack</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">stack</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
 <span class="kn">import</span> <span class="nn">statsmodels.formula.api</span> <span class="k">as</span> <span class="nn">smf</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
-<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">Series</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
 <span class="kn">from</span> <span class="nn">statsmodels.discrete.discrete_model</span> <span class="kn">import</span> <span class="n">BinaryResultsWrapper</span>
 <span class="kn">from</span> <span class="nn">statsmodels.iolib.table</span> <span class="kn">import</span> <span class="n">SimpleTable</span>
 <span class="kn">from</span> <span class="nn">statsmodels.regression.linear_model</span> <span class="kn">import</span> <span class="n">RegressionResultsWrapper</span>
 
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;acro&quot;</span><span class="p">)</span>
-
-<span class="n">AGGFUNC</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
-    <span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span>
-    <span class="s2">&quot;sum&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
-    <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="c1"># aggregation function parameters</span>
-<span class="n">THRESHOLD</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">SAFE_PRATIO_P</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
-<span class="n">SAFE_NK_N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">SAFE_NK_K</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span>
-
-
-<span class="k">def</span> <span class="nf">_get_command</span><span class="p">(</span><span class="n">default</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">stack_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Returns the calling source line as a string.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    default : str</span>
-<span class="sd">        Default string to return if unable to extract the stack.</span>
-<span class="sd">    stack_list : list[tuple]</span>
-<span class="sd">         A list of frame records for the caller&#39;s stack. The first entry in the</span>
-<span class="sd">         returned list represents the caller; the last entry represents the</span>
-<span class="sd">         outermost call on the stack.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    str</span>
-<span class="sd">        The calling source line.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">default</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">code</span> <span class="o">=</span> <span class="n">getframeinfo</span><span class="p">(</span><span class="n">stack_list</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">code_context</span>
-        <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">command</span>
-
-
-<span class="k">def</span> <span class="nf">_finalise_json</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Writes outputs to a JSON file.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    filename : str</span>
-<span class="sd">        Name of the output file.</span>
-<span class="sd">    results : dict</span>
-<span class="sd">        Outputs to write.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># convert dataframes to json</span>
-    <span class="n">outputs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;outcome&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">output</span><span class="p">[</span><span class="s2">&quot;outcome&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;outcome&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]):</span>
-            <span class="n">output</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
-    <span class="c1"># write to disk</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">_finalise_excel</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Writes outputs to an excel spreadsheet.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    filename : str</span>
-<span class="sd">        Name of the output file.</span>
-<span class="sd">    results : dict</span>
-<span class="sd">        Outputs to write.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">ExcelWriter</span><span class="p">(</span>  <span class="c1"># pylint: disable=abstract-class-instantiated</span>
-        <span class="n">filename</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;openpyxl&quot;</span>
-    <span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
-        <span class="c1"># description sheet</span>
-        <span class="n">sheet</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">command</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">sheet</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_id</span><span class="p">)</span>
-            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">])</span>
-            <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">])</span>
-        <span class="n">tmp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Sheet&quot;</span><span class="p">:</span> <span class="n">sheet</span><span class="p">,</span> <span class="s2">&quot;Command&quot;</span><span class="p">:</span> <span class="n">command</span><span class="p">,</span> <span class="s2">&quot;Summary&quot;</span><span class="p">:</span> <span class="n">summary</span><span class="p">})</span>
-        <span class="n">tmp_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">startrow</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="c1"># individual sheets</span>
-        <span class="k">for</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="c1"># command and summary</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">tmp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">],</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">]],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Command&quot;</span><span class="p">,</span> <span class="s2">&quot;Summary&quot;</span><span class="p">]</span>
-            <span class="p">)</span>
-            <span class="n">tmp_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span> <span class="n">startrow</span><span class="o">=</span><span class="n">start</span><span class="p">)</span>
-            <span class="c1"># outcome</span>
-            <span class="k">if</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;outcome&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">output</span><span class="p">[</span><span class="s2">&quot;outcome&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span> <span class="n">startrow</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-            <span class="c1"># output</span>
-            <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]:</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">writer</span><span class="o">.</span><span class="n">sheets</span><span class="p">[</span><span class="n">output_id</span><span class="p">]</span><span class="o">.</span><span class="n">max_row</span>
-                <span class="n">table</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span> <span class="n">startrow</span><span class="o">=</span><span class="n">start</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">_get_summary_dataframes</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Converts a list of SimpleTable objects to a list of DataFrame objects.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    results : list[SimpleTable]</span>
-<span class="sd">        Results from fitting statsmodel.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    list[DataFrame]</span>
-<span class="sd">        List of DataFrame objects.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
-        <span class="n">table_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">as_html</span><span class="p">(),</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table_df</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">tables</span>
-
-
-<span class="k">def</span> <span class="nf">_agg_threshold</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Aggregation function that returns whether the number of contributors is</span>
-<span class="sd">    below a threshold.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    vals : Series</span>
-<span class="sd">        Series to calculate the p percent value.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    bool</span>
-<span class="sd">        Whether the threshold rule is violated.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">vals</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">THRESHOLD</span>
-
-
-<span class="k">def</span> <span class="nf">_agg_negative</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Aggregation function that returns whether any values are negative.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    vals : Series</span>
-<span class="sd">        Series to check for negative values.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    bool</span>
-<span class="sd">        Whether a negative value was found.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">vals</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">0</span>
-
-
-<span class="k">def</span> <span class="nf">_agg_p_percent</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Aggregation function that returns whether the p percent rule is violated.</span>
-
-<span class="sd">    That is, the uncertainty (as a fraction) of the estimate that the second</span>
-<span class="sd">    highest respondent can make of the highest value. Assuming there are n</span>
-<span class="sd">    items in the series, they are first sorted in descending order and then we</span>
-<span class="sd">    calculate the value p = (sum - N-2 highest values)/highest value. If all</span>
-<span class="sd">    values are 0, returns 1.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    vals : Series</span>
-<span class="sd">        Series to calculate the p percent value.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    bool</span>
-<span class="sd">        whether the p percent rule is violated.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">sorted_vals</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">sorted_vals</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">sub_total</span> <span class="o">=</span> <span class="n">total</span> <span class="o">-</span> <span class="n">sorted_vals</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">sorted_vals</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">p_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">sub_total</span> <span class="o">/</span> <span class="n">sorted_vals</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">p_val</span> <span class="o">&lt;</span> <span class="n">SAFE_PRATIO_P</span>
-
-
-<span class="k">def</span> <span class="nf">_agg_nk</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Aggregation function that returns whether the top n items account for</span>
-<span class="sd">    more than k percent of the total.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    vals : Series</span>
-<span class="sd">        Series to calculate the nk value.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    bool</span>
-<span class="sd">        Whether the nk rule is violated.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">sorted_vals</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">n_total</span> <span class="o">=</span> <span class="n">sorted_vals</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">SAFE_NK_N</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">n_total</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">SAFE_NK_K</span>
-    <span class="k">return</span> <span class="kc">False</span>
-
-
-<span class="k">def</span> <span class="nf">_apply_suppression</span><span class="p">(</span>
-    <span class="n">table</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Applies suppression to a table.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    table : DataFrame</span>
-<span class="sd">        Table to apply suppression.</span>
-<span class="sd">    masks : dict[str, DataFrame]</span>
-<span class="sd">        Dictionary of tables specifying suppression masks for application.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    DataFrame</span>
-<span class="sd">        Table to output with any suppression applied.</span>
-<span class="sd">    DataFrame</span>
-<span class="sd">        Table with outcomes of suppression checks.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_apply_suppression()&quot;</span><span class="p">)</span>
-    <span class="n">safe_df</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">()</span><span class="o">.</span><span class="n">reindex_like</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
-    <span class="n">outcome_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="c1"># don&#39;t apply suppression if negatives are present</span>
-    <span class="k">if</span> <span class="s2">&quot;negative&quot;</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span>
-        <span class="n">outcome_df</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;negative&quot;</span>
-    <span class="c1"># apply suppression masks</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">safe_df</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
-            <span class="n">outcome_df</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">]</span> <span class="o">+=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;; &quot;</span>
-        <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">})</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;outcome_df:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">outcome_df</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">safe_df</span><span class="p">,</span> <span class="n">outcome_df</span>
-
-
-<span class="k">def</span> <span class="nf">_get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Returns a string summarising the suppression masks.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    masks : dict[str, DataFrame]</span>
-<span class="sd">        Dictionary of tables specifying suppression masks for application.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    str</span>
-<span class="sd">        Summary of the suppression masks.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="k">if</span> <span class="s2">&quot;negative&quot;</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;review; negative values found&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">n_cells</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">n_cells</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">summary</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">n_cells</span><span class="si">}</span><span class="s2"> cells suppressed; &quot;</span>
-        <span class="k">if</span> <span class="n">summary</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;pass&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;fail; &quot;</span> <span class="o">+</span> <span class="n">summary</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_get_summary(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">summary</span>
-
-
-<span class="k">def</span> <span class="nf">_get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Checks whether an aggregation function is allowed and returns the</span>
-<span class="sd">    appropriate function.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    aggfunc : str | None</span>
-<span class="sd">        Name of the aggregation function to apply.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    Callable | None</span>
-<span class="sd">        The aggregation function to apply.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_get_aggfunc()&quot;</span><span class="p">)</span>
-    <span class="n">func</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">aggfunc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AGGFUNC</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;aggfunc must be: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">AGGFUNC</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">func</span> <span class="o">=</span> <span class="n">AGGFUNC</span><span class="p">[</span><span class="n">aggfunc</span><span class="p">]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;aggfunc: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">func</span>
-
-
-<span class="k">def</span> <span class="nf">_get_aggfuncs</span><span class="p">(</span>
-    <span class="n">aggfuncs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Checks whether a list of aggregation functions is allowed and returns</span>
-<span class="sd">    the appropriate functions.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    aggfuncs : str | list[str] | None</span>
-<span class="sd">        List of names of the aggregation functions to apply.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    Callable | list[Callable] | None</span>
-<span class="sd">        The aggregation functions to apply.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_get_aggfuncs()&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">aggfuncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;aggfuncs: None&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">function</span> <span class="o">=</span> <span class="n">_get_aggfunc</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;aggfuncs: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">function</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfuncs</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">functions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">function_name</span> <span class="ow">in</span> <span class="n">aggfuncs</span><span class="p">:</span>
-            <span class="n">function</span> <span class="o">=</span> <span class="n">_get_aggfunc</span><span class="p">(</span><span class="n">function_name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">functions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;aggfuncs: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">functions</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">functions</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid aggfuncs: </span><span class="si">{</span><span class="n">aggfuncs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">functions</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;aggfuncs must be: either str or list[str]&quot;</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="add_constant"><a class="viewcode-back" href="../../acro.html#acro.acro.add_constant">[docs]</a><span class="k">def</span> <span class="nf">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">has_constant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;skip&quot;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Add a column of ones to an array.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data : array_like</span>
-<span class="sd">        A column-ordered design matrix.</span>
-<span class="sd">    prepend : bool</span>
-<span class="sd">        If true, the constant is in the first column. Else the constant is</span>
-<span class="sd">        appended (last column).</span>
-<span class="sd">    has_constant: str {&#39;raise&#39;, &#39;add&#39;, &#39;skip&#39;}</span>
-<span class="sd">        Behavior if data already has a constant. The default will return</span>
-<span class="sd">        data without adding another constant. If &#39;raise&#39;, will raise an</span>
-<span class="sd">        error if any column has a constant value. Using &#39;add&#39; will add a</span>
-<span class="sd">        column of 1s if a constant column is present.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    array_like</span>
-<span class="sd">        The original values with a constant (column of ones) as the first</span>
-<span class="sd">        or last column. Returned value type depends on input type.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    When the input is a pandas Series or DataFrame, the added column&#39;s name</span>
-<span class="sd">    is &#39;const&#39;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span> <span class="n">has_constant</span><span class="o">=</span><span class="n">has_constant</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ACRO"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO">[docs]</a><span class="k">class</span> <span class="nc">ACRO</span><span class="p">:</span>
@@ -488,14 +127,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">SafeLoader</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;config: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
         <span class="c1"># set globals needed for aggregation functions</span>
-        <span class="k">global</span> <span class="n">THRESHOLD</span>  <span class="c1"># pylint: disable=global-statement</span>
-        <span class="k">global</span> <span class="n">SAFE_PRATIO_P</span>  <span class="c1"># pylint: disable=global-statement</span>
-        <span class="k">global</span> <span class="n">SAFE_NK_N</span>  <span class="c1"># pylint: disable=global-statement</span>
-        <span class="k">global</span> <span class="n">SAFE_NK_K</span>  <span class="c1"># pylint: disable=global-statement</span>
-        <span class="n">THRESHOLD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_threshold&quot;</span><span class="p">]</span>
-        <span class="n">SAFE_PRATIO_P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_pratio_p&quot;</span><span class="p">]</span>
-        <span class="n">SAFE_NK_N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_n&quot;</span><span class="p">]</span>
-        <span class="n">SAFE_NK_K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_k&quot;</span><span class="p">]</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">THRESHOLD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_threshold&quot;</span><span class="p">]</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">SAFE_PRATIO_P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_pratio_p&quot;</span><span class="p">]</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">SAFE_NK_N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_n&quot;</span><span class="p">]</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">SAFE_NK_K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_k&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="ACRO.finalise"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results.json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates a results file for checking.</span>
@@ -513,9 +148,9 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;finalise()&quot;</span><span class="p">)</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">extension</span> <span class="o">==</span> <span class="s2">&quot;.json&quot;</span><span class="p">:</span>
-            <span class="n">_finalise_json</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">finalise_json</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">extension</span> <span class="o">==</span> <span class="s2">&quot;.xlsx&quot;</span><span class="p">:</span>
-            <span class="n">_finalise_excel</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">finalise_excel</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid file extension. Options: {.json, .xlsx}&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;output written to: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
@@ -622,9 +257,9 @@
 <span class="sd">            Cross tabulation of the data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;crosstab()&quot;</span><span class="p">)</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="s2">&quot;crosstab()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;crosstab()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
 
-        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">_get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string to function</span>
+        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string to function</span>
 
         <span class="c1"># requested table</span>
         <span class="n">table</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
@@ -656,23 +291,23 @@
             <span class="n">dropna</span><span class="p">,</span>
             <span class="n">normalize</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">t_values</span> <span class="o">=</span> <span class="n">t_values</span> <span class="o">&lt;</span> <span class="n">THRESHOLD</span>
+        <span class="n">t_values</span> <span class="o">=</span> <span class="n">t_values</span> <span class="o">&lt;</span> <span class="n">utils</span><span class="o">.</span><span class="n">THRESHOLD</span>
         <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_values</span>
 
         <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># check for negative values -- currently unsupported</span>
-            <span class="n">negative</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_negative</span><span class="p">)</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_negative</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">negative</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">negative</span>
             <span class="c1"># p-percent check</span>
             <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
-                <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_p_percent</span>
+                <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_p_percent</span>
             <span class="p">)</span>
             <span class="c1"># nk values check</span>
-            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">_agg_nk</span><span class="p">)</span>
+            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_nk</span><span class="p">)</span>
 
-        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">_apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="n">_get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="p">[</span><span class="n">table</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">table</span></div>
 
@@ -739,9 +374,9 @@
 <span class="sd">            Cross tabulation of the data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;pivot_table()&quot;</span><span class="p">)</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="s2">&quot;pivot_table()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;pivot_table()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
 
-        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">_get_aggfuncs</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string(s) to function(s)</span>
+        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_aggfuncs</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string(s) to function(s)</span>
         <span class="n">n_agg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>
 
         <span class="c1"># requested table</span>
@@ -763,25 +398,25 @@
         <span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># threshold check</span>
-        <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_threshold</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_threshold</span>
+        <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_threshold</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">utils</span><span class="o">.</span><span class="n">agg_threshold</span>
         <span class="n">t_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span><span class="p">)</span>
         <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_values</span>
 
         <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># check for negative values -- currently unsupported</span>
-            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_negative</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_negative</span>
+            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_negative</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">utils</span><span class="o">.</span><span class="n">agg_negative</span>
             <span class="n">negative</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">negative</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">negative</span>
             <span class="c1"># p-percent check</span>
-            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_p_percent</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_p_percent</span>
+            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_p_percent</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">utils</span><span class="o">.</span><span class="n">agg_p_percent</span>
             <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span><span class="p">)</span>
             <span class="c1"># nk values check</span>
-            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">_agg_nk</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_agg_nk</span>
+            <span class="n">agg</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_nk</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_agg</span> <span class="k">if</span> <span class="n">n_agg</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">utils</span><span class="o">.</span><span class="n">agg_nk</span>
             <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span><span class="p">)</span>
 
-        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">_apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="n">_get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="p">[</span><span class="n">table</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">table</span></div>
 
@@ -842,13 +477,13 @@
 <span class="sd">            Results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ols()&quot;</span><span class="p">)</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="s2">&quot;ols()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;ols()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="o">=</span><span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">hasconst</span><span class="o">=</span><span class="n">hasconst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -892,7 +527,7 @@
 <span class="sd">        a numpy structured or rec array, a dictionary, or a pandas DataFrame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;olsr()&quot;</span><span class="p">)</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="s2">&quot;olsr()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;olsr()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">smf</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span>
             <span class="n">formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
             <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
@@ -905,7 +540,7 @@
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;olsr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -941,13 +576,13 @@
 <span class="sd">            Results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;logit()&quot;</span><span class="p">)</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="s2">&quot;logit()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;logit()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Logit</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">check_rank</span><span class="o">=</span><span class="n">check_rank</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;logit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -991,7 +626,7 @@
 <span class="sd">        a numpy structured or rec array, a dictionary, or a pandas DataFrame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;logitr()&quot;</span><span class="p">)</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="s2">&quot;logitr()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;logitr()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">smf</span><span class="o">.</span><span class="n">logit</span><span class="p">(</span>
             <span class="n">formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
             <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
@@ -1004,7 +639,7 @@
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;logitr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -1040,13 +675,13 @@
 <span class="sd">            Results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;probit()&quot;</span><span class="p">)</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="s2">&quot;probit()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;probit()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Probit</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">check_rank</span><span class="o">=</span><span class="n">check_rank</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;probit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -1090,7 +725,7 @@
 <span class="sd">        a numpy structured or rec array, a dictionary, or a pandas DataFrame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;probitr()&quot;</span><span class="p">)</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_get_command</span><span class="p">(</span><span class="s2">&quot;probitr()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;probitr()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">smf</span><span class="o">.</span><span class="n">probit</span><span class="p">(</span>
             <span class="n">formula</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
             <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
@@ -1103,9 +738,39 @@
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;probitr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div></div>
+
+
+<div class="viewcode-block" id="add_constant"><a class="viewcode-back" href="../../acro.html#acro.acro.add_constant">[docs]</a><span class="k">def</span> <span class="nf">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">has_constant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;skip&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a column of ones to an array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : array_like</span>
+<span class="sd">        A column-ordered design matrix.</span>
+<span class="sd">    prepend : bool</span>
+<span class="sd">        If true, the constant is in the first column. Else the constant is</span>
+<span class="sd">        appended (last column).</span>
+<span class="sd">    has_constant: str {&#39;raise&#39;, &#39;add&#39;, &#39;skip&#39;}</span>
+<span class="sd">        Behavior if data already has a constant. The default will return</span>
+<span class="sd">        data without adding another constant. If &#39;raise&#39;, will raise an</span>
+<span class="sd">        error if any column has a constant value. Using &#39;add&#39; will add a</span>
+<span class="sd">        column of 1s if a constant column is present.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        The original values with a constant (column of ones) as the first</span>
+<span class="sd">        or last column. Returned value type depends on input type.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    When the input is a pandas Series or DataFrame, the added column&#39;s name</span>
+<span class="sd">    is &#39;const&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span> <span class="n">has_constant</span><span class="o">=</span><span class="n">has_constant</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

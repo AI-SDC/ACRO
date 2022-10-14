@@ -250,7 +250,7 @@ def apply_suppression(
             safe_df[mask.values] = np.NaN
             outcome_df[mask.values] += name + "; "
         outcome_df = outcome_df.replace({"": "ok"})
-    logger.debug("outcome_df:\n%s", outcome_df)
+    logger.info("outcome_df:\n%s", outcome_df)
     return safe_df, outcome_df
 
 
@@ -279,7 +279,7 @@ def get_summary(masks: dict[str, DataFrame]) -> str:
             summary = "pass"
         else:
             summary = "fail; " + summary
-    logger.debug("_get_summary(): %s", summary)
+    logger.info("get_summary(): %s", summary)
     return summary
 
 

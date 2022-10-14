@@ -17,7 +17,7 @@ from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 from . import utils
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("acro")
 
 
@@ -56,7 +56,7 @@ class ACRO:
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
-        logger.debug("config: %s", self.config)
+        logger.info("config: %s", self.config)
         # set globals needed for aggregation functions
         utils.THRESHOLD = self.config["safe_threshold"]
         utils.SAFE_PRATIO_P = self.config["safe_pratio_p"]
@@ -84,7 +84,7 @@ class ACRO:
             utils.finalise_excel(filename, self.results)
         else:
             raise ValueError("Invalid file extension. Options: {.json, .xlsx}")
-        logger.debug("output written to: %s", filename)
+        logger.info("output written to: %s", filename)
         return self.results
 
     def __add_output(
@@ -111,7 +111,7 @@ class ACRO:
             "outcome": outcome,
             "output": output,  # json.loads(output),  # JSON to dict
         }
-        logger.debug("__add_output(): %s", name)
+        logger.info("add_output(): %s", name)
 
     def remove_output(self, key: str) -> None:
         """Removes an output from the results dictionary.
@@ -123,7 +123,7 @@ class ACRO:
         """
         if key in self.results:
             del self.results[key]
-            logger.debug("remove_output(): %s removed", key)
+            logger.info("remove_output(): %s removed", key)
         else:
             warnings.warn(f"unable to remove {key}, key not found")
 
@@ -373,7 +373,7 @@ class ACRO:
             warnings.warn(f"Unsafe {name}: {summary}")
         else:
             summary = f"pass; dof={dof} >= {threshold}"
-        logger.debug("%s() outcome: %s", name, summary)
+        logger.info("%s() outcome: %s", name, summary)
         return summary
 
     def ols(  # pylint: disable=too-many-locals

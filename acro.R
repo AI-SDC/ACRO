@@ -23,8 +23,10 @@ acro_glm = function(formula, data, family)
     "ACRO logit/probit model"
     if (family == "logit") {
         model = ac$logitr(formula, data)
-    } else {
+    } else if (family == "probit") {
         model = ac$probitr(formula, data)
+    } else {
+        stop("Invalid family. Options = {'logit', 'probit'}");
     }
     model$summary()
 }

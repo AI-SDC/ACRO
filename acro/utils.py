@@ -72,7 +72,7 @@ def finalise_json(filename: str, results: dict) -> None:
         for i, _ in enumerate(output["output"]):
             output["output"][i] = output["output"][i].to_json()
     # write to disk
-    with open(filename, "wt", encoding="utf-8") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         json.dump(outputs, file, indent=4, sort_keys=False)
 
 

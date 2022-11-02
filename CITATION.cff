@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: ACRO
+version: 0.0.4
+doi: 
+date-released: 2022-11-02
+license: MIT
+repository-code: https://github.com/AI-SDC/ACRO
+languages:
+  - English
+keywords:
+  - data privacy
+  - data protection
+  - privacy
+  - privacy tools
+  - statistical disclosure control
+authors:
+  - family-names: Preen
+    given-names: Richard John
+    orcid: https://orcid.org/0000-0003-3351-8132
+    affiliation: University of the West of England
+  - family-names: Smith
+    given-names: Jim
+    orcid: https://orcid.org/0000-0001-7908-1859
+    affiliation: University of the West of England

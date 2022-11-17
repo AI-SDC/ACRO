@@ -22,7 +22,7 @@ functionality to:
 *   produce simple summary documents TRE staff can use to streamline their
     workflow.
 
-![ACRO workflow and architecture schematic](docs/overview.png)
+![ACRO workflow and architecture schematic](docs/schematic.png)
 
 See the project [wiki](https://github.com/AI-SDC/ACRO/wiki) for details.
 

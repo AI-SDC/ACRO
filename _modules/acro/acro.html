@@ -91,7 +91,7 @@
 
 
 <div class="viewcode-block" id="ACRO"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO">[docs]</a><span class="k">class</span> <span class="nc">ACRO</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;ACRO: Automatic Checking of Research Outputs.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ACRO: Automatic Checking of Research Outputs.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -111,7 +111,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Constructs a new ACRO object and reads parameters from config.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructs a new ACRO object and reads parameters from config.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -133,7 +133,7 @@
         <span class="n">utils</span><span class="o">.</span><span class="n">SAFE_NK_K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_k&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="ACRO.finalise"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results.json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Creates a results file for checking.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a results file for checking.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -159,7 +159,7 @@
     <span class="k">def</span> <span class="nf">__add_output</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">outcome</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Adds an output to the results dictionary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds an output to the results dictionary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -183,7 +183,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;add_output(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ACRO.remove_output"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.remove_output">[docs]</a>    <span class="k">def</span> <span class="nf">remove_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Removes an output from the results dictionary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes an output from the results dictionary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -197,7 +197,7 @@
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to remove </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">, key not found&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ACRO.print_outputs"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.print_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">print_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Prints the current results dictionary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prints the current results dictionary.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;print_outputs()&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
@@ -218,7 +218,7 @@
         <span class="n">dropna</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Compute a simple cross tabulation of two (or more) factors.  By</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute a simple cross tabulation of two (or more) factors.  By</span>
 <span class="sd">        default, computes a frequency table of the factors unless an array of</span>
 <span class="sd">        values and an aggregation function are passed.</span>
 
@@ -325,7 +325,7 @@
         <span class="n">observed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">sort</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Create a spreadsheet-style pivot table as a DataFrame.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a spreadsheet-style pivot table as a DataFrame.</span>
 
 <span class="sd">        The levels in the pivot table will be stored in MultiIndex objects</span>
 <span class="sd">        (hierarchical indexes) on the index and columns of the result</span>
@@ -421,7 +421,7 @@
         <span class="k">return</span> <span class="n">table</span></div>
 
     <span class="k">def</span> <span class="nf">__check_model_dof</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Check model DOF.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check model DOF.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -448,7 +448,7 @@
 <div class="viewcode-block" id="ACRO.ols"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.ols">[docs]</a>    <span class="k">def</span> <span class="nf">ols</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-locals</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">hasconst</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegressionResultsWrapper</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fits Ordinary Least Squares Regression.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fits Ordinary Least Squares Regression.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -490,7 +490,7 @@
 <div class="viewcode-block" id="ACRO.olsr"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.olsr">[docs]</a>    <span class="k">def</span> <span class="nf">olsr</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-locals,keyword-arg-before-vararg</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegressionResultsWrapper</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fits Ordinary Least Squares Regression from a formula and dataframe.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fits Ordinary Least Squares Regression from a formula and dataframe.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -551,7 +551,7 @@
         <span class="n">missing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">check_rank</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BinaryResultsWrapper</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fits Logit model.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fits Logit model.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -589,7 +589,7 @@
 <div class="viewcode-block" id="ACRO.logitr"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.logitr">[docs]</a>    <span class="k">def</span> <span class="nf">logitr</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-locals,keyword-arg-before-vararg</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegressionResultsWrapper</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fits Logit model from a formula and dataframe.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fits Logit model from a formula and dataframe.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -650,7 +650,7 @@
         <span class="n">missing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">check_rank</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BinaryResultsWrapper</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fits Probit model.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fits Probit model.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -688,7 +688,7 @@
 <div class="viewcode-block" id="ACRO.probitr"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.probitr">[docs]</a>    <span class="k">def</span> <span class="nf">probitr</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-locals,keyword-arg-before-vararg</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegressionResultsWrapper</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fits Probit model from a formula and dataframe.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fits Probit model from a formula and dataframe.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -744,7 +744,7 @@
 
 
 <div class="viewcode-block" id="add_constant"><a class="viewcode-back" href="../../acro.html#acro.acro.add_constant">[docs]</a><span class="k">def</span> <span class="nf">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">has_constant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;skip&quot;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Add a column of ones to an array.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a column of ones to an array.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

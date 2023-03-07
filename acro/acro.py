@@ -125,7 +125,7 @@ class ACRO:
             del self.results[key]
             logger.info("remove_output(): %s removed", key)
         else:
-            warnings.warn(f"unable to remove {key}, key not found")
+            warnings.warn(f"unable to remove {key}, key not found", stacklevel=8)
 
     def print_outputs(self) -> None:
         """Prints the current results dictionary."""
@@ -370,7 +370,7 @@ class ACRO:
         threshold: int = self.config["safe_dof_threshold"]
         if dof < threshold:
             summary = f"fail; dof={dof} < {threshold}"
-            warnings.warn(f"Unsafe {name}: {summary}")
+            warnings.warn(f"Unsafe {name}: {summary}", stacklevel=8)
         else:
             summary = f"pass; dof={dof} >= {threshold}"
         logger.info("%s() outcome: %s", name, summary)

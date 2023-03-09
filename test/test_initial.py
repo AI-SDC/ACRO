@@ -188,6 +188,8 @@ def test_finalise_json(data, acro):
     assert (output["output_0"]["output"][0].reset_index()).equals(output_0)
     assert (output["output_1"]["output"][0].reset_index()).equals(output_1)
 
-    with open("./outputs/test.json", "r") as file:
+    with open("./outputs/test.json", encoding="utf-8") as file:
         json_data = json.load(file)
-    assert json_data["output_0"]["output"] == os.path.abspath("outputs/output_0.csv").replace("\\", "/")
+    assert json_data["output_0"]["output"] == os.path.abspath(
+        "outputs/output_0.csv"
+    ).replace("\\", "/")

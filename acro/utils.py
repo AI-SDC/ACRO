@@ -78,11 +78,11 @@ def finalise_json(filename: str, results: dict) -> None:
     # check if the outputs directory was already created
     try:
         os.makedirs(path)
-        print("Directory '%s' created successfully" % OUTPUT_DIRECTORY)
+        print(f"Directory {OUTPUT_DIRECTORY} created successfully")
     except FileExistsError:
-        print("Directory '%s' already excists" % OUTPUT_DIRECTORY)
+        print(f"Directory {OUTPUT_DIRECTORY} already exists")
     except OSError:
-        print("Directory '%s' can not be created" % OUTPUT_DIRECTORY)
+        print(f"Directory {OUTPUT_DIRECTORY} can not be created")
 
     # convert dataframes to json
     for key, output in outputs.items():
@@ -90,14 +90,13 @@ def finalise_json(filename: str, results: dict) -> None:
             output["outcome"] = output["outcome"].to_json()
 
         # save each output to a different file
-        with open(path + f"{key}.csv", mode="w") as file:
+        with open(path + f"{key}.csv", mode="w", newline="", encoding="utf-8") as file:
             for i, _ in enumerate(output["output"]):
                 file.write(output["output"][i].to_csv())
-                file.write("\n")
         output["output"] = path + f"{key}.csv"
 
     # write to disk
-    with open(path + filename, "w", encoding="utf-8") as file:
+    with open(path + filename, "w", newline="", encoding="utf-8") as file:
         json.dump(outputs, file, indent=4, sort_keys=False)
 
 

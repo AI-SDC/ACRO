@@ -1,0 +1,44 @@
+{
+    "output_0": {
+        "command": "safe_table = acro.crosstab(df.year, df.grant_type)",
+        "summary": "fail; threshold: 6 cells suppressed; ",
+        "outcome": "{\"G\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"N\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"R\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"R\\/G\":{\"2010\":\"threshold; \",\"2011\":\"threshold; \",\"2012\":\"threshold; \",\"2013\":\"threshold; \",\"2014\":\"threshold; \",\"2015\":\"threshold; \"}}",
+        "output": "c:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_0.csv"
+    },
+    "output_2": {
+        "command": "safe_table = acro.crosstab(df.year, df.grant_type, values=negative, aggfunc=\"mean\")",
+        "summary": "review; negative values found",
+        "outcome": "{\"G\":{\"2010\":\"\",\"2011\":\"\",\"2012\":\"\",\"2013\":\"\",\"2014\":\"\",\"2015\":\"\"},\"N\":{\"2010\":\"\",\"2011\":\"negative\",\"2012\":\"\",\"2013\":\"negative\",\"2014\":\"negative\",\"2015\":\"negative\"},\"R\":{\"2010\":\"negative\",\"2011\":\"negative\",\"2012\":\"negative\",\"2013\":\"negative\",\"2014\":\"negative\",\"2015\":\"negative\"},\"R\\/G\":{\"2010\":\"\",\"2011\":\"\",\"2012\":\"\",\"2013\":\"\",\"2014\":\"\",\"2015\":\"\"}}",
+        "output": "c:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_2.csv"
+    },
+    "output_3": {
+        "command": "table = acro.pivot_table(",
+        "summary": "pass",
+        "outcome": "{\"('mean', 'inc_grants')\":{\"G\":\"ok\",\"N\":\"ok\",\"R\":\"ok\",\"R\\/G\":\"ok\"},\"('std', 'inc_grants')\":{\"G\":\"ok\",\"N\":\"ok\",\"R\":\"ok\",\"R\\/G\":\"ok\"}}",
+        "output": "c:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_3.csv"
+    },
+    "output_5": {
+        "command": "results = acro.ols(y, x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "c:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_5.csv"
+    },
+    "output_6": {
+        "command": "results = acro.olsr(",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "c:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_6.csv"
+    },
+    "output_7": {
+        "command": "results = acro.probit(y, x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "c:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_7.csv"
+    },
+    "output_8": {
+        "command": "results = acro.logit(y, x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "c:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_8.csv"
+    }
+}

@@ -31,6 +31,7 @@ SAFE_NK_K: float = 0.9
 # add output directory
 OUTPUT_DIRECTORY = "outputs/"
 
+
 def get_command(default: str, stack_list: list[tuple]) -> str:
     """Returns the calling source line as a string.
 
@@ -72,22 +73,34 @@ def finalise_json(filename: str, results: dict) -> None:
 
     absolute_path = os.path.dirname(os.path.dirname(__file__))
     relative_path = OUTPUT_DIRECTORY
-    path = os.path.join(absolute_path, relative_path).replace("\\","/")
-    
+    path = os.path.join(absolute_path, relative_path).replace("\\", "/")
+
+    # check if the outputs directory was already created
+    try:
+        os.makedirs(path)
+        print("Directory '%s' created successfully" % OUTPUT_DIRECTORY)
+    except FileExistsError:
+        print("Directory '%s' already excists" % OUTPUT_DIRECTORY)
+    except OSError:
+        print("Directory '%s' can not be created" % OUTPUT_DIRECTORY)
+
     # convert dataframes to json
     for key, output in outputs.items():
         if output["outcome"] is not None:
             output["outcome"] = output["outcome"].to_json()
 
-    # save each output to a different file
-        for sub_output in (output["output"]):
-            sub_output.to_csv(path + f"{key}.csv")
-            output["output"] = path + f"{key}.csv"
+        # save each output to a different file
+        with open(path + f"{key}.csv", mode="w") as file:
+            for i, _ in enumerate(output["output"]):
+                file.write(output["output"][i].to_csv())
+                file.write("\n")
+        output["output"] = path + f"{key}.csv"
 
     # write to disk
     with open(path + filename, "w", encoding="utf-8") as file:
         json.dump(outputs, file, indent=4, sort_keys=False)
-        
+
+
 def finalise_excel(filename: str, results: dict) -> None:
     """Writes outputs to an excel spreadsheet.
 

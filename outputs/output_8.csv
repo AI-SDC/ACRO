@@ -1,0 +1,15 @@
+Dep. Variable:,survivor,No. Observations:,811
+Model:,Logit,Df Residuals:,806.0
+Method:,MLE,Df Model:,4.0
+Date:,"Thu, 09 Mar 2023",Pseudo R-squ.:,0.2187
+Time:,09:33:45,Log-Likelihood:,-398.07
+converged:,True,LL-Null:,-509.5
+Covariance Type:,nonrobust,LLR p-value:,4.532e-47
+
+,coef,std err,z,P>|z|,[0.025,0.975]
+const,0.0512,0.091,0.561,0.575,-0.128,0.23
+inc_activity,2.981e-07,8.95e-08,3.33,0.001,1.23e-07,4.74e-07
+inc_grants,1.351e-07,6.67e-08,2.026,0.043,4.39e-09,2.66e-07
+inc_donations,5.123e-07,1.04e-07,4.927,0.0,3.08e-07,7.16e-07
+total_costs,-1.442e-07,6.26e-08,-2.304,0.021,-2.67e-07,-2.15e-08
+

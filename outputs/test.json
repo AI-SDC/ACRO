@@ -1,0 +1,14 @@
+{
+    "output_0": {
+        "command": "_ = acro.crosstab(data.year, data.grant_type)",
+        "summary": "fail; threshold: 6 cells suppressed; ",
+        "outcome": "{\"G\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"N\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"R\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"R\\/G\":{\"2010\":\"threshold; \",\"2011\":\"threshold; \",\"2012\":\"threshold; \",\"2013\":\"threshold; \",\"2014\":\"threshold; \",\"2015\":\"threshold; \"}}",
+        "output": "C:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_0.csv"
+    },
+    "output_1": {
+        "command": "_ = acro.crosstab(data.year, data.grant_type)",
+        "summary": "fail; threshold: 6 cells suppressed; ",
+        "outcome": "{\"G\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"N\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"R\":{\"2010\":\"ok\",\"2011\":\"ok\",\"2012\":\"ok\",\"2013\":\"ok\",\"2014\":\"ok\",\"2015\":\"ok\"},\"R\\/G\":{\"2010\":\"threshold; \",\"2011\":\"threshold; \",\"2012\":\"threshold; \",\"2013\":\"threshold; \",\"2014\":\"threshold; \",\"2015\":\"threshold; \"}}",
+        "output": "C:/Users/M-ALBASHIR/Desktop/AI-SDC/ACRO/outputs/output_1.csv"
+    }
+}

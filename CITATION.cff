@@ -22,6 +22,10 @@ authors:
     given-names: Jim
     orcid: https://orcid.org/0000-0001-7908-1859
     affiliation: University of the West of England
+  - family-names: Albashir
+    given-names: Maha
+    orcid: N/A
+    affiliation: University of the West of England
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7273903

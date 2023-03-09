@@ -1,5 +1,6 @@
 """This module contains unit tests."""
 
+import json
 import os
 
 import pandas as pd
@@ -175,3 +176,18 @@ def test_output_removal(data, acro):
     assert "output_1" in output
     assert output["output_1"]["summary"] == correct_summary
     acro.print_outputs()
+
+
+def test_finalise_json(data, acro):
+    """Finalise json test."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.crosstab(data.year, data.grant_type)
+    output: dict = acro.finalise("test.json")
+    output_0 = pd.read_csv("./outputs/output_0.csv")
+    output_1 = pd.read_csv("./outputs/output_1.csv")
+    assert (output["output_0"]["output"][0].reset_index()).equals(output_0)
+    assert (output["output_1"]["output"][0].reset_index()).equals(output_1)
+
+    with open("./outputs/test.json", "r") as file:
+        json_data = json.load(file)
+    assert json_data["output_0"]["output"] == os.path.abspath("outputs/output_0.csv").replace("\\", "/")

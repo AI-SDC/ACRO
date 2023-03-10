@@ -190,6 +190,6 @@ def test_finalise_json(data, acro):
 
     with open("./outputs/test.json", encoding="utf-8") as file:
         json_data = json.load(file)
-    assert json_data["output_0"]["output"] == os.path.abspath(
+    assert json_data["output_0"]["output"] == os.path.normpath(os.path.abspath(
         "outputs/output_0.csv"
-    ).replace("\\", "/")
+    ))

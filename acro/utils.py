@@ -73,7 +73,7 @@ def finalise_json(filename: str, results: dict) -> None:
 
     absolute_path = os.path.dirname(os.path.dirname(__file__))
     relative_path = OUTPUT_DIRECTORY
-    #path = os.path.normpath(os.path.join(absolute_path, relative_path))
+    # path = os.path.normpath(os.path.join(absolute_path, relative_path))
     path = os.path.join(absolute_path, relative_path)
     print(path)
     # check if the outputs directory was already created

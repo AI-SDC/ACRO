@@ -135,4 +135,8 @@ dmypy.json
 .Rhistory
 
 # outputs folder
-outputs/
+/notebooks/outputs/
+
+# test output
+/test.xlsx
+/outputs/

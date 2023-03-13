@@ -71,24 +71,12 @@ def finalise_json(filename: str, results: dict) -> None:
 
     outputs: dict = copy.deepcopy(results)
 
-    absolute_path = os.path.dirname(os.path.dirname(__file__))
-    relative_path = OUTPUT_DIRECTORY
-    # path = os.path.normpath(os.path.join(absolute_path, relative_path))
-    path = os.path.join(absolute_path, relative_path)
-    print(path)
     # check if the outputs directory was already created
     try:  # pragma: no cover
-        os.makedirs(path)
+        os.makedirs(OUTPUT_DIRECTORY)
         logger.info("Directory %s created successfully", OUTPUT_DIRECTORY)
     except FileExistsError:
         logger.info("Directory %s already exists", OUTPUT_DIRECTORY)
-    except OSError:  # pragma: no cover
-        logger.info(
-            "Directory %s can not be created. "
-            "Outputs will be written to the current directory.",
-            OUTPUT_DIRECTORY,
-        )
-        path = absolute_path
 
     # convert dataframes to json
     for key, output in outputs.items():
@@ -96,14 +84,15 @@ def finalise_json(filename: str, results: dict) -> None:
             output["outcome"] = output["outcome"].to_json()
 
         # save each output to a different file
-        with open(path + f"{key}.csv", mode="w", newline="", encoding="utf-8") as file:
+        with open(
+            OUTPUT_DIRECTORY + f"{key}.csv", mode="w", newline="", encoding="utf-8"
+        ) as file:
             for i, _ in enumerate(output["output"]):
                 file.write(output["output"][i].to_csv())
-        output["output"] = os.path.normpath(path + f"{key}.csv")
+        output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{key}.csv")
 
     # write to disk
-    print(path + filename)
-    with open(path + filename, "w", newline="", encoding="utf-8") as file:
+    with open(OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8") as file:
         json.dump(outputs, file, indent=4, sort_keys=False)
 
 

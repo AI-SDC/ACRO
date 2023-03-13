@@ -3,6 +3,7 @@
 import copy
 import json
 import logging
+import os
 from collections.abc import Callable
 from inspect import getframeinfo
 
@@ -26,6 +27,9 @@ THRESHOLD: int = 10
 SAFE_PRATIO_P: float = 0.1
 SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
+
+# add output directory
+OUTPUT_DIRECTORY = "outputs/"
 
 
 def get_command(default: str, stack_list: list[tuple]) -> str:
@@ -64,15 +68,31 @@ def finalise_json(filename: str, results: dict) -> None:
     results : dict
         Outputs to write.
     """
-    # convert dataframes to json
+
     outputs: dict = copy.deepcopy(results)
-    for _, output in outputs.items():
+
+    # check if the outputs directory was already created
+    try:  # pragma: no cover
+        os.makedirs(OUTPUT_DIRECTORY)
+        logger.info("Directory %s created successfully", OUTPUT_DIRECTORY)
+    except FileExistsError:
+        logger.info("Directory %s already exists", OUTPUT_DIRECTORY)
+
+    # convert dataframes to json
+    for key, output in outputs.items():
         if output["outcome"] is not None:
             output["outcome"] = output["outcome"].to_json()
-        for i, _ in enumerate(output["output"]):
-            output["output"][i] = output["output"][i].to_json()
+
+        # save each output to a different file
+        with open(
+            OUTPUT_DIRECTORY + f"{key}.csv", mode="w", newline="", encoding="utf-8"
+        ) as file:
+            for i, _ in enumerate(output["output"]):
+                file.write(output["output"][i].to_csv())
+        output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{key}.csv")
+
     # write to disk
-    with open(filename, "w", encoding="utf-8") as file:
+    with open(OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8") as file:
         json.dump(outputs, file, indent=4, sort_keys=False)
 
 

@@ -30,7 +30,8 @@ def test_crosstab_threshold(data, acro):
     _ = acro.crosstab(data.year, data.grant_type)
     output: dict = acro.finalise()
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
-    assert output["output_0"]["summary"] == correct_summary
+    output_0 = list(output.keys())[0]
+    assert output[output_0]["summary"] == correct_summary
 
 
 def test_crosstab_multiple(data, acro):
@@ -43,7 +44,8 @@ def test_crosstab_multiple(data, acro):
         "fail; threshold: 6 cells suppressed; p-ratio: 1 cells suppressed; "
         "nk-rule: 1 cells suppressed; "
     )
-    assert output["output_0"]["summary"] == correct_summary
+    output_0 = list(output.keys())[0]
+    assert output[output_0]["summary"] == correct_summary
 
 
 def test_negatives(data, acro):
@@ -57,8 +59,10 @@ def test_negatives(data, acro):
     )
     output: dict = acro.finalise()
     correct_summary: str = "review; negative values found"
-    assert output["output_0"]["summary"] == correct_summary
-    assert output["output_1"]["summary"] == correct_summary
+    output_0 = list(output.keys())[0]
+    output_1 = list(output.keys())[1]
+    assert output[output_0]["summary"] == correct_summary
+    assert output[output_1]["summary"] == correct_summary
 
 
 def test_pivot_table_pass(data, acro):
@@ -68,7 +72,8 @@ def test_pivot_table_pass(data, acro):
     )
     output: dict = acro.finalise()
     correct_summary: str = "pass"
-    assert output["output_0"]["summary"] == correct_summary
+    output_0 = list(output.keys())[0]
+    assert output[output_0]["summary"] == correct_summary
 
 
 def test_pivot_table_cols(data, acro):
@@ -85,7 +90,8 @@ def test_pivot_table_cols(data, acro):
         "fail; threshold: 14 cells suppressed; "
         "p-ratio: 2 cells suppressed; nk-rule: 2 cells suppressed; "
     )
-    assert output["output_0"]["summary"] == correct_summary
+    output_0 = list(output.keys())[0]
+    assert output[output_0]["summary"] == correct_summary
 
 
 def test_ols(data, acro):
@@ -108,8 +114,10 @@ def test_ols(data, acro):
     # Finalise
     output: dict = acro.finalise()
     correct_summary: str = "pass; dof=807.0 >= 10"
-    assert output["output_0"]["summary"] == correct_summary
-    assert output["output_1"]["summary"] == correct_summary
+    output_0 = list(output.keys())[0]
+    output_1 = list(output.keys())[1]
+    assert output[output_0]["summary"] == correct_summary
+    assert output[output_1]["summary"] == correct_summary
 
 
 def test_probit_logit(data, acro):
@@ -148,17 +156,22 @@ def test_probit_logit(data, acro):
     # Finalise
     output: dict = acro.finalise()
     correct_summary: str = "pass; dof=806.0 >= 10"
-    assert output["output_0"]["summary"] == correct_summary
-    assert output["output_1"]["summary"] == correct_summary
-    assert output["output_2"]["summary"] == correct_summary
-    assert output["output_3"]["summary"] == correct_summary
+    output_0 = list(output.keys())[0]
+    output_1 = list(output.keys())[1]
+    output_2 = list(output.keys())[2]
+    output_3 = list(output.keys())[3]
+    assert output[output_0]["summary"] == correct_summary
+    assert output[output_1]["summary"] == correct_summary
+    assert output[output_2]["summary"] == correct_summary
+    assert output[output_3]["summary"] == correct_summary
 
 
 def test_finalise_excel(data, acro):
     """Finalise excel test."""
     _ = acro.crosstab(data.year, data.grant_type)
-    _ = acro.finalise("test.xlsx")
-    load_data = pd.read_excel("test.xlsx", sheet_name="output_0")
+    output: dict = acro.finalise("test.xlsx")
+    output_0 = list(output.keys())[0]
+    load_data = pd.read_excel("test.xlsx", sheet_name=output_0)
     correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
     assert load_data.iloc[0, 0] == "Command"
     assert load_data.iloc[0, 1] == correct_cell
@@ -169,12 +182,15 @@ def test_output_removal(data, acro):
     _ = acro.crosstab(data.year, data.grant_type)
     _ = acro.crosstab(data.year, data.grant_type)
     _ = acro.crosstab(data.year, data.grant_type)
-    acro.remove_output("output_0")
+    output: dict = acro.finalise()
+    output_0 = list(output.keys())[0]
+    output_1 = list(output.keys())[1]
+    acro.remove_output(output_0)
     output: dict = acro.finalise()
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
-    assert "output_0" not in output
-    assert "output_1" in output
-    assert output["output_1"]["summary"] == correct_summary
+    assert output_0 not in output
+    assert output_1 in output
+    assert output[output_1]["summary"] == correct_summary
     acro.print_outputs()
 
 
@@ -183,12 +199,46 @@ def test_finalise_json(data, acro):
     _ = acro.crosstab(data.year, data.grant_type)
     _ = acro.crosstab(data.year, data.grant_type)
     output: dict = acro.finalise("test.json")
-    output_0 = pd.read_csv("outputs/output_0.csv")
-    output_1 = pd.read_csv("outputs/output_1.csv")
-    assert (output["output_0"]["output"][0].reset_index()).equals(output_0)
-    assert (output["output_1"]["output"][0].reset_index()).equals(output_1)
+    output_0_name = list(output.keys())[0]
+    output_1_name = list(output.keys())[1]
+    output_0 = pd.read_csv(f"outputs/{output_0_name}.csv")
+    output_1 = pd.read_csv(f"outputs/{output_1_name}.csv")
+    assert (output[output_0_name]["output"][0].reset_index()).equals(output_0)
+    assert (output[output_1_name]["output"][0].reset_index()).equals(output_1)
 
     with open("./outputs/test.json", encoding="utf-8") as file:
         json_data = json.load(file)
-    assert json_data["output_0"]["output"] == os.path.abspath("outputs/output_0.csv")
-    assert json_data["output_1"]["output"] == os.path.abspath("outputs/output_1.csv")
+    assert json_data[output_0_name]["output"] == os.path.abspath(
+        f"outputs/{output_0_name}.csv"
+    )
+    assert json_data[output_1_name]["output"] == os.path.abspath(
+        f"outputs/{output_1_name}.csv"
+    )
+
+
+def test_output_timestamp(data, acro):
+    """Adding timestamp to the output name and meta data."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.pivot_table(
+        data,
+        index=["grant_type"],
+        columns=["year"],
+        values=["inc_grants"],
+        aggfunc=["mean", "std"],
+    )
+    output: dict = acro.finalise("test.json")
+    output_0_name = list(output.keys())[0]
+    output_1_name = list(output.keys())[1]
+
+    del acro
+
+    acro = ACRO()
+    _ = acro.crosstab(data.year, data.grant_type)
+    output: dict = acro.finalise("test.json")
+    output_2_name = list(output.keys())[0]
+
+    with open("./outputs/test.json", encoding="utf-8") as file:
+        json_data = json.load(file)
+        assert output_0_name in json_data.keys()
+        assert output_1_name in json_data.keys()
+        assert output_2_name in json_data.keys()

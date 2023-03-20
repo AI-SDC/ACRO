@@ -106,7 +106,7 @@ def finalise_json(filename: str, results: dict) -> None:
 
     else:
         with open(
-            OUTPUT_DIRECTORY + filename, "a", newline="", encoding="utf-8"
+            OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8"
         ) as file:
             json.dump(outputs, file, indent=4, sort_keys=False)
 

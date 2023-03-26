@@ -1,5 +1,6 @@
 """ACRO: Automatic Checking of Research Outputs."""
 
+import datetime
 import logging
 import os
 import pathlib
@@ -103,13 +104,18 @@ class ACRO:
         output : list[DataFrame]
             List of output DataFrames.
         """
-        name: str = f"output_{self.output_id}"
+
+        now = datetime.datetime.now()
+        timestamp = str(now.strftime("%Y-%m-%d-%H%M%S%f")[:-4])
+
+        name: str = f"output_{self.output_id}_{timestamp}"
         self.output_id += 1
         self.results[name] = {
             "command": command,
             "summary": summary,
             "outcome": outcome,
             "output": output,  # json.loads(output),  # JSON to dict
+            "timestamp": timestamp,
         }
         logger.info("add_output(): %s", name)
 

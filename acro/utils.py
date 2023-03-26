@@ -79,21 +79,36 @@ def finalise_json(filename: str, results: dict) -> None:
         logger.info("Directory %s already exists", OUTPUT_DIRECTORY)
 
     # convert dataframes to json
-    for key, output in outputs.items():
+    for output_id, output in outputs.items():
         if output["outcome"] is not None:
             output["outcome"] = output["outcome"].to_json()
 
         # save each output to a different file
         with open(
-            OUTPUT_DIRECTORY + f"{key}.csv", mode="w", newline="", encoding="utf-8"
+            OUTPUT_DIRECTORY + f"{output_id}.csv",
+            mode="w",
+            newline="",
+            encoding="utf-8",
         ) as file:
             for i, _ in enumerate(output["output"]):
                 file.write(output["output"][i].to_csv())
-        output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{key}.csv")
+        output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{output_id}.csv")
 
     # write to disk
-    with open(OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8") as file:
-        json.dump(outputs, file, indent=4, sort_keys=False)
+    if os.path.isfile(OUTPUT_DIRECTORY + filename):
+        with open(
+            OUTPUT_DIRECTORY + filename, "r+", newline="", encoding="utf-8"
+        ) as file:
+            data = json.load(file)
+            data.update(outputs)
+            file.seek(0)
+            json.dump(data, file, indent=4, sort_keys=False)
+
+    else:
+        with open(
+            OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8"
+        ) as file:
+            json.dump(outputs, file, indent=4, sort_keys=False)
 
 
 def finalise_excel(filename: str, results: dict) -> None:

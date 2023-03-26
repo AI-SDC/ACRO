@@ -4,6 +4,7 @@
 
 Changes:
 *    Separate analytic results out from json files
+*    Adding timestamps to the output names and append the new outputs to the existing json file
 
 ## Version 0.0.5 (Nov 02, 2022)
 

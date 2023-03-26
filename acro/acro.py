@@ -106,9 +106,9 @@ class ACRO:
         """
 
         now = datetime.datetime.now()
-        timestamp = str(now.strftime("%Y-%m-%d-%H-%M-%S-%f")[:-4])
+        timestamp = str(now.strftime("%Y-%m-%d-%H%M%S%f")[:-4])
 
-        name: str = f"output_{self.output_id}_({timestamp})"
+        name: str = f"output_{self.output_id}_{timestamp}"
         self.output_id += 1
         self.results[name] = {
             "command": command,

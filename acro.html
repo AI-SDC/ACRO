@@ -138,6 +138,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.remove_output" title="acro.acro.ACRO.remove_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_output</span></code></a>(key)</p></td>
 <td><p>Removes an output from the results dictionary.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.rename_output" title="acro.acro.ACRO.rename_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename_output</span></code></a>(old, new)</p></td>
+<td><p>rename an output and take the timestamp from the old name and suffix it to the new name</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py method">
@@ -501,6 +504,23 @@ a numpy structured or rec array, a dictionary, or a pandas DataFrame.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>Key specifying which output to remove, e.g., ‘output_0’.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.rename_output">
+<span class="sig-name descname"><span class="pre">rename_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.rename_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.rename_output" title="Permalink to this definition"></a></dt>
+<dd><p>rename an output and take the timestamp from the old name
+and suffix it to the new name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>old</strong><span class="classifier">str</span></dt><dd><p>The old name of the output.</p>
+</dd>
+<dt><strong>new</strong><span class="classifier">str</span></dt><dd><p>The new name of the output.</p>
 </dd>
 </dl>
 </dd>

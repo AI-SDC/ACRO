@@ -680,7 +680,8 @@ class ACRO:
         return results
 
     def rename_output(self, old: str, new: str) -> None:
-        """rename an output
+        """rename an output and take the timestamp from the old name
+        and suffix it to the new name
 
         Parameters
         ----------

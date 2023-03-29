@@ -679,6 +679,26 @@ class ACRO:
         )
         return results
 
+    def rename_output(self, old: str, new: str) -> None:
+        """rename an output and take the timestamp from the old name
+        and suffix it to the new name
+
+        Parameters
+        ----------
+        old : str
+            The old name of the output.
+        new : str
+            The new name of the output.
+        """
+        timestamp = old.split("_")[2]
+        new = new + "_" + timestamp
+        if old in self.results:
+            self.results[new] = self.results[old]
+            del self.results[old]
+            logger.info("rename_output(): %s renamed to %s", old, new)
+        else:
+            warnings.warn(f"unable to rename {old}, key not found", stacklevel=8)
+
 
 def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
     """Add a column of ones to an array.

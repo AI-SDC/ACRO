@@ -242,3 +242,18 @@ def test_output_timestamp(data, acro):
         assert output_0_name in json_data.keys()
         assert output_1_name in json_data.keys()
         assert output_2_name in json_data.keys()
+
+
+def test_rename_output(data, acro):
+    """Output renaming."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    output: dict = acro.finalise()
+    output_0 = list(output.keys())[0]
+    timestamp = output_0.split("_")[2]
+    acro.rename_output(output_0, "cross_table")
+    output: dict = acro.finalise()
+    new_name = "cross_table" + "_" + timestamp
+    assert output_0 not in output
+    assert new_name in output
+
+    assert os.path.exists(f"outputs/{new_name}.csv") == 1

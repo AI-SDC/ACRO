@@ -116,7 +116,7 @@ class ACRO:
             "outcome": outcome,
             "output": output,  # json.loads(output),  # JSON to dict
             "timestamp": timestamp,
-            "comments": ""
+            "comments": "",
         }
         logger.info("add_output(): %s", name)
 
@@ -714,12 +714,12 @@ class ACRO:
             if self.results[output]["comments"] == "":
                 self.results[output]["comments"] = comment
             else:
-                self.results[output]["comments"] = self.results[output]["comments"] + ", " + comment
+                self.results[output]["comments"] = (
+                    self.results[output]["comments"] + ", " + comment
+                )
             logger.info("a comment was added to %s", output)
         else:
             warnings.warn(f"unable to find {output}, key not found", stacklevel=8)
-
-
 
 
 def add_constant(data, prepend: bool = True, has_constant: str = "skip"):

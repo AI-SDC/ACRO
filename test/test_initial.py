@@ -268,3 +268,6 @@ def test_add_comments(data, acro):
     comment = "This is a cross table between year and grant_type"
     acro.add_comments(output_0, comment)
     assert output[output_0]["comments"] == comment
+    comment_1 = "6 cells were suppressed"
+    acro.add_comments(output_0, comment_1)
+    assert output[output_0]["comments"] == comment + ", " + comment_1

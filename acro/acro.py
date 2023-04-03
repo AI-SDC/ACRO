@@ -116,6 +116,7 @@ class ACRO:
             "outcome": outcome,
             "output": output,  # json.loads(output),  # JSON to dict
             "timestamp": timestamp,
+            "comments": ""
         }
         logger.info("add_output(): %s", name)
 
@@ -680,7 +681,7 @@ class ACRO:
         return results
 
     def rename_output(self, old: str, new: str) -> None:
-        """rename an output and take the timestamp from the old name
+        """Rename an output and take the timestamp from the old name
         and suffix it to the new name
 
         Parameters
@@ -698,6 +699,27 @@ class ACRO:
             logger.info("rename_output(): %s renamed to %s", old, new)
         else:
             warnings.warn(f"unable to rename {old}, key not found", stacklevel=8)
+
+    def add_comments(self, output: str, comment: str) -> None:
+        """Adds comments to outputs
+
+        Parameters
+        ----------
+        output : str
+            The name of the output.
+        comment : str
+            The comment.
+        """
+        if output in self.results:
+            if self.results[output]["comments"] == "":
+                self.results[output]["comments"] = comment
+            else:
+                self.results[output]["comments"] = self.results[output]["comments"] + ", " + comment
+            logger.info("a comment was added to %s", output)
+        else:
+            warnings.warn(f"unable to find {output}, key not found", stacklevel=8)
+
+
 
 
 def add_constant(data, prepend: bool = True, has_constant: str = "skip"):

@@ -257,3 +257,14 @@ def test_rename_output(data, acro):
     assert new_name in output
 
     assert os.path.exists(f"outputs/{new_name}.csv") == 1
+
+
+def test_add_comments(data, acro):
+    """Adding comments to output"""
+    _ = acro.crosstab(data.year, data.grant_type)
+    output: dict = acro.finalise()
+    output_0 = list(output.keys())[0]
+    assert output[output_0]["comments"] == ""
+    comment = "This is a cross table between year and grant_type"
+    acro.add_comments(output_0, comment)
+    assert output[output_0]["comments"] == comment

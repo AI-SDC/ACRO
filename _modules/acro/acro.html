@@ -185,6 +185,7 @@
             <span class="s2">&quot;outcome&quot;</span><span class="p">:</span> <span class="n">outcome</span><span class="p">,</span>
             <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">,</span>  <span class="c1"># json.loads(output),  # JSON to dict</span>
             <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
+            <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;add_output(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
@@ -749,7 +750,7 @@
         <span class="k">return</span> <span class="n">results</span></div>
 
 <div class="viewcode-block" id="ACRO.rename_output"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.rename_output">[docs]</a>    <span class="k">def</span> <span class="nf">rename_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;rename an output and take the timestamp from the old name</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rename an output and take the timestamp from the old name</span>
 <span class="sd">        and suffix it to the new name</span>
 
 <span class="sd">        Parameters</span>
@@ -766,7 +767,28 @@
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">old</span><span class="p">]</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;rename_output(): </span><span class="si">%s</span><span class="s2"> renamed to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to rename </span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">, key not found&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span></div></div>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to rename </span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">, key not found&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ACRO.add_comments"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.add_comments">[docs]</a>    <span class="k">def</span> <span class="nf">add_comments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds comments to outputs</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output : str</span>
+<span class="sd">            The name of the output.</span>
+<span class="sd">        comment : str</span>
+<span class="sd">            The comment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">output</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">output</span><span class="p">][</span><span class="s2">&quot;comments&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">output</span><span class="p">][</span><span class="s2">&quot;comments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">comment</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">output</span><span class="p">][</span><span class="s2">&quot;comments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">output</span><span class="p">][</span><span class="s2">&quot;comments&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">comment</span>
+                <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;a comment was added to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to find </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">, key not found&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="add_constant"><a class="viewcode-back" href="../../acro.html#acro.acro.add_constant">[docs]</a><span class="k">def</span> <span class="nf">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">has_constant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;skip&quot;</span><span class="p">):</span>

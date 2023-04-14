@@ -143,6 +143,20 @@ class ACRO:
                 print(f"{key}: {item}")
             print("\n")
 
+    def custom_output(self, filename: str) -> None:
+        """Adds an unsupported output to the results dictionary.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file that will be added to the list of the outputs.
+        """
+        self.__add_output(
+            command=None, summary=None, outcome=None, output=os.path.abspath(filename)
+        )
+
+        logger.info("add_output(): %s", filename)
+
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         index,

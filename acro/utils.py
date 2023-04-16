@@ -84,15 +84,16 @@ def finalise_json(filename: str, results: dict) -> None:
             output["outcome"] = output["outcome"].to_json()
 
         # save each output to a different file
-        with open(
-            OUTPUT_DIRECTORY + f"{output_id}.csv",
-            mode="w",
-            newline="",
-            encoding="utf-8",
-        ) as file:
-            for i, _ in enumerate(output["output"]):
-                file.write(output["output"][i].to_csv())
-        output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{output_id}.csv")
+        if not isinstance(output["output"], str):
+            with open(
+                OUTPUT_DIRECTORY + f"{output_id}.csv",
+                mode="w",
+                newline="",
+                encoding="utf-8",
+            ) as file:
+                for i, _ in enumerate(output["output"]):
+                    file.write(output["output"][i].to_csv())
+            output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{output_id}.csv")
 
     # write to disk
     if os.path.isfile(OUTPUT_DIRECTORY + filename):

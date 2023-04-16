@@ -217,7 +217,7 @@ def test_finalise_json(data, acro):
 
 
 def test_output_timestamp(data, acro):
-    """Adding timestamp to the output name and meta data."""
+    """Adding timestamp to the output name and meta data test."""
     _ = acro.crosstab(data.year, data.grant_type)
     _ = acro.pivot_table(
         data,
@@ -245,7 +245,7 @@ def test_output_timestamp(data, acro):
 
 
 def test_rename_output(data, acro):
-    """Output renaming."""
+    """Output renaming test."""
     _ = acro.crosstab(data.year, data.grant_type)
     output: dict = acro.finalise()
     output_0 = list(output.keys())[0]
@@ -260,7 +260,7 @@ def test_rename_output(data, acro):
 
 
 def test_add_comments(data, acro):
-    """Adding comments to output"""
+    """Adding comments to output test"""
     _ = acro.crosstab(data.year, data.grant_type)
     output: dict = acro.finalise()
     output_0 = list(output.keys())[0]
@@ -271,3 +271,13 @@ def test_add_comments(data, acro):
     comment_1 = "6 cells were suppressed"
     acro.add_comments(output_0, comment_1)
     assert output[output_0]["comments"] == comment + ", " + comment_1
+
+
+def test_custom_output(acro):
+    """Adding an unsupported output to the results dictionary test"""
+    filename = "XandY.jfif"
+    file_path = os.path.abspath(filename)
+    acro.custom_output(filename)
+    output: dict = acro.finalise()
+    output_0 = list(output.keys())[0]
+    assert output[output_0]["output"] == file_path

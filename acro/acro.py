@@ -89,7 +89,12 @@ class ACRO:
         return self.results
 
     def __add_output(
-        self, command: str, summary: str, outcome: DataFrame, output: list[DataFrame]
+        self,
+        command: str,
+        summary: str,
+        outcome: DataFrame,
+        output: list[DataFrame],
+        comments: str = "",
     ) -> None:
         """Adds an output to the results dictionary.
 
@@ -103,6 +108,8 @@ class ACRO:
             DataFrame describing the details of ACRO checks.
         output : list[DataFrame]
             List of output DataFrames.
+        comments: str
+            String entered by the user to add comments to the output.
         """
 
         now = datetime.datetime.now()
@@ -116,7 +123,7 @@ class ACRO:
             "outcome": outcome,
             "output": output,  # json.loads(output),  # JSON to dict
             "timestamp": timestamp,
-            "comments": "",
+            "comments": comments,
         }
         logger.info("add_output(): %s", name)
 
@@ -143,7 +150,7 @@ class ACRO:
                 print(f"{key}: {item}")
             print("\n")
 
-    def custom_output(self, filename: str) -> None:
+    def custom_output(self, filename: str, comment: str = "") -> None:
         """Adds an unsupported output to the results dictionary.
 
         Parameters
@@ -152,7 +159,11 @@ class ACRO:
             The name of the file that will be added to the list of the outputs.
         """
         self.__add_output(
-            command=None, summary=None, outcome=None, output=os.path.abspath(filename)
+            command="custom",
+            summary="review",
+            outcome=DataFrame(),
+            output=os.path.abspath(filename),
+            comments=comment,
         )
 
         logger.info("add_output(): %s", filename)

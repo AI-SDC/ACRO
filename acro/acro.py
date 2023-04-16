@@ -166,8 +166,6 @@ class ACRO:
             comments=comment,
         )
 
-        logger.info("add_output(): %s", filename)
-
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         index,

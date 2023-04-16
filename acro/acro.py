@@ -88,7 +88,7 @@ class ACRO:
         logger.info("output written to: %s", filename)
         return self.results
 
-    def __add_output(
+    def __add_output(  # pylint: disable=too-many-arguments
         self,
         command: str,
         summary: str,

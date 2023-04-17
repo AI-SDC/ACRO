@@ -282,14 +282,6 @@ def test_custom_output(acro):
     output_0 = list(output.keys())[0]
     assert output[output_0]["output"] == file_path
 
-<<<<<<< HEAD
-=======
-
-"""
-# This test will only pass if the value of the check_missing_values parameter in the default yaml is set to true
-# If the check_missing_values parameter in the default yaml is set to true, this test should pass
-# but other tests will fail because the output's summary will change to "review; missing values found"
->>>>>>> 3f0d2fecb9caf430dca910bf58267a02174f37f1
 
 # This test will only pass if the value of the check_missing_values parameter in the
 # default yaml is set to true
@@ -298,7 +290,6 @@ def test_custom_output(acro):
 # will change to "review; missing values found"
 
 # def test_missing(data, acro):
-#    """Pivot table and Crosstab with missing values."""
 #    _ = acro.crosstab(
 #        data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
 #    )

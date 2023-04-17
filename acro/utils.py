@@ -218,7 +218,14 @@ def agg_missing(vals: Series) -> bool:
     bool
         Whether a missing value was found.
     """
+<<<<<<< HEAD
     return vals.isna().sum() != 0
+=======
+    if vals.isna().sum() == 0:
+        return False
+    else:
+        return True
+>>>>>>> 3f0d2fecb9caf430dca910bf58267a02174f37f1
 
 
 def agg_p_percent(vals: Series) -> bool:

@@ -282,6 +282,7 @@ def test_custom_output(acro):
     output_0 = list(output.keys())[0]
     assert output[output_0]["output"] == file_path
 
+
 """
 # This test will only pass if the value of the check_missing_values parameter in the default yaml is set to true
 # If the check_missing_values parameter in the default yaml is set to true, this test should pass

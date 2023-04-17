@@ -204,6 +204,7 @@ def agg_negative(vals: Series) -> bool:
     """
     return vals.min() < 0
 
+
 def agg_missing(vals: Series) -> bool:
     """Aggregation function that returns whether any values are missing.
 
@@ -221,7 +222,6 @@ def agg_missing(vals: Series) -> bool:
         return False
     else:
         return True
-    
 
 
 def agg_p_percent(vals: Series) -> bool:

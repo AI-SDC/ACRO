@@ -269,7 +269,9 @@ class ACRO:
             masks["nk-rule"] = pd.crosstab(index, columns, values, aggfunc=utils.agg_nk)
             # check for missing values -- currently unsupported
             if utils.CHECK_MISSING_VALUES == True:
-                masks["missing"] = pd.crosstab(index, columns, values, aggfunc=utils.agg_missing)
+                masks["missing"] = pd.crosstab(
+                    index, columns, values, aggfunc=utils.agg_missing
+                )
 
         table, outcome = utils.apply_suppression(table, masks)
         summary = utils.get_summary(masks)
@@ -382,7 +384,9 @@ class ACRO:
             # check for missing values -- currently unsupported
             if utils.CHECK_MISSING_VALUES == True:
                 agg = [utils.agg_missing] * n_agg if n_agg > 1 else utils.agg_missing
-                masks["missing"] = pd.pivot_table(data, values, index, columns, aggfunc=agg)
+                masks["missing"] = pd.pivot_table(
+                    data, values, index, columns, aggfunc=agg
+                )
 
         table, outcome = utils.apply_suppression(table, masks)
         summary = utils.get_summary(masks)

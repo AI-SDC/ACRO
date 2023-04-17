@@ -8,6 +8,7 @@ Changes:
 *    Create functionality for users to rename outputs
 *    Create functionality to add comments to outputs
 *    Create functionality to add currently unsupported outputs to the list of outputs
+*    Handling missing values
 
 ## Version 0.0.5 (Nov 02, 2022)
 

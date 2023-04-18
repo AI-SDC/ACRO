@@ -3,7 +3,7 @@
 ## Development
 
 Changes:
-*    ...
+*    Handling missing values
 
 ## Version 0.0.6 (Apr 16, 2023)
 

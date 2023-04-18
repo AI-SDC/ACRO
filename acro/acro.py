@@ -63,6 +63,7 @@ class ACRO:
         utils.SAFE_PRATIO_P = self.config["safe_pratio_p"]
         utils.SAFE_NK_N = self.config["safe_nk_n"]
         utils.SAFE_NK_K = self.config["safe_nk_k"]
+        utils.CHECK_MISSING_VALUES = self.config["check_missing_values"]
 
     def finalise(self, filename: str = "results.json") -> dict:
         """Creates a results file for checking.
@@ -266,6 +267,11 @@ class ACRO:
             )
             # nk values check
             masks["nk-rule"] = pd.crosstab(index, columns, values, aggfunc=utils.agg_nk)
+            # check for missing values -- currently unsupported
+            if utils.CHECK_MISSING_VALUES:
+                masks["missing"] = pd.crosstab(
+                    index, columns, values, aggfunc=utils.agg_missing
+                )
 
         table, outcome = utils.apply_suppression(table, masks)
         summary = utils.get_summary(masks)
@@ -375,6 +381,12 @@ class ACRO:
             # nk values check
             agg = [utils.agg_nk] * n_agg if n_agg > 1 else utils.agg_nk
             masks["nk-rule"] = pd.pivot_table(data, values, index, columns, aggfunc=agg)
+            # check for missing values -- currently unsupported
+            if utils.CHECK_MISSING_VALUES:
+                agg = [utils.agg_missing] * n_agg if n_agg > 1 else utils.agg_missing
+                masks["missing"] = pd.pivot_table(
+                    data, values, index, columns, aggfunc=agg
+                )
 
         table, outcome = utils.apply_suppression(table, masks)
         summary = utils.get_summary(masks)

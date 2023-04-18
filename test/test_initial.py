@@ -3,10 +3,11 @@
 import json
 import os
 
+import numpy as np
 import pandas as pd
 import pytest
 
-from acro import ACRO, add_constant
+from acro import ACRO, add_constant, utils
 
 # pylint: disable=redefined-outer-name
 
@@ -281,3 +282,21 @@ def test_custom_output(acro):
     output: dict = acro.finalise()
     output_0 = list(output.keys())[0]
     assert output[output_0]["output"] == file_path
+
+
+def test_missing(data, acro):
+    """Pivot table and Crosstab with negative values."""
+    utils.CHECK_MISSING_VALUES = True
+    data.loc[0:10, "inc_grants"] = np.NaN
+    _ = acro.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
+    )
+    _ = acro.pivot_table(
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+    )
+    output: dict = acro.finalise()
+    correct_summary: str = "review; missing values found"
+    output_0 = list(output.keys())[0]
+    output_1 = list(output.keys())[1]
+    assert output[output_0]["summary"] == correct_summary
+    assert output[output_1]["summary"] == correct_summary

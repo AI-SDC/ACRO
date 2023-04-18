@@ -205,6 +205,22 @@ def agg_negative(vals: Series) -> bool:
     return vals.min() < 0
 
 
+def agg_missing(vals: Series) -> bool:
+    """Aggregation function that returns whether any values are missing.
+
+    Parameters
+    ----------
+    vals : Series
+        Series to check for missing values.
+
+    Returns
+    -------
+    bool
+        Whether a missing value was found.
+    """
+    return vals.isna().sum() != 0
+
+
 def agg_p_percent(vals: Series) -> bool:
     """Aggregation function that returns whether the p percent rule is violated.
 
@@ -280,6 +296,10 @@ def apply_suppression(
     if "negative" in masks:
         mask = masks["negative"]
         outcome_df[mask.values] = "negative"
+    # don't apply suppression if missing values are present
+    elif "missing" in masks:
+        mask = masks["missing"]
+        outcome_df[mask.values] = "missing"
     # apply suppression masks
     else:
         for name, mask in masks.items():
@@ -309,6 +329,8 @@ def get_summary(masks: dict[str, DataFrame]) -> str:
     summary: str = ""
     if "negative" in masks:
         summary = "review; negative values found"
+    elif "missing" in masks:
+        summary = "review; missing values found"
     else:
         for name, mask in masks.items():
             n_cells = mask.to_numpy().sum()

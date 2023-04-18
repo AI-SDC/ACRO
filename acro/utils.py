@@ -93,6 +93,7 @@ def finalise_json(filename: str, results: dict) -> None:
             ) as file:
                 for i, _ in enumerate(output["output"]):
                     file.write(output["output"][i].to_csv())
+                    file.write("\n")
             output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{output_id}.csv")
 
     # write to disk

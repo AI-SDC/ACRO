@@ -104,7 +104,7 @@ def finalise_json(filename: str, results: dict) -> None:
             data = json.load(file)
             data.update(outputs)
             file.seek(0)
-            json.dump(data, file, indent=4, sort_keys=False)
+            json.dump(data, file, indent=4, sort_keys=False, allow_nan=True)
 
     else:
         with open(

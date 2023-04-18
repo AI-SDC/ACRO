@@ -296,6 +296,10 @@ def apply_suppression(
     if "negative" in masks:
         mask = masks["negative"]
         outcome_df[mask.values] = "negative"
+    # don't apply suppression if missing values are present
+    elif "missing" in masks:
+        mask = masks["missing"]
+        outcome_df[mask.values] = "missing"
     # apply suppression masks
     else:
         for name, mask in masks.items():

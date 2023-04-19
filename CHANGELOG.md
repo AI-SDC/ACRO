@@ -4,6 +4,7 @@
 
 Changes:
 *    Handling missing values
+*    Update the output from the regression to have new line between each output in the csv files
 
 ## Version 0.0.6 (Apr 16, 2023)
 

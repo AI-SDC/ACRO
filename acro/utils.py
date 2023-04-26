@@ -311,7 +311,7 @@ def apply_suppression(
                 tmp_df[mask.values] = name + "; "
                 outcome_df += tmp_df
             except TypeError:
-                logger.warning(f"problem mask %s is not binary", name)
+                logger.warning("problem mask %s is not binary", name)
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", outcome_df)
     return safe_df, outcome_df

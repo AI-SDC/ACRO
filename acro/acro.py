@@ -279,7 +279,7 @@ class ACRO:
             mask.replace({0:False,1:True},inplace=True)
             masks[name]=mask
 
-        
+
         table, outcome = utils.apply_suppression(table, masks)
         summary = utils.get_summary(masks)
         self.__add_output(command, summary, outcome, [table])

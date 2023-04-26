@@ -302,11 +302,11 @@ def test_missing(data, acro):
     assert output[output_1]["summary"] == correct_summary
 
 
-def test_suppression_error(caplog, acro):
+def test_suppression_error(caplog):
     """Apply suppression type error test."""
-    d = {"col1": [1, 2], "col2": [3, 4]}
-    m = {"col1": [np.NaN, True], "col2": [True, True]}
-    table = pd.DataFrame(data=d)
-    masks = {"test": pd.DataFrame(data=m)}
+    table_data = {"col1": [1, 2], "col2": [3, 4]}
+    mask_data = {"col1": [np.NaN, True], "col2": [True, True]}
+    table = pd.DataFrame(data=table_data)
+    masks = {"test": pd.DataFrame(data=mask_data)}
     utils.apply_suppression(table, masks)
     assert "problem mask test is not binary" in caplog.text

@@ -82,7 +82,7 @@ def finalise_json(filename: str, results: dict) -> None:
     for output_id, output in outputs.items():
         if output["outcome"] is not None:
             output["outcome"] = output["outcome"].to_json()
-
+            print(output["outcome"])
         # save each output to a different file
         if not isinstance(output["output"], str):
             with open(
@@ -96,21 +96,15 @@ def finalise_json(filename: str, results: dict) -> None:
                     file.write("\n")
             output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{output_id}.csv")
 
-    # write to disk
+    data = outputs
+    # load existing results
     if os.path.isfile(OUTPUT_DIRECTORY + filename):
-        with open(
-            OUTPUT_DIRECTORY + filename, "r+", newline="", encoding="utf-8"
-        ) as file:
+        with open(OUTPUT_DIRECTORY + filename, newline="", encoding="utf-8") as file:
             data = json.load(file)
             data.update(outputs)
-            file.seek(0)
-            json.dump(data, file, indent=4, sort_keys=False, allow_nan=True)
-
-    else:
-        with open(
-            OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8"
-        ) as file:
-            json.dump(outputs, file, indent=4, sort_keys=False)
+    # write to disk
+    with open(OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, sort_keys=False)
 
 
 def finalise_excel(filename: str, results: dict) -> None:

@@ -95,12 +95,13 @@ def finalise_json(filename: str, results: dict) -> None:
                     file.write("\n")
             output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{output_id}.csv")
 
-    data = outputs
     # load existing results
     if os.path.isfile(OUTPUT_DIRECTORY + filename):
         with open(OUTPUT_DIRECTORY + filename, newline="", encoding="utf-8") as file:
             data = json.load(file)
             data.update(outputs)
+    else:
+        data = outputs
     # write to disk
     with open(OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8") as file:
         json.dump(data, file, indent=4, sort_keys=False)

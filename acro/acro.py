@@ -94,7 +94,7 @@ class ACRO:
         command: str,
         summary: str,
         outcome: DataFrame,
-        output: list[DataFrame],
+        output: str | list[DataFrame],
         comments: str = "",
     ) -> None:
         """Adds an output to the results dictionary.

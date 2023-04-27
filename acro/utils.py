@@ -82,7 +82,6 @@ def finalise_json(filename: str, results: dict) -> None:
     for output_id, output in outputs.items():
         if output["outcome"] is not None:
             output["outcome"] = output["outcome"].to_json()
-            print(output["outcome"])
         # save each output to a different file
         if not isinstance(output["output"], str):
             with open(

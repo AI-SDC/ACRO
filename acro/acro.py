@@ -272,6 +272,12 @@ class ACRO:
                 masks["missing"] = pd.crosstab(
                     index, columns, values, aggfunc=utils.agg_missing
                 )
+        # pd.crosstab returns nan for an empty cell
+        for name, mask in masks.items():
+            mask.fillna(value=1, inplace=True)
+            mask = mask.astype(int)
+            mask.replace({0: False, 1: True}, inplace=True)
+            masks[name] = mask
 
         table, outcome = utils.apply_suppression(table, masks)
         summary = utils.get_summary(masks)

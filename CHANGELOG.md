@@ -3,8 +3,14 @@
 ## Development
 
 Changes:
-*    Handling missing values
-*    Update the output from the regression to have new line between each output in the csv files
+*
+
+## Version 0.1.0 (Apr 28, 2023)
+
+Changes:
+*    Handling missing values.
+*    Update the output from the regression to have new line between each output in the csv files.
+*    Several minor bug fixes.
 
 ## Version 0.0.6 (Apr 16, 2023)
 

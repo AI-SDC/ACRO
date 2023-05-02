@@ -120,8 +120,18 @@ safe_table = acro.crosstab(df.recommend, df.parents, values=df.children, aggfunc
 print("\nand this is the researchers output")
 print(safe_table)
 
-# print("\nThis is what happens if you try to get max values for a cell")
-# safe_table = acro.crosstab(df.recommend, df.parents, values=df.children, aggfunc="max")
+print(
+    "\nThis is what happens if you try to get max values for a cell."
+    "\nSo that this script runs on one go, we've caught the exception "
+    "thrown by ACRO."
+)
+try:
+    safe_table = acro.crosstab(
+        df.recommend, df.parents, values=df.children, aggfunc="max"
+    )
+except ValueError as e:
+    print("ValueError:")
+    print(e)
 
 """
 ACRO pivot_table

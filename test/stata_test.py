@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+ACRO Stata Tests.
+"""
 
 # ACRO Tests
 
@@ -21,17 +24,14 @@ df.head()
 # Pandas crosstab
 
 table = pd.crosstab(df.year, df.grant_type)
-table
 
 # ACRO crosstab
 
 safe_table = acro.crosstab(df.year, df.grant_type)
-safe_table
 
 # ACRO crosstab with aggregation function
 
 safe_table = acro.crosstab(df.year, df.grant_type, values=df.inc_grants, aggfunc="mean")
-safe_table
 
 # ACRO crosstab with negative values
 
@@ -39,14 +39,12 @@ negative = df.inc_grants.copy()
 negative[0:10] = -10
 
 safe_table = acro.crosstab(df.year, df.grant_type, values=negative, aggfunc="mean")
-safe_table
 
 # ACRO pivot_table
 
 table = acro.pivot_table(
     df, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
 )
-table
 
 # ACRO pivot_table with negative values
 
@@ -55,7 +53,6 @@ df.loc[0:10, "inc_grants"] = -10
 table = acro.pivot_table(
     df, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
 )
-table
 
 # ACRO OLS
 

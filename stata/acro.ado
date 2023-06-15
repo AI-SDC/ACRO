@@ -11,11 +11,7 @@
 capture program drop acro
 program  acro, rclass
   version 18
-  *syntax varlist
   local command = `"`0'"'
-  display `"command is "  `command' " "'
-
-  
   python: acrohandler("`command'")
 
 end
@@ -24,15 +20,17 @@ version 18
 python
 from sfi import Data, Macro, Missing, SFIToolkit, Scalar
 import acro
+import numpy as np
 import pandas as pd
 import acro_parser 
 myacro="empty"
 def acrohandler(varlist):
     debug=False
     # parse command line
-    command_list = varlist.split()
-    n_args= len(command_list)
+
     if(debug):
+        command_list = varlist.split()
+        n_args= len(command_list)
         theline= f'acrohandler received this command: {varlist}\n'
         SFIToolkit.displayln(theline)
         theline += f'which it split into {n_args} tokens:\n'
@@ -42,6 +40,7 @@ def acrohandler(varlist):
             f.write(theline) 
         SFIToolkit.displayln("command line parsed")
     
+    
     #make data object
     nvars= Data.getVarCount()
     colnames= []
@@ -49,18 +48,14 @@ def acrohandler(varlist):
         colnames.append(Data.getVarName(col))
     if debug:
         SFIToolkit.displayln(f'var names are {colnames}')
-    the_data= pd.DataFrame(Data.get(),columns=colnames)
+    the_data= pd.DataFrame(Data.get(missingval=np.nan),columns=colnames)
     
     if debug:
         contents = the_data.describe()
         contents.to_csv("contents.csv") 
 
     #now do the acro part
-    #myacro=acro.ACRO()
-    acro_outstr = acro_parser.parse_and_run (the_data,command_list)
+    acro_outstr = acro_parser.parse_and_run (the_data,varlist)
     SFIToolkit.display(acro_outstr)
-    #myacro.finalise("stata_outs.json")
-
-
 end
 

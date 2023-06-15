@@ -14,7 +14,8 @@ program  acro, rclass
   *syntax varlist
   local command = `"`0'"'
   display `"command is "  `command' " "'
-  *display `command'
+
+  
   python: acrohandler("`command'")
 
 end
@@ -24,7 +25,8 @@ python
 from sfi import Data, Macro, Missing, SFIToolkit, Scalar
 import acro
 import pandas as pd
-
+import acro_parser 
+myacro="empty"
 def acrohandler(varlist):
     debug=False
     # parse command line
@@ -54,15 +56,10 @@ def acrohandler(varlist):
         contents.to_csv("contents.csv") 
 
     #now do the acro part
-    myacro=acro.ACRO()
-    if command_list[0]=='table':
-        if n_args==3:
-            rowvar=f'{command_list[1]}'
-            colvar= f'{command_list[2]}'
-            safetable=myacro.crosstab(the_data[rowvar],the_data[colvar])
-            SFIToolkit.display(safetable.to_string()+'\n')
-        #myacro.print_outputs()
-    myacro.finalise("stata_outs.json")
+    #myacro=acro.ACRO()
+    acro_outstr = acro_parser.parse_and_run (the_data,command_list)
+    SFIToolkit.display(acro_outstr)
+    #myacro.finalise("stata_outs.json")
 
 
 end

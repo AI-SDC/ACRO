@@ -18,7 +18,8 @@ def parse_and_run(df:pd.DataFrame,
     Returns the result as a formatted string.
     """
     global myacro
-
+    varlist= varlist.split()
+    print(f' split varlist is {varlist}')
 
     #session  management first  
     if command == 'init':
@@ -35,7 +36,7 @@ def parse_and_run(df:pd.DataFrame,
         return  ""
     
     elif command =='table':
-        if n_args==3:
+        if len(options)==0:
             rowvar=f'{varlist[0]}'
             colvar= f'{varlist[1]}'
             

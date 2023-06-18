@@ -9,43 +9,41 @@
 *********************************************************************************
 	
 capture program drop acro
-program acro2, rclass
+program acro, rclass
   syntax anything [if] [in] [fweight  aweight  pweight  iweight] [, *] 
-  display `"here"' 
-  display `" anything is `anything'"'
+  *display `"here"' 
+  *display `" anything is `anything'"'
   tokenize `anything'
   local command `1'
   macro shift
   local rest `*'
-  display `" command is |`command'| newvarlist is |`rest'|"'
-  display `" if is  `if'"'
-  display `" in is `in'"'
-  display `" weights are: `fweight', `aweight', `pweight', `iweight' "'
-  display `" exp is `exp'"'
-  display `"options is `options'"'  
+  *display `" command is |`command'| newvarlist is |`rest'|"'
+  *display `" if is  `if'"'
+  *display `" in is `in'"'
+  *display `" weights are: `fweight', `aweight', `pweight', `iweight' "'
+  *display `" exp is `exp'"'
+  *display `"options is `options'"'  
   python: acrohandler("`command'", "`rest'","`if'","`exp'","`weights'","`options'")
-  
+end  
 
-version 18
-python
-from sfi import Data, Macro, Missing, SFIToolkit, Scalar
+python:
+from sfi import Data, SFIToolkit
 import acro
 import numpy as np
 import pandas as pd
 import acro_parser 
 myacro="empty"
+debug = False
 def acrohandler(command, varlist,exclusion,exp,weights,options):
-	if debug:
-		outline =( 'in python acrohandler function: ',
-			f'command = {command}',
-			f'varlist={varlist}',
-			f'if = {exclusion}',
-			f'exp = {exp}',
-			f'weights={weights}',
-			f'options={options}'
-		)
-	    SFIToolkit.displayln(outline)	
- 
+    if debug:
+        outline = 'in python acrohandler function: '
+        outline +=    f'command = {command} '
+        outline +=    f'varlist={varlist} '
+        outline +=    f'if = {exclusion} '
+        outline +=    f'exp = {exp} '
+        outline +=    f'weights={weights} '
+        outline +=    f'options={options} '
+        SFIToolkit.displayln(outline)
     
     #make data object
     nvars= Data.getVarCount()

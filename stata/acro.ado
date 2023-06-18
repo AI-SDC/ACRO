@@ -9,12 +9,22 @@
 *********************************************************************************
 	
 capture program drop acro
-program  acro, rclass
-  version 18
-  local command = `"`0'"'
-  python: acrohandler("`command'")
-
-end
+program acro2, rclass
+  syntax anything [if] [in] [fweight  aweight  pweight  iweight] [, *] 
+  display `"here"' 
+  display `" anything is `anything'"'
+  tokenize `anything'
+  local command `1'
+  macro shift
+  local rest `*'
+  display `" command is |`command'| newvarlist is |`rest'|"'
+  display `" if is  `if'"'
+  display `" in is `in'"'
+  display `" weights are: `fweight', `aweight', `pweight', `iweight' "'
+  display `" exp is `exp'"'
+  display `"options is `options'"'  
+  python: acrohandler("`command'", "`rest'","`if'","`exp'","`weights'","`options'")
+  
 
 version 18
 python
@@ -24,22 +34,18 @@ import numpy as np
 import pandas as pd
 import acro_parser 
 myacro="empty"
-def acrohandler(varlist):
-    debug=False
-    # parse command line
-
-    if(debug):
-        command_list = varlist.split()
-        n_args= len(command_list)
-        theline= f'acrohandler received this command: {varlist}\n'
-        SFIToolkit.displayln(theline)
-        theline += f'which it split into {n_args} tokens:\n'
-        for tok in range(n_args):
-            theline+= f'  _{command_list[tok]}_\n'
-        with open ("pyout.txt",mode="w") as f:
-            f.write(theline) 
-        SFIToolkit.displayln("command line parsed")
-    
+def acrohandler(command, varlist,exclusion,exp,weights,options):
+	if debug:
+		outline =( 'in python acrohandler function: ',
+			f'command = {command}',
+			f'varlist={varlist}',
+			f'if = {exclusion}',
+			f'exp = {exp}',
+			f'weights={weights}',
+			f'options={options}'
+		)
+	    SFIToolkit.displayln(outline)	
+ 
     
     #make data object
     nvars= Data.getVarCount()
@@ -55,7 +61,7 @@ def acrohandler(varlist):
         contents.to_csv("contents.csv") 
 
     #now do the acro part
-    acro_outstr = acro_parser.parse_and_run (the_data,varlist)
+    acro_outstr = acro_parser.parse_and_run (the_data,command,varlist,exclusion,exp,weights,options)
     SFIToolkit.display(acro_outstr)
 end
 

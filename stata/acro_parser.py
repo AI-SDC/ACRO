@@ -5,24 +5,21 @@ from acro import ACRO, add_constant
 
 
 
-def parse_and_run(df:pd.DataFrame, varlist:str)->pd.DataFrame:
+def parse_and_run(df:pd.DataFrame,
+                  command:str,
+                  varlist:str,
+                  exclusion:str,
+                  exp:str,
+                  weights:str,
+                  options:str)->pd.DataFrame:
     """
-    Takes a dataframe and the stata command line split into a list
-    Interprets the command line and runs the appropriate
-    command on a pre-existing ACRO object myacro
-    returns the result as a pandas dataframe
+    Takes a dataframe and the parsed stata command line.
+    Runs the appropriate command on a pre-existing ACRO object myacro
+    Returns the result as a formatted string.
     """
     global myacro
 
-    #now the main part parsing the command line  
-    ##TODO this is going to need to be more complex
-    ## to account for stata key words
-    ## for now just split on white spaces
-    command_list = varlist.split()
-    n_args = len(command_list)
-    command = command_list[0]
-    
-    
+
     #session  management first  
     if command == 'init':
         #initialise the acro object
@@ -39,8 +36,11 @@ def parse_and_run(df:pd.DataFrame, varlist:str)->pd.DataFrame:
     
     elif command =='table':
         if n_args==3:
-            rowvar=f'{command_list[1]}'
-            colvar= f'{command_list[2]}'
+            rowvar=f'{varlist[0]}'
+            colvar= f'{varlist[1]}'
+            
+            ##TODO: add code to deal woith contents
+            ##TODO add code to deal with super row/col vars
              
             safe_output=myacro.crosstab(df[rowvar],df[colvar])
             return  safe_output.to_string()+'\n'
@@ -54,11 +54,9 @@ def parse_and_run(df:pd.DataFrame, varlist:str)->pd.DataFrame:
     
     
     elif command == 'regress':
-        depvar = command_list[1]
-        indep_vars=[]
-        for newvar in range(2,n_args):
-            indep_vars.append(command_list[newvar])
-        new_df = df[[depvar]+indep_vars].dropna()
+        depvar = varlist[0]
+        indep_vars=varlist[1:]
+        new_df = df[varlist].dropna()
         y = new_df[depvar]
         x = new_df[indep_vars]
         x = add_constant(x)
@@ -67,11 +65,9 @@ def parse_and_run(df:pd.DataFrame, varlist:str)->pd.DataFrame:
         return res_str
    
     elif command == 'probit':
-        depvar = command_list[1]
-        indep_vars=[]
-        for newvar in range(2,n_args):
-            indep_vars.append(command_list[newvar])
-        new_df = df[[depvar]+indep_vars].dropna()
+        depvar = varlist[0]
+        indep_vars=varlist[1:]
+        new_df = df[varlist].dropna()
         y = new_df[depvar].astype("category").cat.codes  # numeric
         y.name = depvar
         x = new_df[indep_vars]

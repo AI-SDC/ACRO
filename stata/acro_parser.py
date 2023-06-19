@@ -43,7 +43,10 @@ def parse_and_run(df:pd.DataFrame,
             ##TODO: add code to deal woith contents
             ##TODO add code to deal with super row/col vars
              
-            safe_output=myacro.crosstab(df[rowvar],df[colvar],
+            if 'nototals' in options:
+                safe_output=myacro.crosstab(df[rowvar],df[colvar])
+            else:
+                safe_output=myacro.crosstab(df[rowvar],df[colvar],
                                         margins=True,
                                        margins_name='Total',)
             return  safe_output.to_string()+'\n'

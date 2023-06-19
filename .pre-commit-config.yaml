@@ -26,7 +26,7 @@ repos:
 
   # Check for spelling
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.4
+    rev: v2.2.5
     hooks:
       - id: codespell
         args: ["-L", "tre"]
@@ -39,7 +39,7 @@ repos:
 
   # Upgrade old Python syntax
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.6.0
+    rev: v3.7.0
     hooks:
       - id: pyupgrade
         args: [--py310-plus]

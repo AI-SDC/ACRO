@@ -26,8 +26,8 @@ functionality to:
 
 See the project [wiki](https://github.com/AI-SDC/ACRO/wiki) for details.
 
-## Coding standards    
-Are also described in the project [wiki](https://github.com/AI-SDC/ACRO/wiki) 
+## Coding standards
+Are also described in the project [wiki](https://github.com/AI-SDC/ACRO/wiki)
 
 *******************************************************************************
 

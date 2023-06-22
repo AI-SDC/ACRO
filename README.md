@@ -26,6 +26,9 @@ functionality to:
 
 See the project [wiki](https://github.com/AI-SDC/ACRO/wiki) for details.
 
+## Coding standards    
+Are also described in the project [wiki](https://github.com/AI-SDC/ACRO/wiki) 
+
 *******************************************************************************
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)

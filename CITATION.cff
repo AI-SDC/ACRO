@@ -25,6 +25,10 @@ authors:
   - family-names: Albashir
     given-names: Maha
     affiliation: University of the West of England
+  - family-names: Davy
+    given-names: Simon
+    affiliation: University of Oxford
+    orcid: https://orcid.org/0000-0001-9890-3619
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7273903

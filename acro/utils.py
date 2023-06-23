@@ -1,9 +1,6 @@
 """ACRO: Utility Functions."""
 
-import copy
-import json
 import logging
-import os
 from collections.abc import Callable
 from inspect import getframeinfo
 
@@ -27,9 +24,6 @@ THRESHOLD: int = 10
 SAFE_PRATIO_P: float = 0.1
 SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
-
-# add output directory
-OUTPUT_DIRECTORY = "outputs/"
 
 
 def get_command(default: str, stack_list: list[tuple]) -> str:
@@ -56,98 +50,6 @@ def get_command(default: str, stack_list: list[tuple]) -> str:
             command = "\n".join(code).strip()
     logger.debug("command: %s", command)
     return command
-
-
-def finalise_json(filename: str, results: dict) -> None:
-    """Writes outputs to a JSON file.
-
-    Parameters
-    ----------
-    filename : str
-        Name of the output file.
-    results : dict
-        Outputs to write.
-    """
-
-    outputs: dict = copy.deepcopy(results)
-
-    # check if the outputs directory was already created
-    try:  # pragma: no cover
-        os.makedirs(OUTPUT_DIRECTORY)
-        logger.info("Directory %s created successfully", OUTPUT_DIRECTORY)
-    except FileExistsError:
-        logger.info("Directory %s already exists", OUTPUT_DIRECTORY)
-
-    # convert dataframes to json
-    for output_id, output in outputs.items():
-        if output["outcome"] is not None:
-            # df.to_dict() does not always produce json serializeable structures.
-            # e.g. pivot tables have tuple keys.
-            # So we use .to_json() to ensure its serializeable, but we are
-            # going to serilize it later, so we parse it back into a dict
-            output["outcome"] = json.loads(output["outcome"].to_json())
-        # save each output to a different file
-        if not isinstance(output["output"], str):
-            with open(
-                OUTPUT_DIRECTORY + f"{output_id}.csv",
-                mode="w",
-                newline="",
-                encoding="utf-8",
-            ) as file:
-                for i, _ in enumerate(output["output"]):
-                    file.write(output["output"][i].to_csv())
-                    file.write("\n")
-            output["output"] = os.path.abspath(f"{OUTPUT_DIRECTORY}{output_id}.csv")
-
-    data = outputs
-    # load existing results
-    if os.path.isfile(OUTPUT_DIRECTORY + filename):
-        with open(OUTPUT_DIRECTORY + filename, newline="", encoding="utf-8") as file:
-            data = json.load(file)
-            data.update(outputs)
-    # write to disk
-    with open(OUTPUT_DIRECTORY + filename, "w", newline="", encoding="utf-8") as file:
-        json.dump(data, file, indent=4, sort_keys=False)
-
-
-def finalise_excel(filename: str, results: dict) -> None:
-    """Writes outputs to an excel spreadsheet.
-
-    Parameters
-    ----------
-    filename : str
-        Name of the output file.
-    results : dict
-        Outputs to write.
-    """
-    with pd.ExcelWriter(  # pylint: disable=abstract-class-instantiated
-        filename, engine="openpyxl"
-    ) as writer:
-        # description sheet
-        sheet = []
-        summary = []
-        command = []
-        for output_id, output in results.items():
-            sheet.append(output_id)
-            command.append(output["command"])
-            summary.append(output["summary"])
-        tmp_df = pd.DataFrame({"Sheet": sheet, "Command": command, "Summary": summary})
-        tmp_df.to_excel(writer, sheet_name="description", index=False, startrow=0)
-        # individual sheets
-        for output_id, output in results.items():
-            # command and summary
-            start = 0
-            tmp_df = pd.DataFrame(
-                [output["command"], output["summary"]], index=["Command", "Summary"]
-            )
-            tmp_df.to_excel(writer, sheet_name=output_id, startrow=start)
-            # outcome
-            if output["outcome"] is not None:
-                output["outcome"].to_excel(writer, sheet_name=output_id, startrow=4)
-            # output
-            for table in output["output"]:
-                start = 1 + writer.sheets[output_id].max_row
-                table.to_excel(writer, sheet_name=output_id, startrow=start)
 
 
 def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
@@ -314,7 +216,7 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_summary(masks: dict[str, DataFrame]) -> str:
+def get_summary(masks: dict[str, DataFrame]) -> [str, str]:
     """Returns a string summarising the suppression masks.
 
     Parameters
@@ -325,8 +227,11 @@ def get_summary(masks: dict[str, DataFrame]) -> str:
     Returns
     -------
     str
+        Status: {"review", "fail", "pass"}.
+    str
         Summary of the suppression masks.
     """
+    status = "review"
     summary: str = ""
     if "negative" in masks:
         summary = "review; negative values found"
@@ -338,11 +243,13 @@ def get_summary(masks: dict[str, DataFrame]) -> str:
             if n_cells > 0:
                 summary += f"{name}: {n_cells} cells suppressed; "
         if summary == "":
+            status = "pass"
             summary = "pass"
         else:
+            status = "fail"
             summary = "fail; " + summary
     logger.info("get_summary(): %s", summary)
-    return summary
+    return status, summary
 
 
 def get_aggfunc(aggfunc: str | None) -> Callable | None:

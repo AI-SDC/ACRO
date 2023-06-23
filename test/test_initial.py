@@ -212,6 +212,15 @@ def test_finalise_json(data, acro):
     assert json_data[output_0_name]["output"] == os.path.abspath(
         f"outputs/{output_0_name}.csv"
     )
+    # regression check: the outcome fields are dicts not strings
+    assert json_data[output_0_name]["outcome"]["R/G"] == {
+        "2010": "threshold; ",
+        "2011": "threshold; ",
+        "2012": "threshold; ",
+        "2013": "threshold; ",
+        "2014": "threshold; ",
+        "2015": "threshold; ",
+    }
     assert json_data[output_1_name]["output"] == os.path.abspath(
         f"outputs/{output_1_name}.csv"
     )

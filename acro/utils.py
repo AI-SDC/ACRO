@@ -81,7 +81,11 @@ def finalise_json(filename: str, results: dict) -> None:
     # convert dataframes to json
     for output_id, output in outputs.items():
         if output["outcome"] is not None:
-            output["outcome"] = output["outcome"].to_json()
+            # df.to_dict() does not always produce json serializeable structures.
+            # e.g. pivot tables have tuple keys.
+            # So we use .to_json() to ensure its serializeable, but we are
+            # going to serilize it later, so we parse it back into a dict
+            output["outcome"] = json.loads(output["outcome"].to_json())
         # save each output to a different file
         if not isinstance(output["output"], str):
             with open(

@@ -4,7 +4,9 @@ import datetime
 import json
 import logging
 import os
+import shutil
 import warnings
+from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame
@@ -122,6 +124,10 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
                 with open(filename, mode="w", newline="", encoding="utf-8") as file:
                     file.write(self.output[i].to_csv())
             output.append(filename)
+        # move custom files to the output folder
+        if self.output_type == "custom" and os.path.exists(self.output):
+            shutil.copy(self.output, path)
+            output = [os.path.normpath(f"{path}/{Path(self.output).name}")]
         return output
 
     def to_dict(self, path: str = "outputs", serialize: bool = True) -> dict:

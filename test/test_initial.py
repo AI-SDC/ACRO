@@ -265,12 +265,14 @@ def test_add_comments(data, acro):
 
 def test_custom_output(acro):
     """Adding an unsupported output to the results dictionary test"""
-    filename = "XandY.jfif"
+    save_path = "RES_PYTEST"
+    filename = "notebooks/XandY.jfif"
     file_path = os.path.normpath(filename)
     acro.custom_output(filename)
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(path=save_path)
     output_0 = results.get_index(0)
     assert output_0.output == file_path
+    assert os.path.exists(os.path.normpath(f"{save_path}/XandY.jfif"))
 
 
 def test_missing(data, acro):

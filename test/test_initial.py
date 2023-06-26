@@ -171,9 +171,11 @@ def test_probit_logit(data, acro):
 def test_finalise_excel(data, acro):
     """Finalise excel test."""
     _ = acro.crosstab(data.year, data.grant_type)
-    results: Records = acro.finalise("test", "xlsx")
+    path: str = "RES_PYTEST"
+    results: Records = acro.finalise(path, "xlsx")
     output_0 = results.get_index(0)
-    load_data = pd.read_excel("test.xlsx", sheet_name=output_0.uid)
+    filename = os.path.normpath(f"{path}/results.xlsx")
+    load_data = pd.read_excel(filename, sheet_name=output_0.uid)
     correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
     assert load_data.iloc[0, 0] == "Command"
     assert load_data.iloc[0, 1] == correct_cell

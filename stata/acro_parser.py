@@ -3,7 +3,53 @@ import numpy as np
 import pandas as pd
 from acro import ACRO, add_constant
 
+def apply_stata_ifstmt(raw:str, df:pd.DataFrame)->pd.Dataframe:
+    if len(raw==0):
+        return df
+    else:
+        #add braces aroubd each clause- keeping any in the original
+        raw= "( " + raw + ")"
+        raw= raw.replace("&",") & (")
+        raw= raw.replace("|",") | (")
+        #put spaces aroubd operators to ease parsing
+        for operator in [">","<","==",">=","<=","!="]:
+            raw=raw.replace(operator,' '+operator+' ') 
 
+        #replace variable names with df["varname"]
+        for vname in df.columns:
+            raw=raw.replace(vname,'df["'+vname+'"]')
+
+        #print(raw)
+        #apply exclusion
+        df2 = df[eval(raw)]
+        return df2
+    
+    
+def apply_stata_expstmt(raw:str,df:pd.Dataframe)->pd.DataFrame:
+    #stata allows f and F for first item  and l/L for last
+    last=len(df)-1
+    
+    token= string.split("/")
+    #firsrt index
+    if token[0]=='f' or token[0]=='F':
+        start=0
+    start = int(token[0])
+    if start < 0:
+        start= last + 1 + start
+    #last    
+    if "/" not in string:
+        end = last
+    else:
+        if token[1]=='l' or token[1]=='L':
+            token[1]=last
+        end= int(token[1])
+        if end <0:
+            end=length + 1 + end
+    #enforce start <=end
+    if(start>end):
+        end=length
+        
+    return df.iloc[start:end]
 
 def parse_and_run(df:pd.DataFrame,
                   command:str,
@@ -21,6 +67,14 @@ def parse_and_run(df:pd.DataFrame,
     varlist= varlist.split()
     print(f' split varlist is {varlist}')
 
+    
+    # data reduction
+    if len(exclusion>0):
+        df = apply_stata_if(exclusion,df)
+    if len(exp>0):
+        df = apply_stata_expstmt(raw,df)
+    
+    #now look at the commands
     #session  management first  
     if command == 'init':
         #initialise the acro object
@@ -35,13 +89,13 @@ def parse_and_run(df:pd.DataFrame,
         myacro.print_outputs()
         return  ""
     
+    # now statistical commands
     elif command =='table':
         if len(options)==0:
             rowvar=f'{varlist[0]}'
             colvar= f'{varlist[1]}'
             
-            ##TODO: add code to deal woith contents
-            ##TODO add code to deal with super row/col vars
+ 
              
             if 'nototals' in options:
                 safe_output=myacro.crosstab(df[rowvar],df[colvar])

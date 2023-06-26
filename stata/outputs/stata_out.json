@@ -1,0 +1,274 @@
+{
+    "output_0_2023-06-15-15020082": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar])",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-15-15020082.csv",
+        "timestamp": "2023-06-15-15020082",
+        "comments": ""
+    },
+    "output_1_2023-06-15-15020092": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-15-15020092.csv",
+        "timestamp": "2023-06-15-15020092",
+        "comments": ""
+    },
+    "output_2_2023-06-15-15020163": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-15-15020163.csv",
+        "timestamp": "2023-06-15-15020163",
+        "comments": ""
+    },
+    "output_0_2023-06-15-15072883": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar])",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-15-15072883.csv",
+        "timestamp": "2023-06-15-15072883",
+        "comments": ""
+    },
+    "output_1_2023-06-15-15072890": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-15-15072890.csv",
+        "timestamp": "2023-06-15-15072890",
+        "comments": ""
+    },
+    "output_2_2023-06-15-15072963": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-15-15072963.csv",
+        "timestamp": "2023-06-15-15072963",
+        "comments": ""
+    },
+    "output_0_2023-06-15-15084596": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar])",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-15-15084596.csv",
+        "timestamp": "2023-06-15-15084596",
+        "comments": ""
+    },
+    "output_1_2023-06-15-15084606": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-15-15084606.csv",
+        "timestamp": "2023-06-15-15084606",
+        "comments": ""
+    },
+    "output_2_2023-06-15-15084678": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-15-15084678.csv",
+        "timestamp": "2023-06-15-15084678",
+        "comments": ""
+    },
+    "output_0_2023-06-18-19254748": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar])",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"Dead in 2015\":\"ok\",\"Alive in 2015\":\"ok\"},\"N\":{\"Dead in 2015\":\"threshold; \",\"Alive in 2015\":\"ok\"},\"R\":{\"Dead in 2015\":\"ok\",\"Alive in 2015\":\"ok\"},\"R\\/G\":{\"Dead in 2015\":\"threshold; \",\"Alive in 2015\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-18-19254748.csv",
+        "timestamp": "2023-06-18-19254748",
+        "comments": ""
+    },
+    "output_1_2023-06-18-19260266": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-18-19260266.csv",
+        "timestamp": "2023-06-18-19260266",
+        "comments": ""
+    },
+    "output_2_2023-06-18-19263269": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-18-19263269.csv",
+        "timestamp": "2023-06-18-19263269",
+        "comments": ""
+    },
+    "output_3_2023-06-18-19290393": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_3_2023-06-18-19290393.csv",
+        "timestamp": "2023-06-18-19290393",
+        "comments": ""
+    },
+    "output_0_2023-06-18-19295739": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar])",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-18-19295739.csv",
+        "timestamp": "2023-06-18-19295739",
+        "comments": ""
+    },
+    "output_1_2023-06-18-19295761": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-18-19295761.csv",
+        "timestamp": "2023-06-18-19295761",
+        "comments": ""
+    },
+    "output_2_2023-06-18-19295848": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-18-19295848.csv",
+        "timestamp": "2023-06-18-19295848",
+        "comments": ""
+    },
+    "output_0_2023-06-18-19303658": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar])",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-18-19303658.csv",
+        "timestamp": "2023-06-18-19303658",
+        "comments": ""
+    },
+    "output_1_2023-06-18-19303662": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-18-19303662.csv",
+        "timestamp": "2023-06-18-19303662",
+        "comments": ""
+    },
+    "output_2_2023-06-18-19303667": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-18-19303667.csv",
+        "timestamp": "2023-06-18-19303667",
+        "comments": ""
+    },
+    "output_0_2023-06-18-19312329": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar])",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-18-19312329.csv",
+        "timestamp": "2023-06-18-19312329",
+        "comments": ""
+    },
+    "output_1_2023-06-18-19312336": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-18-19312336.csv",
+        "timestamp": "2023-06-18-19312336",
+        "comments": ""
+    },
+    "output_2_2023-06-18-19312410": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-18-19312410.csv",
+        "timestamp": "2023-06-18-19312410",
+        "comments": ""
+    },
+    "output_0_2023-06-18-19322107": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar])",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-18-19322107.csv",
+        "timestamp": "2023-06-18-19322107",
+        "comments": ""
+    },
+    "output_1_2023-06-18-19322118": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-18-19322118.csv",
+        "timestamp": "2023-06-18-19322118",
+        "comments": ""
+    },
+    "output_2_2023-06-18-19322195": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-18-19322195.csv",
+        "timestamp": "2023-06-18-19322195",
+        "comments": ""
+    },
+    "output_0_2023-06-19-08465365": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar],margins=True)",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-19-08465365.csv",
+        "timestamp": "2023-06-19-08465365",
+        "comments": ""
+    },
+    "output_1_2023-06-19-08465367": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-19-08465367.csv",
+        "timestamp": "2023-06-19-08465367",
+        "comments": ""
+    },
+    "output_2_2023-06-19-08465371": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-19-08465371.csv",
+        "timestamp": "2023-06-19-08465371",
+        "comments": ""
+    },
+    "output_0_2023-06-19-08472116": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar],margins=True)",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\",\"All\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\",\"All\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\",\"All\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\",\"All\":\"ok\"},\"All\":{\"0.0\":\"ok\",\"1.0\":\"ok\",\"All\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-19-08472116.csv",
+        "timestamp": "2023-06-19-08472116",
+        "comments": ""
+    },
+    "output_1_2023-06-19-08472134": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-19-08472134.csv",
+        "timestamp": "2023-06-19-08472134",
+        "comments": ""
+    },
+    "output_2_2023-06-19-08472208": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-19-08472208.csv",
+        "timestamp": "2023-06-19-08472208",
+        "comments": ""
+    },
+    "output_0_2023-06-19-08490329": {
+        "command": "safe_output=myacro.crosstab(df[rowvar],df[colvar],",
+        "summary": "fail; threshold: 2 cells suppressed; ",
+        "outcome": "{\"G\":{\"0.0\":\"ok\",\"1.0\":\"ok\",\"Total\":\"ok\"},\"N\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\",\"Total\":\"ok\"},\"R\":{\"0.0\":\"ok\",\"1.0\":\"ok\",\"Total\":\"ok\"},\"R\\/G\":{\"0.0\":\"threshold; \",\"1.0\":\"ok\",\"Total\":\"ok\"},\"Total\":{\"0.0\":\"ok\",\"1.0\":\"ok\",\"Total\":\"ok\"}}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_0_2023-06-19-08490329.csv",
+        "timestamp": "2023-06-19-08490329",
+        "comments": ""
+    },
+    "output_1_2023-06-19-08490342": {
+        "command": "results = myacro.ols(y,x)",
+        "summary": "pass; dof=807.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_1_2023-06-19-08490342.csv",
+        "timestamp": "2023-06-19-08490342",
+        "comments": ""
+    },
+    "output_2_2023-06-19-08490416": {
+        "command": "results = myacro.probit(y,x)",
+        "summary": "pass; dof=806.0 >= 10",
+        "outcome": "{}",
+        "output": "/Users/j4-smith/GitHub/AI-SDC/ACRO/stata/outputs/output_2_2023-06-19-08490416.csv",
+        "timestamp": "2023-06-19-08490416",
+        "comments": ""
+    }
+}

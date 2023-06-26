@@ -25,11 +25,13 @@ def load_outcome(outcome: dict) -> DataFrame:
     return pd.DataFrame.from_dict(outcome)
 
 
-def load_output(output: list[str]) -> str | list[DataFrame]:
+def load_output(path: str, output: list[str]) -> str | list[DataFrame]:
     """Returns a loaded output.
 
     Parameters
     ----------
+    path : str
+        The path to the output folder (with results.json).
     output : str
         The output to load.
     """
@@ -37,9 +39,9 @@ def load_output(output: list[str]) -> str | list[DataFrame]:
         raise ValueError("error loading output")
     loaded: str | list[DataFrame] = []
     for filename in output:
-        filename = os.path.normpath(filename)
         _, ext = os.path.splitext(filename)
         if ext == ".csv":
+            filename = os.path.normpath(f"{path}/{filename}")
             loaded.append(pd.read_csv(filename))
     if len(loaded) < 1:  # output was a path to custom file
         loaded = output[0]
@@ -120,14 +122,15 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         if not isinstance(self.output, str):
             output = []
             for i, _ in enumerate(self.output):
-                filename = os.path.normpath(f"{path}/{self.uid}_{i}.csv")
+                filename = f"{self.uid}_{i}.csv"
+                output.append(filename)
+                filename = os.path.normpath(f"{path}/{filename}")
                 with open(filename, mode="w", newline="", encoding="utf-8") as file:
                     file.write(self.output[i].to_csv())
-            output.append(filename)
         # move custom files to the output folder
         if self.output_type == "custom" and os.path.exists(self.output):
             shutil.copy(self.output, path)
-            output = [os.path.normpath(f"{path}/{Path(self.output).name}")]
+            output = [Path(self.output).name]
         return output
 
     def to_dict(self, path: str = "outputs", serialize: bool = True) -> dict:
@@ -423,7 +426,7 @@ class Records:
                     val["command"],
                     val["summary"],
                     load_outcome(val["outcome"]),
-                    load_output(val["output"]),
+                    load_output(path, val["output"]),
                     val["comments"],
                 )
                 self.results[key].timestamp = val["timestamp"]

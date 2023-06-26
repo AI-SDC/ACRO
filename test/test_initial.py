@@ -205,8 +205,8 @@ def test_finalise_json(data, acro):
     # write JSON
     path: str = "RES_PYTEST"
     result: Records = acro.finalise(path, "json")
-    loaded: Records = Records()
     # load JSON
+    loaded: Records = Records()
     loaded.load_json(path)
     orig = result.get_index(0)
     read = loaded.get_index(0)
@@ -220,10 +220,10 @@ def test_finalise_json(data, acro):
     assert orig.comments == read.comments
     assert orig.timestamp == read.timestamp
     assert (orig.output[0].reset_index()).equals(read.output[0])
-    # test loading from JSON
+    # test reading JSON
     with open(os.path.normpath(f"{path}/results.json"), encoding="utf-8") as file:
         json_data = json.load(file)
-    assert json_data[orig.uid]["output"][0] == f"{path}/{orig.uid}_0.csv"
+    assert json_data[orig.uid]["output"][0] == f"{orig.uid}_0.csv"
     # regression check: the outcome fields are dicts not strings
     assert json_data[orig.uid]["outcome"]["R/G"] == {
         "2010": "threshold; ",

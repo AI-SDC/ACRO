@@ -382,6 +382,8 @@ class Records:
             summary = []
             command = []
             for output_id, output in self.results.items():
+                if output.output_type == "custom":
+                    continue  # avoid writing custom outputs
                 sheet.append(output_id)
                 command.append(output.command)
                 summary.append(output.summary)
@@ -391,6 +393,8 @@ class Records:
             tmp_df.to_excel(writer, sheet_name="description", index=False, startrow=0)
             # individual sheets
             for output_id, output in self.results.items():
+                if output.output_type == "custom":
+                    continue  # avoid writing custom outputs
                 # command and summary
                 start = 0
                 tmp_df = pd.DataFrame(

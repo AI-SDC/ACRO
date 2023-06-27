@@ -186,6 +186,22 @@ class Records:
 
         Parameters
         ----------
+        status : str
+            SDC status: {"pass", "fail", "review"}
+        output_type : str
+            Type of output, e.g., "regression"
+        properties : dict
+            Dictionary containing structured output data.
+        command : str
+            String representation of the operation performed.
+        summary : str
+            String summarising the ACRO checks.
+        outcome : DataFrame
+            DataFrame describing the details of ACRO checks.
+        output : str | list[DataFrame]
+            List of output DataFrames.
+        comments : str
+            String entered by the user to add comments to the output.
         """
         output = Record(
             uid=f"output_{self.output_id}",

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from acro import ACRO, add_constant, utils
+from acro import ACRO, add_constant, record, utils
 from acro.record import Record, Records
 
 # pylint: disable=redefined-outer-name
@@ -187,8 +187,9 @@ def test_output_removal(data, acro):
     _ = acro.crosstab(data.year, data.grant_type)
     _ = acro.crosstab(data.year, data.grant_type)
     results: Records = acro.finalise()
-    output_0 = results.get_index(0)
-    output_1 = results.get_index(1)
+    output_0 = results.get("output_0")
+    output_1 = results.get("output_1")
+    # remove something that is there
     acro.remove_output(output_0.uid)
     results = acro.finalise()
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
@@ -197,6 +198,24 @@ def test_output_removal(data, acro):
     assert output_1.uid in keys
     assert output_1.summary == correct_summary
     acro.print_outputs()
+    # remove something that is not there
+    with pytest.warns(UserWarning):
+        acro.remove_output("123")
+
+
+def test_load_output():
+    """Empty array when loading output."""
+    path: str = "RES_PYTEST"
+    with pytest.raises(ValueError):
+        record.load_output(path, [])
+
+
+def test_finalise_invalid(data, acro):
+    """Invalid output format when finalising."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    path: str = "RES_PYTEST"
+    with pytest.raises(ValueError):
+        _ = acro.finalise(path, "123")
 
 
 def test_finalise_json(data, acro):
@@ -247,6 +266,9 @@ def test_rename_output(data, acro):
     assert output_0.uid == new_name
     assert orig_name not in results.get_keys()
     assert os.path.exists(f"outputs/{new_name}_0.csv")
+    # rename an output that doesn't exist
+    with pytest.warns(UserWarning):
+        acro.rename_output("123", "name")
 
 
 def test_add_comments(data, acro):
@@ -261,6 +283,9 @@ def test_add_comments(data, acro):
     comment_1 = "6 cells were suppressed"
     acro.add_comments(output_0.uid, comment_1)
     assert output_0.comments == comment + ", " + comment_1
+    # add a comment to something that is not there
+    with pytest.warns(UserWarning):
+        acro.add_comments("123", "comment")
 
 
 def test_custom_output(acro):

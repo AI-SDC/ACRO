@@ -216,13 +216,15 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_summary(masks: dict[str, DataFrame]) -> [str, str]:
+def get_summary(masks: dict[str, DataFrame], properties: dict) -> [str, str]:
     """Returns a string summarising the suppression masks.
 
     Parameters
     ----------
     masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
+    properties : dict
+        Properties of the SDC checks.
 
     Returns
     -------
@@ -233,15 +235,23 @@ def get_summary(masks: dict[str, DataFrame]) -> [str, str]:
     """
     status = "review"
     summary: str = ""
+    properties["negative"] = False
+    properties["missing"] = False
+    properties["threshold"] = 0
+    properties["p-ratio"] = 0
+    properties["nk-rule"] = 0
     if "negative" in masks:
         summary = "review; negative values found"
+        properties["negative"] = True
     elif "missing" in masks:
         summary = "review; missing values found"
+        properties["missing"] = True
     else:
         for name, mask in masks.items():
             n_cells = mask.to_numpy().sum()
             if n_cells > 0:
                 summary += f"{name}: {n_cells} cells suppressed; "
+            properties[name] = int(n_cells)
         if summary == "":
             status = "pass"
             summary = "pass"

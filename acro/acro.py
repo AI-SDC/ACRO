@@ -220,12 +220,13 @@ class ACRO:
             masks[name] = mask
 
         table, outcome = utils.apply_suppression(table, masks)
-        status, summary = utils.get_summary(masks)
+        properties: dict = {"method": "crosstab"}
+        status, summary = utils.get_summary(masks, properties)
 
         self.results.add(
             status=status,
             output_type="table",
-            properties={"method": "crosstab"},
+            properties=properties,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -344,12 +345,13 @@ class ACRO:
                 )
 
         table, outcome = utils.apply_suppression(table, masks)
-        status, summary = utils.get_summary(masks)
+        properties: dict = {"method": "pivot_table"}
+        status, summary = utils.get_summary(masks, properties)
 
         self.results.add(
             status=status,
             output_type="table",
-            properties={"method": "pivot_table"},
+            properties=properties,
             command=command,
             summary=summary,
             outcome=outcome,

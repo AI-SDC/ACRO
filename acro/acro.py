@@ -359,7 +359,7 @@ class ACRO:
         )
         return table
 
-    def __check_model_dof(self, name: str, model) -> [str, str, int]:
+    def __check_model_dof(self, name: str, model) -> [str, str, float]:
         """Check model DOF.
 
         Parameters
@@ -375,7 +375,7 @@ class ACRO:
             Status: {"review", "fail", "pass"}.
         str
             Summary of the check.
-        int
+        float
             The degrees of freedom.
         """
         status = "fail"
@@ -388,7 +388,7 @@ class ACRO:
             status = "pass"
             summary = f"pass; dof={dof} >= {threshold}"
         logger.info("%s() outcome: %s", name, summary)
-        return status, summary, dof
+        return status, summary, float(dof)
 
     def ols(  # pylint: disable=too-many-locals
         self, endog, exog=None, missing="none", hasconst=None, **kwargs

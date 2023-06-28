@@ -96,7 +96,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         self.output: str | list[DataFrame] = output
         self.comments: str = comments
         now = datetime.datetime.now()
-        self.timestamp = str(now.strftime("%Y-%m-%d-%H%M%S%f")[:-4])
+        self.timestamp: str = now.isoformat()
 
     def serialize_output(self, path: str = "outputs") -> list[str]:
         """Serializes outputs.

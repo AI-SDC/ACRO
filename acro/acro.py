@@ -38,7 +38,7 @@ class ACRO:
     >>> acro = ACRO()
     >>> results = acro.ols(y, x)
     >>> results.summary()
-    >>> acro.finalise("my_results.json")
+    >>> acro.finalise("MYFOLDER", "json")
     """
 
     def __init__(self, config: str = "default") -> None:

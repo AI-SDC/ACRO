@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Records &mdash; ACRO 0.2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ACRO Class" href="acro.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> ACRO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acro.html">ACRO Class</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Records</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#acro.record.Record"><code class="docutils literal notranslate"><span class="pre">Record</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.record.Records"><code class="docutils literal notranslate"><span class="pre">Records</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.record.load_outcome"><code class="docutils literal notranslate"><span class="pre">load_outcome()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.record.load_output"><code class="docutils literal notranslate"><span class="pre">load_output()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ACRO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Records</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/record.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-acro.record">
+<span id="records"></span><h1>Records<a class="headerlink" href="#module-acro.record" title="Permalink to this heading"></a></h1>
+<p>ACRO: Output storage and serialization.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="acro.record.Record">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acro.record.</span></span><span class="sig-name descname"><span class="pre">Record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcome</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acro/record.html#Record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Record" title="Permalink to this definition"></a></dt>
+<dd><p>Stores data related to a single output record.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Record.serialize_output" title="acro.record.Record.serialize_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">serialize_output</span></code></a>([path])</p></td>
+<td><p>Serializes outputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Record.to_dict" title="acro.record.Record.to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dict</span></code></a>([path, serialize])</p></td>
+<td><p>Returns a dictionary representation of an output and serializes any DataFrame outputs as csv.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Record.serialize_output">
+<span class="sig-name descname"><span class="pre">serialize_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'outputs'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/acro/record.html#Record.serialize_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Record.serialize_output" title="Permalink to this definition"></a></dt>
+<dd><p>Serializes outputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of the folder that outputs are to be written.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>list[str]</dt><dd><p>List of filepaths of the written outputs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Record.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'outputs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/acro/record.html#Record.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Record.to_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a dictionary representation of an output and serializes
+any DataFrame outputs as csv.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of the folder that outputs are to be written.</p>
+</dd>
+<dt><strong>serialize</strong><span class="classifier">bool</span></dt><dd><p>Whether to serialize individual output DataFrames.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="acro.record.Records">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acro.record.</span></span><span class="sig-name descname"><span class="pre">Records</span></span><a class="reference internal" href="_modules/acro/record.html#Records"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records" title="Permalink to this definition"></a></dt>
+<dd><p>Stores data related to a collection of output records.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.add" title="acro.record.Records.add"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add</span></code></a>(status, output_type, properties, ...[, ...])</p></td>
+<td><p>Adds an output to the results.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.add_comments" title="acro.record.Records.add_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_comments</span></code></a>(output, comment)</p></td>
+<td><p>Adds a comment to an output.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.add_custom" title="acro.record.Records.add_custom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_custom</span></code></a>(filename[, comment])</p></td>
+<td><p>Adds an unsupported output to the results dictionary.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.finalise" title="acro.record.Records.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>(path, ext)</p></td>
+<td><p>Creates a results file for checking.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.finalise_excel" title="acro.record.Records.finalise_excel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise_excel</span></code></a>(path)</p></td>
+<td><p>Writes outputs to an excel spreadsheet.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.finalise_json" title="acro.record.Records.finalise_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise_json</span></code></a>(path)</p></td>
+<td><p>Writes outputs to a JSON file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.get" title="acro.record.Records.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a>(key)</p></td>
+<td><p>Returns a specified output from the results.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.get_index" title="acro.record.Records.get_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_index</span></code></a>(index)</p></td>
+<td><p>Returns the output at the specified position.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.get_keys" title="acro.record.Records.get_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_keys</span></code></a>()</p></td>
+<td><p>Returns the list of available output keys.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.load_json" title="acro.record.Records.load_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_json</span></code></a>(path)</p></td>
+<td><p>Loads outputs from a JSON file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.print" title="acro.record.Records.print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print</span></code></a>()</p></td>
+<td><p>Prints the current results.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.remove" title="acro.record.Records.remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove</span></code></a>(key)</p></td>
+<td><p>Removes an output from the results.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.rename" title="acro.record.Records.rename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename</span></code></a>(old, new)</p></td>
+<td><p>Rename an output.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcome</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.add" title="Permalink to this definition"></a></dt>
+<dd><p>Adds an output to the results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>status</strong><span class="classifier">str</span></dt><dd><p>SDC status: {“pass”, “fail”, “review”}</p>
+</dd>
+<dt><strong>output_type</strong><span class="classifier">str</span></dt><dd><p>Type of output, e.g., “regression”</p>
+</dd>
+<dt><strong>properties</strong><span class="classifier">dict</span></dt><dd><p>Dictionary containing structured output data.</p>
+</dd>
+<dt><strong>command</strong><span class="classifier">str</span></dt><dd><p>String representation of the operation performed.</p>
+</dd>
+<dt><strong>summary</strong><span class="classifier">str</span></dt><dd><p>String summarising the ACRO checks.</p>
+</dd>
+<dt><strong>outcome</strong><span class="classifier">DataFrame</span></dt><dd><p>DataFrame describing the details of ACRO checks.</p>
+</dd>
+<dt><strong>output</strong><span class="classifier">str | list[DataFrame]</span></dt><dd><p>List of output DataFrames.</p>
+</dd>
+<dt><strong>comments</strong><span class="classifier">list[str], default None</span></dt><dd><p>List of strings entered by the user to add comments to the output.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.add_comments">
+<span class="sig-name descname"><span class="pre">add_comments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.add_comments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.add_comments" title="Permalink to this definition"></a></dt>
+<dd><p>Adds a comment to an output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>output</strong><span class="classifier">str</span></dt><dd><p>The name of the output.</p>
+</dd>
+<dt><strong>comment</strong><span class="classifier">str</span></dt><dd><p>The comment.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.add_custom">
+<span class="sig-name descname"><span class="pre">add_custom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.add_custom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.add_custom" title="Permalink to this definition"></a></dt>
+<dd><p>Adds an unsupported output to the results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The name of the file that will be added to the list of the outputs.</p>
+</dd>
+<dt><strong>comment</strong><span class="classifier">str | None, default None</span></dt><dd><p>An optional comment.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.finalise">
+<span class="sig-name descname"><span class="pre">finalise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.finalise" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a results file for checking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of a folder to save outputs.</p>
+</dd>
+<dt><strong>ext</strong><span class="classifier">str</span></dt><dd><p>Extension of the results file. Valid extensions: {json, xlsx}.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.finalise_excel">
+<span class="sig-name descname"><span class="pre">finalise_excel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.finalise_excel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.finalise_excel" title="Permalink to this definition"></a></dt>
+<dd><p>Writes outputs to an excel spreadsheet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of a folder to save outputs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.finalise_json">
+<span class="sig-name descname"><span class="pre">finalise_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.finalise_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.finalise_json" title="Permalink to this definition"></a></dt>
+<dd><p>Writes outputs to a JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of a folder to save outputs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.get" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a specified output from the results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>Key specifying which output to return, e.g., ‘output_0’.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.get_index">
+<span class="sig-name descname"><span class="pre">get_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#acro.record.Record" title="acro.record.Record"><span class="pre">Record</span></a></span></span><a class="reference internal" href="_modules/acro/record.html#Records.get_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.get_index" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the output at the specified position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>index</strong><span class="classifier">int</span></dt><dd><p>Position of the output to return.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Record</dt><dd><p>The requested output.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.get_keys">
+<span class="sig-name descname"><span class="pre">get_keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.get_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.get_keys" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the list of available output keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>list[str]</dt><dd><p>List of output names.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.load_json">
+<span class="sig-name descname"><span class="pre">load_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.load_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.load_json" title="Permalink to this definition"></a></dt>
+<dd><p>Loads outputs from a JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of an output folder containing results.json.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.print" title="Permalink to this definition"></a></dt>
+<dd><p>Prints the current results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.remove" title="Permalink to this definition"></a></dt>
+<dd><p>Removes an output from the results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>Key specifying which output to remove, e.g., ‘output_0’.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.rename">
+<span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.rename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.rename" title="Permalink to this definition"></a></dt>
+<dd><p>Rename an output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>old</strong><span class="classifier">str</span></dt><dd><p>The old name of the output.</p>
+</dd>
+<dt><strong>new</strong><span class="classifier">str</span></dt><dd><p>The new name of the output.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.record.load_outcome">
+<span class="sig-prename descclassname"><span class="pre">acro.record.</span></span><span class="sig-name descname"><span class="pre">load_outcome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outcome</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/acro/record.html#load_outcome"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.load_outcome" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a DataFrame from an outcome dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>outcome</strong><span class="classifier">dict</span></dt><dd><p>The outcome to load as a DataFrame.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.record.load_output">
+<span class="sig-prename descclassname"><span class="pre">acro.record.</span></span><span class="sig-name descname"><span class="pre">load_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/acro/record.html#load_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.load_output" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a loaded output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>The path to the output folder (with results.json).</p>
+</dd>
+<dt><strong>output</strong><span class="classifier">str</span></dt><dd><p>The output to load.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="acro.html" class="btn btn-neutral float-left" title="ACRO Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ACRO Project Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

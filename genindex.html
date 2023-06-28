@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; ACRO 1.0.0 documentation</title>
+  <title>Index &mdash; ACRO 0.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -40,6 +40,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acro.html">ACRO Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Records</a></li>
 </ul>
 
         </div>
@@ -72,11 +73,14 @@
  <a href="#A"><strong>A</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -91,11 +95,26 @@
         <li><a href="acro.html#module-acro.acro">module</a>
 </li>
       </ul></li>
+      <li>
+    acro.record
+
+      <ul>
+        <li><a href="record.html#module-acro.record">module</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="acro.html#acro.acro.ACRO.add_comments">add_comments() (acro.acro.ACRO method)</a>
+      <li><a href="record.html#acro.record.Records.add">add() (acro.record.Records method)</a>
 </li>
+      <li><a href="acro.html#acro.acro.ACRO.add_comments">add_comments() (acro.acro.ACRO method)</a>
+
+      <ul>
+        <li><a href="record.html#acro.record.Records.add_comments">(acro.record.Records method)</a>
+</li>
+      </ul></li>
       <li><a href="acro.html#acro.acro.add_constant">add_constant() (in module acro.acro)</a>
+</li>
+      <li><a href="record.html#acro.record.Records.add_custom">add_custom() (acro.record.Records method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -116,6 +135,30 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="acro.html#acro.acro.ACRO.finalise">finalise() (acro.acro.ACRO method)</a>
+
+      <ul>
+        <li><a href="record.html#acro.record.Records.finalise">(acro.record.Records method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="record.html#acro.record.Records.finalise_excel">finalise_excel() (acro.record.Records method)</a>
+</li>
+      <li><a href="record.html#acro.record.Records.finalise_json">finalise_json() (acro.record.Records method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="record.html#acro.record.Records.get">get() (acro.record.Records method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="record.html#acro.record.Records.get_index">get_index() (acro.record.Records method)</a>
+</li>
+      <li><a href="record.html#acro.record.Records.get_keys">get_keys() (acro.record.Records method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -123,10 +166,16 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="acro.html#acro.acro.ACRO.logit">logit() (acro.acro.ACRO method)</a>
+      <li><a href="record.html#acro.record.Records.load_json">load_json() (acro.record.Records method)</a>
+</li>
+      <li><a href="record.html#acro.record.load_outcome">load_outcome() (in module acro.record)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="record.html#acro.record.load_output">load_output() (in module acro.record)</a>
+</li>
+      <li><a href="acro.html#acro.acro.ACRO.logit">logit() (acro.acro.ACRO method)</a>
+</li>
       <li><a href="acro.html#acro.acro.ACRO.logitr">logitr() (acro.acro.ACRO method)</a>
 </li>
   </ul></td>
@@ -140,6 +189,8 @@
 
       <ul>
         <li><a href="acro.html#module-acro.acro">acro.acro</a>
+</li>
+        <li><a href="record.html#module-acro.record">acro.record</a>
 </li>
       </ul></li>
   </ul></td>
@@ -162,10 +213,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="acro.html#acro.acro.ACRO.pivot_table">pivot_table() (acro.acro.ACRO method)</a>
 </li>
-      <li><a href="acro.html#acro.acro.ACRO.print_outputs">print_outputs() (acro.acro.ACRO method)</a>
+      <li><a href="record.html#acro.record.Records.print">print() (acro.record.Records method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="acro.html#acro.acro.ACRO.print_outputs">print_outputs() (acro.acro.ACRO method)</a>
+</li>
       <li><a href="acro.html#acro.acro.ACRO.probit">probit() (acro.acro.ACRO method)</a>
 </li>
       <li><a href="acro.html#acro.acro.ACRO.probitr">probitr() (acro.acro.ACRO method)</a>
@@ -176,11 +229,35 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="acro.html#acro.acro.ACRO.remove_output">remove_output() (acro.acro.ACRO method)</a>
+      <li><a href="record.html#acro.record.Record">Record (class in acro.record)</a>
+</li>
+      <li><a href="record.html#acro.record.Records">Records (class in acro.record)</a>
+</li>
+      <li><a href="record.html#acro.record.Records.remove">remove() (acro.record.Records method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="acro.html#acro.acro.ACRO.remove_output">remove_output() (acro.acro.ACRO method)</a>
+</li>
+      <li><a href="record.html#acro.record.Records.rename">rename() (acro.record.Records method)</a>
+</li>
       <li><a href="acro.html#acro.acro.ACRO.rename_output">rename_output() (acro.acro.ACRO method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="record.html#acro.record.Record.serialize_output">serialize_output() (acro.record.Record method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="record.html#acro.record.Record.to_dict">to_dict() (acro.record.Record method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -194,7 +271,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, ACRO Project Team.</p>
+    <p>&#169; Copyright 2023, ACRO Project Team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

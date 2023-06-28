@@ -14,6 +14,7 @@ This is the class and function reference for ACRO.
 
    introduction
    acro
+   record
 
 Indices and tables
 ==================

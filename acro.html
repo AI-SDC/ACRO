@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ACRO Class &mdash; ACRO 1.0.0 documentation</title>
+  <title>ACRO Class &mdash; ACRO 0.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -20,6 +20,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Records" href="record.html" />
     <link rel="prev" title="Introduction" href="introduction.html" /> 
 </head>
 
@@ -46,6 +47,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#acro.acro.add_constant"><code class="docutils literal notranslate"><span class="pre">add_constant()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Records</a></li>
 </ul>
 
         </div>
@@ -91,7 +93,7 @@
 <dd class="field-odd"><dl class="simple">
 <dt><strong>config</strong><span class="classifier">dict</span></dt><dd><p>Safe parameters and their values.</p>
 </dd>
-<dt><strong>results</strong><span class="classifier">dict</span></dt><dd><p>The current outputs including the results of checks.</p>
+<dt><strong>results</strong><span class="classifier">Records</span></dt><dd><p>The current outputs including the results of checks.</p>
 </dd>
 <dt><strong>output_id</strong><span class="classifier">int</span></dt><dd><p>The next identifier to be assigned to an output.</p>
 </dd>
@@ -106,7 +108,7 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.add_comments" title="acro.acro.ACRO.add_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_comments</span></code></a>(output, comment)</p></td>
-<td><p>Adds comments to outputs</p></td>
+<td><p>Adds a comment to an output.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.crosstab" title="acro.acro.ACRO.crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crosstab</span></code></a>(index, columns[, values, rownames, ...])</p></td>
 <td><p>Compute a simple cross tabulation of two (or more) factors.</p></td>
@@ -114,7 +116,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.custom_output" title="acro.acro.ACRO.custom_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">custom_output</span></code></a>(filename[, comment])</p></td>
 <td><p>Adds an unsupported output to the results dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.finalise" title="acro.acro.ACRO.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>([filename])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.finalise" title="acro.acro.ACRO.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>([path, ext])</p></td>
 <td><p>Creates a results file for checking.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.logit" title="acro.acro.ACRO.logit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
@@ -142,17 +144,17 @@
 <td><p>Fits Probit model from a formula and dataframe.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.remove_output" title="acro.acro.ACRO.remove_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_output</span></code></a>(key)</p></td>
-<td><p>Removes an output from the results dictionary.</p></td>
+<td><p>Removes an output from the results.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.rename_output" title="acro.acro.ACRO.rename_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename_output</span></code></a>(old, new)</p></td>
-<td><p>Rename an output and take the timestamp from the old name and suffix it to the new name</p></td>
+<td><p>Rename an output.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.add_comments">
 <span class="sig-name descname"><span class="pre">add_comments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.add_comments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.add_comments" title="Permalink to this definition"></a></dt>
-<dd><p>Adds comments to outputs</p>
+<dd><p>Adds a comment to an output.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -220,6 +222,8 @@ when margins is True.</p>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The name of the file that will be added to the list of the outputs.</p>
 </dd>
+<dt><strong>comment</strong><span class="classifier">str</span></dt><dd><p>An optional comment.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -227,18 +231,20 @@ when margins is True.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.finalise">
-<span class="sig-name descname"><span class="pre">finalise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results.json'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.finalise" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">finalise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'outputs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="record.html#acro.record.Records" title="acro.record.Records"><span class="pre">Records</span></a></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.finalise" title="Permalink to this definition"></a></dt>
 <dd><p>Creates a results file for checking.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>Name of the output file. Valid extensions: {.json, .xlsx}.</p>
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of a folder to save outputs.</p>
+</dd>
+<dt><strong>ext</strong><span class="classifier">str</span></dt><dd><p>Extension of the results file. Valid extensions: {json, xlsx}.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt>dict</dt><dd><p>Dictionary representation of the output.</p>
+<dt>Records</dt><dd><p>Object storing the outputs.</p>
 </dd>
 </dl>
 </dd>
@@ -535,7 +541,7 @@ a numpy structured or rec array, a dictionary, or a pandas DataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.remove_output">
 <span class="sig-name descname"><span class="pre">remove_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.remove_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.remove_output" title="Permalink to this definition"></a></dt>
-<dd><p>Removes an output from the results dictionary.</p>
+<dd><p>Removes an output from the results.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -549,8 +555,7 @@ a numpy structured or rec array, a dictionary, or a pandas DataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.rename_output">
 <span class="sig-name descname"><span class="pre">rename_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.rename_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.rename_output" title="Permalink to this definition"></a></dt>
-<dd><p>Rename an output and take the timestamp from the old name
-and suffix it to the new name</p>
+<dd><p>Rename an output.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -604,12 +609,13 @@ is ‘const’.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="record.html" class="btn btn-neutral float-right" title="Records" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, ACRO Project Team.</p>
+    <p>&#169; Copyright 2023, ACRO Project Team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

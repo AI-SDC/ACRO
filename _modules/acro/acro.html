@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>acro.acro &mdash; ACRO 1.0.0 documentation</title>
+  <title>acro.acro &mdash; ACRO 0.2.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -40,6 +40,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../acro.html">ACRO Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../record.html">Records</a></li>
 </ul>
 
         </div>
@@ -69,9 +70,7 @@
   <h1>Source code for acro.acro</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;ACRO: Automatic Checking of Research Outputs.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">stack</span>
@@ -86,6 +85,7 @@
 <span class="kn">from</span> <span class="nn">statsmodels.regression.linear_model</span> <span class="kn">import</span> <span class="n">RegressionResultsWrapper</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.record</span> <span class="kn">import</span> <span class="n">Records</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;acro&quot;</span><span class="p">)</span>
@@ -98,7 +98,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    config : dict</span>
 <span class="sd">        Safe parameters and their values.</span>
-<span class="sd">    results : dict</span>
+<span class="sd">    results : Records</span>
 <span class="sd">        The current outputs including the results of checks.</span>
 <span class="sd">    output_id : int</span>
 <span class="sd">        The next identifier to be assigned to an output.</span>
@@ -120,8 +120,7 @@
 <span class="sd">            Name of a yaml configuration file with safe parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">output_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="n">Records</span> <span class="o">=</span> <span class="n">Records</span><span class="p">()</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">config</span> <span class="o">+</span> <span class="s2">&quot;.yaml&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;path: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
@@ -134,91 +133,37 @@
         <span class="n">utils</span><span class="o">.</span><span class="n">SAFE_NK_K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_k&quot;</span><span class="p">]</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">CHECK_MISSING_VALUES</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;check_missing_values&quot;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="ACRO.finalise"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results.json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="ACRO.finalise"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;outputs&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Records</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a results file for checking.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        filename : str</span>
-<span class="sd">            Name of the output file. Valid extensions: {.json, .xlsx}.</span>
+<span class="sd">        path : str</span>
+<span class="sd">            Name of a folder to save outputs.</span>
+<span class="sd">        ext : str</span>
+<span class="sd">            Extension of the results file. Valid extensions: {json, xlsx}.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">            Dictionary representation of the output.</span>
+<span class="sd">        Records</span>
+<span class="sd">            Object storing the outputs.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;finalise()&quot;</span><span class="p">)</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">extension</span> <span class="o">==</span> <span class="s2">&quot;.json&quot;</span><span class="p">:</span>
-            <span class="n">utils</span><span class="o">.</span><span class="n">finalise_json</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">extension</span> <span class="o">==</span> <span class="s2">&quot;.xlsx&quot;</span><span class="p">:</span>
-            <span class="n">utils</span><span class="o">.</span><span class="n">finalise_excel</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid file extension. Options: {.json, .xlsx}&quot;</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;output written to: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
-    <span class="k">def</span> <span class="nf">__add_output</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">outcome</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
-        <span class="n">output</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">],</span>
-        <span class="n">comments</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds an output to the results dictionary.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        command : str</span>
-<span class="sd">            String representation of the operation performed.</span>
-<span class="sd">        summary : str</span>
-<span class="sd">            String summarising the ACRO checks.</span>
-<span class="sd">        outcome : DataFrame</span>
-<span class="sd">            DataFrame describing the details of ACRO checks.</span>
-<span class="sd">        output : list[DataFrame]</span>
-<span class="sd">            List of output DataFrames.</span>
-<span class="sd">        comments: str</span>
-<span class="sd">            String entered by the user to add comments to the output.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-        <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H%M%S</span><span class="si">%f</span><span class="s2">&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
-
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;output_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_id</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">output_id</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="n">command</span><span class="p">,</span>
-            <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
-            <span class="s2">&quot;outcome&quot;</span><span class="p">:</span> <span class="n">outcome</span><span class="p">,</span>
-            <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">,</span>  <span class="c1"># json.loads(output),  # JSON to dict</span>
-            <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
-            <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="n">comments</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;add_output(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-
 <div class="viewcode-block" id="ACRO.remove_output"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.remove_output">[docs]</a>    <span class="k">def</span> <span class="nf">remove_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes an output from the results dictionary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes an output from the results.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        key : str</span>
 <span class="sd">            Key specifying which output to remove, e.g., &#39;output_0&#39;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;remove_output(): </span><span class="si">%s</span><span class="s2"> removed&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to remove </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">, key not found&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ACRO.print_outputs"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.print_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">print_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prints the current results dictionary.&quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;print_outputs()&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">print</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ACRO.custom_output"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.custom_output">[docs]</a>    <span class="k">def</span> <span class="nf">custom_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds an unsupported output to the results dictionary.</span>
@@ -227,14 +172,10 @@
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str</span>
 <span class="sd">            The name of the file that will be added to the list of the outputs.</span>
+<span class="sd">        comment : str</span>
+<span class="sd">            An optional comment.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="o">=</span><span class="s2">&quot;custom&quot;</span><span class="p">,</span>
-            <span class="n">summary</span><span class="o">=</span><span class="s2">&quot;review&quot;</span><span class="p">,</span>
-            <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
-            <span class="n">output</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span>
-            <span class="n">comments</span><span class="o">=</span><span class="n">comment</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add_custom</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ACRO.crosstab"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.crosstab">[docs]</a>    <span class="k">def</span> <span class="nf">crosstab</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments,too-many-locals</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -349,8 +290,18 @@
             <span class="n">masks</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span>
 
         <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="p">[</span><span class="n">table</span><span class="p">])</span>
+        <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;crosstab&quot;</span><span class="p">}</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;table&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">outcome</span><span class="p">,</span>
+            <span class="n">output</span><span class="o">=</span><span class="p">[</span><span class="n">table</span><span class="p">],</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">table</span></div>
 
 <div class="viewcode-block" id="ACRO.pivot_table"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.pivot_table">[docs]</a>    <span class="k">def</span> <span class="nf">pivot_table</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments,too-many-locals</span>
@@ -464,11 +415,21 @@
                 <span class="p">)</span>
 
         <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="p">[</span><span class="n">table</span><span class="p">])</span>
+        <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;pivot_table&quot;</span><span class="p">}</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;table&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">outcome</span><span class="p">,</span>
+            <span class="n">output</span><span class="o">=</span><span class="p">[</span><span class="n">table</span><span class="p">],</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">table</span></div>
 
-    <span class="k">def</span> <span class="nf">__check_model_dof</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__check_model_dof</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check model DOF.</span>
 
 <span class="sd">        Parameters</span>
@@ -481,17 +442,23 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
+<span class="sd">            Status: {&quot;review&quot;, &quot;fail&quot;, &quot;pass&quot;}.</span>
+<span class="sd">        str</span>
 <span class="sd">            Summary of the check.</span>
+<span class="sd">        float</span>
+<span class="sd">            The degrees of freedom.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;fail&quot;</span>
         <span class="n">dof</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">df_resid</span>
         <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_dof_threshold&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">dof</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
             <span class="n">summary</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;fail; dof=</span><span class="si">{</span><span class="n">dof</span><span class="si">}</span><span class="s2"> &lt; </span><span class="si">{</span><span class="n">threshold</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsafe </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;pass&quot;</span>
             <span class="n">summary</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;pass; dof=</span><span class="si">{</span><span class="n">dof</span><span class="si">}</span><span class="s2"> &gt;= </span><span class="si">{</span><span class="n">threshold</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">() outcome: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">summary</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">summary</span>
+        <span class="k">return</span> <span class="n">status</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">dof</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ACRO.ols"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.ols">[docs]</a>    <span class="k">def</span> <span class="nf">ols</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-locals</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">hasconst</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
@@ -528,10 +495,16 @@
         <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;ols()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="o">=</span><span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">hasconst</span><span class="o">=</span><span class="n">hasconst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
+            <span class="n">output</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -585,10 +558,16 @@
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;olsr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;olsr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;olsr&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
+            <span class="n">output</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -627,10 +606,16 @@
         <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;logit()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Logit</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">check_rank</span><span class="o">=</span><span class="n">check_rank</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;logit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;logit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;logit&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
+            <span class="n">output</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -684,10 +669,16 @@
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;logitr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;logitr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;logitr&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
+            <span class="n">output</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -726,10 +717,16 @@
         <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;probit()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Probit</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">check_rank</span><span class="o">=</span><span class="n">check_rank</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;probit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;probit&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;probit&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
+            <span class="n">output</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -783,16 +780,21 @@
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;probitr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__check_model_dof</span><span class="p">(</span><span class="s2">&quot;probitr&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
         <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SimpleTable</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">tables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__add_output</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">(),</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;probitr&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
+            <span class="n">output</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
 <div class="viewcode-block" id="ACRO.rename_output"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.rename_output">[docs]</a>    <span class="k">def</span> <span class="nf">rename_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rename an output and take the timestamp from the old name</span>
-<span class="sd">        and suffix it to the new name</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rename an output.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -801,17 +803,10 @@
 <span class="sd">        new : str</span>
 <span class="sd">            The new name of the output.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">old</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">new</span> <span class="o">=</span> <span class="n">new</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">timestamp</span>
-        <span class="k">if</span> <span class="n">old</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">new</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">old</span><span class="p">]</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">old</span><span class="p">]</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;rename_output(): </span><span class="si">%s</span><span class="s2"> renamed to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to rename </span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">, key not found&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ACRO.add_comments"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.add_comments">[docs]</a>    <span class="k">def</span> <span class="nf">add_comments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds comments to outputs</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds a comment to an output.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -820,16 +815,7 @@
 <span class="sd">        comment : str</span>
 <span class="sd">            The comment.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">output</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">output</span><span class="p">][</span><span class="s2">&quot;comments&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">output</span><span class="p">][</span><span class="s2">&quot;comments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">comment</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">output</span><span class="p">][</span><span class="s2">&quot;comments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">output</span><span class="p">][</span><span class="s2">&quot;comments&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">comment</span>
-                <span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;a comment was added to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to find </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">, key not found&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add_comments</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="add_constant"><a class="viewcode-back" href="../../acro.html#acro.acro.add_constant">[docs]</a><span class="k">def</span> <span class="nf">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">has_constant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;skip&quot;</span><span class="p">):</span>
@@ -869,7 +855,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, ACRO Project Team.</p>
+    <p>&#169; Copyright 2023, ACRO Project Team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

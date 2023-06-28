@@ -38,8 +38,8 @@ acro_glm = function(formula, data, family)
     model$summary()
 }
 
-acro_finalise = function(filename)
+acro_finalise = function(path, ext)
 {
     "Write outputs to file"
-    ac$finalise(filename)
+    ac$finalise(path, ext)
 }

@@ -251,11 +251,8 @@ acro.print_outputs()
 #  - or by listing the results and choosing the specific output that needs to be removed
 
 print("\nNow removing two disclosive outputs")
-output_1 = list(acro.results.keys())[1]
-output_4 = list(acro.results.keys())[4]
-
-acro.remove_output(output_1)
-acro.remove_output(output_4)
+acro.remove_output("output_1")
+acro.remove_output("output_4")
 
 
 # 3: Rename ACRO outputs before finalising
@@ -263,7 +260,7 @@ acro.remove_output(output_4)
 #  The timestamp associated with the output name will not get overwritten
 
 print("\nUsers can rename output files to something more informative")
-acro.rename_output(list(acro.results.keys())[2], "pivot_table")
+acro.rename_output("output_2", "pivot_table")
 
 
 # 4: Add a comment to output
@@ -272,8 +269,8 @@ acro.rename_output(list(acro.results.keys())[2], "pivot_table")
 #  or to pass additional information to the output checkers.
 
 print("\nUsers can add comments which the output checkers will see.")
-acro.add_comments(list(acro.results.keys())[0], "Please let me have this table!")
-acro.add_comments(list(acro.results.keys())[0], "6 cells were suppressed in this table")
+acro.add_comments("output_0", "Please let me have this table!")
+acro.add_comments("output_0", "6 cells were suppressed in this table")
 
 
 # 5: Add an unsupported output to the list of outputs
@@ -296,4 +293,4 @@ print(
     "\nUsers MUST call finalise to send their outputs to the checkers"
     " If they don't, the SDC analysis, and their outputs, are lost."
 )
-output = acro.finalise("test_results.json")
+output = acro.finalise("RES_TEST", "json")

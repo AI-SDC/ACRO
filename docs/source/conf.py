@@ -10,9 +10,9 @@ sys.path.insert(0, os.path.abspath("../../"))
 # -- Project information -----------------------------------------------------
 
 project = "ACRO"
-copyright = "2022, ACRO Project Team"
+copyright = "2023, ACRO Project Team"
 author = "ACRO Project Team"
-release = "1.0.0"
+release = "0.2.0"
 
 # -- General configuration ---------------------------------------------------
 

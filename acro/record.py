@@ -61,7 +61,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         summary: str,
         outcome: DataFrame,
         output: str | list[DataFrame],
-        comments: str = "",
+        comments: list[str] | None = None,
     ) -> None:
         """Constructs a new output record.
 
@@ -83,8 +83,8 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
             DataFrame describing the details of ACRO checks.
         output : str | list[DataFrame]
             List of output DataFrames.
-        comments : str
-            String entered by the user to add comments to the output.
+        comments : list[str] | None, default None
+            List of strings entered by the user to add comments to the output.
         """
         self.uid: str = uid
         self.status: str = status
@@ -94,7 +94,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         self.summary: str = summary
         self.outcome: DataFrame = outcome
         self.output: str | list[DataFrame] = output
-        self.comments: str = comments
+        self.comments: list[str] = [] if comments is None else comments
         now = datetime.datetime.now()
         self.timestamp: str = now.isoformat()
 
@@ -180,7 +180,7 @@ class Records:
         summary: str,
         outcome: DataFrame,
         output: str | list[DataFrame],
-        comments: str = "",
+        comments: list[str] | None = None,
     ) -> None:
         """Adds an output to the results.
 
@@ -200,8 +200,8 @@ class Records:
             DataFrame describing the details of ACRO checks.
         output : str | list[DataFrame]
             List of output DataFrames.
-        comments : str
-            String entered by the user to add comments to the output.
+        comments : list[str], default None
+            List of strings entered by the user to add comments to the output.
         """
         output = Record(
             uid=f"output_{self.output_id}",
@@ -271,16 +271,18 @@ class Records:
         key = list(self.results.keys())[index]
         return self.results[key]
 
-    def add_custom(self, filename: str, comment: str = "") -> None:
+    def add_custom(self, filename: str, comment: str | None = None) -> None:
         """Adds an unsupported output to the results dictionary.
 
         Parameters
         ----------
         filename : str
             The name of the file that will be added to the list of the outputs.
-        comment : str
+        comment : str | None, default None
             An optional comment.
         """
+        if comment is not None:
+            comment = [comment]
         output = Record(
             uid=f"output_{self.output_id}",
             status="review",
@@ -323,12 +325,7 @@ class Records:
             The comment.
         """
         if output in self.results:
-            if self.results[output].comments == "":
-                self.results[output].comments = comment
-            else:
-                self.results[output].comments = (
-                    self.results[output].comments + ", " + comment
-                )
+            self.results[output].comments.append(comment)
             logger.info("a comment was added to %s", output)
         else:
             warnings.warn(f"unable to find {output}, key not found", stacklevel=8)

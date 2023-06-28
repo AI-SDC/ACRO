@@ -276,13 +276,13 @@ def test_add_comments(data, acro):
     _ = acro.crosstab(data.year, data.grant_type)
     results: Record = acro.finalise()
     output_0 = results.get_index(0)
-    assert output_0.comments == ""
+    assert output_0.comments == []
     comment = "This is a cross table between year and grant_type"
     acro.add_comments(output_0.uid, comment)
-    assert output_0.comments == comment
+    assert output_0.comments == [comment]
     comment_1 = "6 cells were suppressed"
     acro.add_comments(output_0.uid, comment_1)
-    assert output_0.comments == comment + ", " + comment_1
+    assert output_0.comments == [comment, comment_1]
     # add a comment to something that is not there
     with pytest.warns(UserWarning):
         acro.add_comments("123", "comment")

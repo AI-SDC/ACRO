@@ -57,7 +57,7 @@ def test_find_brace_contents():
     of something specified via X(A B C)
     on the stata command line
     """
-    options = "by(grant_type)" "contents(mean sd inc_activity)" "suppress " "nototals"
+    options = "by(grant_type) contents(mean sd inc_activity) suppress nototals"
     res, substr = find_brace_contents("by", options)
     assert res
     assert substr == "grant_type"
@@ -196,7 +196,7 @@ def test_parse_table_details(data):
 
     varlist = ["survivor", "grant_type", "year"]
     varnames = data.columns
-    options = "by(grant_type) " "contents(mean sd inc_activity)" "suppress " "nototals"
+    options = "by(grant_type) contents(mean sd inc_activity) suppress  nototals"
     details = parse_table_details(varlist, varnames, options)
 
     errstring = f" rows {details['rowvars']} should be ['grant_type','survivor']"

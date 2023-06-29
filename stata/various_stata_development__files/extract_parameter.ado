@@ -29,5 +29,3 @@ program extract_parameter, rclass
 		}
 		return local extract = `"`pvalue'"'
 end
-
-

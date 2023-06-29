@@ -104,7 +104,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of the folder that outputs are to be written.</p>
+<dt><strong>path</strong><span class="classifier">str, default ‘outputs’</span></dt><dd><p>Name of the folder that outputs are to be written.</p>
 </dd>
 </dl>
 </dd>
@@ -127,7 +127,7 @@ any DataFrame outputs as csv.</p>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of the folder that outputs are to be written.</p>
 </dd>
-<dt><strong>serialize</strong><span class="classifier">bool</span></dt><dd><p>Whether to serialize individual output DataFrames.</p>
+<dt><strong>serialize</strong><span class="classifier">bool, default True</span></dt><dd><p>Whether to serialize individual output DataFrames.</p>
 </dd>
 </dl>
 </dd>
@@ -209,7 +209,7 @@ any DataFrame outputs as csv.</p>
 </dd>
 <dt><strong>output</strong><span class="classifier">str | list[DataFrame]</span></dt><dd><p>List of output DataFrames.</p>
 </dd>
-<dt><strong>comments</strong><span class="classifier">list[str], default None</span></dt><dd><p>List of strings entered by the user to add comments to the output.</p>
+<dt><strong>comments</strong><span class="classifier">list[str] | None, default None</span></dt><dd><p>List of strings entered by the user to add comments to the output.</p>
 </dd>
 </dl>
 </dd>
@@ -294,12 +294,18 @@ any DataFrame outputs as csv.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="acro.record.Records.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.get" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#acro.record.Record" title="acro.record.Record"><span class="pre">Record</span></a></span></span><a class="reference internal" href="_modules/acro/record.html#Records.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.get" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a specified output from the results.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>Key specifying which output to return, e.g., ‘output_0’.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>Record</dt><dd><p>The requested output.</p>
 </dd>
 </dl>
 </dd>

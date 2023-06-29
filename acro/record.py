@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 from pandas import DataFrame
 
-logger = logging.getLogger("acro::records")
+logger = logging.getLogger("acro:records")
 
 
 def load_outcome(outcome: dict) -> DataFrame:

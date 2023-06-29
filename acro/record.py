@@ -103,7 +103,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
 
         Parameters
         ----------
-        path : str
+        path : str, default 'outputs'
             Name of the folder that outputs are to be written.
 
         Returns
@@ -141,7 +141,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         ----------
         path : str
             Name of the folder that outputs are to be written.
-        serialize : bool
+        serialize : bool, default True
             Whether to serialize individual output DataFrames.
         """
         output = self.output
@@ -200,7 +200,7 @@ class Records:
             DataFrame describing the details of ACRO checks.
         output : str | list[DataFrame]
             List of output DataFrames.
-        comments : list[str], default None
+        comments : list[str] | None, default None
             List of strings entered by the user to add comments to the output.
         """
         output = Record(
@@ -232,13 +232,18 @@ class Records:
         else:
             warnings.warn(f"unable to remove {key}, key not found", stacklevel=8)
 
-    def get(self, key: str) -> None:
+    def get(self, key: str) -> Record:
         """Returns a specified output from the results.
 
         Parameters
         ----------
         key : str
             Key specifying which output to return, e.g., 'output_0'.
+
+        Returns
+        -------
+        Record
+            The requested output.
         """
         logger.debug("get(): %s ", key)
         return self.results[key]
@@ -267,7 +272,7 @@ class Records:
         Record
             The requested output.
         """
-        logger.debug("get_keys()")
+        logger.debug("get_index(): %s", index)
         key = list(self.results.keys())[index]
         return self.results[key]
 

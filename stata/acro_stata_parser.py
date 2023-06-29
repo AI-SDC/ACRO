@@ -5,14 +5,14 @@ from acro import ACRO, add_constant
 
 
 def apply_stata_ifstmt(raw: str, df: pd.DataFrame) -> pd.DataFrame:
-    if len(raw == 0):
+    if len(raw) == 0:
         return df
     else:
         # add braces aroubd each clause- keeping any in the original
         raw = "( " + raw + ")"
         raw = raw.replace("&", ") & (")
         raw = raw.replace("|", ") | (")
-        # put spaces aroubd operators to ease parsing
+        # put spaces around operators to ease parsing
         for operator in [">", "<", "==", ">=", "<=", "!="]:
             raw = raw.replace(operator, " " + operator + " ")
 
@@ -34,7 +34,8 @@ def apply_stata_expstmt(raw: str, df: pd.DataFrame) -> pd.DataFrame:
     # first index
     if token[0] == "f" or token[0] == "F":
         start = 0
-    start = int(token[0])
+    else:
+        start = int(token[0])
     if start < 0:
         start = last + 1 + start
     # last
@@ -121,14 +122,14 @@ def parse_and_run(
 ) -> pd.DataFrame:
     """
     Takes a dataframe and the parsed stata command line.
-    Runs the appropriate command on a pre-existing ACRO object myacro
+    Runs the appropriate command on a pre-existing ACRO object stata_acro
     Returns the result as a formatted string.
     """
 
     # TODO de-abbreviate according to
     # https://www.stata.com/manuals13/u11.pdf#u11.1.3ifexp
 
-    global myacro
+    global stata_acro
     varlist = varlist.split()
     # print(f' split varlist is {varlist}')
 
@@ -142,15 +143,15 @@ def parse_and_run(
     # session  management first
     if command == "init":
         # initialise the acro object
-        myacro = ACRO()
+        stata_acro = ACRO()
         return "acro analysis session created\n"
 
     elif command == "finalise":
-        myacro.finalise("stata_out.json")
+        stata_acro.finalise("stata_out.json")
         return "outputs and stata_out.json written\n"
 
     elif command == "print_outputs":
-        myacro.print_outputs()
+        stata_acro.print_outputs()
         return ""
 
     # now statistical commands
@@ -168,7 +169,7 @@ def parse_and_run(
             for col in details["colvars"]:
                 cols.append(df[col])
             if len(aggfuncs) > 0 and len(details["values"]) > 0:
-                safe_output = myacro.crosstab(
+                safe_output = stata_acro.crosstab(
                     index=rows,
                     columns=cols,
                     aggfunc=aggfuncs,
@@ -178,14 +179,27 @@ def parse_and_run(
                     margins_name="Total",
                 )
             else:
-                safe_output = myacro.crosstab(
+                safe_output = stata_acro.crosstab(
                     index=rows,
                     columns=cols,
                     # suppress=details['suppress'],
                     margins=details["totals"],
                     margins_name="Total",
                 )
-            return safe_output.to_string() + "\n"
+            options_str = ""
+            formatting = [
+                "cellwidth",
+                "csepwidth",
+                "stubwidth",
+                "scsepwidth",
+                "center",
+                "left",
+            ]
+            if any(word in options for word in formatting):
+                options_str = (
+                    "acro does not currently support table formatting commands.\n "
+                )
+            return options_str + safe_output.to_string() + "\n"
 
     elif command == "regress":
         depvar = varlist[0]
@@ -194,7 +208,7 @@ def parse_and_run(
         y = new_df[depvar]
         x = new_df[indep_vars]
         x = add_constant(x)
-        results = myacro.ols(y, x)
+        results = stata_acro.ols(y, x)
         res_str = results.summary().as_csv()
         return res_str
 
@@ -206,7 +220,7 @@ def parse_and_run(
         y.name = depvar
         x = new_df[indep_vars]
         x = add_constant(x)
-        results = myacro.probit(y, x)
+        results = stata_acro.probit(y, x)
         res_str = results.summary().as_csv()
         return res_str
 

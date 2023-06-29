@@ -17,13 +17,13 @@ from sklearn.svm import SVC
 def dosvm(label, features, predict):
     X = np.array(Data.get(features))
     y = np.array(Data.get(label))
-    
+
     svc_clf = SVC(gamma='auto')
     svc_clf.fit(X, y)
     theline = f'python got this for features {features}'
     with open ("svm_ado_out.txt",mode="a") as f:
         f.write(theline)
-    SFIToolkit.displayln("output file created")    
+    SFIToolkit.displayln("output file created")
     y_pred = svc_clf.predict(X)
     SFIToolkit.displayln("model run")
     Data.addVarByte(predict)

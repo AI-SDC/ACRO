@@ -9,14 +9,14 @@ program acro_crosstab , rclass byable(recall, noheader)
   display `"The arguments are: `0'"'
   extract_parameter "contents"
   local the_contents = r(extract)
-  
+
   * call the Python function
    python  acro_crosstab(varlist,the_contents)
 }
 end
 
 version 17
-python 
+python
 from sfi import Data, Macro, Missing, SFIToolkit
 import acro
 
@@ -24,7 +24,7 @@ import acro
 def acro_crosstab( varlist,values, aggfuncs="mean"):
     #df = np.array(Data.get())
     print('hello world')
-    #what have we been given? 
+    #what have we been given?
     starters= "In func we have been given:\n"
     starters +=f' varlist: {varlist}\n'
     starters += f'aggfuncs: {aggfuncs}\n'
@@ -38,11 +38,11 @@ def acro_crosstab( varlist,values, aggfuncs="mean"):
     #feedback = "table is:\n"
     #feedback += f'the_table + "\n"
     #feedback += "======================"
-    #feedback += "current outputs from myacro.print_ouptputs() ======\n" 
-    #feedback += f'myacro.print_outputs()' 
+    #feedback += "current outputs from myacro.print_ouptputs() ======\n"
+    #feedback += f'myacro.print_outputs()'
     #feedback += "========================="
     #myacro.finalise('stata_test_results.xlsx')
-    #feedback += "sdc outputs written to stata_test_results.xlsx" 
+    #feedback += "sdc outputs written to stata_test_results.xlsx"
     #SFIToolkit.displayln(feedback)
 
 end

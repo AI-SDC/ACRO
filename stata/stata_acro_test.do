@@ -21,7 +21,7 @@ noisily acro table survivor grant_type
 
 noisily display `""'
 **** tabulation with contents
-* acro table year survivor if year>2013, contents(freq mean inc_activity sd inc_activity) 
+* acro table year survivor if year>2013, contents(freq mean inc_activity sd inc_activity)
 
 noisily display `""'
 noisily display `""'
@@ -44,7 +44,7 @@ noisily probit survivor inc_activity inc_grants inc_donations total_costs
 noisily display `""'
 noisily display `""'
 noisily display `"** acro: acro probit survivor inc_activity inc_grants inc_donations total_costs "'
-noisily acro probit survivor inc_activity inc_grants inc_donations total_costs 
+noisily acro probit survivor inc_activity inc_grants inc_donations total_costs
 
 noisily display `""'
 noisily display `""'

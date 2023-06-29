@@ -1,7 +1,7 @@
 capture program drop acro2
 program  acro2, rclass
- syntax anything [if] [in] [fweight  aweight  pweight  iweight] [, *] 
-  display `"here"' 
+ syntax anything [if] [in] [fweight  aweight  pweight  iweight] [, *]
+  display `"here"'
   display `" anything is `anything'"'
   tokenize `anything'
   local command `1'
@@ -12,7 +12,7 @@ program  acro2, rclass
   display `" in is `in'"'
   display `" weights are: `fweight', `aweight', `pweight', `iweight' "'
   display `" exp is `exp'"'
-  display `"options is `options'"'  
+  display `"options is `options'"'
   python: acrohandler2("`command'", "`rest'","`if'","`exp'","`weights'","`options'")
   python: simple()
 end

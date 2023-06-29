@@ -4,7 +4,7 @@
 * Last modified:
 *  dd.mm.yy vxx who what
 
-* to use this program, send a string with the parametr you want extracted in 
+* to use this program, send a string with the parametr you want extracted in
 * brackets after the value to identify eg
 *   extract_parameter filename "opt1 opt2 filename("myfile") other_opt"
 *   => r(extract) = "myfile"
@@ -15,7 +15,7 @@ capture program drop extract_parameter
 
 program extract_parameter, rclass
   args param long_text
-		
+
 		local param_pos = strpos(`"`long_text'"', "`param'(")
 		local pvalue = "."
 		if `param_pos' > 0 {
@@ -30,5 +30,4 @@ program extract_parameter, rclass
 		return local extract = `"`pvalue'"'
 end
 
-		  
 

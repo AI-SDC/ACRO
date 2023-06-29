@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 # # ACRO Tests
 
@@ -8,9 +7,9 @@ from __future__ import annotations
 
 import os
 import sys
-import pandas as pd
-import numpy as np
 
+import numpy as np
+import pandas as pd
 
 # In[2]:
 
@@ -22,7 +21,6 @@ sys.path.insert(0, os.path.abspath(".."))
 
 
 from acro import ACRO, add_constant
-
 
 # ### Instantiate ACRO
 
@@ -184,7 +182,3 @@ output = acro.finalise("test_results.xlsx")
 
 
 # In[ ]:
-
-
-
-

@@ -14,7 +14,7 @@ local working_folder = "."
   log using "`working_folder'\test_log", replace
 
   * safe_setup "`working_folder'" null test_results suppress
-		
+
   use "../data/test_data", clear
 
     //call the Python function

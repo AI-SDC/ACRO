@@ -7,7 +7,7 @@
 *********************************************************************************
 * main program code                                                             *
 *********************************************************************************
-	
+
 capture program drop acro
 program  acro, rclass
   version 18
@@ -22,7 +22,7 @@ from sfi import Data, Macro, Missing, SFIToolkit, Scalar
 import acro
 import numpy as np
 import pandas as pd
-import acro_parser 
+import acro_parser
 myacro="empty"
 def acrohandler(varlist):
     debug=False
@@ -37,10 +37,10 @@ def acrohandler(varlist):
         for tok in range(n_args):
             theline+= f'  _{command_list[tok]}_\n'
         with open ("pyout.txt",mode="w") as f:
-            f.write(theline) 
+            f.write(theline)
         SFIToolkit.displayln("command line parsed")
-    
-    
+
+
     #make data object
     nvars= Data.getVarCount()
     colnames= []
@@ -49,13 +49,12 @@ def acrohandler(varlist):
     if debug:
         SFIToolkit.displayln(f'var names are {colnames}')
     the_data= pd.DataFrame(Data.get(missingval=np.nan),columns=colnames)
-    
+
     if debug:
         contents = the_data.describe()
-        contents.to_csv("contents.csv") 
+        contents.to_csv("contents.csv")
 
     #now do the acro part
     acro_outstr = acro_parser.parse_and_run (the_data,varlist)
     SFIToolkit.display(acro_outstr)
 end
-

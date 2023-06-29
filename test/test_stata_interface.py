@@ -32,15 +32,17 @@ def data() -> pd.DataFrame:
 
 
 # --- global object and dummy code to replace things in acro.ado
-stata_acro = "empty"
+stata_acro = "empty"  # pylint:disable=invalid-name
 
 
-def dummy_acrohandler(data, command, varlist, exclusion, exp, weights, options):
+def dummy_acrohandler(
+    data, command, varlist, exclusion, exp, weights, options
+):  # pylint:disable=too-many-arguments
     """
     provides an alternative interface that mimics the code in acro.ado
     Most notably the presence of a global variable called stata_acro
     """
-    global stata_acro
+    # global stata_acro
     acro_outstr = parse_and_run(
         data, command, varlist, exclusion, exp, weights, options
     )
@@ -55,7 +57,7 @@ def test_find_brace_contents():
     of something specified via X(A B C)
     on the stata command line
     """
-    options = "by(grant_type) " "contents(mean sd inc_activity)" "suppress " "nototals"
+    options = "by(grant_type)" "contents(mean sd inc_activity)" "suppress " "nototals"
     res, substr = find_brace_contents("by", options)
     assert res
     assert substr == "grant_type"

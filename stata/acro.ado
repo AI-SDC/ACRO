@@ -30,7 +30,7 @@ from sfi import Data, SFIToolkit
 import acro
 import numpy as np
 import pandas as pd
-import acro_parser 
+import acro_stata_parser 
 myacro="empty"
 debug = False
 def acrohandler(command, varlist,exclusion,exp,weights,options):
@@ -58,7 +58,7 @@ def acrohandler(command, varlist,exclusion,exp,weights,options):
         contents.to_csv("contents.csv") 
 
     #now do the acro part
-    acro_outstr = acro_parser.parse_and_run (the_data,command,varlist,exclusion,exp,weights,options)
+    acro_outstr = acro_stata_parser.parse_and_run (the_data,command,varlist,exclusion,exp,weights,options)
     SFIToolkit.display(acro_outstr)
 end
 

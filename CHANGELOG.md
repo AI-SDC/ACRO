@@ -4,7 +4,7 @@
 
 Changes:
 *    Disable automatic table suppression by default ([#91](https://github.com/AI-SDC/ACRO/pull/91))
-*    Add support for multiple aggregation functions ([#94](https://github.com/AI-SDC/ACRO/pull/94))
+*    Add support for multiple aggregation functions ([#99](https://github.com/AI-SDC/ACRO/pull/99))
 
 ## Version 0.2.0 (Jun 28, 2023)
 

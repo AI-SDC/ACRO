@@ -296,7 +296,7 @@ def test_rename_output(data, acro):
 
 
 def test_add_comments(data, acro):
-    """Adding comments to output test"""
+    """Adding comments to output test."""
     _ = acro.crosstab(data.year, data.grant_type)
     results: Record = acro.finalise()
     output_0 = results.get_index(0)
@@ -313,7 +313,7 @@ def test_add_comments(data, acro):
 
 
 def test_custom_output(acro):
-    """Adding an unsupported output to the results dictionary test"""
+    """Adding an unsupported output to the results dictionary test."""
     save_path = "RES_PYTEST"
     filename = "notebooks/XandY.jfif"
     file_path = os.path.normpath(filename)

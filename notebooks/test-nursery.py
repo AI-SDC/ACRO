@@ -1,6 +1,6 @@
 """
 ACRO Tests
-Copyright : Maha Albashir, Richard Preen, Jim Smith 2023
+Copyright : Maha Albashir, Richard Preen, Jim Smith 2023.
 """
 
 # import libraries

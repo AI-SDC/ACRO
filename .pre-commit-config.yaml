@@ -58,6 +58,13 @@ repos:
       - id: isort
         args: ["--profile", "black"]
 
+  # Format doctstrings
+  - repo: https://github.com/DanielNoord/pydocstringformatter
+    rev: "v0.7.3"
+    hooks:
+      - id: pydocstringformatter
+        args: ["--style=numpydoc"]
+
   # Black format Python and notebooks
   - repo: https://github.com/psf/black
     rev: 23.3.0

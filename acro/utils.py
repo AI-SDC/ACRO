@@ -17,6 +17,7 @@ AGGFUNC: dict[str, Callable] = {
     "median": np.median,
     "sum": np.sum,
     "std": np.std,
+    "freq": np.size,
 }
 
 # aggregation function parameters
@@ -299,7 +300,7 @@ def get_aggfunc(aggfunc: str | None) -> Callable | None:
     func = None
     if aggfunc is not None:
         if not isinstance(aggfunc, str) or aggfunc not in AGGFUNC:
-            raise ValueError(f"aggfunc must be: {', '.join(AGGFUNC.keys())}")
+            raise ValueError(f"aggfunc {aggfunc} must be: {', '.join(AGGFUNC.keys())}")
         func = AGGFUNC[aggfunc]
     logger.debug("aggfunc: %s", func)
     return func

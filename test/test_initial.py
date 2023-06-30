@@ -52,7 +52,7 @@ def test_crosstab_multiple_aggregate_function(data, acro):
     )
     assert (
         output.summary == correct_summary
-    ), f"\n{output.summary}\n should be \n{output.summary}\n"
+    ), f"\n{output.summary}\n should be \n{correct_summary}\n"
     print(f"{output.output[0]['mean'][ 'R/G'].sum()}")
     correctval = 97383496.0
     errmsg = f"{output.output[0]['mean']['R/G'].sum()} should be {correctval}"

@@ -3,6 +3,7 @@
 import logging
 import pathlib
 import warnings
+from collections.abc import Hashable
 from inspect import stack
 
 import pandas as pd
@@ -254,7 +255,7 @@ class ACRO:
         fill_value=None,
         margins: bool = False,
         dropna: bool = True,
-        margins_name: str = "All",
+        margins_name: Hashable = "All",
         observed: bool = False,
         sort: bool = True,
     ) -> DataFrame:
@@ -291,7 +292,7 @@ class ACRO:
             Add all row / columns (e.g. for subtotal / grand totals).
         dropna : bool, default True
             Do not include columns whose entries are all NaN.
-        margins_name : str, default 'All'
+        margins_name : Hashable, default 'All'
             Name of the row / column that will contain the totals when margins
             is True.
         observed : bool, default False
@@ -375,7 +376,7 @@ class ACRO:
         )
         return table
 
-    def __check_model_dof(self, name: str, model) -> [str, str, float]:
+    def __check_model_dof(self, name: str, model) -> tuple[str, str, float]:
         """Check model DOF.
 
         Parameters

@@ -37,14 +37,14 @@ def load_output(path: str, output: list[str]) -> str | list[DataFrame]:
     """
     if len(output) < 1:
         raise ValueError("error loading output")
-    loaded: str | list[DataFrame] = []
+    loaded: list[DataFrame] = []
     for filename in output:
         _, ext = os.path.splitext(filename)
         if ext == ".csv":
             filename = os.path.normpath(f"{path}/{filename}")
             loaded.append(pd.read_csv(filename))
     if len(loaded) < 1:  # output was a path to custom file
-        loaded = output[0]
+        return output[0]
     return loaded
 
 
@@ -203,7 +203,7 @@ class Records:
         comments : list[str] | None, default None
             List of strings entered by the user to add comments to the output.
         """
-        output = Record(
+        new = Record(
             uid=f"output_{self.output_id}",
             status=status,
             output_type=output_type,
@@ -214,9 +214,9 @@ class Records:
             output=output,
             comments=comments,
         )
-        self.results[output.uid] = output
+        self.results[new.uid] = new
         self.output_id += 1
-        logger.info("add(): %s", output.uid)
+        logger.info("add(): %s", new.uid)
 
     def remove(self, key: str) -> None:
         """Removes an output from the results.
@@ -286,8 +286,6 @@ class Records:
         comment : str | None, default None
             An optional comment.
         """
-        if comment is not None:
-            comment = [comment]
         output = Record(
             uid=f"output_{self.output_id}",
             status="review",
@@ -297,7 +295,7 @@ class Records:
             summary="review",
             outcome=DataFrame(),
             output=os.path.normpath(filename),
-            comments=comment,
+            comments=None if comment is None else list(comment),
         )
         self.results[output.uid] = output
 

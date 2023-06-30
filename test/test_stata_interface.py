@@ -134,19 +134,7 @@ def test_stata_acro_init() -> str:
     # assert isinstance(stata_acro,ACRO),f'wrong type for stata_acro:{type(stata_acro)}'
 
 
-def test_stata_finalise():
-    """checks finalise gets called correctly"""
-    ret = dummy_acrohandler(
-        data,
-        command="finalise",
-        varlist="",
-        exclusion="",
-        exp="",
-        weights="",
-        options="",
-    )
-    correct = "outputs and stata_out.json written\n"
-    assert ret == correct, f"returned string {ret} should be {correct}\n"
+
 
 
 def test_stata_print_outputs(data):
@@ -291,3 +279,18 @@ def test_unsupported_formatting_options(data):
         ret = ret.replace("NaN", "0")
         ret = ret.replace(".0", "")
         assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+        
+def test_stata_finalise():
+    """checks finalise gets called correctly"""
+    ret = dummy_acrohandler(
+        data,
+        command="finalise",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+    )
+    correct = "outputs and stata_out.json written\n"
+    assert ret == correct, f"returned string {ret} should be {correct}\n"

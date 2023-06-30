@@ -3,6 +3,7 @@
 import logging
 import pathlib
 import warnings
+from collections.abc import Callable
 from inspect import stack
 
 import pandas as pd
@@ -19,6 +20,7 @@ from .record import Records
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("acro")
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 class ACRO:
@@ -165,7 +167,27 @@ class ACRO:
         logger.debug("crosstab()")
         command: str = utils.get_command("crosstab()", stack())
 
-        aggfunc = utils.get_aggfunc(aggfunc)  # convert string to function
+        aggfunc = utils.get_aggfuncs(
+            aggfunc
+        )  # convert [list of]string to [list of]function
+
+        if aggfunc is None:
+            freq_funcs = None
+        else:
+            # create lists with single entry for when there is only one aggfunc
+            freq_funcs: list[Callable] = [utils.AGGFUNC["freq"]]
+            neg_funcs: list[Callable] = [utils.agg_negative]
+            pperc_funcs: list[Callable] = [utils.agg_p_percent]
+            nk_funcs: list[Callable] = [utils.agg_nk]
+            missing_funcs: list[Callable] = [utils.agg_missing]
+            # then expand them to deal with extra columns as needed
+            if isinstance(aggfunc, list):
+                num = len(aggfunc)
+                freq_funcs.extend([utils.AGGFUNC["freq"] for i in range(1, num)])
+                neg_funcs.extend([utils.agg_negative for i in range(1, num)])
+                pperc_funcs.extend([utils.agg_p_percent for i in range(1, num)])
+                nk_funcs.extend([utils.agg_nk for i in range(1, num)])
+                missing_funcs.extend([utils.agg_missing for i in range(1, num)])
 
         # requested table
         table: DataFrame = pd.crosstab(
@@ -184,37 +206,42 @@ class ACRO:
         # suppression masks to apply based on the following checks
         masks: dict[str, DataFrame] = {}
 
-        # threshold check
+        # threshold check- doesn't matter what we pass for value
+        value_column = None if aggfunc is None else index
         t_values = pd.crosstab(
             index,
             columns,
-            None,
-            rownames,
-            colnames,
-            None,
-            margins,
-            margins_name,
-            dropna,
-            normalize,
+            values=value_column,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=freq_funcs,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
         )
         t_values = t_values < utils.THRESHOLD
         masks["threshold"] = t_values
 
         if aggfunc is not None:
             # check for negative values -- currently unsupported
-            negative = pd.crosstab(index, columns, values, aggfunc=utils.agg_negative)
+            negative = pd.crosstab(
+                index, columns, values, aggfunc=neg_funcs, margins=margins
+            )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
             masks["p-ratio"] = pd.crosstab(
-                index, columns, values, aggfunc=utils.agg_p_percent
+                index, columns, values, aggfunc=pperc_funcs, margins=margins
             )
             # nk values check
-            masks["nk-rule"] = pd.crosstab(index, columns, values, aggfunc=utils.agg_nk)
+            masks["nk-rule"] = pd.crosstab(
+                index, columns, values, aggfunc=nk_funcs, margins=margins
+            )
             # check for missing values -- currently unsupported
             if utils.CHECK_MISSING_VALUES:
                 masks["missing"] = pd.crosstab(
-                    index, columns, values, aggfunc=utils.agg_missing
+                    index, columns, values, aggfunc=missing_funcs, margins=margins
                 )
         # pd.crosstab returns nan for an empty cell
         for name, mask in masks.items():

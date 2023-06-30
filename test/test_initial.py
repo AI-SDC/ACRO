@@ -37,6 +37,28 @@ def test_crosstab_without_suppression(data):
     assert 48 == output.output[0]["R/G"].sum()
 
 
+def test_crosstab_multiple_aggregate_function(data, acro):
+    """Crosstab with multiple agg funcs."""
+    acro = ACRO(suppress=False)
+
+    _ = acro.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc=["mean", "std"]
+    )
+    output = acro.results.get_index(0)
+    correct_summary: str = (
+        "fail; threshold: 12 cells may need suppressing;"
+        " p-ratio: 2 cells may need suppressing; "
+        "nk-rule: 2 cells may need suppressing; "
+    )
+    assert (
+        output.summary == correct_summary
+    ), f"\n{output.summary}\n should be \n{correct_summary}\n"
+    print(f"{output.output[0]['mean'][ 'R/G'].sum()}")
+    correctval = 97383496.0
+    errmsg = f"{output.output[0]['mean']['R/G'].sum()} should be {correctval}"
+    assert correctval == output.output[0]["mean"]["R/G"].sum(), errmsg
+
+
 def test_crosstab_threshold(data, acro):
     """Crosstab threshold test."""
     _ = acro.crosstab(data.year, data.grant_type)

@@ -45,11 +45,10 @@ repos:
         args: [--py310-plus]
 
   # Autoremoves unused imports
-  - repo: https://github.com/hadialqattan/pycln
-    rev: "v2.1.5"
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.0
     hooks:
-      - id: pycln
-        stages: [manual]
+      - id: autoflake
 
   # Sort includes
   - repo: https://github.com/PyCQA/isort
@@ -57,6 +56,13 @@ repos:
     hooks:
       - id: isort
         args: ["--profile", "black"]
+
+  # Format docstrings
+  - repo: https://github.com/DanielNoord/pydocstringformatter
+    rev: "v0.7.3"
+    hooks:
+      - id: pydocstringformatter
+        args: ["--style=numpydoc"]
 
   # Black format Python and notebooks
   - repo: https://github.com/psf/black

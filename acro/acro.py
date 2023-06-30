@@ -774,7 +774,7 @@ def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
     prepend : bool
         If true, the constant is in the first column. Else the constant is
         appended (last column).
-    has_constant: str {'raise', 'add', 'skip'}
+    has_constant : str {'raise', 'add', 'skip'}
         Behavior if data already has a constant. The default will return
         data without adding another constant. If 'raise', will raise an
         error if any column has a constant value. Using 'add' will add a

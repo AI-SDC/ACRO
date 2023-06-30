@@ -39,8 +39,8 @@ def dummy_acrohandler(
     data, command, varlist, exclusion, exp, weights, options
 ):  # pylint:disable=too-many-arguments
     """
-    provides an alternative interface that mimics the code in acro.ado
-    Most notably the presence of a global variable called stata_acro
+    Provides an alternative interface that mimics the code in acro.ado
+    Most notably the presence of a global variable called stata_acro.
     """
     # global stata_acro
     acro_outstr = parse_and_run(
@@ -55,7 +55,7 @@ def test_find_brace_contents():
     """Tests helper function
     that extracts contents 'A B C'
     of something specified via X(A B C)
-    on the stata command line
+    on the stata command line.
     """
     options = "by(grant_type) contents(mean sd inc_activity) suppress nototals"
     res, substr = find_brace_contents("by", options)
@@ -70,7 +70,7 @@ def test_find_brace_contents():
 
 
 def test_apply_stata_ifstmt(data):
-    """tests that if statements work for selection"""
+    """Tests that if statements work for selection."""
     ifstring = "year!=2013"
     all_list = list(data["year"].unique())
     smaller = apply_stata_ifstmt(ifstring, data)
@@ -83,7 +83,7 @@ def test_apply_stata_ifstmt(data):
 
 
 def test_apply_stata_expstmt(data):
-    """tests that in statements work for row selection"""
+    """Tests that in statements work for row selection."""
     length = data.shape[0]
     # use of f/F and l/L for first and last with specified row range
     exp = "f/5"
@@ -122,7 +122,7 @@ def test_stata_acro_init() -> str:
     Tests creation of an acro object at the start of a session
     For stata this gets held in a variable stata_acro
     Which is initialsied to the string "empty" in the acro.ado file
-    Then should be pointed at a new acro instance
+    Then should be pointed at a new acro instance.
     """
     assert isinstance(stata_acro, str)
     ret = dummy_acrohandler(
@@ -135,7 +135,7 @@ def test_stata_acro_init() -> str:
 
 
 def test_stata_print_outputs(data):
-    """checks print_outputs gets called"""
+    """Checks print_outputs gets called."""
     ret = dummy_acrohandler(
         data,
         command="print_outputs",
@@ -151,10 +151,10 @@ def test_stata_print_outputs(data):
 # ----main SDC functionality
 def test_simple_table(data) -> str:
     """
-    checks that the simple table command works as expected
+    Checks that the simple table command works as expected
     Does via reference to direct call to pd.crosstab()
     To make sure table specification is parsed correctly
-    acro SDC analysis is tested elsewhere
+    acro SDC analysis is tested elsewhere.
     """
     correct = pd.crosstab(
         index=data["survivor"], columns=data["grant_type"]
@@ -176,7 +176,7 @@ def test_simple_table(data) -> str:
 def test_parse_table_details(data):
     """
     Series of checks that the varlist and options are parsed correctly
-    by the helper function
+    by the helper function.
     """
 
     varlist = ["survivor", "grant_type", "year"]
@@ -201,7 +201,7 @@ def test_parse_table_details(data):
 
 
 def test_stata_probit(data):
-    """checks probit gets called correctly"""
+    """Checks probit gets called correctly."""
     ret = dummy_acrohandler(
         data,
         command="probit",
@@ -222,7 +222,7 @@ def test_stata_probit(data):
 
 
 def test_stata_linregress(data):
-    """checks linear regression called correctly"""
+    """Checks linear regression called correctly."""
     ret = dummy_acrohandler(
         data,
         command="regress",
@@ -243,9 +243,7 @@ def test_stata_linregress(data):
 
 
 def test_unsupported_formatting_options(data):
-    """
-    checks that user gets warning if they try to format table
-    """
+    """Checks that user gets warning if they try to format table."""
     format_string = "acro does not currently support table formatting commands."
     correct = pd.crosstab(
         index=data["survivor"], columns=data["grant_type"]
@@ -279,7 +277,7 @@ def test_unsupported_formatting_options(data):
 
 
 def test_stata_finalise():
-    """checks finalise gets called correctly"""
+    """Checks finalise gets called correctly."""
     ret = dummy_acrohandler(
         data,
         command="finalise",

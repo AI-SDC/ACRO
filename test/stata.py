@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-"""
-ACRO Stata Tests.
-"""
+"""ACRO Stata Tests."""
 
 # ACRO Tests
 

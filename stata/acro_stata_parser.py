@@ -70,10 +70,10 @@ def find_brace_contents(word: str, raw: str) -> (bool, str):
 
 
 def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
-    """function to parse stata-13 style table calls
+    """Function to parse stata-13 style table calls
     Note this is not for latest version of stata, syntax here:
     https://www.stata.com/manuals13/rtable.pdf
-    >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options]
+    >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
     details = {"errmsg": ""}
     details["rowvars"] = [varlist.pop(0)]

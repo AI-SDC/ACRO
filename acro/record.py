@@ -49,7 +49,31 @@ def load_output(path: str, output: list[str]) -> str | list[DataFrame]:
 
 
 class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
-    """Stores data related to a single output record."""
+    """Stores data related to a single output record.
+
+    Attributes
+    ----------
+    uid : str
+        Unique identifier.
+    status : str
+        SDC status: {"pass", "fail", "review"}
+    output_type : str
+        Type of output, e.g., "regression"
+    properties : dict
+        Dictionary containing structured output data.
+    command : str
+        String representation of the operation performed.
+    summary : str
+        String summarising the ACRO checks.
+    outcome : DataFrame
+        DataFrame describing the details of ACRO checks.
+    output : str | list[DataFrame]
+        List of output DataFrames.
+    comments : list[str] | None
+        List of strings entered by the user to add comments to the output.
+    timestamp : str
+        Time the record was created in ISO format.
+    """
 
     def __init__(  # pylint: disable=too-many-arguments
         self,

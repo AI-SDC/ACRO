@@ -73,6 +73,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">stack</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -89,6 +90,7 @@
 
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;acro&quot;</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ACRO"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO">[docs]</a><span class="k">class</span> <span class="nc">ACRO</span><span class="p">:</span>
@@ -235,7 +237,27 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;crosstab()&quot;</span><span class="p">)</span>
         <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;crosstab()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
 
-        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_aggfunc</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>  <span class="c1"># convert string to function</span>
+        <span class="n">aggfunc</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_aggfuncs</span><span class="p">(</span>
+            <span class="n">aggfunc</span>
+        <span class="p">)</span>  <span class="c1"># convert [list of]string to [list of]function</span>
+
+        <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">freq_funcs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># create lists with single entry for when there is only one aggfunc</span>
+            <span class="n">freq_funcs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">AGGFUNC</span><span class="p">[</span><span class="s2">&quot;freq&quot;</span><span class="p">]]</span>
+            <span class="n">neg_funcs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_negative</span><span class="p">]</span>
+            <span class="n">pperc_funcs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_p_percent</span><span class="p">]</span>
+            <span class="n">nk_funcs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_nk</span><span class="p">]</span>
+            <span class="n">missing_funcs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_missing</span><span class="p">]</span>
+            <span class="c1"># then expand them to deal with extra columns as needed</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>
+                <span class="n">freq_funcs</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">utils</span><span class="o">.</span><span class="n">AGGFUNC</span><span class="p">[</span><span class="s2">&quot;freq&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">)])</span>
+                <span class="n">neg_funcs</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_negative</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">)])</span>
+                <span class="n">pperc_funcs</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_p_percent</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">)])</span>
+                <span class="n">nk_funcs</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_nk</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">)])</span>
+                <span class="n">missing_funcs</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_missing</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="p">)])</span>
 
         <span class="c1"># requested table</span>
         <span class="n">table</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
@@ -254,37 +276,42 @@
         <span class="c1"># suppression masks to apply based on the following checks</span>
         <span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="c1"># threshold check</span>
+        <span class="c1"># threshold check- doesn&#39;t matter what we pass for value</span>
+        <span class="n">value_column</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">index</span>
         <span class="n">t_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
             <span class="n">index</span><span class="p">,</span>
             <span class="n">columns</span><span class="p">,</span>
-            <span class="kc">None</span><span class="p">,</span>
-            <span class="n">rownames</span><span class="p">,</span>
-            <span class="n">colnames</span><span class="p">,</span>
-            <span class="kc">None</span><span class="p">,</span>
-            <span class="n">margins</span><span class="p">,</span>
-            <span class="n">margins_name</span><span class="p">,</span>
-            <span class="n">dropna</span><span class="p">,</span>
-            <span class="n">normalize</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="n">value_column</span><span class="p">,</span>
+            <span class="n">rownames</span><span class="o">=</span><span class="n">rownames</span><span class="p">,</span>
+            <span class="n">colnames</span><span class="o">=</span><span class="n">colnames</span><span class="p">,</span>
+            <span class="n">aggfunc</span><span class="o">=</span><span class="n">freq_funcs</span><span class="p">,</span>
+            <span class="n">margins</span><span class="o">=</span><span class="n">margins</span><span class="p">,</span>
+            <span class="n">margins_name</span><span class="o">=</span><span class="n">margins_name</span><span class="p">,</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="n">dropna</span><span class="p">,</span>
+            <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">t_values</span> <span class="o">=</span> <span class="n">t_values</span> <span class="o">&lt;</span> <span class="n">utils</span><span class="o">.</span><span class="n">THRESHOLD</span>
         <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_values</span>
 
         <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># check for negative values -- currently unsupported</span>
-            <span class="n">negative</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_negative</span><span class="p">)</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+                <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">neg_funcs</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="n">margins</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="n">negative</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">negative</span>
             <span class="c1"># p-percent check</span>
             <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
-                <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_p_percent</span>
+                <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">pperc_funcs</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="n">margins</span>
             <span class="p">)</span>
             <span class="c1"># nk values check</span>
-            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_nk</span><span class="p">)</span>
+            <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+                <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">nk_funcs</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="n">margins</span>
+            <span class="p">)</span>
             <span class="c1"># check for missing values -- currently unsupported</span>
             <span class="k">if</span> <span class="n">utils</span><span class="o">.</span><span class="n">CHECK_MISSING_VALUES</span><span class="p">:</span>
                 <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;missing&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
-                    <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">agg_missing</span>
+                    <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">missing_funcs</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="n">margins</span>
                 <span class="p">)</span>
         <span class="c1"># pd.crosstab returns nan for an empty cell</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>

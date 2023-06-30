@@ -582,7 +582,7 @@ a numpy structured or rec array, a dictionary, or a pandas DataFrame.</p>
 <dt><strong>prepend</strong><span class="classifier">bool</span></dt><dd><p>If true, the constant is in the first column. Else the constant is
 appended (last column).</p>
 </dd>
-<dt><strong>has_constant: str {‘raise’, ‘add’, ‘skip’}</strong></dt><dd><p>Behavior if data already has a constant. The default will return
+<dt><strong>has_constant</strong><span class="classifier">str {‘raise’, ‘add’, ‘skip’}</span></dt><dd><p>Behavior if data already has a constant. The default will return
 data without adding another constant. If ‘raise’, will raise an
 error if any column has a constant value. Using ‘add’ will add a
 column of 1s if a constant column is present.</p>

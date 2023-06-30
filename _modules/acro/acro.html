@@ -111,21 +111,25 @@
 <span class="sd">    &gt;&gt;&gt; acro.finalise(&quot;MYFOLDER&quot;, &quot;json&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">suppress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructs a new ACRO object and reads parameters from config.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        config : str</span>
 <span class="sd">            Name of a yaml configuration file with safe parameters.</span>
+<span class="sd">        suppress : bool, default False</span>
+<span class="sd">            Whether to automatically apply suppression.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="n">Records</span> <span class="o">=</span> <span class="n">Records</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">suppress</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">config</span> <span class="o">+</span> <span class="s2">&quot;.yaml&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;path: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">SafeLoader</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;config: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;automatic suppression: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">)</span>
         <span class="c1"># set globals needed for aggregation functions</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">THRESHOLD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_threshold&quot;</span><span class="p">]</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">SAFE_PRATIO_P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_pratio_p&quot;</span><span class="p">]</span>
@@ -289,10 +293,16 @@
             <span class="n">mask</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">masks</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span>
 
-        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
-        <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;crosstab&quot;</span><span class="p">}</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
-
+        <span class="c1"># build the properties dictionary</span>
+        <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;crosstab&quot;</span><span class="p">,</span> <span class="s2">&quot;suppressed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">}</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">update_table_properties</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+        <span class="c1"># get the status and summary</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+        <span class="c1"># apply the suppression</span>
+        <span class="n">safe_table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">:</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">safe_table</span>
+        <span class="c1"># record output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;table&quot;</span><span class="p">,</span>
@@ -414,10 +424,16 @@
                     <span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span>
                 <span class="p">)</span>
 
-        <span class="n">table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
-        <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;pivot_table&quot;</span><span class="p">}</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
-
+        <span class="c1"># build the properties dictionary</span>
+        <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;pivot_table&quot;</span><span class="p">,</span> <span class="s2">&quot;suppressed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">}</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">update_table_properties</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+        <span class="c1"># get the status and summary</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+        <span class="c1"># apply the suppression</span>
+        <span class="n">safe_table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">:</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">safe_table</span>
+        <span class="c1"># record output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;table&quot;</span><span class="p">,</span>

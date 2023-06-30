@@ -1,0 +1,56 @@
+# Changelog
+
+## Development
+
+Changes:
+*    Disable automatic table suppression by default ([#91](https://github.com/AI-SDC/ACRO/pull/91))
+
+## Version 0.2.0 (Jun 28, 2023)
+
+Changes:
+*    Serialize JSON outcome field as a dictionary instead of string ([#88](https://github.com/AI-SDC/ACRO/pull/88))
+*    Major code refactor of output storage ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Add status, type and properties to the output metadata ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Remove the timestamp from the output naming ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Remove automatic reloading of existing results ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Make custom file paths relatve instead of absolute ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Split statsmodels outputs into multiple csv files ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Change output field in JSON to a list of file paths ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Finalise now takes two arguments: path and ext to specify a folder ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Automatically copy custom outputs to the outputs folder upon finalise ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Fix a bug attempting to write custom outputs in excel ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    ISO format timestamps ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+*    Store comments as a list of strings ([#89](https://github.com/AI-SDC/ACRO/pull/89))
+
+## Version 0.1.0 (Apr 28, 2023)
+
+Changes:
+*    Add missing value handling ([#59](https://github.com/AI-SDC/ACRO/pull/59))
+*    Add a new line between statsmodel tables when writing csv ([#60](https://github.com/AI-SDC/ACRO/pull/60))
+*    Fix problems with NaNs in masks ([#63](https://github.com/AI-SDC/ACRO/pull/63))
+*    Fix loading existing results ([#64](https://github.com/AI-SDC/ACRO/pull/64))
+
+## Version 0.0.6 (Apr 16, 2023)
+
+Changes:
+*    Add explicit stack level to warnings ([#45](https://github.com/AI-SDC/ACRO/pull/45))
+*    Separate analytic results from JSON files ([#46](https://github.com/AI-SDC/ACRO/pull/46))
+*    Add timestamps to the output names and append the new outputs to the existing JSON file ([#51](https://github.com/AI-SDC/ACRO/pull/51))
+*    Add functionality for users to rename outputs ([#52](https://github.com/AI-SDC/ACRO/pull/52))
+*    Add functionality to add comments to outputs ([#54](https://github.com/AI-SDC/ACRO/pull/54))
+*    Add functionality to add currently unsupported outputs ([#58](https://github.com/AI-SDC/ACRO/pull/58))
+
+## Version 0.0.5 (Nov 02, 2022)
+
+Changes:
+*    Package for PyPI
+*    Clean tests
+
+## Version 0.0.4 (Oct 14, 2022)
+
+Changes:
+*    Fix complex table checking
+
+## Version 0.0.3 (Oct 14, 2022)
+
+Initial alpha

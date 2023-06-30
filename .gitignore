@@ -136,3 +136,10 @@ dmypy.json
 
 #Jims Development
 stata/various_stata_development__files
+
+# outputs folder
+/notebooks/outputs/
+
+# test output
+/test.xlsx
+/outputs/

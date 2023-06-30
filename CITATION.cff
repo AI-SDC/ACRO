@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 title: ACRO
-version: 0.0.5
-doi: 10.5281/zenodo.7273904
-date-released: 2022-11-02
+version: 0.2.0
+doi: 10.5281/zenodo.8091731
+date-released: 2023-06-28
 license: MIT
 repository-code: https://github.com/AI-SDC/ACRO
 languages:
@@ -22,6 +22,13 @@ authors:
     given-names: Jim
     orcid: https://orcid.org/0000-0001-7908-1859
     affiliation: University of the West of England
+  - family-names: Albashir
+    given-names: Maha
+    affiliation: University of the West of England
+  - family-names: Davy
+    given-names: Simon
+    affiliation: University of Oxford
+    orcid: https://orcid.org/0000-0001-9890-3619
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7273903
@@ -29,3 +36,12 @@ identifiers:
   - type: doi
     value: 10.5281/zenodo.7273904
     description: This is the archived snapshot of ACRO v.0.0.5.
+  - type: doi
+    value: 10.5281/zenodo.7834104
+    description: This is the archived snapshot of ACRO v.0.0.6.
+  - type: doi
+    value: 10.5281/zenodo.7875920
+    description: This is the archived snapshot of ACRO v.0.1.0.
+  - type: doi
+    value: 10.5281/zenodo.8091731
+    description: This is the archived snapshot of ACRO v.0.2.0.

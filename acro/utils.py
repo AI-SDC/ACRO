@@ -1,7 +1,5 @@
 """ACRO: Utility Functions."""
 
-import copy
-import json
 import logging
 from collections.abc import Callable
 from inspect import getframeinfo
@@ -55,68 +53,6 @@ def get_command(default: str, stack_list: list[tuple]) -> str:
     return command
 
 
-def finalise_json(filename: str, results: dict) -> None:
-    """Writes outputs to a JSON file.
-
-    Parameters
-    ----------
-    filename : str
-        Name of the output file.
-    results : dict
-        Outputs to write.
-    """
-    # convert dataframes to json
-    outputs: dict = copy.deepcopy(results)
-    for _, output in outputs.items():
-        if output["outcome"] is not None:
-            output["outcome"] = output["outcome"].to_json()
-        for i, _ in enumerate(output["output"]):
-            output["output"][i] = output["output"][i].to_json()
-    # write to disk
-    with open(filename, "w", encoding="utf-8") as file:
-        json.dump(outputs, file, indent=4, sort_keys=False)
-
-
-def finalise_excel(filename: str, results: dict) -> None:
-    """Writes outputs to an excel spreadsheet.
-
-    Parameters
-    ----------
-    filename : str
-        Name of the output file.
-    results : dict
-        Outputs to write.
-    """
-    with pd.ExcelWriter(  # pylint: disable=abstract-class-instantiated
-        filename, engine="openpyxl"
-    ) as writer:
-        # description sheet
-        sheet = []
-        summary = []
-        command = []
-        for output_id, output in results.items():
-            sheet.append(output_id)
-            command.append(output["command"])
-            summary.append(output["summary"])
-        tmp_df = pd.DataFrame({"Sheet": sheet, "Command": command, "Summary": summary})
-        tmp_df.to_excel(writer, sheet_name="description", index=False, startrow=0)
-        # individual sheets
-        for output_id, output in results.items():
-            # command and summary
-            start = 0
-            tmp_df = pd.DataFrame(
-                [output["command"], output["summary"]], index=["Command", "Summary"]
-            )
-            tmp_df.to_excel(writer, sheet_name=output_id, startrow=start)
-            # outcome
-            if output["outcome"] is not None:
-                output["outcome"].to_excel(writer, sheet_name=output_id, startrow=4)
-            # output
-            for table in output["output"]:
-                start = 1 + writer.sheets[output_id].max_row
-                table.to_excel(writer, sheet_name=output_id, startrow=start)
-
-
 def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
     """Converts a list of SimpleTable objects to a list of DataFrame objects.
 
@@ -168,6 +104,22 @@ def agg_negative(vals: Series) -> bool:
         Whether a negative value was found.
     """
     return vals.min() < 0
+
+
+def agg_missing(vals: Series) -> bool:
+    """Aggregation function that returns whether any values are missing.
+
+    Parameters
+    ----------
+    vals : Series
+        Series to check for missing values.
+
+    Returns
+    -------
+    bool
+        Whether a missing value was found.
+    """
+    return vals.isna().sum() != 0
 
 
 def agg_p_percent(vals: Series) -> bool:
@@ -245,46 +197,89 @@ def apply_suppression(
     if "negative" in masks:
         mask = masks["negative"]
         outcome_df[mask.values] = "negative"
+    # don't apply suppression if missing values are present
+    elif "missing" in masks:
+        mask = masks["missing"]
+        outcome_df[mask.values] = "missing"
     # apply suppression masks
     else:
         for name, mask in masks.items():
-            safe_df[mask.values] = np.NaN
-            tmp_df = DataFrame().reindex_like(outcome_df)
-            tmp_df.fillna("", inplace=True)
-            tmp_df[mask.values] = name + "; "
-            outcome_df += tmp_df
+            try:
+                safe_df[mask.values] = np.NaN
+                tmp_df = DataFrame().reindex_like(outcome_df)
+                tmp_df.fillna("", inplace=True)
+                tmp_df[mask.values] = name + "; "
+                outcome_df += tmp_df
+            except TypeError:
+                logger.warning("problem mask %s is not binary", name)
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", outcome_df)
     return safe_df, outcome_df
 
 
-def get_summary(masks: dict[str, DataFrame]) -> str:
-    """Returns a string summarising the suppression masks.
+def update_table_properties(masks: dict[str, DataFrame], properties: dict) -> None:
+    """Updates the properties dictionary using the suppression masks.
 
     Parameters
     ----------
     masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
+    properties : dict
+        Properties of the SDC checks.
+    """
+    properties["negative"] = False
+    properties["missing"] = False
+    properties["threshold"] = 0
+    properties["p-ratio"] = 0
+    properties["nk-rule"] = 0
+    if "negative" in masks:
+        properties["negative"] = True
+    if "missing" in masks:
+        properties["missing"] = True
+    for name, mask in masks.items():
+        properties[name] = int(mask.to_numpy().sum())
+
+
+def get_summary(properties: dict) -> [str, str]:
+    """Returns the status and summary of the suppression masks.
+
+    Parameters
+    ----------
+    properties : dict
+        Properties of the SDC checks.
 
     Returns
     -------
     str
+        Status: {"review", "fail", "pass"}.
+    str
         Summary of the suppression masks.
     """
+    status: str = "pass"
     summary: str = ""
-    if "negative" in masks:
-        summary = "review; negative values found"
+    sup: str = "suppressed" if properties["suppressed"] else "may need suppressing"
+    if properties["negative"]:
+        summary += "negative values found"
+        status = "review"
+    elif properties["missing"]:
+        summary += "missing values found"
+        status = "review"
     else:
-        for name, mask in masks.items():
-            n_cells = mask.to_numpy().sum()
-            if n_cells > 0:
-                summary += f"{name}: {n_cells} cells suppressed; "
-        if summary == "":
-            summary = "pass"
-        else:
-            summary = "fail; " + summary
+        if properties["threshold"] > 0:
+            summary += f"threshold: {properties['threshold']} cells {sup}; "
+            status = "fail"
+        if properties["p-ratio"] > 0:
+            summary += f"p-ratio: {properties['p-ratio']} cells {sup}; "
+            status = "fail"
+        if properties["nk-rule"] > 0:
+            summary += f"nk-rule: {properties['nk-rule']} cells {sup}; "
+            status = "fail"
+    if summary != "":
+        summary = f"{status}; {summary}"
+    else:
+        summary = status
     logger.info("get_summary(): %s", summary)
-    return summary
+    return status, summary
 
 
 def get_aggfunc(aggfunc: str | None) -> Callable | None:

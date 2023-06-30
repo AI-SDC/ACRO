@@ -20,4 +20,7 @@ safe_nk_k: 0.90
 # parameter for p-ration test: sum of smallest N-2 values accounts for at least
 # p% of largest
 safe_pratio_p: 0.10
+
+# refuse checking for missing values
+check_missing_values: False
 ...

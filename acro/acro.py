@@ -1,7 +1,6 @@
 """ACRO: Automatic Checking of Research Outputs."""
 
 import logging
-import os
 import pathlib
 import warnings
 from inspect import stack
@@ -16,6 +15,7 @@ from statsmodels.iolib.table import SimpleTable
 from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 from . import utils
+from .record import Records
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("acro")
@@ -28,7 +28,7 @@ class ACRO:
     ----------
     config : dict
         Safe parameters and their values.
-    results : dict
+    results : Records
         The current outputs including the results of checks.
     output_id : int
         The next identifier to be assigned to an output.
@@ -38,103 +38,78 @@ class ACRO:
     >>> acro = ACRO()
     >>> results = acro.ols(y, x)
     >>> results.summary()
-    >>> acro.finalise("my_results.json")
+    >>> acro.finalise("MYFOLDER", "json")
     """
 
-    def __init__(self, config: str = "default") -> None:
+    def __init__(self, config: str = "default", suppress: bool = False) -> None:
         """Constructs a new ACRO object and reads parameters from config.
 
         Parameters
         ----------
         config : str
             Name of a yaml configuration file with safe parameters.
+        suppress : bool, default False
+            Whether to automatically apply suppression.
         """
         self.config: dict = {}
-        self.results: dict = {}
-        self.output_id: int = 0
+        self.results: Records = Records()
+        self.suppress: bool = suppress
         path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
         logger.info("config: %s", self.config)
+        logger.info("automatic suppression: %s", self.suppress)
         # set globals needed for aggregation functions
         utils.THRESHOLD = self.config["safe_threshold"]
         utils.SAFE_PRATIO_P = self.config["safe_pratio_p"]
         utils.SAFE_NK_N = self.config["safe_nk_n"]
         utils.SAFE_NK_K = self.config["safe_nk_k"]
+        utils.CHECK_MISSING_VALUES = self.config["check_missing_values"]
 
-    def finalise(self, filename: str = "results.json") -> dict:
+    def finalise(self, path: str = "outputs", ext="json") -> Records:
         """Creates a results file for checking.
 
         Parameters
         ----------
-        filename : str
-            Name of the output file. Valid extensions: {.json, .xlsx}.
+        path : str
+            Name of a folder to save outputs.
+        ext : str
+            Extension of the results file. Valid extensions: {json, xlsx}.
 
         Returns
         -------
-        dict
-            Dictionary representation of the output.
+        Records
+            Object storing the outputs.
         """
-        logger.debug("finalise()")
-        _, extension = os.path.splitext(filename)
-        if extension == ".json":
-            utils.finalise_json(filename, self.results)
-        elif extension == ".xlsx":
-            utils.finalise_excel(filename, self.results)
-        else:
-            raise ValueError("Invalid file extension. Options: {.json, .xlsx}")
-        logger.info("output written to: %s", filename)
+        self.results.finalise(path, ext)
         return self.results
 
-    def __add_output(
-        self, command: str, summary: str, outcome: DataFrame, output: list[DataFrame]
-    ) -> None:
-        """Adds an output to the results dictionary.
-
-        Parameters
-        ----------
-        command : str
-            String representation of the operation performed.
-        summary : str
-            String summarising the ACRO checks.
-        outcome : DataFrame
-            DataFrame describing the details of ACRO checks.
-        output : list[DataFrame]
-            List of output DataFrames.
-        """
-        name: str = f"output_{self.output_id}"
-        self.output_id += 1
-        self.results[name] = {
-            "command": command,
-            "summary": summary,
-            "outcome": outcome,
-            "output": output,  # json.loads(output),  # JSON to dict
-        }
-        logger.info("add_output(): %s", name)
-
     def remove_output(self, key: str) -> None:
-        """Removes an output from the results dictionary.
+        """Removes an output from the results.
 
         Parameters
         ----------
         key : str
             Key specifying which output to remove, e.g., 'output_0'.
         """
-        if key in self.results:
-            del self.results[key]
-            logger.info("remove_output(): %s removed", key)
-        else:
-            warnings.warn(f"unable to remove {key}, key not found")
+        self.results.remove(key)
 
     def print_outputs(self) -> None:
         """Prints the current results dictionary."""
-        logger.debug("print_outputs()")
-        for name, result in self.results.items():
-            print(f"{name}:")
-            for key, item in result.items():
-                print(f"{key}: {item}")
-            print("\n")
+        self.results.print()
+
+    def custom_output(self, filename: str, comment: str = "") -> None:
+        """Adds an unsupported output to the results dictionary.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file that will be added to the list of the outputs.
+        comment : str
+            An optional comment.
+        """
+        self.results.add_custom(filename, comment)
 
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals
         self,
@@ -236,10 +211,37 @@ class ACRO:
             )
             # nk values check
             masks["nk-rule"] = pd.crosstab(index, columns, values, aggfunc=utils.agg_nk)
+            # check for missing values -- currently unsupported
+            if utils.CHECK_MISSING_VALUES:
+                masks["missing"] = pd.crosstab(
+                    index, columns, values, aggfunc=utils.agg_missing
+                )
+        # pd.crosstab returns nan for an empty cell
+        for name, mask in masks.items():
+            mask.fillna(value=1, inplace=True)
+            mask = mask.astype(int)
+            mask.replace({0: False, 1: True}, inplace=True)
+            masks[name] = mask
 
-        table, outcome = utils.apply_suppression(table, masks)
-        summary = utils.get_summary(masks)
-        self.__add_output(command, summary, outcome, [table])
+        # build the properties dictionary
+        properties: dict = {"method": "crosstab", "suppressed": self.suppress}
+        utils.update_table_properties(masks, properties)
+        # get the status and summary
+        status, summary = utils.get_summary(properties)
+        # apply the suppression
+        safe_table, outcome = utils.apply_suppression(table, masks)
+        if self.suppress:
+            table = safe_table
+        # record output
+        self.results.add(
+            status=status,
+            output_type="table",
+            properties=properties,
+            command=command,
+            summary=summary,
+            outcome=outcome,
+            output=[table],
+        )
         return table
 
     def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
@@ -345,13 +347,35 @@ class ACRO:
             # nk values check
             agg = [utils.agg_nk] * n_agg if n_agg > 1 else utils.agg_nk
             masks["nk-rule"] = pd.pivot_table(data, values, index, columns, aggfunc=agg)
+            # check for missing values -- currently unsupported
+            if utils.CHECK_MISSING_VALUES:
+                agg = [utils.agg_missing] * n_agg if n_agg > 1 else utils.agg_missing
+                masks["missing"] = pd.pivot_table(
+                    data, values, index, columns, aggfunc=agg
+                )
 
-        table, outcome = utils.apply_suppression(table, masks)
-        summary = utils.get_summary(masks)
-        self.__add_output(command, summary, outcome, [table])
+        # build the properties dictionary
+        properties: dict = {"method": "pivot_table", "suppressed": self.suppress}
+        utils.update_table_properties(masks, properties)
+        # get the status and summary
+        status, summary = utils.get_summary(properties)
+        # apply the suppression
+        safe_table, outcome = utils.apply_suppression(table, masks)
+        if self.suppress:
+            table = safe_table
+        # record output
+        self.results.add(
+            status=status,
+            output_type="table",
+            properties=properties,
+            command=command,
+            summary=summary,
+            outcome=outcome,
+            output=[table],
+        )
         return table
 
-    def __check_model_dof(self, name: str, model) -> str:
+    def __check_model_dof(self, name: str, model) -> [str, str, float]:
         """Check model DOF.
 
         Parameters
@@ -364,17 +388,23 @@ class ACRO:
         Returns
         -------
         str
+            Status: {"review", "fail", "pass"}.
+        str
             Summary of the check.
+        float
+            The degrees of freedom.
         """
+        status = "fail"
         dof: int = model.df_resid
         threshold: int = self.config["safe_dof_threshold"]
         if dof < threshold:
             summary = f"fail; dof={dof} < {threshold}"
-            warnings.warn(f"Unsafe {name}: {summary}")
+            warnings.warn(f"Unsafe {name}: {summary}", stacklevel=8)
         else:
+            status = "pass"
             summary = f"pass; dof={dof} >= {threshold}"
         logger.info("%s() outcome: %s", name, summary)
-        return summary
+        return status, summary, float(dof)
 
     def ols(  # pylint: disable=too-many-locals
         self, endog, exog=None, missing="none", hasconst=None, **kwargs
@@ -411,10 +441,16 @@ class ACRO:
         command: str = utils.get_command("ols()", stack())
         model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
         results = model.fit()
-        summary = self.__check_model_dof("ols", model)
+        status, summary, dof = self.__check_model_dof("ols", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(
-            command, summary, DataFrame(), utils.get_summary_dataframes(tables)
+        self.results.add(
+            status=status,
+            output_type="regression",
+            properties={"method": "ols", "dof": dof},
+            command=command,
+            summary=summary,
+            outcome=DataFrame(),
+            output=utils.get_summary_dataframes(tables),
         )
         return results
 
@@ -468,10 +504,16 @@ class ACRO:
             **kwargs,
         )
         results = model.fit()
-        summary = self.__check_model_dof("olsr", model)
+        status, summary, dof = self.__check_model_dof("olsr", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(
-            command, summary, DataFrame(), utils.get_summary_dataframes(tables)
+        self.results.add(
+            status=status,
+            output_type="regression",
+            properties={"method": "olsr", "dof": dof},
+            command=command,
+            summary=summary,
+            outcome=DataFrame(),
+            output=utils.get_summary_dataframes(tables),
         )
         return results
 
@@ -510,10 +552,16 @@ class ACRO:
         command: str = utils.get_command("logit()", stack())
         model = sm.Logit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
-        summary = self.__check_model_dof("logit", model)
+        status, summary, dof = self.__check_model_dof("logit", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(
-            command, summary, DataFrame(), utils.get_summary_dataframes(tables)
+        self.results.add(
+            status=status,
+            output_type="regression",
+            properties={"method": "logit", "dof": dof},
+            command=command,
+            summary=summary,
+            outcome=DataFrame(),
+            output=utils.get_summary_dataframes(tables),
         )
         return results
 
@@ -567,10 +615,16 @@ class ACRO:
             **kwargs,
         )
         results = model.fit()
-        summary = self.__check_model_dof("logitr", model)
+        status, summary, dof = self.__check_model_dof("logitr", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(
-            command, summary, DataFrame(), utils.get_summary_dataframes(tables)
+        self.results.add(
+            status=status,
+            output_type="regression",
+            properties={"method": "logitr", "dof": dof},
+            command=command,
+            summary=summary,
+            outcome=DataFrame(),
+            output=utils.get_summary_dataframes(tables),
         )
         return results
 
@@ -609,10 +663,16 @@ class ACRO:
         command: str = utils.get_command("probit()", stack())
         model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
-        summary = self.__check_model_dof("probit", model)
+        status, summary, dof = self.__check_model_dof("probit", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(
-            command, summary, DataFrame(), utils.get_summary_dataframes(tables)
+        self.results.add(
+            status=status,
+            output_type="regression",
+            properties={"method": "probit", "dof": dof},
+            command=command,
+            summary=summary,
+            outcome=DataFrame(),
+            output=utils.get_summary_dataframes(tables),
         )
         return results
 
@@ -666,12 +726,42 @@ class ACRO:
             **kwargs,
         )
         results = model.fit()
-        summary = self.__check_model_dof("probitr", model)
+        status, summary, dof = self.__check_model_dof("probitr", model)
         tables: list[SimpleTable] = results.summary().tables
-        self.__add_output(
-            command, summary, DataFrame(), utils.get_summary_dataframes(tables)
+        self.results.add(
+            status=status,
+            output_type="regression",
+            properties={"method": "probitr", "dof": dof},
+            command=command,
+            summary=summary,
+            outcome=DataFrame(),
+            output=utils.get_summary_dataframes(tables),
         )
         return results
+
+    def rename_output(self, old: str, new: str) -> None:
+        """Rename an output.
+
+        Parameters
+        ----------
+        old : str
+            The old name of the output.
+        new : str
+            The new name of the output.
+        """
+        self.results.rename(old, new)
+
+    def add_comments(self, output: str, comment: str) -> None:
+        """Adds a comment to an output.
+
+        Parameters
+        ----------
+        output : str
+            The name of the output.
+        comment : str
+            The comment.
+        """
+        self.results.add_comments(output, comment)
 
 
 def add_constant(data, prepend: bool = True, has_constant: str = "skip"):

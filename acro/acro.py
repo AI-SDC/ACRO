@@ -223,13 +223,16 @@ class ACRO:
             mask.replace({0: False, 1: True}, inplace=True)
             masks[name] = mask
 
-        properties: dict = {"method": "crosstab", "suppressed": False}
-        status, summary = utils.get_summary(masks, properties)
+        # build the properties dictionary
+        properties: dict = {"method": "crosstab", "suppressed": self.suppress}
+        utils.update_table_properties(masks, properties)
+        # get the status and summary
+        status, summary = utils.get_summary(properties)
+        # apply the suppression
         safe_table, outcome = utils.apply_suppression(table, masks)
         if self.suppress:
             table = safe_table
-            properties["suppressed"] = True
-
+        # record output
         self.results.add(
             status=status,
             output_type="table",
@@ -351,13 +354,16 @@ class ACRO:
                     data, values, index, columns, aggfunc=agg
                 )
 
-        properties: dict = {"method": "pivot_table", "suppressed": False}
-        status, summary = utils.get_summary(masks, properties)
+        # build the properties dictionary
+        properties: dict = {"method": "pivot_table", "suppressed": self.suppress}
+        utils.update_table_properties(masks, properties)
+        # get the status and summary
+        status, summary = utils.get_summary(properties)
+        # apply the suppression
         safe_table, outcome = utils.apply_suppression(table, masks)
         if self.suppress:
             table = safe_table
-            properties["suppressed"] = True
-
+        # record output
         self.results.add(
             status=status,
             output_type="table",

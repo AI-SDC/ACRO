@@ -32,7 +32,7 @@ def test_crosstab_without_suppression(data):
     acro = ACRO(suppress=False)
     _ = acro.crosstab(data.year, data.grant_type)
     output = acro.results.get_index(0)
-    correct_summary: str = "fail; threshold: 6 cells suppressed; "
+    correct_summary: str = "fail; threshold: 6 cells may need suppressing; "
     assert output.summary == correct_summary
     assert 48 == output.output[0]["R/G"].sum()
 

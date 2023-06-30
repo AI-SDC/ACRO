@@ -147,7 +147,7 @@ def parse_and_run(
         return "acro analysis session created\n"
 
     elif command == "finalise":
-        stata_acro.finalise("stata_out.json")
+        stata_acro.finalise("stata_out","json")
         return "outputs and stata_out.json written\n"
 
     elif command == "print_outputs":

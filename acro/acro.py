@@ -41,21 +41,25 @@ class ACRO:
     >>> acro.finalise("MYFOLDER", "json")
     """
 
-    def __init__(self, config: str = "default") -> None:
+    def __init__(self, config: str = "default", suppress: bool = False) -> None:
         """Constructs a new ACRO object and reads parameters from config.
 
         Parameters
         ----------
         config : str
             Name of a yaml configuration file with safe parameters.
+        suppress : bool, default False
+            Whether to automatically apply suppression.
         """
         self.config: dict = {}
         self.results: Records = Records()
+        self.suppress: bool = suppress
         path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
         logger.info("config: %s", self.config)
+        logger.info("automatic suppression: %s", self.suppress)
         # set globals needed for aggregation functions
         utils.THRESHOLD = self.config["safe_threshold"]
         utils.SAFE_PRATIO_P = self.config["safe_pratio_p"]
@@ -219,10 +223,16 @@ class ACRO:
             mask.replace({0: False, 1: True}, inplace=True)
             masks[name] = mask
 
-        table, outcome = utils.apply_suppression(table, masks)
-        properties: dict = {"method": "crosstab"}
-        status, summary = utils.get_summary(masks, properties)
-
+        # build the properties dictionary
+        properties: dict = {"method": "crosstab", "suppressed": self.suppress}
+        utils.update_table_properties(masks, properties)
+        # get the status and summary
+        status, summary = utils.get_summary(properties)
+        # apply the suppression
+        safe_table, outcome = utils.apply_suppression(table, masks)
+        if self.suppress:
+            table = safe_table
+        # record output
         self.results.add(
             status=status,
             output_type="table",
@@ -344,10 +354,16 @@ class ACRO:
                     data, values, index, columns, aggfunc=agg
                 )
 
-        table, outcome = utils.apply_suppression(table, masks)
-        properties: dict = {"method": "pivot_table"}
-        status, summary = utils.get_summary(masks, properties)
-
+        # build the properties dictionary
+        properties: dict = {"method": "pivot_table", "suppressed": self.suppress}
+        utils.update_table_properties(masks, properties)
+        # get the status and summary
+        status, summary = utils.get_summary(properties)
+        # apply the suppression
+        safe_table, outcome = utils.apply_suppression(table, masks)
+        if self.suppress:
+            table = safe_table
+        # record output
         self.results.add(
             status=status,
             output_type="table",

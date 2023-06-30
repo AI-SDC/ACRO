@@ -24,12 +24,25 @@ def data() -> pd.DataFrame:
 @pytest.fixture
 def acro() -> ACRO:
     """Initialise ACRO."""
-    return ACRO()
+    return ACRO(suppress=True)
+
+
+def test_crosstab_without_suppression(data):
+    """Crosstab threshold without automatic suppression."""
+    acro = ACRO(suppress=False)
+    _ = acro.crosstab(data.year, data.grant_type)
+    output = acro.results.get_index(0)
+    correct_summary: str = "fail; threshold: 6 cells may need suppressing; "
+    assert output.summary == correct_summary
+    assert 48 == output.output[0]["R/G"].sum()
 
 
 def test_crosstab_threshold(data, acro):
     """Crosstab threshold test."""
     _ = acro.crosstab(data.year, data.grant_type)
+    output = acro.results.get_index(0)
+    total_nan: int = output.output[0]["R/G"].isnull().sum()
+    assert total_nan == 6
     results: Records = acro.finalise()
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
     output = results.get_index(0)
@@ -65,6 +78,17 @@ def test_negatives(data, acro):
     output_1 = results.get_index(1)
     assert output_0.summary == correct_summary
     assert output_1.summary == correct_summary
+
+
+def test_pivot_table_without_suppression(data):
+    """Pivot table without automatic suppression."""
+    acro = ACRO(suppress=False)
+    _ = acro.pivot_table(
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+    )
+    output_0 = acro.results.get_index(0)
+    assert 36293992.0 == output_0.output[0]["mean"]["inc_grants"].sum()
+    assert "pass" == output_0.summary
 
 
 def test_pivot_table_pass(data, acro):

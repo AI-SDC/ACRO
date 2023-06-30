@@ -3,7 +3,7 @@
 ## Development
 
 Changes:
-*
+*    Disable automatic table suppression by default ([#91](https://github.com/AI-SDC/ACRO/pull/91))
 
 ## Version 0.2.0 (Jun 28, 2023)
 

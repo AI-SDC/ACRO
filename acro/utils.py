@@ -216,13 +216,34 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_summary(masks: dict[str, DataFrame], properties: dict) -> [str, str]:
-    """Returns a string summarising the suppression masks.
+def update_table_properties(masks: dict[str, DataFrame], properties: dict) -> None:
+    """Updates the properties dictionary using the suppression masks.
 
     Parameters
     ----------
     masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
+    properties : dict
+        Properties of the SDC checks.
+    """
+    properties["negative"] = False
+    properties["missing"] = False
+    properties["threshold"] = 0
+    properties["p-ratio"] = 0
+    properties["nk-rule"] = 0
+    if "negative" in masks:
+        properties["negative"] = True
+    if "missing" in masks:
+        properties["missing"] = True
+    for name, mask in masks.items():
+        properties[name] = int(mask.to_numpy().sum())
+
+
+def get_summary(properties: dict) -> [str, str]:
+    """Returns the status and summary of the suppression masks.
+
+    Parameters
+    ----------
     properties : dict
         Properties of the SDC checks.
 
@@ -233,31 +254,29 @@ def get_summary(masks: dict[str, DataFrame], properties: dict) -> [str, str]:
     str
         Summary of the suppression masks.
     """
-    status = "review"
+    status: str = "pass"
     summary: str = ""
-    properties["negative"] = False
-    properties["missing"] = False
-    properties["threshold"] = 0
-    properties["p-ratio"] = 0
-    properties["nk-rule"] = 0
-    if "negative" in masks:
-        summary = "review; negative values found"
-        properties["negative"] = True
-    elif "missing" in masks:
-        summary = "review; missing values found"
-        properties["missing"] = True
+    sup: str = "suppressed" if properties["suppressed"] else "may need suppressing"
+    if properties["negative"]:
+        summary += "negative values found"
+        status = "review"
+    elif properties["missing"]:
+        summary += "missing values found"
+        status = "review"
     else:
-        for name, mask in masks.items():
-            n_cells = mask.to_numpy().sum()
-            if n_cells > 0:
-                summary += f"{name}: {n_cells} cells suppressed; "
-            properties[name] = int(n_cells)
-        if summary == "":
-            status = "pass"
-            summary = "pass"
-        else:
+        if properties["threshold"] > 0:
+            summary += f"threshold: {properties['threshold']} cells {sup}; "
             status = "fail"
-            summary = "fail; " + summary
+        if properties["p-ratio"] > 0:
+            summary += f"p-ratio: {properties['p-ratio']} cells {sup}; "
+            status = "fail"
+        if properties["nk-rule"] > 0:
+            summary += f"nk-rule: {properties['nk-rule']} cells {sup}; "
+            status = "fail"
+    if summary != "":
+        summary = f"{status}; {summary}"
+    else:
+        summary = status
     logger.info("get_summary(): %s", summary)
     return status, summary
 

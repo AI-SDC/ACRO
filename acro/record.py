@@ -149,15 +149,15 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
             logger.debug("Directory %s already exists", path)
         # save each output DataFrame to a different csv
         if all(isinstance(obj, DataFrame) for obj in self.output):
-            for i, _ in enumerate(self.output):
+            for i, data in enumerate(self.output):
                 filename = f"{self.uid}_{i}.csv"
                 output.append(filename)
                 filename = os.path.normpath(f"{path}/{filename}")
                 with open(filename, mode="w", newline="", encoding="utf-8") as file:
-                    file.write(self.output[i].to_csv())
+                    file.write(data.to_csv())
         # move custom files to the output folder
         if self.output_type == "custom":
-            for _, filename in enumerate(self.output):
+            for filename in self.output:
                 if os.path.exists(filename):
                     shutil.copy(filename, path)
                     output.append(Path(filename).name)

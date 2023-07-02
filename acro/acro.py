@@ -203,11 +203,10 @@ class ACRO:
                 nk_funcs.extend([utils.agg_nk for i in range(1, num)])
                 missing_funcs.extend([utils.agg_missing for i in range(1, num)])
             # threshold check- doesn't matter what we pass for value
-            value_column = None if aggfunc is None else index
             t_values = pd.crosstab(
                 index,
                 columns,
-                values=value_column,
+                values=index,
                 rownames=rownames,
                 colnames=colnames,
                 aggfunc=freq_funcs,
@@ -239,11 +238,10 @@ class ACRO:
                 )
         else:
             # threshold check- doesn't matter what we pass for value
-            value_column = None if aggfunc is None else index
             t_values = pd.crosstab(
                 index,
                 columns,
-                values=value_column,
+                values=None,
                 rownames=rownames,
                 colnames=colnames,
                 aggfunc=None,

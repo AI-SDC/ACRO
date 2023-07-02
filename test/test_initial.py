@@ -14,6 +14,7 @@ from acro.record import Record, Records
 
 PATH: str = "RES_PYTEST"
 
+
 @pytest.fixture
 def data() -> pd.DataFrame:
     """Load test data."""

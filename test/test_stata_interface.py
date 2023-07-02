@@ -117,7 +117,7 @@ def test_apply_stata_expstmt(data):
 
 
 # -----acro management
-def test_stata_acro_init() -> str:
+def test_stata_acro_init():
     """
     Tests creation of an acro object at the start of a session
     For stata this gets held in a variable stata_acro
@@ -149,7 +149,7 @@ def test_stata_print_outputs(data):
 
 
 # ----main SDC functionality
-def test_simple_table(data) -> str:
+def test_simple_table(data):
     """
     Checks that the simple table command works as expected
     Does via reference to direct call to pd.crosstab()

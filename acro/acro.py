@@ -293,7 +293,7 @@ class ACRO:
         fill_value=None,
         margins: bool = False,
         dropna: bool = True,
-        margins_name: Hashable = "All",
+        margins_name: str = "All",
         observed: bool = False,
         sort: bool = True,
     ) -> DataFrame:
@@ -330,7 +330,7 @@ class ACRO:
             Add all row / columns (e.g. for subtotal / grand totals).
         dropna : bool, default True
             Do not include columns whose entries are all NaN.
-        margins_name : Hashable, default 'All'
+        margins_name : str, default 'All'
             Name of the row / column that will contain the totals when margins
             is True.
         observed : bool, default False

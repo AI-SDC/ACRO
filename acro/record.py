@@ -72,7 +72,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         String summarising the ACRO checks.
     outcome : DataFrame
         DataFrame describing the details of ACRO checks.
-    output : str | list[DataFrame]
+    output : list[str] | list[DataFrame]
         List of output DataFrames.
     comments : list[str] | None
         List of strings entered by the user to add comments to the output.

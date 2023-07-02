@@ -171,7 +171,7 @@ class ACRO:
         aggfunc = utils.get_aggfuncs(aggfunc)
 
         # requested table
-        table: DataFrame = pd.crosstab(
+        table: DataFrame = pd.crosstab(  # type: ignore
             index,
             columns,
             values,
@@ -203,7 +203,7 @@ class ACRO:
                 nk_funcs.extend([utils.agg_nk for i in range(1, num)])
                 missing_funcs.extend([utils.agg_missing for i in range(1, num)])
             # threshold check- doesn't matter what we pass for value
-            t_values = pd.crosstab(
+            t_values = pd.crosstab(  # type: ignore
                 index,
                 columns,
                 values=index,
@@ -218,27 +218,27 @@ class ACRO:
             t_values = t_values < utils.THRESHOLD
             masks["threshold"] = t_values
             # check for negative values -- currently unsupported
-            negative = pd.crosstab(
+            negative = pd.crosstab(  # type: ignore
                 index, columns, values, aggfunc=neg_funcs, margins=margins
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
-            masks["p-ratio"] = pd.crosstab(
+            masks["p-ratio"] = pd.crosstab(  # type: ignore
                 index, columns, values, aggfunc=pperc_funcs, margins=margins
             )
             # nk values check
-            masks["nk-rule"] = pd.crosstab(
+            masks["nk-rule"] = pd.crosstab(  # type: ignore
                 index, columns, values, aggfunc=nk_funcs, margins=margins
             )
             # check for missing values -- currently unsupported
             if utils.CHECK_MISSING_VALUES:
-                masks["missing"] = pd.crosstab(
+                masks["missing"] = pd.crosstab(  # type: ignore
                     index, columns, values, aggfunc=missing_funcs, margins=margins
                 )
         else:
             # threshold check- doesn't matter what we pass for value
-            t_values = pd.crosstab(
+            t_values = pd.crosstab(  # type: ignore
                 index,
                 columns,
                 values=None,
@@ -369,25 +369,33 @@ class ACRO:
 
         # threshold check
         agg = [utils.agg_threshold] * n_agg if n_agg > 1 else utils.agg_threshold
-        t_values = pd.pivot_table(data, values, index, columns, aggfunc=agg)
+        t_values = pd.pivot_table(  # type: ignore
+            data, values, index, columns, aggfunc=agg
+        )
         masks["threshold"] = t_values
 
         if aggfunc is not None:
             # check for negative values -- currently unsupported
             agg = [utils.agg_negative] * n_agg if n_agg > 1 else utils.agg_negative
-            negative = pd.pivot_table(data, values, index, columns, aggfunc=agg)
+            negative = pd.pivot_table(  # type: ignore
+                data, values, index, columns, aggfunc=agg
+            )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
             agg = [utils.agg_p_percent] * n_agg if n_agg > 1 else utils.agg_p_percent
-            masks["p-ratio"] = pd.pivot_table(data, values, index, columns, aggfunc=agg)
+            masks["p-ratio"] = pd.pivot_table(  # type: ignore
+                data, values, index, columns, aggfunc=agg
+            )
             # nk values check
             agg = [utils.agg_nk] * n_agg if n_agg > 1 else utils.agg_nk
-            masks["nk-rule"] = pd.pivot_table(data, values, index, columns, aggfunc=agg)
+            masks["nk-rule"] = pd.pivot_table(  # type: ignore
+                data, values, index, columns, aggfunc=agg
+            )
             # check for missing values -- currently unsupported
             if utils.CHECK_MISSING_VALUES:
                 agg = [utils.agg_missing] * n_agg if n_agg > 1 else utils.agg_missing
-                masks["missing"] = pd.pivot_table(
+                masks["missing"] = pd.pivot_table(  # type: ignore
                     data, values, index, columns, aggfunc=agg
                 )
 

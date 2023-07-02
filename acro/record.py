@@ -7,6 +7,7 @@ import os
 import shutil
 import warnings
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 from pandas import DataFrame
@@ -72,7 +73,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         String summarising the ACRO checks.
     outcome : DataFrame
         DataFrame describing the details of ACRO checks.
-    output : list[str] | list[DataFrame]
+    output : Any
         List of output DataFrames.
     comments : list[str] | None
         List of strings entered by the user to add comments to the output.
@@ -122,7 +123,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         self.command: str = command
         self.summary: str = summary
         self.outcome: DataFrame = outcome
-        self.output: list[str] | list[DataFrame] = output
+        self.output: Any = output
         self.comments: list[str] = [] if comments is None else comments
         now = datetime.datetime.now()
         self.timestamp: str = now.isoformat()

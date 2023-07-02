@@ -214,11 +214,11 @@ def test_stata_probit(data):
     ret = ret.replace("\n", ",")
     tokens = ret.split(",")
     idx = tokens.index("  Df Residuals:      ")
-    val = int(tokens[idx + 1])
-    assert val == 806, f"{val} should be 806"
+    residuals = int(tokens[idx + 1])
+    assert residuals == 806, f"{residuals} should be 806"
     idx = tokens.index("  Pseudo R-squ.:     ")
-    val = float(tokens[idx + 1])
-    assert val == pytest.approx(0.208, 0.01)
+    rsquared = float(tokens[idx + 1])
+    assert rsquared == pytest.approx(0.208, 0.01)
 
 
 def test_stata_linregress(data):
@@ -235,11 +235,11 @@ def test_stata_linregress(data):
     ret = ret.replace("\n", ",")
     tokens = ret.split(",")
     idx = tokens.index("Df Residuals:    ")
-    val = int(tokens[idx + 1])
-    assert val == 807, f"{val} should be 807"
+    residuals = int(tokens[idx + 1])
+    assert residuals == 807, f"{residuals} should be 807"
     idx = tokens.index("  R-squared:         ")
-    val = float(tokens[idx + 1])
-    assert val == pytest.approx(0.894, 0.001)
+    rsquared = float(tokens[idx + 1])
+    assert rsquared == pytest.approx(0.894, 0.001)
 
 
 def test_unsupported_formatting_options(data):

@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from acro import ACRO, add_constant, record, utils
-from acro.record import Record, Records
+from acro.record import Records
 
 # pylint: disable=redefined-outer-name
 
@@ -162,7 +162,7 @@ def test_ols(data, acro):
     assert results.df_resid == 807
     assert results.rsquared == pytest.approx(0.894, 0.001)
     # Finalise
-    results: dict = acro.finalise()
+    results = acro.finalise()
     correct_summary: str = "pass; dof=807.0 >= 10"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
@@ -204,7 +204,7 @@ def test_probit_logit(data, acro):
     assert results.df_resid == 806
     assert results.prsquared == pytest.approx(0.214, 0.01)
     # Finalise
-    results: dict = acro.finalise()
+    results = acro.finalise()
     correct_summary: str = "pass; dof=806.0 >= 10"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
@@ -301,7 +301,7 @@ def test_finalise_json(data, acro):
 def test_rename_output(data, acro):
     """Output renaming test."""
     _ = acro.crosstab(data.year, data.grant_type)
-    results: Record = acro.finalise()
+    results: Records = acro.finalise()
     output_0 = results.get_index(0)
     orig_name = output_0.uid
     new_name = "cross_table"
@@ -318,7 +318,7 @@ def test_rename_output(data, acro):
 def test_add_comments(data, acro):
     """Adding comments to output test."""
     _ = acro.crosstab(data.year, data.grant_type)
-    results: Record = acro.finalise()
+    results: Records = acro.finalise()
     output_0 = results.get_index(0)
     assert output_0.comments == []
     comment = "This is a cross table between year and grant_type"

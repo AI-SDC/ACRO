@@ -342,7 +342,7 @@ def test_custom_output(acro):
     acro.custom_output(filename)
     results: Records = acro.finalise(path=save_path)
     output_0 = results.get_index(0)
-    assert output_0.output == file_path
+    assert output_0.output == [file_path]
     assert os.path.exists(os.path.normpath(f"{save_path}/XandY.jfif"))
 
 

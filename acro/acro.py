@@ -3,7 +3,7 @@
 import logging
 import pathlib
 import warnings
-from collections.abc import Callable, Hashable
+from collections.abc import Callable
 from inspect import stack
 
 import pandas as pd

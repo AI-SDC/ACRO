@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Callable
-from inspect import getframeinfo
+from inspect import FrameInfo, getframeinfo
 
 import numpy as np
 import pandas as pd
@@ -25,9 +25,10 @@ THRESHOLD: int = 10
 SAFE_PRATIO_P: float = 0.1
 SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
+CHECK_MISSING_VALUES: bool = False
 
 
-def get_command(default: str, stack_list: list[tuple]) -> str:
+def get_command(default: str, stack_list: list[FrameInfo]) -> str:
     """Returns the calling source line as a string.
 
     Parameters
@@ -240,7 +241,7 @@ def update_table_properties(masks: dict[str, DataFrame], properties: dict) -> No
         properties[name] = int(mask.to_numpy().sum())
 
 
-def get_summary(properties: dict) -> [str, str]:
+def get_summary(properties: dict) -> tuple[str, str]:
     """Returns the status and summary of the suppression masks.
 
     Parameters

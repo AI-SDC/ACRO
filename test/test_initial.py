@@ -8,9 +8,11 @@ import pandas as pd
 import pytest
 
 from acro import ACRO, add_constant, record, utils
-from acro.record import Record, Records
+from acro.record import Records
 
 # pylint: disable=redefined-outer-name
+
+PATH: str = "RES_PYTEST"
 
 
 @pytest.fixture
@@ -160,7 +162,7 @@ def test_ols(data, acro):
     assert results.df_resid == 807
     assert results.rsquared == pytest.approx(0.894, 0.001)
     # Finalise
-    results: dict = acro.finalise()
+    results = acro.finalise()
     correct_summary: str = "pass; dof=807.0 >= 10"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
@@ -202,7 +204,7 @@ def test_probit_logit(data, acro):
     assert results.df_resid == 806
     assert results.prsquared == pytest.approx(0.214, 0.01)
     # Finalise
-    results: dict = acro.finalise()
+    results = acro.finalise()
     correct_summary: str = "pass; dof=806.0 >= 10"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
@@ -217,10 +219,9 @@ def test_probit_logit(data, acro):
 def test_finalise_excel(data, acro):
     """Finalise excel test."""
     _ = acro.crosstab(data.year, data.grant_type)
-    path: str = "RES_PYTEST"
-    results: Records = acro.finalise(path, "xlsx")
+    results: Records = acro.finalise(PATH, "xlsx")
     output_0 = results.get_index(0)
-    filename = os.path.normpath(f"{path}/results.xlsx")
+    filename = os.path.normpath(f"{PATH}/results.xlsx")
     load_data = pd.read_excel(filename, sheet_name=output_0.uid)
     correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
     assert load_data.iloc[0, 0] == "Command"
@@ -251,28 +252,25 @@ def test_output_removal(data, acro):
 
 def test_load_output():
     """Empty array when loading output."""
-    path: str = "RES_PYTEST"
     with pytest.raises(ValueError):
-        record.load_output(path, [])
+        record.load_output(PATH, [])
 
 
 def test_finalise_invalid(data, acro):
     """Invalid output format when finalising."""
     _ = acro.crosstab(data.year, data.grant_type)
-    path: str = "RES_PYTEST"
     with pytest.raises(ValueError):
-        _ = acro.finalise(path, "123")
+        _ = acro.finalise(PATH, "123")
 
 
 def test_finalise_json(data, acro):
     """Finalise json test."""
     _ = acro.crosstab(data.year, data.grant_type)
     # write JSON
-    path: str = "RES_PYTEST"
-    result: Records = acro.finalise(path, "json")
+    result: Records = acro.finalise(PATH, "json")
     # load JSON
     loaded: Records = Records()
-    loaded.load_json(path)
+    loaded.load_json(PATH)
     orig = result.get_index(0)
     read = loaded.get_index(0)
     # check equal
@@ -286,7 +284,7 @@ def test_finalise_json(data, acro):
     assert orig.timestamp == read.timestamp
     assert (orig.output[0].reset_index()).equals(read.output[0])
     # test reading JSON
-    with open(os.path.normpath(f"{path}/results.json"), encoding="utf-8") as file:
+    with open(os.path.normpath(f"{PATH}/results.json"), encoding="utf-8") as file:
         json_data = json.load(file)
     assert json_data[orig.uid]["output"][0] == f"{orig.uid}_0.csv"
     # regression check: the outcome fields are dicts not strings
@@ -303,7 +301,7 @@ def test_finalise_json(data, acro):
 def test_rename_output(data, acro):
     """Output renaming test."""
     _ = acro.crosstab(data.year, data.grant_type)
-    results: Record = acro.finalise()
+    results: Records = acro.finalise()
     output_0 = results.get_index(0)
     orig_name = output_0.uid
     new_name = "cross_table"
@@ -320,7 +318,7 @@ def test_rename_output(data, acro):
 def test_add_comments(data, acro):
     """Adding comments to output test."""
     _ = acro.crosstab(data.year, data.grant_type)
-    results: Record = acro.finalise()
+    results: Records = acro.finalise()
     output_0 = results.get_index(0)
     assert output_0.comments == []
     comment = "This is a cross table between year and grant_type"
@@ -336,14 +334,13 @@ def test_add_comments(data, acro):
 
 def test_custom_output(acro):
     """Adding an unsupported output to the results dictionary test."""
-    save_path = "RES_PYTEST"
     filename = "notebooks/XandY.jfif"
     file_path = os.path.normpath(filename)
     acro.custom_output(filename)
-    results: Records = acro.finalise(path=save_path)
+    results: Records = acro.finalise(path=PATH)
     output_0 = results.get_index(0)
-    assert output_0.output == file_path
-    assert os.path.exists(os.path.normpath(f"{save_path}/XandY.jfif"))
+    assert output_0.output == [file_path]
+    assert os.path.exists(os.path.normpath(f"{PATH}/XandY.jfif"))
 
 
 def test_missing(data, acro):

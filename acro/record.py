@@ -7,6 +7,7 @@ import os
 import shutil
 import warnings
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 from pandas import DataFrame
@@ -25,31 +26,60 @@ def load_outcome(outcome: dict) -> DataFrame:
     return pd.DataFrame.from_dict(outcome)
 
 
-def load_output(path: str, output: list[str]) -> str | list[DataFrame]:
+def load_output(path: str, output: list[str]) -> list[str] | list[DataFrame]:
     """Returns a loaded output.
 
     Parameters
     ----------
     path : str
         The path to the output folder (with results.json).
-    output : str
+    output : list[str]
         The output to load.
+
+    Returns
+    -------
+    list[str] | list[DataFrame]
+        The loaded output field.
     """
     if len(output) < 1:
         raise ValueError("error loading output")
-    loaded: str | list[DataFrame] = []
+    loaded: list[DataFrame] = []
     for filename in output:
         _, ext = os.path.splitext(filename)
         if ext == ".csv":
             filename = os.path.normpath(f"{path}/{filename}")
             loaded.append(pd.read_csv(filename))
-    if len(loaded) < 1:  # output was a path to custom file
-        loaded = output[0]
+    if len(loaded) < 1:  # output is path(s) to custom file(s)
+        return output
     return loaded
 
 
 class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
-    """Stores data related to a single output record."""
+    """Stores data related to a single output record.
+
+    Attributes
+    ----------
+    uid : str
+        Unique identifier.
+    status : str
+        SDC status: {"pass", "fail", "review"}
+    output_type : str
+        Type of output, e.g., "regression"
+    properties : dict
+        Dictionary containing structured output data.
+    command : str
+        String representation of the operation performed.
+    summary : str
+        String summarising the ACRO checks.
+    outcome : DataFrame
+        DataFrame describing the details of ACRO checks.
+    output : Any
+        List of output DataFrames.
+    comments : list[str] | None
+        List of strings entered by the user to add comments to the output.
+    timestamp : str
+        Time the record was created in ISO format.
+    """
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -60,7 +90,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         command: str,
         summary: str,
         outcome: DataFrame,
-        output: str | list[DataFrame],
+        output: list[str] | list[DataFrame],
         comments: list[str] | None = None,
     ) -> None:
         """Constructs a new output record.
@@ -81,7 +111,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
             String summarising the ACRO checks.
         outcome : DataFrame
             DataFrame describing the details of ACRO checks.
-        output : str | list[DataFrame]
+        output : list[str] | list[DataFrame]
             List of output DataFrames.
         comments : list[str] | None, default None
             List of strings entered by the user to add comments to the output.
@@ -93,7 +123,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         self.command: str = command
         self.summary: str = summary
         self.outcome: DataFrame = outcome
-        self.output: str | list[DataFrame] = output
+        self.output: Any = output
         self.comments: list[str] = [] if comments is None else comments
         now = datetime.datetime.now()
         self.timestamp: str = now.isoformat()
@@ -111,6 +141,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         list[str]
             List of filepaths of the written outputs.
         """
+        output: list[str] = []
         # check if the outputs directory was already created
         try:  # pragma: no cover
             os.makedirs(path)
@@ -118,19 +149,19 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         except FileExistsError:
             logger.debug("Directory %s already exists", path)
         # save each output DataFrame to a different csv
-        output = [self.output]
-        if not isinstance(self.output, str):
-            output = []
-            for i, _ in enumerate(self.output):
+        if all(isinstance(obj, DataFrame) for obj in self.output):
+            for i, data in enumerate(self.output):
                 filename = f"{self.uid}_{i}.csv"
                 output.append(filename)
                 filename = os.path.normpath(f"{path}/{filename}")
                 with open(filename, mode="w", newline="", encoding="utf-8") as file:
-                    file.write(self.output[i].to_csv())
+                    file.write(data.to_csv())
         # move custom files to the output folder
-        if self.output_type == "custom" and os.path.exists(self.output):
-            shutil.copy(self.output, path)
-            output = [Path(self.output).name]
+        if self.output_type == "custom":
+            for filename in self.output:
+                if os.path.exists(filename):
+                    shutil.copy(filename, path)
+                    output.append(Path(filename).name)
         return output
 
     def to_dict(self, path: str = "outputs", serialize: bool = True) -> dict:
@@ -179,7 +210,7 @@ class Records:
         command: str,
         summary: str,
         outcome: DataFrame,
-        output: str | list[DataFrame],
+        output: list[str] | list[DataFrame],
         comments: list[str] | None = None,
     ) -> None:
         """Adds an output to the results.
@@ -198,12 +229,12 @@ class Records:
             String summarising the ACRO checks.
         outcome : DataFrame
             DataFrame describing the details of ACRO checks.
-        output : str | list[DataFrame]
+        output : list[str | list[DataFrame]
             List of output DataFrames.
         comments : list[str] | None, default None
             List of strings entered by the user to add comments to the output.
         """
-        output = Record(
+        new = Record(
             uid=f"output_{self.output_id}",
             status=status,
             output_type=output_type,
@@ -214,9 +245,9 @@ class Records:
             output=output,
             comments=comments,
         )
-        self.results[output.uid] = output
+        self.results[new.uid] = new
         self.output_id += 1
-        logger.info("add(): %s", output.uid)
+        logger.info("add(): %s", new.uid)
 
     def remove(self, key: str) -> None:
         """Removes an output from the results.
@@ -286,8 +317,6 @@ class Records:
         comment : str | None, default None
             An optional comment.
         """
-        if comment is not None:
-            comment = [comment]
         output = Record(
             uid=f"output_{self.output_id}",
             status="review",
@@ -296,8 +325,8 @@ class Records:
             command="custom",
             summary="review",
             outcome=DataFrame(),
-            output=os.path.normpath(filename),
-            comments=comment,
+            output=[os.path.normpath(filename)],
+            comments=None if comment is None else list(comment),
         )
         self.results[output.uid] = output
 

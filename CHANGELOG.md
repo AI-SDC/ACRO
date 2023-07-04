@@ -3,6 +3,11 @@
 ## Development
 
 Changes:
+*
+
+## Version 0.3.0 (Jul 04, 2023)
+
+Changes:
 *    Disable automatic table suppression by default ([#91](https://github.com/AI-SDC/ACRO/pull/91))
 *    Add support for multiple aggregation functions ([#99](https://github.com/AI-SDC/ACRO/pull/99))
 *    Minor code refactor and used mypy to fix types ([#97](https://github.com/AI-SDC/ACRO/pull/97))

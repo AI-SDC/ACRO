@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 project = "ACRO"
 copyright = "2023, ACRO Project Team"
 author = "ACRO Project Team"
-release = "0.2.0"
+release = "0.3.0"
 
 # -- General configuration ---------------------------------------------------
 

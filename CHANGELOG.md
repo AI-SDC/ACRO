@@ -5,6 +5,9 @@
 Changes:
 *    Disable automatic table suppression by default ([#91](https://github.com/AI-SDC/ACRO/pull/91))
 *    Add support for multiple aggregation functions ([#99](https://github.com/AI-SDC/ACRO/pull/99))
+*    Minor code refactor and used mypy to fix types ([#97](https://github.com/AI-SDC/ACRO/pull/97))
+*    Add lists of flagged table cells to properties ([#104](https://github.com/AI-SDC/ACRO/pull/104))
+*    Change missing and negative table properties to sums ([#104](https://github.com/AI-SDC/ACRO/pull/104))
 
 ## Version 0.2.0 (Jun 28, 2023)
 

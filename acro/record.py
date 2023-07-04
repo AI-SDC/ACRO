@@ -326,7 +326,7 @@ class Records:
             summary="review",
             outcome=DataFrame(),
             output=[os.path.normpath(filename)],
-            comments=None if comment is None else list(comment),
+            comments=None if comment is None else [comment],
         )
         self.results[output.uid] = output
 

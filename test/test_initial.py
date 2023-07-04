@@ -67,6 +67,10 @@ def test_crosstab_threshold(data, acro):
     output = acro.results.get_index(0)
     total_nan: int = output.output[0]["R/G"].isnull().sum()
     assert total_nan == 6
+    positions = output.properties["sdc"]["threshold"]
+    for pos in positions:
+        row, col = pos
+        assert np.isnan(output.output[0].iloc[row, col])
     results: Records = acro.finalise()
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
     output = results.get_index(0)

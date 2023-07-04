@@ -228,17 +228,26 @@ def update_table_properties(masks: dict[str, DataFrame], properties: dict) -> No
     properties : dict
         Properties of the SDC checks.
     """
-    properties["negative"] = False
-    properties["missing"] = False
+    # summary of cells to be suppressed
+    properties["negative"] = 0
+    properties["missing"] = 0
     properties["threshold"] = 0
     properties["p-ratio"] = 0
     properties["nk-rule"] = 0
-    if "negative" in masks:
-        properties["negative"] = True
-    if "missing" in masks:
-        properties["missing"] = True
     for name, mask in masks.items():
         properties[name] = int(mask.to_numpy().sum())
+    # positions of cells to be suppressed
+    properties["sdc"] = {}
+    properties["sdc"]["negative"] = []
+    properties["sdc"]["missing"] = []
+    properties["sdc"]["threshold"] = []
+    properties["sdc"]["p-ratio"] = []
+    properties["sdc"]["nk-rule"] = []
+    for name, mask in masks.items():
+        true_positions = np.column_stack(np.where(mask.values))
+        for pos in true_positions:
+            row_index, col_index = pos
+            properties["sdc"][name].append([int(row_index), int(col_index)])
 
 
 def get_summary(properties: dict) -> tuple[str, str]:

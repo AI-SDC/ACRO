@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from acro import ACRO, add_constant, record, utils
-from acro.record import Records
+from acro.record import Records, load_records
 
 # pylint: disable=redefined-outer-name
 
@@ -273,8 +273,7 @@ def test_finalise_json(data, acro):
     # write JSON
     result: Records = acro.finalise(PATH, "json")
     # load JSON
-    loaded: Records = Records()
-    loaded.load_json(PATH)
+    loaded: Records = load_records(PATH)
     orig = result.get_index(0)
     read = loaded.get_index(0)
     # check equal

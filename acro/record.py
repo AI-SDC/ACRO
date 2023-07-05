@@ -485,7 +485,6 @@ class Records:
         checksums_dir: str = os.path.normpath(f"{path}/checksums")
         os.makedirs(checksums_dir, exist_ok=True)
         for name, sha256 in checksums.items():
-            name, _ = os.path.splitext(name)
             filename = os.path.join(checksums_dir, name + ".txt")
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(sha256)

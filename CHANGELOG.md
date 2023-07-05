@@ -3,7 +3,7 @@
 ## Development
 
 Changes:
-*
+*    Add writing sha256 checksums upon finalise ([#107](https://github.com/AI-SDC/ACRO/pull/107))
 
 ## Version 0.3.0 (Jul 04, 2023)
 

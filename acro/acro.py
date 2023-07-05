@@ -1,6 +1,8 @@
 """ACRO: Automatic Checking of Research Outputs."""
 
+import json
 import logging
+import os
 import pathlib
 import warnings
 from collections.abc import Callable
@@ -85,6 +87,9 @@ class ACRO:
             Object storing the outputs.
         """
         self.results.finalise(path, ext)
+        config_filename: str = os.path.normpath(f"{path}/config.json")
+        with open(config_filename, "w", newline="", encoding="utf-8") as file:
+            json.dump(self.config, file, indent=4, sort_keys=False)
         return self.results
 
     def remove_output(self, key: str) -> None:

@@ -97,9 +97,15 @@ class ACRO:
         """
         self.results.remove(key)
 
-    def print_outputs(self) -> None:
-        """Prints the current results dictionary."""
-        self.results.print()
+    def print_outputs(self) -> str:
+        """Prints the current results dictionary.
+
+        Returns
+        -------
+        str
+            String representation of all outputs.
+        """
+        return self.results.print()
 
     def custom_output(self, filename: str, comment: str = "") -> None:
         """Adds an unsupported output to the results dictionary.

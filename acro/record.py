@@ -164,34 +164,26 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
                     output.append(Path(filename).name)
         return output
 
-    def to_dict(self, path: str = "outputs", serialize: bool = True) -> dict:
-        """Returns a dictionary representation of an output and serializes
-        any DataFrame outputs as csv.
+    def __str__(self) -> str:
+        """Returns a string representation of a record.
 
-        Parameters
-        ----------
-        path : str
-            Name of the folder that outputs are to be written.
-        serialize : bool, default True
-            Whether to serialize individual output DataFrames.
+        Returns
+        -------
+        str
+            The record.
         """
-        output = self.output
-        if serialize:
-            output = self.serialize_output(path)
-        # convert to dictionary
-        output_dict = {
-            "uid": self.uid,
-            "status": self.status,
-            "type": self.output_type,
-            "properties": self.properties,
-            "command": self.command,
-            "summary": self.summary,
-            "outcome": json.loads(self.outcome.to_json()),
-            "output": output,
-            "timestamp": self.timestamp,
-            "comments": self.comments,
-        }
-        return output_dict
+        return (
+            f"uid: {self.uid}\n"
+            f"status: {self.status}\n"
+            f"type: {self.output_type}\n"
+            f"properties: {self.properties}\n"
+            f"command: {self.command}\n"
+            f"summary: {self.summary}\n"
+            f"outcome: {self.outcome}\n"
+            f"output: {self.output}\n"
+            f"timestamp: {self.timestamp}\n"
+            f"comments: {self.comments}\n"
+        )
 
 
 class Records:
@@ -364,14 +356,20 @@ class Records:
         else:
             warnings.warn(f"unable to find {output}, key not found", stacklevel=8)
 
-    def print(self) -> None:
-        """Prints the current results."""
+    def print(self) -> str:
+        """Prints the current results.
+
+        Returns
+        -------
+        str
+            String representation of all outputs.
+        """
         logger.debug("print()")
-        for name, output in self.results.items():
-            print(f"{name}:")
-            for key, item in output.to_dict(serialize=False).items():
-                print(f"{key}: {item}")
-            print("\n")
+        outputs: str = ""
+        for _, record in self.results.items():
+            outputs += str(record) + "\n"
+        print(outputs)
+        return outputs
 
     def finalise(self, path: str, ext: str) -> None:
         """Creates a results file for checking.
@@ -402,7 +400,18 @@ class Records:
         """
         outputs: dict = {}
         for key, val in self.results.items():
-            outputs[key] = val.to_dict(path)
+            outputs[key] = {
+                "uid": val.uid,
+                "status": val.status,
+                "type": val.output_type,
+                "properties": val.properties,
+                "command": val.command,
+                "summary": val.summary,
+                "outcome": json.loads(val.outcome.to_json()),
+                "output": val.serialize_output(path),
+                "timestamp": val.timestamp,
+                "comments": val.comments,
+            }
         filename: str = os.path.normpath(f"{path}/results.json")
         with open(filename, "w", newline="", encoding="utf-8") as file:
             json.dump(outputs, file, indent=4, sort_keys=False)

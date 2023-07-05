@@ -1,6 +1,7 @@
 """ACRO: Output storage and serialization."""
 
 import datetime
+import hashlib
 import json
 import logging
 import os
@@ -388,6 +389,7 @@ class Records:
             self.finalise_excel(path)
         else:
             raise ValueError("Invalid file extension. Options: {json, xlsx}")
+        self.write_checksums(path)
         logger.info("outputs written to: %s", path)
 
     def finalise_json(self, path: str) -> None:
@@ -464,6 +466,29 @@ class Records:
                 for table in output.output:
                     start = 1 + writer.sheets[output_id].max_row
                     table.to_excel(writer, sheet_name=output_id, startrow=start)
+
+    def write_checksums(self, path: str) -> None:
+        """Writes checksums for each file to checksums folder.
+
+        Parameters
+        ----------
+        path : str
+            Name of a folder to save outputs.
+        """
+        checksums: dict[str, str] = {}
+        for name in os.listdir(path):
+            filename = os.path.join(path, name)
+            if os.path.isfile(filename):
+                with open(filename, "rb") as file:
+                    read = file.read()
+                    checksums[name] = hashlib.sha256(read).hexdigest()
+        checksums_dir: str = os.path.normpath(f"{path}/checksums")
+        os.makedirs(checksums_dir, exist_ok=True)
+        for name, sha256 in checksums.items():
+            name, _ = os.path.splitext(name)
+            filename = os.path.join(checksums_dir, name + ".txt")
+            with open(filename, "w", encoding="utf-8") as file:
+                file.write(sha256)
 
     def load_json(self, path: str) -> None:
         """Loads outputs from a JSON file.

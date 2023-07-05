@@ -118,9 +118,6 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Record.serialize_output" title="acro.record.Record.serialize_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">serialize_output</span></code></a>([path])</p></td>
 <td><p>Serializes outputs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Record.to_dict" title="acro.record.Record.to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dict</span></code></a>([path, serialize])</p></td>
-<td><p>Returns a dictionary representation of an output and serializes any DataFrame outputs as csv.</p></td>
-</tr>
 </tbody>
 </table>
 <dl class="py method">
@@ -137,23 +134,6 @@
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt>list[str]</dt><dd><p>List of filepaths of the written outputs.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="acro.record.Record.to_dict">
-<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'outputs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/acro/record.html#Record.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Record.to_dict" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a dictionary representation of an output and serializes
-any DataFrame outputs as csv.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of the folder that outputs are to be written.</p>
-</dd>
-<dt><strong>serialize</strong><span class="classifier">bool, default True</span></dt><dd><p>Whether to serialize individual output DataFrames.</p>
 </dd>
 </dl>
 </dd>
@@ -388,8 +368,16 @@ any DataFrame outputs as csv.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="acro.record.Records.print">
-<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.print" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.print" title="Permalink to this definition"></a></dt>
 <dd><p>Prints the current results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>str</dt><dd><p>String representation of all outputs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

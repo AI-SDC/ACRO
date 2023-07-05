@@ -489,28 +489,35 @@ class Records:
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(sha256)
 
-    def load_json(self, path: str) -> None:
-        """Loads outputs from a JSON file.
 
-        Parameters
-        ----------
-        path : str
-            Name of an output folder containing results.json.
-        """
-        self.results = {}
-        filename = os.path.normpath(f"{path}/results.json")
-        with open(filename, newline="", encoding="utf-8") as file:
-            data = json.load(file)
-            for key, val in data.items():
-                self.results[key] = Record(
-                    val["uid"],
-                    val["status"],
-                    val["type"],
-                    val["properties"],
-                    val["command"],
-                    val["summary"],
-                    load_outcome(val["outcome"]),
-                    load_output(path, val["output"]),
-                    val["comments"],
-                )
-                self.results[key].timestamp = val["timestamp"]
+def load_records(path: str) -> Records:
+    """Loads outputs from a JSON file.
+
+    Parameters
+    ----------
+    path : str
+        Name of an output folder containing results.json.
+
+    Returns
+    -------
+    Records
+        The loaded records.
+    """
+    records = Records()
+    filename = os.path.normpath(f"{path}/results.json")
+    with open(filename, newline="", encoding="utf-8") as file:
+        data = json.load(file)
+        for key, val in data.items():
+            records.results[key] = Record(
+                val["uid"],
+                val["status"],
+                val["type"],
+                val["properties"],
+                val["command"],
+                val["summary"],
+                load_outcome(val["outcome"]),
+                load_output(path, val["output"]),
+                val["comments"],
+            )
+            records.results[key].timestamp = val["timestamp"]
+    return records

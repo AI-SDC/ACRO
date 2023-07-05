@@ -557,33 +557,40 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">sha256</span> <span class="ow">in</span> <span class="n">checksums</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checksums_dir</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span><span class="p">)</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sha256</span><span class="p">)</span></div>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sha256</span><span class="p">)</span></div></div>
 
-<div class="viewcode-block" id="Records.load_json"><a class="viewcode-back" href="../../record.html#acro.record.Records.load_json">[docs]</a>    <span class="k">def</span> <span class="nf">load_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads outputs from a JSON file.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        path : str</span>
-<span class="sd">            Name of an output folder containing results.json.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/results.json&quot;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span>
-                    <span class="n">val</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">],</span>
-                    <span class="n">val</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">],</span>
-                    <span class="n">val</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
-                    <span class="n">val</span><span class="p">[</span><span class="s2">&quot;properties&quot;</span><span class="p">],</span>
-                    <span class="n">val</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">],</span>
-                    <span class="n">val</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">],</span>
-                    <span class="n">load_outcome</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="s2">&quot;outcome&quot;</span><span class="p">]),</span>
-                    <span class="n">load_output</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]),</span>
-                    <span class="n">val</span><span class="p">[</span><span class="s2">&quot;comments&quot;</span><span class="p">],</span>
-                <span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span></div></div>
+<div class="viewcode-block" id="load_records"><a class="viewcode-back" href="../../record.html#acro.record.load_records">[docs]</a><span class="k">def</span> <span class="nf">load_records</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Records</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads outputs from a JSON file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Name of an output folder containing results.json.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Records</span>
+<span class="sd">        The loaded records.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">records</span> <span class="o">=</span> <span class="n">Records</span><span class="p">()</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/results.json&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">records</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span>
+                <span class="n">val</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">],</span>
+                <span class="n">val</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">],</span>
+                <span class="n">val</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
+                <span class="n">val</span><span class="p">[</span><span class="s2">&quot;properties&quot;</span><span class="p">],</span>
+                <span class="n">val</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">],</span>
+                <span class="n">val</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">],</span>
+                <span class="n">load_outcome</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="s2">&quot;outcome&quot;</span><span class="p">]),</span>
+                <span class="n">load_output</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]),</span>
+                <span class="n">val</span><span class="p">[</span><span class="s2">&quot;comments&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">records</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">records</span></div>
 </pre></div>
 
            </div>

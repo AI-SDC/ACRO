@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import shutil
-import warnings
 from pathlib import Path
 from typing import Any
 
@@ -250,11 +249,10 @@ class Records:
         key : str
             Key specifying which output to remove, e.g., 'output_0'.
         """
-        if key in self.results:
-            del self.results[key]
-            logger.info("remove(): %s removed", key)
-        else:
-            warnings.warn(f"unable to remove {key}, key not found", stacklevel=8)
+        if key not in self.results:
+            raise ValueError(f"unable to remove {key}, key not found")
+        del self.results[key]
+        logger.info("remove(): %s removed", key)
 
     def get(self, key: str) -> Record:
         """Returns a specified output from the results.
@@ -333,13 +331,14 @@ class Records:
         new : str
             The new name of the output.
         """
-        if old in self.results:
-            self.results[new] = self.results[old]
-            self.results[new].uid = new
-            del self.results[old]
-            logger.info("rename_output(): %s renamed to %s", old, new)
-        else:
-            warnings.warn(f"unable to rename {old}, key not found", stacklevel=8)
+        if old not in self.results:
+            raise ValueError(f"unable to rename {old}, key not found")
+        if new in self.results:
+            raise ValueError(f"unable to rename, {new} already exists")
+        self.results[new] = self.results[old]
+        self.results[new].uid = new
+        del self.results[old]
+        logger.info("rename_output(): %s renamed to %s", old, new)
 
     def add_comments(self, output: str, comment: str) -> None:
         """Adds a comment to an output.
@@ -351,11 +350,10 @@ class Records:
         comment : str
             The comment.
         """
-        if output in self.results:
-            self.results[output].comments.append(comment)
-            logger.info("a comment was added to %s", output)
-        else:
-            warnings.warn(f"unable to find {output}, key not found", stacklevel=8)
+        if output not in self.results:
+            raise ValueError(f"unable to find {output}, key not found")
+        self.results[output].comments.append(comment)
+        logger.info("a comment was added to %s", output)
 
     def print(self) -> str:
         """Prints the current results.

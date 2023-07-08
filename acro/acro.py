@@ -819,6 +819,18 @@ class ACRO:
         """
         self.results.add_comments(output, comment)
 
+    def add_exception(self, output: str, reason: str) -> None:
+        """Adds an exception request to an output.
+
+        Parameters
+        ----------
+        output : str
+            The name of the output.
+        reason : str
+            The comment.
+        """
+        self.results.add_exception(output, reason)
+
 
 def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
     """Add a column of ones to an array.

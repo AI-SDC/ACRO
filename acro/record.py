@@ -12,6 +12,8 @@ from typing import Any
 import pandas as pd
 from pandas import DataFrame
 
+from .version import __version__
+
 logger = logging.getLogger("acro:records")
 
 
@@ -445,9 +447,10 @@ class Records:
                 "comments": val.comments,
                 "exception": val.exception,
             }
+        results: dict = {"version": __version__, "results": outputs}
         filename: str = os.path.normpath(f"{path}/results.json")
         with open(filename, "w", newline="", encoding="utf-8") as file:
-            json.dump(outputs, file, indent=4, sort_keys=False)
+            json.dump(results, file, indent=4, sort_keys=False)
 
     def finalise_excel(self, path: str) -> None:
         """Writes outputs to an excel spreadsheet.

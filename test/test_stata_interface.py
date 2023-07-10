@@ -276,8 +276,9 @@ def test_unsupported_formatting_options(data):
         assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
 
-def test_stata_finalise():
+def test_stata_finalise(monkeypatch):
     """Checks finalise gets called correctly."""
+    monkeypatch.setattr("builtins.input", lambda _: "Let me have it")
     ret = dummy_acrohandler(
         data,
         command="finalise",

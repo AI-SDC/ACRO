@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import shutil
-import warnings
 from pathlib import Path
 from typing import Any
 
@@ -76,8 +75,10 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         DataFrame describing the details of ACRO checks.
     output : Any
         List of output DataFrames.
-    comments : list[str] | None
+    comments : list[str]
         List of strings entered by the user to add comments to the output.
+    exception : str
+        Description of why an exception to fail/review should be granted.
     timestamp : str
         Time the record was created in ISO format.
     """
@@ -126,6 +127,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         self.outcome: DataFrame = outcome
         self.output: Any = output
         self.comments: list[str] = [] if comments is None else comments
+        self.exception: str = ""
         now = datetime.datetime.now()
         self.timestamp: str = now.isoformat()
 
@@ -184,6 +186,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
             f"output: {self.output}\n"
             f"timestamp: {self.timestamp}\n"
             f"comments: {self.comments}\n"
+            f"exception: {self.exception}\n"
         )
 
 
@@ -250,11 +253,10 @@ class Records:
         key : str
             Key specifying which output to remove, e.g., 'output_0'.
         """
-        if key in self.results:
-            del self.results[key]
-            logger.info("remove(): %s removed", key)
-        else:
-            warnings.warn(f"unable to remove {key}, key not found", stacklevel=8)
+        if key not in self.results:
+            raise ValueError(f"unable to remove {key}, key not found")
+        del self.results[key]
+        logger.info("remove(): %s removed", key)
 
     def get(self, key: str) -> Record:
         """Returns a specified output from the results.
@@ -333,13 +335,14 @@ class Records:
         new : str
             The new name of the output.
         """
-        if old in self.results:
-            self.results[new] = self.results[old]
-            self.results[new].uid = new
-            del self.results[old]
-            logger.info("rename_output(): %s renamed to %s", old, new)
-        else:
-            warnings.warn(f"unable to rename {old}, key not found", stacklevel=8)
+        if old not in self.results:
+            raise ValueError(f"unable to rename {old}, key not found")
+        if new in self.results:
+            raise ValueError(f"unable to rename, {new} already exists")
+        self.results[new] = self.results[old]
+        self.results[new].uid = new
+        del self.results[old]
+        logger.info("rename_output(): %s renamed to %s", old, new)
 
     def add_comments(self, output: str, comment: str) -> None:
         """Adds a comment to an output.
@@ -351,11 +354,25 @@ class Records:
         comment : str
             The comment.
         """
-        if output in self.results:
-            self.results[output].comments.append(comment)
-            logger.info("a comment was added to %s", output)
-        else:
-            warnings.warn(f"unable to find {output}, key not found", stacklevel=8)
+        if output not in self.results:
+            raise ValueError(f"unable to find {output}, key not found")
+        self.results[output].comments.append(comment)
+        logger.info("a comment was added to %s", output)
+
+    def add_exception(self, output: str, reason: str) -> None:
+        """Adds an exception request to an output.
+
+        Parameters
+        ----------
+        output : str
+            The name of the output.
+        reason : str
+            The reason the output should be released.
+        """
+        if output not in self.results:
+            raise ValueError(f"unable to add exception: {output} not found")
+        self.results[output].exception = reason
+        logger.info("exception request was added to %s", output)
 
     def print(self) -> str:
         """Prints the current results.
@@ -372,6 +389,18 @@ class Records:
         print(outputs)
         return outputs
 
+    def validate_outputs(self) -> None:
+        """Prompts researcher to complete any required fields."""
+        for _, record in self.results.items():
+            if record.status != "pass" and record.exception == "":
+                print(
+                    f"{str(record)}\n"
+                    f"The status of the record above is: {record.status}.\n"
+                    "Please explain why an exception should be granted.\n"
+                )
+                record.exception = input("")
+                print("")
+
     def finalise(self, path: str, ext: str) -> None:
         """Creates a results file for checking.
 
@@ -383,6 +412,7 @@ class Records:
             Extension of the results file. Valid extensions: {json, xlsx}.
         """
         logger.debug("finalise()")
+        self.validate_outputs()
         if ext == "json":
             self.finalise_json(path)
         elif ext == "xlsx":
@@ -413,6 +443,7 @@ class Records:
                 "output": val.serialize_output(path),
                 "timestamp": val.timestamp,
                 "comments": val.comments,
+                "exception": val.exception,
             }
         filename: str = os.path.normpath(f"{path}/results.json")
         with open(filename, "w", newline="", encoding="utf-8") as file:

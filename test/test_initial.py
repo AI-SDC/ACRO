@@ -71,6 +71,7 @@ def test_crosstab_threshold(data, acro):
     for pos in positions:
         row, col = pos
         assert np.isnan(output.output[0].iloc[row, col])
+    acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise()
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
     output = results.get_index(0)
@@ -82,6 +83,7 @@ def test_crosstab_multiple(data, acro):
     _ = acro.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
     )
+    acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise()
     correct_summary: str = (
         "fail; threshold: 6 cells suppressed; p-ratio: 1 cells suppressed; "
@@ -100,6 +102,8 @@ def test_negatives(data, acro):
     _ = acro.pivot_table(
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
+    acro.add_exception("output_0", "Let me have it")
+    acro.add_exception("output_1", "I want this")
     results: Records = acro.finalise()
     correct_summary: str = "review; negative values found"
     output_0 = results.get_index(0)
@@ -139,6 +143,7 @@ def test_pivot_table_cols(data, acro):
         values=["inc_grants"],
         aggfunc=["mean", "std"],
     )
+    acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise()
     correct_summary: str = (
         "fail; threshold: 14 cells suppressed; "
@@ -223,6 +228,7 @@ def test_probit_logit(data, acro):
 def test_finalise_excel(data, acro):
     """Finalise excel test."""
     _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH, "xlsx")
     output_0 = results.get_index(0)
     filename = os.path.normpath(f"{PATH}/results.xlsx")
@@ -232,11 +238,13 @@ def test_finalise_excel(data, acro):
     assert load_data.iloc[0, 1] == correct_cell
 
 
-def test_output_removal(data, acro):
+def test_output_removal(data, acro, monkeypatch):
     """Output removal and print test."""
     _ = acro.crosstab(data.year, data.grant_type)
     _ = acro.crosstab(data.year, data.grant_type)
     _ = acro.crosstab(data.year, data.grant_type)
+    exceptions = ["I want it", "Let me have it", "Please!"]
+    monkeypatch.setattr("builtins.input", lambda _: exceptions.pop(0))
     results: Records = acro.finalise()
     output_0 = results.get("output_0")
     output_1 = results.get("output_1")
@@ -250,7 +258,7 @@ def test_output_removal(data, acro):
     assert output_1.summary == correct_summary
     acro.print_outputs()
     # remove something that is not there
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         acro.remove_output("123")
 
 
@@ -263,6 +271,8 @@ def test_load_output():
 def test_finalise_invalid(data, acro):
     """Invalid output format when finalising."""
     _ = acro.crosstab(data.year, data.grant_type)
+    output_0 = acro.results.get_index(0)
+    output_0.exception = "Let me have it"
     with pytest.raises(ValueError):
         _ = acro.finalise(PATH, "123")
 
@@ -270,6 +280,7 @@ def test_finalise_invalid(data, acro):
 def test_finalise_json(data, acro):
     """Finalise json test."""
     _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
     # write JSON
     result: Records = acro.finalise(PATH, "json")
     # load JSON
@@ -304,6 +315,9 @@ def test_finalise_json(data, acro):
 def test_rename_output(data, acro):
     """Output renaming test."""
     _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
+    acro.add_exception("output_1", "I want this")
     results: Records = acro.finalise()
     output_0 = results.get_index(0)
     orig_name = output_0.uid
@@ -314,13 +328,17 @@ def test_rename_output(data, acro):
     assert orig_name not in results.get_keys()
     assert os.path.exists(f"outputs/{new_name}_0.csv")
     # rename an output that doesn't exist
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         acro.rename_output("123", "name")
+    # rename an output to another that already exists
+    with pytest.raises(ValueError):
+        acro.rename_output("output_1", "cross_table")
 
 
 def test_add_comments(data, acro):
     """Adding comments to output test."""
     _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise()
     output_0 = results.get_index(0)
     assert output_0.comments == []
@@ -331,7 +349,7 @@ def test_add_comments(data, acro):
     acro.add_comments(output_0.uid, comment_1)
     assert output_0.comments == [comment, comment_1]
     # add a comment to something that is not there
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         acro.add_comments("123", "comment")
 
 
@@ -340,13 +358,14 @@ def test_custom_output(acro):
     filename = "notebooks/XandY.jfif"
     file_path = os.path.normpath(filename)
     acro.custom_output(filename)
+    acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(path=PATH)
     output_0 = results.get_index(0)
     assert output_0.output == [file_path]
     assert os.path.exists(os.path.normpath(f"{PATH}/XandY.jfif"))
 
 
-def test_missing(data, acro):
+def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with negative values."""
     utils.CHECK_MISSING_VALUES = True
     data.loc[0:10, "inc_grants"] = np.NaN
@@ -356,12 +375,16 @@ def test_missing(data, acro):
     _ = acro.pivot_table(
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
+    exceptions = ["I want it", "Let me have it"]
+    monkeypatch.setattr("builtins.input", lambda _: exceptions.pop(0))
     results: Records = acro.finalise()
     correct_summary: str = "review; missing values found"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
     assert output_0.summary == correct_summary
     assert output_1.summary == correct_summary
+    assert output_0.exception == "I want it"
+    assert output_1.exception == "Let me have it"
 
 
 def test_suppression_error(caplog):
@@ -372,3 +395,9 @@ def test_suppression_error(caplog):
     masks = {"test": pd.DataFrame(data=mask_data)}
     utils.apply_suppression(table, masks)
     assert "problem mask test is not binary" in caplog.text
+
+
+def test_adding_exception(acro):
+    """Adding an exception to an output that doesn't exist test."""
+    with pytest.raises(ValueError):
+        acro.add_exception("output_0", "Let me have it")

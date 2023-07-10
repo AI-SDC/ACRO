@@ -541,7 +541,9 @@ def load_records(path: str) -> Records:
     filename = os.path.normpath(f"{path}/results.json")
     with open(filename, newline="", encoding="utf-8") as file:
         data = json.load(file)
-        for key, val in data.items():
+        if data["version"] != __version__:  # pragma: no cover
+            raise ValueError("error loading output")
+        for key, val in data["results"].items():
             records.results[key] = Record(
                 val["uid"],
                 val["status"],

@@ -300,9 +300,10 @@ def test_finalise_json(data, acro):
     # test reading JSON
     with open(os.path.normpath(f"{PATH}/results.json"), encoding="utf-8") as file:
         json_data = json.load(file)
-    assert json_data[orig.uid]["output"][0] == f"{orig.uid}_0.csv"
+    results: dict = json_data["results"]
+    assert results[orig.uid]["output"][0] == f"{orig.uid}_0.csv"
     # regression check: the outcome fields are dicts not strings
-    assert json_data[orig.uid]["outcome"]["R/G"] == {
+    assert results[orig.uid]["outcome"]["R/G"] == {
         "2010": "threshold; ",
         "2011": "threshold; ",
         "2012": "threshold; ",

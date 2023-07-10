@@ -315,7 +315,9 @@ def test_finalise_json(data, acro):
 def test_rename_output(data, acro):
     """Output renaming test."""
     _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.crosstab(data.year, data.grant_type)
     acro.add_exception("output_0", "Let me have it")
+    acro.add_exception("output_1", "I want this")
     results: Records = acro.finalise()
     output_0 = results.get_index(0)
     orig_name = output_0.uid
@@ -328,6 +330,9 @@ def test_rename_output(data, acro):
     # rename an output that doesn't exist
     with pytest.raises(ValueError):
         acro.rename_output("123", "name")
+    # rename an output to another that already exists
+    with pytest.raises(ValueError):
+        acro.rename_output("output_1", "cross_table")
 
 
 def test_add_comments(data, acro):

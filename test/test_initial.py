@@ -395,3 +395,9 @@ def test_suppression_error(caplog):
     masks = {"test": pd.DataFrame(data=mask_data)}
     utils.apply_suppression(table, masks)
     assert "problem mask test is not binary" in caplog.text
+
+
+def test_adding_exception(data, acro):
+    """Adding an exception to an output that doesn't exist test."""
+    with pytest.raises(ValueError):
+        acro.add_exception("output_0", "Let me have it")

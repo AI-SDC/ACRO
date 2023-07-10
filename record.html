@@ -102,7 +102,9 @@
 </dd>
 <dt><strong>output</strong><span class="classifier">Any</span></dt><dd><p>List of output DataFrames.</p>
 </dd>
-<dt><strong>comments</strong><span class="classifier">list[str] | None</span></dt><dd><p>List of strings entered by the user to add comments to the output.</p>
+<dt><strong>comments</strong><span class="classifier">list[str]</span></dt><dd><p>List of strings entered by the user to add comments to the output.</p>
+</dd>
+<dt><strong>exception</strong><span class="classifier">str</span></dt><dd><p>Description of why an exception to fail/review should be granted.</p>
 </dd>
 <dt><strong>timestamp</strong><span class="classifier">str</span></dt><dd><p>Time the record was created in ISO format.</p>
 </dd>
@@ -163,32 +165,38 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.add_custom" title="acro.record.Records.add_custom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_custom</span></code></a>(filename[, comment])</p></td>
 <td><p>Adds an unsupported output to the results dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.finalise" title="acro.record.Records.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>(path, ext)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.add_exception" title="acro.record.Records.add_exception"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_exception</span></code></a>(output, reason)</p></td>
+<td><p>Adds an exception request to an output.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.finalise" title="acro.record.Records.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>(path, ext)</p></td>
 <td><p>Creates a results file for checking.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.finalise_excel" title="acro.record.Records.finalise_excel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise_excel</span></code></a>(path)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.finalise_excel" title="acro.record.Records.finalise_excel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise_excel</span></code></a>(path)</p></td>
 <td><p>Writes outputs to an excel spreadsheet.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.finalise_json" title="acro.record.Records.finalise_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise_json</span></code></a>(path)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.finalise_json" title="acro.record.Records.finalise_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise_json</span></code></a>(path)</p></td>
 <td><p>Writes outputs to a JSON file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.get" title="acro.record.Records.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a>(key)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.get" title="acro.record.Records.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a>(key)</p></td>
 <td><p>Returns a specified output from the results.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.get_index" title="acro.record.Records.get_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_index</span></code></a>(index)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.get_index" title="acro.record.Records.get_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_index</span></code></a>(index)</p></td>
 <td><p>Returns the output at the specified position.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.get_keys" title="acro.record.Records.get_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_keys</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.get_keys" title="acro.record.Records.get_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_keys</span></code></a>()</p></td>
 <td><p>Returns the list of available output keys.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.print" title="acro.record.Records.print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.print" title="acro.record.Records.print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print</span></code></a>()</p></td>
 <td><p>Prints the current results.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.remove" title="acro.record.Records.remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove</span></code></a>(key)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.remove" title="acro.record.Records.remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove</span></code></a>(key)</p></td>
 <td><p>Removes an output from the results.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.rename" title="acro.record.Records.rename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename</span></code></a>(old, new)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.rename" title="acro.record.Records.rename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename</span></code></a>(old, new)</p></td>
 <td><p>Rename an output.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.record.Records.validate_outputs" title="acro.record.Records.validate_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_outputs</span></code></a>()</p></td>
+<td><p>Prompts researcher to complete any required fields.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#acro.record.Records.write_checksums" title="acro.record.Records.write_checksums"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_checksums</span></code></a>(path)</p></td>
 <td><p>Writes checksums for each file to checksums folder.</p></td>
@@ -249,6 +257,22 @@
 <dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The name of the file that will be added to the list of the outputs.</p>
 </dd>
 <dt><strong>comment</strong><span class="classifier">str | None, default None</span></dt><dd><p>An optional comment.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.add_exception">
+<span class="sig-name descname"><span class="pre">add_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.add_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.add_exception" title="Permalink to this definition"></a></dt>
+<dd><p>Adds an exception request to an output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>output</strong><span class="classifier">str</span></dt><dd><p>The name of the output.</p>
+</dd>
+<dt><strong>reason</strong><span class="classifier">str</span></dt><dd><p>The reason the output should be released.</p>
 </dd>
 </dl>
 </dd>
@@ -395,6 +419,12 @@
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.record.Records.validate_outputs">
+<span class="sig-name descname"><span class="pre">validate_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/record.html#Records.validate_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.record.Records.validate_outputs" title="Permalink to this definition"></a></dt>
+<dd><p>Prompts researcher to complete any required fields.</p>
 </dd></dl>
 
 <dl class="py method">

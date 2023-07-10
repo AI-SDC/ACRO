@@ -887,7 +887,19 @@
 <span class="sd">        comment : str</span>
 <span class="sd">            The comment.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add_comments</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add_comments</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ACRO.add_exception"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.add_exception">[docs]</a>    <span class="k">def</span> <span class="nf">add_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds an exception request to an output.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output : str</span>
+<span class="sd">            The name of the output.</span>
+<span class="sd">        reason : str</span>
+<span class="sd">            The comment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add_exception</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="add_constant"><a class="viewcode-back" href="../../acro.html#acro.acro.add_constant">[docs]</a><span class="k">def</span> <span class="nf">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">has_constant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;skip&quot;</span><span class="p">):</span>

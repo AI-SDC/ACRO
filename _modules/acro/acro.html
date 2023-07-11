@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>acro.acro &mdash; ACRO 0.3.0 documentation</title>
+  <title>acro.acro &mdash; ACRO 0.4.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -341,11 +341,10 @@
             <span class="n">mask</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">masks</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span>
 
-        <span class="c1"># build the properties dictionary</span>
-        <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;crosstab&quot;</span><span class="p">,</span> <span class="s2">&quot;suppressed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">}</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">update_table_properties</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+        <span class="c1"># build the sdc dictionary</span>
+        <span class="n">sdc</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_table_sdc</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">)</span>
         <span class="c1"># get the status and summary</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">sdc</span><span class="p">)</span>
         <span class="c1"># apply the suppression</span>
         <span class="n">safe_table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">:</span>
@@ -354,7 +353,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;table&quot;</span><span class="p">,</span>
-            <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;crosstab&quot;</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="n">sdc</span><span class="p">,</span>
             <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
             <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
             <span class="n">outcome</span><span class="o">=</span><span class="n">outcome</span><span class="p">,</span>
@@ -480,11 +480,10 @@
                     <span class="n">data</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="n">agg</span>
                 <span class="p">)</span>
 
-        <span class="c1"># build the properties dictionary</span>
-        <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;pivot_table&quot;</span><span class="p">,</span> <span class="s2">&quot;suppressed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">}</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">update_table_properties</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+        <span class="c1"># build the sdc dictionary</span>
+        <span class="n">sdc</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_table_sdc</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">)</span>
         <span class="c1"># get the status and summary</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">sdc</span><span class="p">)</span>
         <span class="c1"># apply the suppression</span>
         <span class="n">safe_table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">:</span>
@@ -493,7 +492,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;table&quot;</span><span class="p">,</span>
-            <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;pivot_table&quot;</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="n">sdc</span><span class="p">,</span>
             <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
             <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
             <span class="n">outcome</span><span class="o">=</span><span class="n">outcome</span><span class="p">,</span>
@@ -573,6 +573,7 @@
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
             <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
             <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
             <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
@@ -636,6 +637,7 @@
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
             <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;olsr&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
             <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
             <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
@@ -684,6 +686,7 @@
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
             <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;logit&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
             <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
             <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
@@ -747,6 +750,7 @@
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
             <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;logitr&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
             <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
             <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
@@ -795,6 +799,7 @@
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
             <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;probit&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
             <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
             <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>
@@ -858,6 +863,7 @@
             <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
             <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span>
             <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;probitr&quot;</span><span class="p">,</span> <span class="s2">&quot;dof&quot;</span><span class="p">:</span> <span class="n">dof</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
             <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
             <span class="n">outcome</span><span class="o">=</span><span class="n">DataFrame</span><span class="p">(),</span>

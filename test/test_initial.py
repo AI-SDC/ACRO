@@ -67,7 +67,7 @@ def test_crosstab_threshold(data, acro):
     output = acro.results.get_index(0)
     total_nan: int = output.output[0]["R/G"].isnull().sum()
     assert total_nan == 6
-    positions = output.properties["sdc"]["threshold"]
+    positions = output.sdc["cells"]["threshold"]
     for pos in positions:
         row, col = pos
         assert np.isnan(output.output[0].iloc[row, col])
@@ -287,11 +287,17 @@ def test_finalise_json(data, acro):
     loaded: Records = load_records(PATH)
     orig = result.get_index(0)
     read = loaded.get_index(0)
+    print("*****************************")
+    print(orig)
+    print("*****************************")
+    print(read)
+    print("*****************************")
     # check equal
     assert orig.uid == read.uid
     assert orig.status == read.status
     assert orig.output_type == read.output_type
     assert orig.properties == read.properties
+    assert orig.sdc == read.sdc
     assert orig.command == read.command
     assert orig.summary == read.summary
     assert orig.comments == read.comments
@@ -300,16 +306,8 @@ def test_finalise_json(data, acro):
     # test reading JSON
     with open(os.path.normpath(f"{PATH}/results.json"), encoding="utf-8") as file:
         json_data = json.load(file)
-    assert json_data[orig.uid]["output"][0] == f"{orig.uid}_0.csv"
-    # regression check: the outcome fields are dicts not strings
-    assert json_data[orig.uid]["outcome"]["R/G"] == {
-        "2010": "threshold; ",
-        "2011": "threshold; ",
-        "2012": "threshold; ",
-        "2013": "threshold; ",
-        "2014": "threshold; ",
-        "2015": "threshold; ",
-    }
+    results: dict = json_data["results"]
+    assert results[orig.uid]["files"][0]["name"] == f"{orig.uid}_0.csv"
 
 
 def test_rename_output(data, acro):

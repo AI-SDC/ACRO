@@ -271,11 +271,10 @@ class ACRO:
             mask.replace({0: False, 1: True}, inplace=True)
             masks[name] = mask
 
-        # build the properties dictionary
-        properties: dict = {"method": "crosstab", "suppressed": self.suppress}
-        utils.update_table_properties(masks, properties)
+        # build the sdc dictionary
+        sdc: dict = utils.get_table_sdc(masks, self.suppress)
         # get the status and summary
-        status, summary = utils.get_summary(properties)
+        status, summary = utils.get_summary(sdc)
         # apply the suppression
         safe_table, outcome = utils.apply_suppression(table, masks)
         if self.suppress:
@@ -284,7 +283,8 @@ class ACRO:
         self.results.add(
             status=status,
             output_type="table",
-            properties=properties,
+            properties={"method": "crosstab"},
+            sdc=sdc,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -410,11 +410,10 @@ class ACRO:
                     data, values, index, columns, aggfunc=agg
                 )
 
-        # build the properties dictionary
-        properties: dict = {"method": "pivot_table", "suppressed": self.suppress}
-        utils.update_table_properties(masks, properties)
+        # build the sdc dictionary
+        sdc: dict = utils.get_table_sdc(masks, self.suppress)
         # get the status and summary
-        status, summary = utils.get_summary(properties)
+        status, summary = utils.get_summary(sdc)
         # apply the suppression
         safe_table, outcome = utils.apply_suppression(table, masks)
         if self.suppress:
@@ -423,7 +422,8 @@ class ACRO:
         self.results.add(
             status=status,
             output_type="table",
-            properties=properties,
+            properties={"method": "pivot_table"},
+            sdc=sdc,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -503,6 +503,7 @@ class ACRO:
             status=status,
             output_type="regression",
             properties={"method": "ols", "dof": dof},
+            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
@@ -566,6 +567,7 @@ class ACRO:
             status=status,
             output_type="regression",
             properties={"method": "olsr", "dof": dof},
+            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
@@ -614,6 +616,7 @@ class ACRO:
             status=status,
             output_type="regression",
             properties={"method": "logit", "dof": dof},
+            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
@@ -677,6 +680,7 @@ class ACRO:
             status=status,
             output_type="regression",
             properties={"method": "logitr", "dof": dof},
+            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
@@ -725,6 +729,7 @@ class ACRO:
             status=status,
             output_type="regression",
             properties={"method": "probit", "dof": dof},
+            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
@@ -788,6 +793,7 @@ class ACRO:
             status=status,
             output_type="regression",
             properties={"method": "probitr", "dof": dof},
+            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),

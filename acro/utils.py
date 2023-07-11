@@ -218,44 +218,45 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def update_table_properties(masks: dict[str, DataFrame], properties: dict) -> None:
-    """Updates the properties dictionary using the suppression masks.
+def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
+    """Returns the SDC dictionary using the suppression masks.
 
     Parameters
     ----------
     masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
-    properties : dict
-        Properties of the SDC checks.
+    suppress : bool
+        Whether suppression has been applied.
     """
     # summary of cells to be suppressed
-    properties["negative"] = 0
-    properties["missing"] = 0
-    properties["threshold"] = 0
-    properties["p-ratio"] = 0
-    properties["nk-rule"] = 0
+    sdc: dict = {"summary": {"suppressed": suppress}, "cells": {}}
+    sdc["summary"]["negative"] = 0
+    sdc["summary"]["missing"] = 0
+    sdc["summary"]["threshold"] = 0
+    sdc["summary"]["p-ratio"] = 0
+    sdc["summary"]["nk-rule"] = 0
     for name, mask in masks.items():
-        properties[name] = int(mask.to_numpy().sum())
+        sdc["summary"][name] = int(mask.to_numpy().sum())
     # positions of cells to be suppressed
-    properties["sdc"] = {}
-    properties["sdc"]["negative"] = []
-    properties["sdc"]["missing"] = []
-    properties["sdc"]["threshold"] = []
-    properties["sdc"]["p-ratio"] = []
-    properties["sdc"]["nk-rule"] = []
+    sdc["cells"]["negative"] = []
+    sdc["cells"]["missing"] = []
+    sdc["cells"]["threshold"] = []
+    sdc["cells"]["p-ratio"] = []
+    sdc["cells"]["nk-rule"] = []
     for name, mask in masks.items():
         true_positions = np.column_stack(np.where(mask.values))
         for pos in true_positions:
             row_index, col_index = pos
-            properties["sdc"][name].append([int(row_index), int(col_index)])
+            sdc["cells"][name].append([int(row_index), int(col_index)])
+    return sdc
 
 
-def get_summary(properties: dict) -> tuple[str, str]:
+def get_summary(sdc: dict) -> tuple[str, str]:
     """Returns the status and summary of the suppression masks.
 
     Parameters
     ----------
-    properties : dict
+    sdc : dict
         Properties of the SDC checks.
 
     Returns
@@ -267,22 +268,23 @@ def get_summary(properties: dict) -> tuple[str, str]:
     """
     status: str = "pass"
     summary: str = ""
-    sup: str = "suppressed" if properties["suppressed"] else "may need suppressing"
-    if properties["negative"]:
+    sdc_summary = sdc["summary"]
+    sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
+    if sdc_summary["negative"] > 0:
         summary += "negative values found"
         status = "review"
-    elif properties["missing"]:
+    elif sdc_summary["missing"] > 0:
         summary += "missing values found"
         status = "review"
     else:
-        if properties["threshold"] > 0:
-            summary += f"threshold: {properties['threshold']} cells {sup}; "
+        if sdc_summary["threshold"] > 0:
+            summary += f"threshold: {sdc_summary['threshold']} cells {sup}; "
             status = "fail"
-        if properties["p-ratio"] > 0:
-            summary += f"p-ratio: {properties['p-ratio']} cells {sup}; "
+        if sdc_summary["p-ratio"] > 0:
+            summary += f"p-ratio: {sdc_summary['p-ratio']} cells {sup}; "
             status = "fail"
-        if properties["nk-rule"] > 0:
-            summary += f"nk-rule: {properties['nk-rule']} cells {sup}; "
+        if sdc_summary["nk-rule"] > 0:
+            summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
             status = "fail"
     if summary != "":
         summary = f"{status}; {summary}"

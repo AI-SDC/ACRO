@@ -12,6 +12,8 @@ from typing import Any
 import pandas as pd
 from pandas import DataFrame
 
+from .version import __version__
+
 logger = logging.getLogger("acro:records")
 
 
@@ -67,6 +69,8 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         Type of output, e.g., "regression"
     properties : dict
         Dictionary containing structured output data.
+    sdc : dict
+        Dictionary containing SDC results.
     command : str
         String representation of the operation performed.
     summary : str
@@ -89,6 +93,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         status: str,
         output_type: str,
         properties: dict,
+        sdc: dict,
         command: str,
         summary: str,
         outcome: DataFrame,
@@ -107,6 +112,8 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
             Type of output, e.g., "regression"
         properties : dict
             Dictionary containing structured output data.
+        sdc : dict
+            Dictionary containing SDC results.
         command : str
             String representation of the operation performed.
         summary : str
@@ -122,6 +129,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         self.status: str = status
         self.output_type: str = output_type
         self.properties: dict = properties
+        self.sdc: dict = sdc
         self.command: str = command
         self.summary: str = summary
         self.outcome: DataFrame = outcome
@@ -180,6 +188,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
             f"status: {self.status}\n"
             f"type: {self.output_type}\n"
             f"properties: {self.properties}\n"
+            f"sdc: {self.sdc}\n"
             f"command: {self.command}\n"
             f"summary: {self.summary}\n"
             f"outcome: {self.outcome}\n"
@@ -203,6 +212,7 @@ class Records:
         status: str,
         output_type: str,
         properties: dict,
+        sdc: dict,
         command: str,
         summary: str,
         outcome: DataFrame,
@@ -219,6 +229,8 @@ class Records:
             Type of output, e.g., "regression"
         properties : dict
             Dictionary containing structured output data.
+        sdc : dict
+            Dictionary containing SDC results.
         command : str
             String representation of the operation performed.
         summary : str
@@ -235,6 +247,7 @@ class Records:
             status=status,
             output_type=output_type,
             properties=properties,
+            sdc=sdc,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -317,6 +330,7 @@ class Records:
             status="review",
             output_type="custom",
             properties={},
+            sdc={},
             command="custom",
             summary="review",
             outcome=DataFrame(),
@@ -437,17 +451,22 @@ class Records:
                 "status": val.status,
                 "type": val.output_type,
                 "properties": val.properties,
+                "files": [],
+                "outcome": json.loads(val.outcome.to_json()),
                 "command": val.command,
                 "summary": val.summary,
-                "outcome": json.loads(val.outcome.to_json()),
-                "output": val.serialize_output(path),
                 "timestamp": val.timestamp,
                 "comments": val.comments,
                 "exception": val.exception,
             }
+            files: list[str] = val.serialize_output(path)
+            for file in files:
+                outputs[key]["files"].append({"name": file, "sdc": val.sdc})
+
+        results: dict = {"version": __version__, "results": outputs}
         filename: str = os.path.normpath(f"{path}/results.json")
-        with open(filename, "w", newline="", encoding="utf-8") as file:
-            json.dump(outputs, file, indent=4, sort_keys=False)
+        with open(filename, "w", newline="", encoding="utf-8") as handle:
+            json.dump(results, handle, indent=4, sort_keys=False)
 
     def finalise_excel(self, path: str) -> None:
         """Writes outputs to an excel spreadsheet.
@@ -536,19 +555,29 @@ def load_records(path: str) -> Records:
     """
     records = Records()
     filename = os.path.normpath(f"{path}/results.json")
-    with open(filename, newline="", encoding="utf-8") as file:
-        data = json.load(file)
-        for key, val in data.items():
+    with open(filename, newline="", encoding="utf-8") as handle:
+        data = json.load(handle)
+        if data["version"] != __version__:  # pragma: no cover
+            raise ValueError("error loading output")
+        for key, val in data["results"].items():
+            files: list[dict] = val["files"]
+            filenames: list = []
+            sdcs: list = []
+            for file in files:
+                filenames.append(file["name"])
+                sdcs.append(file["sdc"])
             records.results[key] = Record(
-                val["uid"],
-                val["status"],
-                val["type"],
-                val["properties"],
-                val["command"],
-                val["summary"],
-                load_outcome(val["outcome"]),
-                load_output(path, val["output"]),
-                val["comments"],
+                uid=val["uid"],
+                status=val["status"],
+                output_type=val["type"],
+                properties=val["properties"],
+                sdc=sdcs[0],
+                command=val["command"],
+                summary=val["summary"],
+                outcome=load_outcome(val["outcome"]),
+                output=load_output(path, filenames),
+                comments=val["comments"],
             )
+            records.results[key].exception = val["exception"]
             records.results[key].timestamp = val["timestamp"]
     return records

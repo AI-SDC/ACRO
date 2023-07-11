@@ -4,12 +4,14 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
+from acro.version import __version__
+
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="acro",
-    version="0.3.0",
+    version=__version__,
     license="MIT",
     maintainer="Jim Smith",
     maintainer_email="james.smith@uwe.ac.uk",

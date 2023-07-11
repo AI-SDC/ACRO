@@ -7,12 +7,14 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../../"))
 
+from acro.version import __version__
+
 # -- Project information -----------------------------------------------------
 
 project = "ACRO"
 copyright = "2023, ACRO Project Team"
 author = "ACRO Project Team"
-release = "0.3.0"
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 

@@ -3,6 +3,11 @@
 ## Development
 
 Changes:
+*
+
+## Version 0.4.0 (Jul 11, 2023)
+
+Changes:
 *    Add writing sha256 checksums upon finalise ([#107](https://github.com/AI-SDC/ACRO/pull/107))
 *    Refactor load_json Records class function to static load_results ([#110](https://github.com/AI-SDC/ACRO/pull/110))
 *    Write SDC parameters to config.json upon finalise ([#111](https://github.com/AI-SDC/ACRO/pull/111))

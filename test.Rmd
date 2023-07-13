@@ -122,5 +122,5 @@ acro_glm(formula=formula, data=df, family="probit")
 ## Finalise
 
 ```{r}
-acro_finalise("RTEST", "xlsx")
+acro_finalise("RTEST", "json")
 ```

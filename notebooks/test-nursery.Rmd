@@ -1,0 +1,189 @@
+---
+title: "ACRO R Notebook"
+output: html_notebook
+---
+
+```{r}
+# install.packages("haven")
+# install.packages("reticulate")
+# install.packages("farff")
+```
+
+## Import Libraries
+
+```{r}
+library(haven)   # read .dta
+source("../acro.R")  # ACRO
+```
+
+## Load Data
+
+```{r}
+data = farff::readARFF("../data/nursery.arff")
+data = as.data.frame(data)
+data = zap_labels(data)  # Stata data files include extra labels
+
+
+names(data)[names(data) == "class"] <- "recommend"
+
+
+```
+
+## Convert children to integers,
+
+###  replacing 'more' with random int from range 4-10
+
+```{r}
+unique(data$children)
+
+#data$children <- sub("more","6",data$children)
+unique(data$children)
+
+
+data$children <-as.numeric(as.character(data$children))
+unique(data$children)
+
+data[is.na(data)] <-  round(runif(sum(is.na(data)), min = 4, max = 10),0)
+unique(data$children)
+
+```
+
+```{r}
+head(data)
+#sapply(data)
+```
+
+## Tables
+
+### ACRO Crosstab
+
+```{r}
+index = data[, c("recommend")]
+columns = data[, c("parents")]
+values = data[, c("children")]
+aggfunc = "mean"
+
+table = acro_crosstab(index, columns, values=values, aggfunc=aggfunc)
+```
+
+```{r}
+table
+```
+
+### ACRO Pivot Table
+
+```{r}
+index = "parents"
+values = "children"
+aggfunc = list("mean", "std")
+
+table = acro_pivot_table(data, values=values, index=index, aggfunc=aggfunc)
+```
+
+```{r}
+table
+```
+
+# Regression examples using ACRO
+
+Again there is an industry-standard package in python, this time called **statsmodels**.
+
+-   The examples below illustrate the use of the ACRO wrapper standard statsmodel functions
+
+-   Note that statsmodels can be called using an 'R-like' format (using an 'r' suffix on the command names)
+
+-   most statsmodels functiobns return a "results object" which has a "summary" function that produces printable/saveable outputs
+
+### Start by manipulating the nursery data to get two numeric variables
+
+-   The 'recommend' column is converted to an integer scale
+
+```{r}
+data$recommend <- as.character(data$recommend)
+data$recommend[which(data$recommend=="not_recom")] <- "0"
+data$recommend[which(data$recommend=="recommend")] <- "1"
+data$recommend[which(data$recommend=="very_recom")] <- "2"
+data$recommend[which(data$recommend=="priority")] <- "3"
+data$recommend[which(data$recommend=="spec_prior")] <- "4"
+data$recommend <- as.numeric(data$recommend)
+```
+
+##
+
+```{r}
+
+
+
+
+# extract relevant columns
+df = data[, c("recommend", "children")]
+# drop rows with missing values
+df = df[complete.cases(df), ]
+# formula to fit
+formula = "recommend ~ children"
+```
+
+### Fit Linear Model
+
+```{r}
+model = lm(formula=formula, data=df)
+summary(model)
+```
+
+### ACRO Linear Model
+
+```{r}
+acro_lm(formula=formula, data=df)
+```
+
+### ACRO Probit/ Logit regression
+
+This is an example of logit/probit regression using ACRO\
+We use a different combination of variables from the original dataset.
+
+```{r}
+# extract relevant columns
+df = data[, c("finance", "children")]
+# drop rows with missing values
+df = df[complete.cases(df), ]
+# convert finance to numeric
+df = transform(df, finance = as.numeric(finance))
+# subtract 1 to make 1s and 2S into 0a and 1s
+df$finance <- df$finance -1
+# formula to fit
+formula = "finance ~ children"
+
+```
+
+### Fit Logit Model
+
+```{r}
+model = glm(formula=formula, data=df, family=binomial(link="logit"))
+summary(model)
+```
+
+### ACRO Logit Model
+
+```{r}
+acro_glm(formula=formula, data=df, family="logit")
+```
+
+### Fit Probit Model
+
+```{r}
+model = glm(formula=formula, data=df, family=binomial(link="probit"))
+summary(model)
+```
+
+### ACRO Probit Model
+
+```{r}
+acro_glm(formula=formula, data=df, family="probit")
+```
+
+## Finalise
+
+```{r}
+#acro_finalise("RTEST", "xlsx")
+acro_finalise("RTEST", "json")
+```

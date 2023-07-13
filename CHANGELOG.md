@@ -9,6 +9,8 @@ Changes:
 
 Changes:
 *   Use INFO for exception handling finalise prompt ([#116](https://github.com/AI-SDC/ACRO/pull/116))
+*   Add version number to INFO ([#116](https://github.com/AI-SDC/ACRO/pull/116))
+*   Update R wrapper ([#116](https://github.com/AI-SDC/ACRO/pull/116))
 
 ## Version 0.4.0 (Jul 11, 2023)
 

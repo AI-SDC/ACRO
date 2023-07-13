@@ -12,13 +12,13 @@ output: html_notebook
 
 ```{r}
 library(haven)   # read .dta
-source("acro.R")  # ACRO
+source("../acro.R")  # ACRO
 ```
 
 ## Load Data
 
 ```{r}
-data = read_dta("data/test_data.dta")
+data = read_dta("../data/test_data.dta")
 data = as.data.frame(data)
 data = zap_labels(data)  # Stata data files include extra labels
 
@@ -40,6 +40,12 @@ table = acro_crosstab(index, columns, values=values, aggfunc=aggfunc)
 
 ```{r}
 table
+```
+
+### Add Comments to Output
+
+```{r}
+acro_add_comments("output_0", "This is a crosstab on the nursery dataset.")
 ```
 
 ### ACRO Pivot Table
@@ -117,6 +123,24 @@ summary(model)
 
 ```{r}
 acro_glm(formula=formula, data=df, family="probit")
+```
+
+### Add Custom Output
+
+```{r}
+acro_custom_output("XandY.jfif", "This output is an image showing the relationship between X and Y")
+```
+
+### Rename Output
+
+```{r}
+acro_rename_output("output_5", "xy_plot")
+```
+
+### Remove Output
+
+```{r}
+acro_remove_output("output_3")
 ```
 
 ## Finalise

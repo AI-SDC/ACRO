@@ -12,7 +12,6 @@ output: html_notebook
 ## Import Libraries
 
 ```{r}
-library(haven)   # read .dta
 source("../acro.R")  # ACRO
 ```
 
@@ -21,17 +20,13 @@ source("../acro.R")  # ACRO
 ```{r}
 data = farff::readARFF("../data/nursery.arff")
 data = as.data.frame(data)
-data = zap_labels(data)  # Stata data files include extra labels
-
 
 names(data)[names(data) == "class"] <- "recommend"
-
-
 ```
 
 ## Convert children to integers,
 
-###  replacing 'more' with random int from range 4-10
+### replacing 'more' with random int from range 4-10
 
 ```{r}
 unique(data$children)
@@ -39,13 +34,11 @@ unique(data$children)
 #data$children <- sub("more","6",data$children)
 unique(data$children)
 
-
 data$children <-as.numeric(as.character(data$children))
 unique(data$children)
 
 data[is.na(data)] <-  round(runif(sum(is.na(data)), min = 4, max = 10),0)
 unique(data$children)
-
 ```
 
 ```{r}
@@ -70,6 +63,12 @@ table = acro_crosstab(index, columns, values=values, aggfunc=aggfunc)
 table
 ```
 
+### Add Comments to Output
+
+```{r}
+acro_add_comments("output_0", "This is a crosstab on the nursery dataset.")
+```
+
 ### ACRO Pivot Table
 
 ```{r}
@@ -86,7 +85,7 @@ table
 
 # Regression examples using ACRO
 
-Again there is an industry-standard package in python, this time called **statsmodels**.
+Again there is an industry-standard package in python, this time called **statsmodels**.
 
 -   The examples below illustrate the use of the ACRO wrapper standard statsmodel functions
 
@@ -111,10 +110,6 @@ data$recommend <- as.numeric(data$recommend)
 ##
 
 ```{r}
-
-
-
-
 # extract relevant columns
 df = data[, c("recommend", "children")]
 # drop rows with missing values
@@ -152,7 +147,6 @@ df = transform(df, finance = as.numeric(finance))
 df$finance <- df$finance -1
 # formula to fit
 formula = "finance ~ children"
-
 ```
 
 ### Fit Logit Model
@@ -179,6 +173,30 @@ summary(model)
 
 ```{r}
 acro_glm(formula=formula, data=df, family="probit")
+```
+
+### Add Custom Output
+
+```{r}
+acro_custom_output("XandY.jfif", "This output is an image showing the relationship between X and Y")
+```
+
+### Rename Output
+
+```{r}
+acro_rename_output("output_5", "xy_plot")
+```
+
+### Remove Output
+
+```{r}
+acro_remove_output("output_3")
+```
+
+### Display Outputs
+
+```{r}
+acro_print_outputs()
 ```
 
 ## Finalise

@@ -5,7 +5,7 @@
 Changes:
 *
 
-## Version 0.4.1 (Jul 13, 2023)
+## Version 0.4.2 (Jul 13, 2023)
 
 Changes:
 *   Use INFO for exception handling finalise prompt ([#116](https://github.com/AI-SDC/ACRO/pull/116))

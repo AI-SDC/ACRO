@@ -410,8 +410,9 @@ class Records:
                 logger.info(
                     "\n%s\n"
                     "The status of the record above is: %s.\n"
-                    "Please explain why an exception should be granted.\n"
-                    % (str(record), record.status)
+                    "Please explain why an exception should be granted.\n",
+                    str(record),
+                    record.status,
                 )
                 record.exception = input("")
 

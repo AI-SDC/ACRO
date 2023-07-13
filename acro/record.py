@@ -338,6 +338,7 @@ class Records:
             comments=None if comment is None else [comment],
         )
         self.results[output.uid] = output
+        logger.info("add_custom(): %s", output.uid)
 
     def rename(self, old: str, new: str) -> None:
         """Rename an output.

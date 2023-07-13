@@ -338,6 +338,7 @@ class Records:
             comments=None if comment is None else [comment],
         )
         self.results[output.uid] = output
+        logger.info("add_custom(): %s", output.uid)
 
     def rename(self, old: str, new: str) -> None:
         """Rename an output.
@@ -407,13 +408,14 @@ class Records:
         """Prompts researcher to complete any required fields."""
         for _, record in self.results.items():
             if record.status != "pass" and record.exception == "":
-                print(
-                    f"{str(record)}\n"
-                    f"The status of the record above is: {record.status}.\n"
-                    "Please explain why an exception should be granted.\n"
+                logger.info(
+                    "\n%s\n"
+                    "The status of the record above is: %s.\n"
+                    "Please explain why an exception should be granted.\n",
+                    str(record),
+                    record.status,
                 )
                 record.exception = input("")
-                print("")
 
     def finalise(self, path: str, ext: str) -> None:
         """Creates a results file for checking.

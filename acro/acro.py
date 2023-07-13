@@ -19,6 +19,7 @@ from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 from . import utils
 from .record import Records
+from .version import __version__
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("acro")
@@ -62,6 +63,7 @@ class ACRO:
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
+        logger.info("version: %s", __version__)
         logger.info("config: %s", self.config)
         logger.info("automatic suppression: %s", self.suppress)
         # set globals needed for aggregation functions

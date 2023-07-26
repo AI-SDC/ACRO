@@ -128,7 +128,7 @@ acro_glm(formula=formula, data=df, family="probit")
 ### Add Custom Output
 
 ```{r}
-acro_custom_output("XandY.jfif", "This output is an image showing the relationship between X and Y")
+acro_custom_output("XandY.jpeg", "This output is an image showing the relationship between X and Y")
 ```
 
 ### Rename Output

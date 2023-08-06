@@ -891,6 +891,6 @@ def add_to_acro(path: str) -> None:
     # add the files from the folder to an acro obj
     for file in os.listdir(path):
         acro.custom_output(file)
-        acro.rename_output(f"output_{id}", file)
+        acro.rename_output(f"output_{output_id}", file)
         output_id += 1
     acro.finalise(path, "json")

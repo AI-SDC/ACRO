@@ -868,3 +868,30 @@ def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
     is 'const'.
     """
     return sm.add_constant(data, prepend=prepend, has_constant=has_constant)
+
+
+def add_to_acro(path: str) -> None:
+    import shutil
+
+    """Adds outputs to an acro object and creates a results file for checking.
+
+    Parameters
+    ----------
+    path : str
+        The path of the folder with outputs produced without using acro.
+    """
+    acro = ACRO()
+    id = 0
+    # remove the SDC files if they already exist in the folder
+    if "results.json" in os.listdir(path):
+        os.remove(f"{path}/results.json")
+    if "config.json" in os.listdir(path):
+        os.remove(f"{path}/config.json")
+    if "checksums" in os.listdir(path):
+        shutil.rmtree(f"{path}/checksums")
+    # add the files from the folder to an acro obj
+    for file in os.listdir(path):
+        acro.custom_output(file)
+        acro.rename_output(f"output_{id}", file)
+        id += 1
+    acro.finalise(path, "json")

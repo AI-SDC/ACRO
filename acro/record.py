@@ -342,7 +342,7 @@ class Records:
             self.output_id += 1
             logger.info("add_custom(): %s", output.uid)
         else:
-            logger.info("The file %s doesn't exists", filename)
+            logger.info("The file %s doesn't exists", filename)  # pragma: no cover
 
     def rename(self, old: str, new: str) -> None:
         """Rename an output.
@@ -474,7 +474,7 @@ class Records:
         try:
             with open(filename, "w", newline="", encoding="utf-8") as handle:
                 json.dump(results, handle, indent=4, sort_keys=False)
-        except FileNotFoundError:
+        except FileNotFoundError:  # pragma: no cover
             logger.info(
                 "You don't have any output in the acro object. "
                 "Directory %s will not be created.",
@@ -553,7 +553,7 @@ class Records:
                 with open(filename, "w", encoding="utf-8") as file:
                     file.write(sha256)
         else:
-            logger.debug("There is no file to do the checksums")
+            logger.debug("There is no file to do the checksums")  # pragma: no cover
 
 
 def load_records(path: str) -> Records:

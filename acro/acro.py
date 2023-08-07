@@ -93,7 +93,7 @@ class ACRO:
         try:
             with open(config_filename, "w", newline="", encoding="utf-8") as file:
                 json.dump(self.config, file, indent=4, sort_keys=False)
-        except FileNotFoundError:
+        except FileNotFoundError:  # pragma: no cover
             logger.debug(
                 "The config file will not be created because the "
                 "output folder was not created as the acro object was empty."

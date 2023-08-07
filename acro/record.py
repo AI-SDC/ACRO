@@ -170,9 +170,10 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         # move custom files to the output folder
         if self.output_type == "custom":
             for filename in self.output:
-                if os.path.exists(filename):
-                    shutil.copy(filename, path)
-                    output.append(Path(filename).name)
+                for root, _, files in os.walk(os.getcwd()):
+                    if root != os.path.join(os.getcwd(), path) and filename in files:
+                        shutil.copy(os.path.join(root, filename), path)
+                        output.append(Path(os.path.join(root, filename)).name)
         return output
 
     def __str__(self) -> str:

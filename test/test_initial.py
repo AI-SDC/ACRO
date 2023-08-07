@@ -354,7 +354,7 @@ def test_add_comments(data, acro):
 
 def test_custom_output(acro):
     """Adding an unsupported output to the results dictionary test."""
-    filename = "notebooks/XandY.jpeg"
+    filename = "XandY.jpeg"
     file_path = os.path.normpath(filename)
     acro.custom_output(filename)
     acro.add_exception("output_0", "Let me have it")
@@ -409,17 +409,17 @@ def test_add_to_acro(data, monkeypatch):
     # create a cross tabulation using pandas
     table = pd.crosstab(data.year, data.grant_type)
     # save the output to a file and add this file to a directory
-    dir_path = "test_add_to_acro"
+    src_path = "test_add_to_acro"
+    dest_path = "sdc_restults"
     file_path = "crosstab.pkl"
-    if not os.path.exists(dir_path):
+    if not os.path.exists(src_path):
         table.to_pickle(file_path)
-        os.mkdir(dir_path)
-        shutil.move(file_path, dir_path, copy_function=shutil.copytree)
+        os.mkdir(src_path)
+        shutil.move(file_path, src_path, copy_function=shutil.copytree)
     # add exception to the output
     exception = ["I want it"]
     monkeypatch.setattr("builtins.input", lambda _: exception.pop(0))
     # add the output to acro
-    add_to_acro(dir_path)
-    assert "results.json" in os.listdir(dir_path)
-    # remove the folder to allow this test to run multiple times
-    # shutil.rmtree(dir_path)
+    add_to_acro(src_path, dest_path)
+    assert "results.json" in os.listdir(dest_path)
+    assert "crosstab.pkl" in os.listdir(dest_path)

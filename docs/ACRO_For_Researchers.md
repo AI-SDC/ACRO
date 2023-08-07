@@ -9,6 +9,10 @@ Simple: Using ACRO will help streamline the process of output checking
      - request exceptions if you feel the strict rules-based approach is inappropriate.
 
 ## How does ACRO work?
+     - add descriptions of your outputs, 
+     - request exceptions if you feel the strict rules-based approach is inappropriate.
+
+## How does ACRO work?
 ACRO is designed to let you use familiar commands in in R, Stata and Python. Lightweight *translation scripts*    intercept your commands and pass them through to a python ‘engine’, based on industry-standard packages that run your commands and perform statistical disclosure checks on them:
 - Pandas is usually used to produce tables of results and (soon) plots.
 - Statsmodels is used to provide support for regression analysis data.
@@ -50,6 +54,7 @@ Regardless of what language you code in, the outputs from this command are:
 
 
 
+
 **Benefits to you:** In contrast  to the crosstab version of pandas which produces only the output table, the acro version allows you to check the outputs against the disclosure rules defined by the TRE. You can see the outputs from the TRE perspective and know whether the output passed all the disclosure tests or not. This will allow you to do changes to the output until it passes all the tests and is safe to be released.
 
 **Other types of analysis** are illustrated in the notebooks on github. For example, to do a linear regression:
@@ -61,36 +66,37 @@ Regardless of what language you code in, the outputs from this command are:
 
 ### Step 3: Managing your outputs
 As you are editing your code ACRO lets you choose and annotate what you send to the output checkers via commands like (in python, R/Stata are equivalent)
--	To view all the research outputs that have been produced so far.
+-	To view all the research outputs that have been produced so far.  
   ```results_str = acro.print_outputs()```
--	To delete outputs that are disclosive or you don’t wish to include them in the research anymore.
+-	To delete outputs that are disclosive or you don’t wish to include them in the research anymore.  
   ```acro.remove_output("output_1")```
--	To rename the outputs to a more descriptive name.
+-	To rename the outputs to a more descriptive name.   
   ```acro.rename_output("output_2", "pivot_table")```
--	To add a text description and provide some context to the outputs. It is a way for you to communicate with the output checkers.
+-	To add a text description and provide some context to the outputs. It is a way for you to communicate with the output checkers.  
   ```acro.add_comments("output_0", "This is an image showing the relationship between X and Y")```
--	To add an unsupported output to the acro object without automated disclosure checking.
-  ```acro.custom_output("XandY.jpg", "This image shows the relationship between X and Y")```
+-	To add an unsupported output to the acro object without automated disclosure checking.   
+  ```acro.custom_output("XandY.jpg", "This image shows the relationship between X and Y")```  
 -	To request an exception to strict rules-bases checking.
   The exception request could include information about why you think the output should be released even though it is disclosive.
- 	 For example, you may want to ask for exception if you think that some zeros are structural and don’t actually violate any rule.
+ 	 For example, you may want to ask for exception if you think that some zeros are structural and don’t actually violate any rule.  
   ```acro.add_exception("output_0", "This is not disclosive because … ")```
 
-### Step 4: Call finalise() when you want to submit your work
-After you are done and happy with the outputs, a call to the method ```acro.finalise(“session_name”,”json”)```  should be made.
+### Step 4: Call finalise() when you want to submit your work 
+After you are done and happy with the outputs, a call to the method ```acro.finalise(“session_name”,”json”)```  should be made.  
 (```acro_finalise()``` in R and ```acro finalise``` in Stata). You provide the “session name” to help you organise work between different research sessions.
 The finalise function will:
-1.	Check that each output with “fail” or “review” status has an exception, if not you will be asked to enter one.
+1.	Check that each output with “fail” or “review” status has an exception, if not you will be asked to enter one.  
 -	This is to make handling exception requests an explicit part of the user experience.
--	When an output fails the checks, you will be asked to add an explanation to explain the reasons for asking to release this output despite of it being disclosive.
+-	When an output fails the checks, you will be asked to add an explanation to explain the reasons for asking to release this output despite of it being disclosive. 
 2.	Write the outputs to a directory. This directory contains everything that the output checkers need to make a decision. This directory contains:
 -	A folder which contains the checksums for each file in the output directory.
 -	The configuration file which contains the TRE risk appetite.
--	The SDC results which can be written to an Excel workbook or to a JSON file. You should choose the file format when you call finalise.
+-	The SDC results which can be written to an Excel workbook or to a JSON file. You should choose the file format when you call finalise. 
 -	If the JSON format is chosen, each research output will be written to a file (typically a .csv file) and added to the output directory.
 
 ## Frequently Asked Questions
 ### What if I want to run my code many times before I decide exactly what to send for approval?
+
 ACRO naturally suppors this way of working. It will not produce the output folder until you are satisfied and add acro.finalise() to the end of your script.
 ### Why is my data exported as unformatted .csv files?
 The outputs are saved in row format (as csv files) for the output checkers to check and make decisions. Although, you can change the format, if you like, the csv files should be there for the checking.
@@ -102,5 +108,10 @@ The outputs are saved in row format (as csv files) for the output checkers to ch
 -	Documentation of all the functions is provided here: https://ai-sdc.github.io/ACRO/acro.html#acro.acro.ACRO
 -	Email SACRO.contact@uwe.ac.uk
 -	This video shows more details for python users:
+-	and this one does the same for R users.
+-	This video shows more details for python users: 
 
 -	and this one does the same for R users.
+
+
+

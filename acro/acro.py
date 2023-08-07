@@ -90,8 +90,14 @@ class ACRO:
         """
         self.results.finalise(path, ext)
         config_filename: str = os.path.normpath(f"{path}/config.json")
-        with open(config_filename, "w", newline="", encoding="utf-8") as file:
-            json.dump(self.config, file, indent=4, sort_keys=False)
+        try:
+            with open(config_filename, "w", newline="", encoding="utf-8") as file:
+                json.dump(self.config, file, indent=4, sort_keys=False)
+        except FileNotFoundError:
+            logger.debug(
+                "The config file will not be created because the "
+                "output folder was not created as the acro object was empty."
+            )
         return self.results
 
     def remove_output(self, key: str) -> None:
@@ -884,7 +890,8 @@ def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
     output_id = 0
     # add the files from the folder to an acro obj
     for file in os.listdir(src_path):
-        acro.custom_output(file)
+        filename = os.path.join(src_path, file)
+        acro.custom_output(filename)
         acro.rename_output(f"output_{output_id}", file)
         output_id += 1
     acro.finalise(dest_path, "json")

@@ -354,7 +354,7 @@ def test_add_comments(data, acro):
 
 def test_custom_output(acro):
     """Adding an unsupported output to the results dictionary test."""
-    filename = "XandY.jpeg"
+    filename = "notebooks/XandY.jpeg"
     file_path = os.path.normpath(filename)
     acro.custom_output(filename)
     acro.add_exception("output_0", "Let me have it")

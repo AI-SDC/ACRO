@@ -170,10 +170,9 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         # move custom files to the output folder
         if self.output_type == "custom":
             for filename in self.output:
-                for root, _, files in os.walk(os.getcwd()):
-                    if root != os.path.join(os.getcwd(), path) and filename in files:
-                        shutil.copy(os.path.join(root, filename), path)
-                        output.append(Path(os.path.join(root, filename)).name)
+                if os.path.exists(filename):
+                    shutil.copy(filename, path)
+                    output.append(Path(filename).name)
         return output
 
     def __str__(self) -> str:
@@ -326,21 +325,24 @@ class Records:
         comment : str | None, default None
             An optional comment.
         """
-        output = Record(
-            uid=f"output_{self.output_id}",
-            status="review",
-            output_type="custom",
-            properties={},
-            sdc={},
-            command="custom",
-            summary="review",
-            outcome=DataFrame(),
-            output=[os.path.normpath(filename)],
-            comments=None if comment is None else [comment],
-        )
-        self.results[output.uid] = output
-        self.output_id += 1
-        logger.info("add_custom(): %s", output.uid)
+        if os.path.exists(filename):
+            output = Record(
+                uid=f"output_{self.output_id}",
+                status="review",
+                output_type="custom",
+                properties={},
+                sdc={},
+                command="custom",
+                summary="review",
+                outcome=DataFrame(),
+                output=[os.path.normpath(filename)],
+                comments=None if comment is None else [comment],
+            )
+            self.results[output.uid] = output
+            self.output_id += 1
+            logger.info("add_custom(): %s", output.uid)
+        else:
+            logger.info("The file %s doesn't exists", filename)
 
     def rename(self, old: str, new: str) -> None:
         """Rename an output.
@@ -469,8 +471,15 @@ class Records:
 
         results: dict = {"version": __version__, "results": outputs}
         filename: str = os.path.normpath(f"{path}/results.json")
-        with open(filename, "w", newline="", encoding="utf-8") as handle:
-            json.dump(results, handle, indent=4, sort_keys=False)
+        try:
+            with open(filename, "w", newline="", encoding="utf-8") as handle:
+                json.dump(results, handle, indent=4, sort_keys=False)
+        except FileNotFoundError:
+            logger.info(
+                "You don't have any output in the acro object. "
+                "Directory %s will not be created.",
+                path,
+            )
 
     def finalise_excel(self, path: str) -> None:
         """Writes outputs to an excel spreadsheet.
@@ -529,19 +538,22 @@ class Records:
         path : str
             Name of a folder to save outputs.
         """
-        checksums: dict[str, str] = {}
-        for name in os.listdir(path):
-            filename = os.path.join(path, name)
-            if os.path.isfile(filename):
-                with open(filename, "rb") as file:
-                    read = file.read()
-                    checksums[name] = hashlib.sha256(read).hexdigest()
-        checksums_dir: str = os.path.normpath(f"{path}/checksums")
-        os.makedirs(checksums_dir, exist_ok=True)
-        for name, sha256 in checksums.items():
-            filename = os.path.join(checksums_dir, name + ".txt")
-            with open(filename, "w", encoding="utf-8") as file:
-                file.write(sha256)
+        if os.path.exists(path):
+            checksums: dict[str, str] = {}
+            for name in os.listdir(path):
+                filename = os.path.join(path, name)
+                if os.path.isfile(filename):
+                    with open(filename, "rb") as file:
+                        read = file.read()
+                        checksums[name] = hashlib.sha256(read).hexdigest()
+            checksums_dir: str = os.path.normpath(f"{path}/checksums")
+            os.makedirs(checksums_dir, exist_ok=True)
+            for name, sha256 in checksums.items():
+                filename = os.path.join(checksums_dir, name + ".txt")
+                with open(filename, "w", encoding="utf-8") as file:
+                    file.write(sha256)
+        else:
+            logger.debug("There is no file to do the checksums")
 
 
 def load_records(path: str) -> Records:

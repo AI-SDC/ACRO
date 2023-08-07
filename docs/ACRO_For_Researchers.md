@@ -9,10 +9,6 @@ Simple: Using ACRO will help streamline the process of output checking
      - request exceptions if you feel the strict rules-based approach is inappropriate.
 
 ## How does ACRO work?
-     - add descriptions of your outputs,
-     - request exceptions if you feel the strict rules-based approach is inappropriate.
-
-## How does ACRO work?
 ACRO is designed to let you use familiar commands in in R, Stata and Python. Lightweight *translation scripts*    intercept your commands and pass them through to a python ‘engine’, based on industry-standard packages that run your commands and perform statistical disclosure checks on them:
 - Pandas is usually used to produce tables of results and (soon) plots.
 - Statsmodels is used to provide support for regression analysis data.
@@ -51,9 +47,6 @@ Regardless of what language you code in, the outputs from this command are:
     c.	Review which means the output needs to be checked by the output checkers - for example, if an output table has missing or negative values in one or more cells.
 2.	The outcome table, showing whether each cell of the output table passed or failed the disclosure tests. If the cell failed the test, the name of the failed disclosure test will be displayed.
 3.	The output table.
-
-
-
 
 **Benefits to you:** In contrast  to the crosstab version of pandas which produces only the output table, the acro version allows you to check the outputs against the disclosure rules defined by the TRE. You can see the outputs from the TRE perspective and know whether the output passed all the disclosure tests or not. This will allow you to do changes to the output until it passes all the tests and is safe to be released.
 
@@ -96,7 +89,6 @@ The finalise function will:
 
 ## Frequently Asked Questions
 ### What if I want to run my code many times before I decide exactly what to send for approval?
-
 ACRO naturally suppors this way of working. It will not produce the output folder until you are satisfied and add acro.finalise() to the end of your script.
 ### Why is my data exported as unformatted .csv files?
 The outputs are saved in row format (as csv files) for the output checkers to check and make decisions. Although, you can change the format, if you like, the csv files should be there for the checking.
@@ -108,7 +100,4 @@ The outputs are saved in row format (as csv files) for the output checkers to ch
 -	Documentation of all the functions is provided here: https://ai-sdc.github.io/ACRO/acro.html#acro.acro.ACRO
 -	Email SACRO.contact@uwe.ac.uk
 -	This video shows more details for python users:
--	and this one does the same for R users.
--	This video shows more details for python users:
-
 -	and this one does the same for R users.

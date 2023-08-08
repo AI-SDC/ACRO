@@ -342,7 +342,9 @@ class Records:
             self.output_id += 1
             logger.info("add_custom(): %s", output.uid)
         else:
-            logger.info("The file %s doesn't exists", filename)  # pragma: no cover
+            logger.info(
+                "WARNING: Unable to add %s because the file does not exist", filename
+            )  # pragma: no cover
 
     def rename(self, old: str, new: str) -> None:
         """Rename an output.

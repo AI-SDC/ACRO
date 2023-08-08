@@ -103,6 +103,20 @@ print("\nand this is the researchers output")
 print(safe_table)
 
 
+# ACRO crosstab with suppression
+# This is an example of crosstab with suppressing the cells that violate the discloure tests.
+# Note that you need to change the value of the suppress variable in the acro object to True.
+# Then run the crosstab command.
+
+print("\nTurn on the suppression variable")
+acro.suppress = True
+print("\nNow the same crosstab call using the ACRO interface")
+safe_table = acro.crosstab(df.recommend, df.parents)
+print("\nand this is the researchers output with suppression")
+print(safe_table)
+print("\nNow turn off the suppression variable")
+acro.suppress = False
+
 # ACRO crosstab with aggregation function
 # Mean() in this case
 # Then how Max and Min are not allowed by the code

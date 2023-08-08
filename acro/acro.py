@@ -90,8 +90,14 @@ class ACRO:
         """
         self.results.finalise(path, ext)
         config_filename: str = os.path.normpath(f"{path}/config.json")
-        with open(config_filename, "w", newline="", encoding="utf-8") as file:
-            json.dump(self.config, file, indent=4, sort_keys=False)
+        try:
+            with open(config_filename, "w", newline="", encoding="utf-8") as file:
+                json.dump(self.config, file, indent=4, sort_keys=False)
+        except FileNotFoundError:  # pragma: no cover
+            logger.debug(
+                "The config file will not be created because the "
+                "output folder was not created as the acro object was empty."
+            )
         return self.results
 
     def remove_output(self, key: str) -> None:
@@ -868,3 +874,24 @@ def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
     is 'const'.
     """
     return sm.add_constant(data, prepend=prepend, has_constant=has_constant)
+
+
+def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
+    """Adds outputs to an acro object and creates a results file for checking.
+
+    Parameters
+    ----------
+    src_path : str
+        Name of the folder with outputs produced without using acro.
+    dest_path : str
+        Name of the folder to save outputs.
+    """
+    acro = ACRO()
+    output_id = 0
+    # add the files from the folder to an acro obj
+    for file in os.listdir(src_path):
+        filename = os.path.join(src_path, file)
+        acro.custom_output(filename)
+        acro.rename_output(f"output_{output_id}", file)
+        output_id += 1
+    acro.finalise(dest_path, "json")

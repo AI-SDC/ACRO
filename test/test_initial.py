@@ -2,12 +2,13 @@
 
 import json
 import os
+import shutil
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from acro import ACRO, add_constant, record, utils
+from acro import ACRO, add_constant, add_to_acro, record, utils
 from acro.record import Records, load_records
 
 # pylint: disable=redefined-outer-name
@@ -399,3 +400,26 @@ def test_adding_exception(acro):
     """Adding an exception to an output that doesn't exist test."""
     with pytest.raises(ValueError):
         acro.add_exception("output_0", "Let me have it")
+
+
+def test_add_to_acro(data, monkeypatch):
+    """Adding an output that was generated without using acro to an acro object and
+    creates a results file for checking.
+    """
+    # create a cross tabulation using pandas
+    table = pd.crosstab(data.year, data.grant_type)
+    # save the output to a file and add this file to a directory
+    src_path = "test_add_to_acro"
+    dest_path = "sdc_restults"
+    file_path = "crosstab.pkl"
+    if not os.path.exists(src_path):
+        table.to_pickle(file_path)
+        os.mkdir(src_path)
+        shutil.move(file_path, src_path, copy_function=shutil.copytree)
+    # add exception to the output
+    exception = ["I want it"]
+    monkeypatch.setattr("builtins.input", lambda _: exception.pop(0))
+    # add the output to acro
+    add_to_acro(src_path, dest_path)
+    assert "results.json" in os.listdir(dest_path)
+    assert "crosstab.pkl" in os.listdir(dest_path)

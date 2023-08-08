@@ -3,7 +3,7 @@
 ## Development
 
 Changes:
-*
+*   Add a directory of outputs to an acro object and creates a results file for checking.
 
 ## Version 0.4.2 (Jul 13, 2023)
 

@@ -45,6 +45,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ACRO Class</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#acro.acro.ACRO"><code class="docutils literal notranslate"><span class="pre">ACRO</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#acro.acro.add_constant"><code class="docutils literal notranslate"><span class="pre">add_constant()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acro.acro.add_to_acro"><code class="docutils literal notranslate"><span class="pre">add_to_acro()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="record.html">Records</a></li>
@@ -627,6 +628,22 @@ or last column. Returned value type depends on input type.</p>
 <p class="rubric">Notes</p>
 <p>When the input is a pandas Series or DataFrame, the added column’s name
 is ‘const’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="acro.acro.add_to_acro">
+<span class="sig-prename descclassname"><span class="pre">acro.acro.</span></span><span class="sig-name descname"><span class="pre">add_to_acro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sdc_results'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/acro/acro.html#add_to_acro"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.add_to_acro" title="Permalink to this definition"></a></dt>
+<dd><p>Adds outputs to an acro object and creates a results file for checking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>src_path</strong><span class="classifier">str</span></dt><dd><p>Name of the folder with outputs produced without using acro.</p>
+</dd>
+<dt><strong>dest_path</strong><span class="classifier">str</span></dt><dd><p>Name of the folder to save outputs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

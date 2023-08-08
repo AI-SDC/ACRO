@@ -160,8 +160,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
         <span class="n">config_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/config.json&quot;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;The config file will not be created because the &quot;</span>
+                <span class="s2">&quot;output folder was not created as the acro object was empty.&quot;</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
 <div class="viewcode-block" id="ACRO.remove_output"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.remove_output">[docs]</a>    <span class="k">def</span> <span class="nf">remove_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -938,6 +944,27 @@
 <span class="sd">    is &#39;const&#39;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prepend</span><span class="o">=</span><span class="n">prepend</span><span class="p">,</span> <span class="n">has_constant</span><span class="o">=</span><span class="n">has_constant</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_to_acro"><a class="viewcode-back" href="../../acro.html#acro.acro.add_to_acro">[docs]</a><span class="k">def</span> <span class="nf">add_to_acro</span><span class="p">(</span><span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sdc_results&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds outputs to an acro object and creates a results file for checking.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    src_path : str</span>
+<span class="sd">        Name of the folder with outputs produced without using acro.</span>
+<span class="sd">    dest_path : str</span>
+<span class="sd">        Name of the folder to save outputs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">acro</span> <span class="o">=</span> <span class="n">ACRO</span><span class="p">()</span>
+    <span class="n">output_id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># add the files from the folder to an acro obj</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">src_path</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+        <span class="n">acro</span><span class="o">.</span><span class="n">custom_output</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">acro</span><span class="o">.</span><span class="n">rename_output</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;output_</span><span class="si">{</span><span class="n">output_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+        <span class="n">output_id</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">acro</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span><span class="n">dest_path</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

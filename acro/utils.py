@@ -1,5 +1,7 @@
 """ACRO: Utility Functions."""
 
+from __future__ import annotations
+
 import logging
 from collections.abc import Callable
 from inspect import FrameInfo, getframeinfo

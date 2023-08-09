@@ -2,6 +2,8 @@
 
 ## Development
 
+*   Add installation support for Python 3.8 and 3.9 ([#135](https://github.com/AI-SDC/ACRO/pull/135))
+
 Changes:
 *   Add a directory of outputs to an acro object and creates a results file for checking.
 

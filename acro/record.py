@@ -1,5 +1,7 @@
 """ACRO: Output storage and serialization."""
 
+from __future__ import annotations
+
 import datetime
 import hashlib
 import json

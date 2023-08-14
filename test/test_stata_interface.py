@@ -289,7 +289,7 @@ def test_unsupported_formatting_options(data):
         "Alive in 2015  |72  |354  |144  |48 |\n"
         "------------------------------------|\n"
             )
-    for bad_option in [
+    for bad_option in [ #pylint:disable=duplicate-code
         "cellwidth",
         "csepwidth",
         "stubwidth",

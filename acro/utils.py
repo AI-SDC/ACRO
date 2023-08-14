@@ -216,7 +216,7 @@ def apply_suppression(
             except TypeError:
                 logger.warning("problem mask %s is not binary", name)
         outcome_df = outcome_df.replace({"": "ok"})
-    logger.info("outcome_df:\n%s", outcome_df)
+    logger.info("outcome_df:\n%s", prettify_table_string(outcome_df))
     return safe_df, outcome_df
 
 
@@ -355,3 +355,40 @@ def get_aggfuncs(
             raise ValueError(f"invalid aggfuncs: {aggfuncs}")
         return functions
     raise ValueError("aggfuncs must be: either str or list[str]")
+
+
+def prettify_table_string(table: pd.DataFrame) -> str:
+    """
+    Adds delimiters to table.to_string()
+    to improve readability for onscreen display.
+    """
+    hdelim = "-"
+    vdelim = "|"
+
+    output = table.to_string(justify="left")
+    as_strings = output.split("\n")
+    nheaders = len(as_strings) - table.shape[0]
+    rowlen = len(as_strings[0])
+
+    # get top level column labels and their positions
+    rowone_strings = as_strings[0].split()
+    vals = rowone_strings[1:]
+    positions = []
+    for val in vals:
+        positions.append(as_strings[0].find(val))
+
+    for row, _ in enumerate(as_strings):
+        for pos in positions[::-1]:
+            as_strings[row] = as_strings[row][0:pos] + vdelim + as_strings[row][pos:]
+
+    rowlen += len(positions)  # add on space for v delimiters
+
+    outstr = ""
+    outstr += hdelim * rowlen + vdelim + "\n"
+    for row in range(nheaders):
+        outstr += as_strings[row] + vdelim + "\n"
+    outstr += hdelim * rowlen + vdelim + "\n"
+    for row in range(nheaders, len(as_strings)):
+        outstr += as_strings[row] + vdelim + "\n"
+    outstr += hdelim * rowlen + vdelim + "\n"
+    return outstr

@@ -447,7 +447,21 @@ def test_prettify_tablestring(data):
         "     Worcestershire Lifestyles (Dead)    | 0         | 1   | 0        |\n"
         "----------------------------------------------------------------------|\n"
     )
-    simple_str = utils.prettify_table_string(
+    complex_str = utils.prettify_table_string(
         pd.crosstab([mydata.year, mydata.charity], [mydata.grant_type, mydata.status])
     )
-    assert simple_str == correct, f"got:\n{simple_str}\nexpected:\n{correct}\n"
+    assert complex_str == correct, f"got:\n{complex_str}\nexpected:\n{correct}\n"
+
+    correct2 = (
+        "------------------------|\n"
+        "grant_type  |N  |R  |R/G|\n"
+        "year        |   |   |   |\n"
+        "------------------------|\n"
+        "2010        |1  |2  |1  |\n"
+        "2011        |1  |2  |1  |\n"
+        "------------------------|\n"
+    )
+    simple_str = utils.prettify_table_string(
+        pd.crosstab([mydata.year], [mydata.grant_type])
+    )
+    assert simple_str == correct2, f"got:\n{simple_str}\nexpected:\n{correct2}\n"

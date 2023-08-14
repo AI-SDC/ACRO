@@ -423,3 +423,30 @@ def test_add_to_acro(data, monkeypatch):
     add_to_acro(src_path, dest_path)
     assert "results.json" in os.listdir(dest_path)
     assert "crosstab.pkl" in os.listdir(dest_path)
+
+
+def test_prettify_tablestring(data, acro):
+    mydata = data
+    # take subsets for brevity
+    mydata = mydata[(mydata["charity"].str[0] == "W")]
+    mydata = mydata[mydata["year"] < 2012]
+    correct = (
+        "----------------------------------------------------------------------|\n"
+        "grant_type                               |N          |R    |R/G       |\n"
+        "status                                   |successful |dead |successful|\n"
+        "year charity                             |           |     |          |\n"
+        "----------------------------------------------------------------------|\n"
+        "2010 WWF                                 | 0         | 0   | 1        |\n"
+        "     Walsall domestic violence forum ltd | 0         | 1   | 0        |\n"
+        "     Will Woodlands                      | 1         | 0   | 0        |\n"
+        "     Worcestershire Lifestyles (Dead)    | 0         | 1   | 0        |\n"
+        "2011 WWF                                 | 0         | 0   | 1        |\n"
+        "     Walsall domestic violence forum ltd | 0         | 1   | 0        |\n"
+        "     Will Woodlands                      | 1         | 0   | 0        |\n"
+        "     Worcestershire Lifestyles (Dead)    | 0         | 1   | 0        |\n"
+        "----------------------------------------------------------------------|\n"
+    )
+    simple_str = utils.prettify_table_string(
+        pd.crosstab([mydata.year, mydata.charity], [mydata.grant_type, mydata.status])
+    )
+    assert simple_str == correct, f"got:\n{simple_str}\nexpected:\n{correct}\n"

@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from acro import ACRO
-from stata.acro_stata_parser import (
+from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,
     find_brace_contents,
@@ -156,9 +156,15 @@ def test_simple_table(data):
     To make sure table specification is parsed correctly
     acro SDC analysis is tested elsewhere.
     """
-    correct = pd.crosstab(
-        index=data["survivor"], columns=data["grant_type"]
-    ).to_string()
+    correct = (
+        "------------------------------------|\n"
+        "grant_type     |G   |N    |R    |R/G|\n"
+        "survivor       |    |     |     |   |\n"
+        "------------------------------------|\n"
+        "Dead in 2015   |18  |  0  |282  | 0 |\n"
+        "Alive in 2015  |72  |354  |144  |48 |\n"
+        "------------------------------------|\n"
+            )
     ret = dummy_acrohandler(
         data,
         "table",
@@ -211,14 +217,18 @@ def test_stata_probit(data):
         weights="",
         options="",
     )
-    ret = ret.replace("\n", ",")
-    tokens = ret.split(",")
-    idx = tokens.index("  Df Residuals:      ")
-    residuals = int(tokens[idx + 1])
-    assert residuals == 806, f"{residuals} should be 806"
-    idx = tokens.index("  Pseudo R-squ.:     ")
-    rsquared = float(tokens[idx + 1])
-    assert rsquared == pytest.approx(0.208, 0.01)
+    tokens = ret.split()
+    idx = tokens.index("Residuals:")
+    val = tokens[idx + 1]
+    if val[-1]=='|':
+        val = val[0:-1]
+    assert float(val) == pytest.approx(806.0,0.01), f"{val} should be 806"
+    idx = tokens.index("R-squ.:")
+    val = tokens[idx + 1]
+    if val[-1]=='|':
+        val = val[0:-1]
+    val=float(val)
+    assert val == pytest.approx(0.208, 0.01)
 
 
 def test_stata_linregress(data):
@@ -232,22 +242,53 @@ def test_stata_linregress(data):
         weights="",
         options="",
     )
-    ret = ret.replace("\n", ",")
-    tokens = ret.split(",")
-    idx = tokens.index("Df Residuals:    ")
-    residuals = int(tokens[idx + 1])
-    assert residuals == 807, f"{residuals} should be 807"
-    idx = tokens.index("  R-squared:         ")
-    rsquared = float(tokens[idx + 1])
-    assert rsquared == pytest.approx(0.894, 0.001)
+    tokens = ret.split()
+    idx = tokens.index("Residuals:")
+    val = int(tokens[idx + 1])
+    assert val == 807, f"{val} should be 807"
+    idx = tokens.index("R-squared:")
+    val = float(tokens[idx + 1])
+    assert val == pytest.approx(0.894, 0.001)
+
+
+def test_stata_logit(data):
+    ''' tests stata logit function'''
+    ret = dummy_acrohandler(
+        data,
+        command="logit",
+        varlist=" survivor inc_activity inc_grants inc_donations total_costs",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+    )
+    #assert False,f'\n{ret}\n'
+    tokens = ret.split()
+    idx = tokens.index("Residuals:")
+    val = tokens[idx + 1]
+    if val[-1]=='|':
+        val = val[0:-1]
+    assert float(val) == pytest.approx(806.0,0.01), f"{val} should be 806"
+    idx = tokens.index("R-squ.:")
+    val = tokens[idx + 1]
+    if val[-1]=='|':
+        val = val[0:-1]
+    val=float(val)
+    assert val == pytest.approx(0.214, 0.01)
 
 
 def test_unsupported_formatting_options(data):
     """Checks that user gets warning if they try to format table."""
     format_string = "acro does not currently support table formatting commands."
-    correct = pd.crosstab(
-        index=data["survivor"], columns=data["grant_type"]
-    ).to_string()
+    correct = (
+        "------------------------------------|\n"
+        "grant_type     |G   |N    |R    |R/G|\n"
+        "survivor       |    |     |     |   |\n"
+        "------------------------------------|\n"
+        "Dead in 2015   |18  |  0  |282  | 0 |\n"
+        "Alive in 2015  |72  |354  |144  |48 |\n"
+        "------------------------------------|\n"
+            )
     for bad_option in [
         "cellwidth",
         "csepwidth",

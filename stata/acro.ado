@@ -30,7 +30,7 @@ from sfi import Data, SFIToolkit
 import acro
 import numpy as np
 import pandas as pd
-import acro_stata_parser
+from acro import acro_stata_parser
 stata_acro="empty"
 debug = False
 def acrohandler(command, varlist,exclusion,exp,weights,options):

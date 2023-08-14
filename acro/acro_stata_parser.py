@@ -2,9 +2,14 @@
 import pandas as pd
 
 from acro import ACRO, add_constant
+from acro.utils import prettify_table_string
 
 
 def apply_stata_ifstmt(raw: str, df: pd.DataFrame) -> pd.DataFrame:
+    ''' 
+    parses an if statment from stata format
+    then uses it to subset a dataframe by contents
+    '''
     if len(raw) == 0:
         return df
     else:
@@ -27,6 +32,10 @@ def apply_stata_ifstmt(raw: str, df: pd.DataFrame) -> pd.DataFrame:
 
 
 def apply_stata_expstmt(raw: str, df: pd.DataFrame) -> pd.DataFrame:
+    '''
+    parses an in exp statemnt from stata and uses it
+    to subset a dataframe by set of row indices
+    '''
     # stata allows f and F for first item  and l/L for last
     last = len(df) - 1
 
@@ -55,6 +64,11 @@ def apply_stata_expstmt(raw: str, df: pd.DataFrame) -> pd.DataFrame:
 
 
 def find_brace_contents(word: str, raw: str) -> (bool, str):
+    '''
+    given a word followed by a ( 
+    finds and retirns as a list of strings
+    the rest of the contents up to the closing )
+    '''
     idx = raw.find(word)
     if idx == -1:
         return False, f"{word} not found"
@@ -199,7 +213,7 @@ def parse_and_run(
                 options_str = (
                     "acro does not currently support table formatting commands.\n "
                 )
-            return options_str + safe_output.to_string() + "\n"
+            return options_str + prettify_table_string(safe_output) + "\n"
 
     elif command == "regress":
         depvar = varlist[0]
@@ -221,6 +235,18 @@ def parse_and_run(
         x = new_df[indep_vars]
         x = add_constant(x)
         results = stata_acro.probit(y, x)
+        res_str = results.summary().as_csv()
+        return res_str
+    
+    elif command == "logit":
+        depvar = varlist[0]
+        indep_vars = varlist[1:]
+        new_df = df[varlist].dropna()
+        y = new_df[depvar].astype("category").cat.codes  # numeric
+        y.name = depvar
+        x = new_df[indep_vars]
+        x = add_constant(x)
+        results = stata_acro.logit(y, x)
         res_str = results.summary().as_csv()
         return res_str
 

@@ -425,7 +425,8 @@ def test_add_to_acro(data, monkeypatch):
     assert "crosstab.pkl" in os.listdir(dest_path)
 
 
-def test_prettify_tablestring(data, acro):
+def test_prettify_tablestring(data):
+    """Test prettifying string version of table."""
     mydata = data
     # take subsets for brevity
     mydata = mydata[(mydata["charity"].str[0] == "W")]

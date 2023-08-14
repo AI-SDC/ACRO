@@ -377,7 +377,7 @@ def prettify_table_string(table: pd.DataFrame) -> str:
     for val in vals:
         positions.append(as_strings[0].find(val))
 
-    for row in range(len(as_strings)):
+    for row, _ in enumerate(as_strings):
         for pos in positions[::-1]:
             as_strings[row] = as_strings[row][0:pos] + vdelim + as_strings[row][pos:]
 

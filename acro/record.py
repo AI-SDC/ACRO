@@ -423,7 +423,10 @@ class Records:
                     str(record),
                     record.status,
                 )
-                record.exception = input("")
+                try:
+                    record.exception = input("")
+                except EOFError:
+                    record.exception="No request passed from stata"  
 
     def finalise(self, path: str, ext: str) -> None:
         """Creates a results file for checking.

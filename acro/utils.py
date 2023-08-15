@@ -357,7 +357,7 @@ def get_aggfuncs(
     raise ValueError("aggfuncs must be: either str or list[str]")
 
 
-def prettify_table_string(table: pd.DataFrame, separator=None) -> str:
+def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> str:
     """
     Adds delimiters to table.to_string()
     to improve readability for onscreen display.
@@ -377,6 +377,7 @@ def prettify_table_string(table: pd.DataFrame, separator=None) -> str:
         rowone_strings = as_strings[0].split(separator)
     else:
         rowone_strings = as_strings[0].split()
+
     vals = rowone_strings[1:]
     positions = []
     for val in vals:

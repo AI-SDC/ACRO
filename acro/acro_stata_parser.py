@@ -1,21 +1,20 @@
 """
-file with commands to manage the stata-acro interface
+File with commands to manage the stata-acro interface
 Jim Smith 2023 @james.smith@uwe.ac.uk
-MIT licenses apply
+MIT licenses apply.
 """
 import pandas as pd
 import statsmodels.iolib.summary as sm_iolib_summary
 
-from acro import ACRO, add_constant
-from acro.utils import prettify_table_string
-from acro.utils import get_summary_dataframes
+from acro import ACRO, add_constant, stata_config
+from acro.utils import get_summary_dataframes, prettify_table_string
 
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
-    ''' 
-    parses an if statment from stata format
-    then uses it to subset a dataframe by contents
-    '''
+    """
+    Parses an if statement from stata format
+    then uses it to subset a dataframe by contents.
+    """
     if len(raw) == 0:
         return all_data
 
@@ -33,15 +32,15 @@ def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
 
     # print(raw)
     # apply exclusion
-    some_data = all_data[eval(raw)]#pylint: disable=eval-used
+    some_data = all_data[eval(raw)]  # pylint: disable=eval-used
     return some_data
 
 
 def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
-    '''
-    parses an in exp statemnt from stata and uses it
-    to subset a dataframe by set of row indices
-    '''
+    """
+    Parses an in exp statemnt from stata and uses it
+    to subset a dataframe by set of row indices.
+    """
     # stata allows f and F for first item  and l/L for last
     last = len(all_data) - 1
 
@@ -56,12 +55,12 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     # last
     if "/" not in raw:
         end = last
+    elif token[1] == "l" or token[1] == "L":
+        end = last
     else:
-        if token[1] == "l" or token[1] == "L":
-            token[1] = last
         end = int(token[1])
-        if end < 0:
-            end = last + 1 + end
+    if end < 0:
+        end = last + 1 + end
     # enforce start <=end
     if start > end:
         end = last
@@ -69,12 +68,13 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     return all_data.iloc[start:end]
 
 
-def find_brace_contents(word: str, raw: str) -> (bool, str):
-    '''
-    given a word followed by a ( 
-    finds and retirns as a list of strings
-    the rest of the contents up to the closing )
-    '''
+def find_brace_contents(word: str, raw: str):
+    """
+    Given a word followed by a (
+    finds and returns as a list of strings
+    the rest of the contents up to the closing ).
+    first returned value is True/False depending on parsing ok.
+    """
     idx = raw.find(word)
     if idx == -1:
         return False, f"{word} not found"
@@ -95,7 +95,7 @@ def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
     https://www.stata.com/manuals13/rtable.pdf
     >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
-    details = {"errmsg": ""}
+    details = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
     details["rowvars"] = [varlist.pop(0)]
     details["colvars"] = list(reversed(varlist))
     # by() contents are super-rows
@@ -112,7 +112,7 @@ def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
                 details["rowvars"].insert(0, word)
 
     # contents can be variable names or aggregation functions
-    details["aggfuncs"], details["values"] = [], []
+    details["aggfuncs"], details["values"] = list([]), list([])
     found, content = find_brace_contents("contents", options)
     if found and len(content) > 0:
         contents = content.split()
@@ -125,16 +125,18 @@ def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
                     details["aggfuncs"].append(word)
 
     # default values
-    details["totals"] = not "nototals" in options
-    details["suppress"] = not "nosuppress" in options
+    details["totals"] = False
+    details["suppress"] = False
+    details["totals"] = "nototals" not in options
+    details["suppress"] = "nosuppress" not in options
 
     return details
 
 
-def parse_and_run( #pylint: disable=too-many-arguments,too-many-locals
+def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     data: pd.DataFrame,
     command: str,
-    varlist: str,
+    varlist_as_str: str,
     exclusion: str,
     exp: str,
     weights: str,
@@ -145,11 +147,15 @@ def parse_and_run( #pylint: disable=too-many-arguments,too-many-locals
     Runs the appropriate command on a pre-existing ACRO object stata_acro
     Returns the result as a formatted string.
     """
+    #sanity checking
+    #can only call init if acro object has not been created
+    if command != "init" and isinstance(stata_config.stata_acro,str):
+        return "You must run acro init before any other acro commands"
 
     # Sometime_TODO de-abbreviate according to
     # https://www.stata.com/manuals13/u11.pdf#u11.1.3ifexp
 
-    varlist = varlist.split()
+    varlist: list = varlist_as_str.split()
     # print(f' split varlist is {varlist}')
 
     # data reduction
@@ -160,48 +166,81 @@ def parse_and_run( #pylint: disable=too-many-arguments,too-many-locals
 
     # now look at the commands
     outcome = ""
-    if command in ["init","finalise","print_outputs"]:
-        outcome= run_session_command(command)
-
+    if command in ["init", "finalise", "print_outputs"]:
+        outcome = run_session_command(command)
+    elif command in ["remove_output", "rename_output", "add_comments", "add_exception"]:
+        outcome = run_output_command(command, varlist)
     elif command == "table":
-        outcome =run_table_command(data,varlist,weights,options)
+        outcome = run_table_command(data, varlist, weights, options)
 
-    elif command in ["regress","probit","logit"]:
-        outcome = run_regression(command,data, varlist)
+    elif command in ["regress", "probit", "logit"]:
+        outcome = run_regression(command, data, varlist)
     else:
-        outcome=f"acro command not recognised: {command}"
+        outcome = f"acro command not recognised: {command}"
     return outcome
 
-def run_session_command(command:str)->str:
-    '''runs session commands that are data-independent'''
-    #global variable is created by stata python session
-    global stata_acro #pylint: disable=global-variable-undefined
-    outcome=""
+
+def run_session_command(command: str) -> str:
+    """Runs session commands that are data-independent."""
+    # global variable is created by stata python session
+    # global stata_acro #pylint: disable=global-variable-undefined
+    outcome = ""
     if command == "init":
         # initialise the acro object
-        stata_acro = ACRO()
-        outcome= "acro analysis session created\n"
+        stata_config.stata_acro = ACRO()
+        outcome = "acro analysis session created\n"
 
     elif command == "finalise":
-        stata_acro.finalise("stata_out", "json")
-        outcome= "outputs and stata_out.json written\n"
+        stata_config.stata_acro.finalise("stata_out", "json")
+        outcome = "outputs and stata_out.json written\n"
 
     elif command == "print_outputs":
-        stata_acro.print_outputs()
+        stata_config.stata_acro.print_outputs()
     else:
-        outcome= f"unrecognised session management command {command}\n"
+        outcome = f"unrecognised session management command {command}\n"
     return outcome
 
-def run_table_command(   #pylint: disable=too-many-arguments,too-many-locals
+
+def run_output_command(command: str, varlist: list) -> str:
+    """Runs outcome-level commands
+    first element of varlist is output affected
+    rest (if relevant) is string passed to command.
+    """
+    if len(varlist) == 0:
+        outcome = "syntax error: please pass the name of the output to be changed"
+    else:
+        the_output = varlist.pop(0)
+        the_str = " ".join(varlist)
+
+        if command == "remove_output":
+            stata_config.stata_acro.remove_output(the_output)
+            outcome = f"output {the_output} removed.\n"
+        elif command == "rename_output":
+            stata_config.stata_acro.rename_output(the_output, the_str)
+            outcome = f"output {the_output} renamed to {the_str}.\n"
+        elif command == "add_comments":
+            stata_config.stata_acro.add_comments(the_output, the_str)
+            outcome = f"Comments added to output {the_output}.\n"
+        elif command == "add_exception":
+            stata_config.stata_acro.add_exception(the_output, the_str)
+            outcome = f"Exception request added to output {the_output}.\n"
+        else:
+            outcome = f"unrecognised outcome management command {command}\n"
+
+    return outcome
+
+
+def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     data: pd.DataFrame,
     varlist: list,
     weights: str,
-    options: str,)->str:
-    ''' 
-    converts a stata table command into an acro.crosstab
-    then returns a prettified versaion of the cross_tab dataframe
-    '''
-    weights_empty=len(weights)==0
+    options: str,
+) -> str:
+    """
+    Converts a stata table command into an acro.crosstab
+    then returns a prettified versaion of the cross_tab dataframe.
+    """
+    weights_empty = len(weights) == 0
     if not weights_empty:
         return f"weights not currently implemented for _{weights}_\n"
 
@@ -217,7 +256,7 @@ def run_table_command(   #pylint: disable=too-many-arguments,too-many-locals
     for col in details["colvars"]:
         cols.append(data[col])
     if len(aggfuncs) > 0 and len(details["values"]) > 0:
-        safe_output = stata_acro.crosstab(
+        safe_output = stata_config.stata_acro.crosstab(
             index=rows,
             columns=cols,
             aggfunc=aggfuncs,
@@ -227,7 +266,7 @@ def run_table_command(   #pylint: disable=too-many-arguments,too-many-locals
             margins_name="Total",
         )
     else:
-        safe_output = stata_acro.crosstab(
+        safe_output = stata_config.stata_acro.crosstab(
             index=rows,
             columns=cols,
             # suppress=details['suppress'],
@@ -244,46 +283,42 @@ def run_table_command(   #pylint: disable=too-many-arguments,too-many-locals
         "left",
     ]
     if any(word in options for word in formatting):
-        options_str = (
-            "acro does not currently support table formatting commands.\n "
-        )
+        options_str = "acro does not currently support table formatting commands.\n "
     return options_str + prettify_table_string(safe_output) + "\n"
 
-def run_regression(command:str,data:pd.DataFrame,varlist:list)->str:
-    '''
-    interprets and runs appropriate regression comand
-    '''
-    #get components of formula
+
+def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:
+    """Interprets and runs appropriate regression command."""
+    # get components of formula
     depvar = varlist[0]
     indep_vars = varlist[1:]
     new_data = data[varlist].dropna()
     x_var = new_data[indep_vars]
     x_var = add_constant(x_var)
-    res_str=""
-    if   command== "regress":
+    res_str = ""
+    if command == "regress":
         y_var = new_data[depvar]
-        results = stata_acro.ols(y_var, x_var)
-        res_str=get_regr_results(results,"OLS Regression")
+        results = stata_config.stata_acro.ols(y_var, x_var)
+        res_str = get_regr_results(results, "OLS Regression")
     elif command == "probit":
         y_var = new_data[depvar].astype("category").cat.codes  # numeric
         y_var.name = depvar
-        results = stata_acro.probit(y_var, x_var)
-        res_str = get_regr_results(results,"Probit Regression")
+        results = stata_config.stata_acro.probit(y_var, x_var)
+        res_str = get_regr_results(results, "Probit Regression")
     elif command == "logit":
         y_var = new_data[depvar].astype("category").cat.codes  # numeric
         y_var.name = depvar
-        results = stata_acro.logit(y_var, x_var)
-        res_str = get_regr_results(results,"Logit Regression")
+        results = stata_config.stata_acro.logit(y_var, x_var)
+        res_str = get_regr_results(results, "Logit Regression")
     else:
-        res_str=f"unrecognised regression command {command}\n"
+        res_str = f"unrecognised regression command {command}\n"
     return res_str
 
-def get_regr_results(results:sm_iolib_summary.Summary,title:str)->str:
-    '''
-    translates statsmodels.io.summary object into prettified table
-    '''
-    res_str= title+"\n"
+
+def get_regr_results(results: sm_iolib_summary.Summary, title: str) -> str:
+    """Translates statsmodels.io.summary object into prettified table."""
+    res_str = title + "\n"
     for table in get_summary_dataframes(results.summary().tables):
-        res_str += prettify_table_string(table,seperator=',') +"\n"
-        res_str += f'{results.summary().extra_txt}\n'
+        res_str += prettify_table_string(table, separator=",") + "\n"
+        res_str += f"{results.summary().extra_txt}\n"
     return res_str

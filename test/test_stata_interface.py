@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import pytest
 
+import acro.stata_config as stata_config  # pylint: disable=consider-using-from-import
 from acro import ACRO
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
@@ -31,10 +32,6 @@ def data() -> pd.DataFrame:
     return data
 
 
-# --- global object and dummy code to replace things in acro.ado
-stata_acro = "empty"  # pylint:disable=invalid-name
-
-
 def dummy_acrohandler(
     data, command, varlist, exclusion, exp, weights, options
 ):  # pylint:disable=too-many-arguments
@@ -42,7 +39,6 @@ def dummy_acrohandler(
     Provides an alternative interface that mimics the code in acro.ado
     Most notably the presence of a global variable called stata_acro.
     """
-    # global stata_acro
     acro_outstr = parse_and_run(
         data, command, varlist, exclusion, exp, weights, options
     )
@@ -50,7 +46,7 @@ def dummy_acrohandler(
     return acro_outstr
 
 
-# --- Helper functions
+# --- Helper functions-----------------------------------------------------
 def test_find_brace_contents():
     """Tests helper function
     that extracts contents 'A B C'
@@ -116,69 +112,6 @@ def test_apply_stata_expstmt(data):
     assert smaller.shape[0] == length - 1 - 500
 
 
-# -----acro management
-def test_stata_acro_init():
-    """
-    Tests creation of an acro object at the start of a session
-    For stata this gets held in a variable stata_acro
-    Which is initialsied to the string "empty" in the acro.ado file
-    Then should be pointed at a new acro instance.
-    """
-    assert isinstance(stata_acro, str)
-    ret = dummy_acrohandler(
-        data, command="init", varlist="", exclusion="", exp="", weights="", options=""
-    )
-    assert (
-        ret == "acro analysis session created\n"
-    ), f"wrong string for acro init: {ret}\n"
-    # assert isinstance(stata_acro,ACRO),f'wrong type for stata_acro:{type(stata_acro)}'
-
-
-def test_stata_print_outputs(data):
-    """Checks print_outputs gets called."""
-    ret = dummy_acrohandler(
-        data,
-        command="print_outputs",
-        varlist=" inc_activity inc_grants inc_donations total_costs",
-        exclusion="",
-        exp="",
-        weights="",
-        options="",
-    )
-    assert len(ret) == 0, "return string should  be empty"
-
-
-# ----main SDC functionality
-def test_simple_table(data):
-    """
-    Checks that the simple table command works as expected
-    Does via reference to direct call to pd.crosstab()
-    To make sure table specification is parsed correctly
-    acro SDC analysis is tested elsewhere.
-    """
-    correct = (
-        "------------------------------------|\n"
-        "grant_type     |G   |N    |R    |R/G|\n"
-        "survivor       |    |     |     |   |\n"
-        "------------------------------------|\n"
-        "Dead in 2015   |18  |  0  |282  | 0 |\n"
-        "Alive in 2015  |72  |354  |144  |48 |\n"
-        "------------------------------------|\n"
-            )
-    ret = dummy_acrohandler(
-        data,
-        "table",
-        "survivor grant_type",
-        exclusion="",
-        exp="",
-        weights="",
-        options="nototals",
-    )
-    ret = ret.replace("NaN", "0")
-    ret = ret.replace(".0", "")
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
-
-
 def test_parse_table_details(data):
     """
     Series of checks that the varlist and options are parsed correctly
@@ -206,6 +139,161 @@ def test_parse_table_details(data):
     assert details["suppress"], "suppress should be True"
 
 
+# -----acro management----------------------------------------------------
+def test_stata_acro_init():
+    """
+    Tests creation of an acro object at the start of a session
+    For stata this gets held in a variable stata_acro
+    Which is initialsied to the string "empty" in the acro.ado file
+    Then should be pointed at a new acro instance.
+    """
+    assert isinstance(stata_config.stata_acro, str)
+    ret = dummy_acrohandler(
+        data, command="init", varlist="", exclusion="", exp="", weights="", options=""
+    )
+    assert (
+        ret == "acro analysis session created\n"
+    ), f"wrong string for acro init: {ret}\n"
+    errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
+    assert isinstance(stata_config.stata_acro, ACRO), errmsg
+
+
+def test_stata_print_outputs(data):
+    """Checks print_outputs gets called."""
+    ret = dummy_acrohandler(
+        data,
+        command="print_outputs",
+        varlist=" inc_activity inc_grants inc_donations total_costs",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+    )
+    assert len(ret) == 0, "return string should  be empty"
+
+
+# ----main SDC functionality-------------------------------------
+def test_simple_table(data):
+    """
+    Checks that the simple table command works as expected
+    Does via reference to direct call to pd.crosstab()
+    To make sure table specification is parsed correctly
+    acro SDC analysis is tested elsewhere.
+    """
+    correct = (
+        "------------------------------------|\n"
+        "grant_type     |G   |N    |R    |R/G|\n"
+        "survivor       |    |     |     |   |\n"
+        "------------------------------------|\n"
+        "Dead in 2015   |18  |  0  |282  | 0 |\n"
+        "Alive in 2015  |72  |354  |144  |48 |\n"
+        "------------------------------------|\n"
+    )
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "survivor grant_type",
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+    )
+    ret = ret.replace("NaN", "0")
+    ret = ret.replace(".0", "")
+    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+
+def test_stata_rename_outputs():
+    """Tests renaming outputs
+    assumes simple table has been created by earlier tests.
+    """
+    the_str = "renamed_output"
+    the_output = "output_0"
+    ret = dummy_acrohandler(
+        data,
+        "rename_output",
+        the_output + " " + the_str,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+    )
+    correct = f"output {the_output} renamed to {the_str}.\n"
+    assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
+    value = stata_config.stata_acro.results.get_index(0).uid
+    assert value == the_str, f"{value} should be\n{the_str}\n"
+
+
+def test_stata_add_comments():
+    """
+    Tests adding comments to  outputs
+    assumes simple table has been created by earlier tests
+    then renamed.
+    """
+    the_str = "some comments"
+    the_output = "renamed_output"
+    ret = dummy_acrohandler(
+        data,
+        "add_comments",
+        the_output + " " + the_str,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+    )
+    correct = f"Comments added to output {the_output}.\n"
+    assert ret == correct, f"returned string:\n_{ret}_should be:\n_{correct}_"
+    newcomments = "".join(stata_config.stata_acro.results.get(the_output).comments)
+    assert newcomments == the_str, f"_{newcomments}_\nshould be:\n_{the_str}_"
+
+
+def test_stata_add_exception():
+    """
+    Tests adding exception to  outputs
+    assumes simple table has been created by earlier tests
+    then renamed.
+    """
+    the_str = "a reason"
+    the_output = "renamed_output"
+    ret = dummy_acrohandler(
+        data,
+        "add_exception",
+        the_output + " " + the_str,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+    )
+    correct = f"Exception request added to output {the_output}.\n"
+    assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
+    newcomments = "".join(stata_config.stata_acro.results.get(the_output).exception)
+    assert newcomments == the_str, f"{newcomments} should be {the_str}"
+
+
+def test_stata_remove_output():
+    """
+    Tests removing  outputs
+    assumes simple table has been created and renamed by earlier tests.
+    """
+    the_output = "renamed_output"
+    ret = dummy_acrohandler(
+        data,
+        "remove_output",
+        the_output,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+    )
+    correct = f"output {the_output} removed.\n"
+    assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
+    errmsg = (
+        "Should be no records left but results = "
+        f"{stata_config.stata_acro.results.__dict__}\n"
+    )
+    assert not stata_config.stata_acro.results.results, errmsg
+
+
 def test_stata_probit(data):
     """Checks probit gets called correctly."""
     ret = dummy_acrohandler(
@@ -220,14 +308,14 @@ def test_stata_probit(data):
     tokens = ret.split()
     idx = tokens.index("Residuals:")
     val = tokens[idx + 1]
-    if val[-1]=='|':
+    if val[-1] == "|":
         val = val[0:-1]
-    assert float(val) == pytest.approx(806.0,0.01), f"{val} should be 806"
+    assert float(val) == pytest.approx(806.0, 0.01), f"{val} should be 806"
     idx = tokens.index("R-squ.:")
     val = tokens[idx + 1]
-    if val[-1]=='|':
+    if val[-1] == "|":
         val = val[0:-1]
-    val=float(val)
+    val = float(val)
     assert val == pytest.approx(0.208, 0.01)
 
 
@@ -247,12 +335,12 @@ def test_stata_linregress(data):
     val = int(tokens[idx + 1])
     assert val == 807, f"{val} should be 807"
     idx = tokens.index("R-squared:")
-    val = float(tokens[idx + 1])
-    assert val == pytest.approx(0.894, 0.001)
+    newval = float(tokens[idx + 1])
+    assert newval == pytest.approx(0.894, 0.001)
 
 
 def test_stata_logit(data):
-    ''' tests stata logit function'''
+    """Tests stata logit function."""
     ret = dummy_acrohandler(
         data,
         command="logit",
@@ -262,18 +350,18 @@ def test_stata_logit(data):
         weights="",
         options="",
     )
-    #assert False,f'\n{ret}\n'
+
     tokens = ret.split()
     idx = tokens.index("Residuals:")
     val = tokens[idx + 1]
-    if val[-1]=='|':
+    if val[-1] == "|":
         val = val[0:-1]
-    assert float(val) == pytest.approx(806.0,0.01), f"{val} should be 806"
+    assert float(val) == pytest.approx(806.0, 0.01), f"{val} should be 806"
     idx = tokens.index("R-squ.:")
     val = tokens[idx + 1]
-    if val[-1]=='|':
+    if val[-1] == "|":
         val = val[0:-1]
-    val=float(val)
+    val = float(val)
     assert val == pytest.approx(0.214, 0.01)
 
 
@@ -288,8 +376,8 @@ def test_unsupported_formatting_options(data):
         "Dead in 2015   |18  |  0  |282  | 0 |\n"
         "Alive in 2015  |72  |354  |144  |48 |\n"
         "------------------------------------|\n"
-            )
-    #pylint:disable=duplicate-code
+    )
+    # pylint:disable=duplicate-code
     for bad_option in [
         "cellwidth",
         "csepwidth",

@@ -357,12 +357,12 @@ def get_aggfuncs(
     raise ValueError("aggfuncs must be: either str or list[str]")
 
 
-def prettify_table_string(table: pd.DataFrame,seperator=None) -> str:
+def prettify_table_string(table: pd.DataFrame, separator=None) -> str:
     """
     Adds delimiters to table.to_string()
     to improve readability for onscreen display.
-    Splits fields on whitespace unless an optional seperator is provided
-    e.g. ',' for csv
+    Splits fields on whitespace unless an optional separator is provided
+    e.g. ',' for csv.
     """
     hdelim = "-"
     vdelim = "|"
@@ -373,8 +373,8 @@ def prettify_table_string(table: pd.DataFrame,seperator=None) -> str:
     rowlen = len(as_strings[0])
 
     # get top level column labels and their positions
-    if seperator is not None:
-        rowone_strings = as_strings[0].split(seperator)
+    if separator is not None:
+        rowone_strings = as_strings[0].split(separator)
     else:
         rowone_strings = as_strings[0].split()
     vals = rowone_strings[1:]

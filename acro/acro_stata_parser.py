@@ -18,7 +18,7 @@ def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     if len(raw) == 0:
         return all_data
 
-    # add braces aroubd each clause- keeping any in the original
+    # add braces around each clause- keeping any in the original
     raw = "( " + raw + ")"
     raw = raw.replace("&", ") & (")
     raw = raw.replace("|", ") | (")
@@ -26,13 +26,8 @@ def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     for operator in [">", "<", "==", ">=", "<=", "!="]:
         raw = raw.replace(operator, " " + operator + " ")
 
-    # replace variable names with df["varname"]
-    for vname in all_data.columns:
-        raw = raw.replace(vname, 'all_data["' + vname + '"]')
-
-    # print(raw)
     # apply exclusion
-    some_data = all_data[eval(raw)]  # pylint: disable=eval-used
+    some_data = all_data.query(raw)
     return some_data
 
 

@@ -31,45 +31,47 @@ def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     return some_data
 
 
+def parse_location_token(token: str, last: int) -> int:
+    """
+    Parses index position tokens from stata syntax
+    stata allows f and F for first item  and l/L for last.
+    """
+    lookup: dict = {"f": 0, "F": 0, "l": last, "L": last}
+    if token in ["f", "F", "l", "L"]:
+        pos = lookup[token]
+    else:
+        try:
+            pos = int(token)
+        except ValueError:
+            pos = 0
+    return pos
+
+
 def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     """
-    Parses an in exp statemnt from stata and uses it
+    Parses an in exp statement from stata and uses it
     to subset a dataframe by set of row indices.
     """
-    # pylint:disable=too-many-branches
-    # stata allows f and F for first item  and l/L for last
     last = len(all_data) - 1
-
     if "/" not in raw:
-        if raw in ["f", "F"]:
-            pos = 0
-        elif raw in ["l", "L"]:
-            pos = last
+        pos = parse_location_token(raw, last)
+        if pos < 0:
+            start = max(0, last + pos)
+            end = last
         else:
-            pos = int(raw)
-        if pos > 0:
             start = 0
             end = min(pos, last)
-        else:
-            offset = last + pos
-            start = max(offset, 0)
-            end = last
+
     else:
         token: list = raw.split("/")
         # first index
-        if token[0] in ["f", "F"]:
-            start = 0
-        else:
-            start = int(token[0])
+        start = parse_location_token(token[0], last)
         if start < 0:
             start = last + 1 + start
         # last index
-        if token[1] in ["l", "L"]:
-            end = last
-        else:
-            end = int(token[1])
-            if end < 0:
-                end = last + 1 + end
+        end = parse_location_token(token[1], last)
+        if end < 0:
+            end = last + 1 + end
         # enforce start <=end
         if start > end:
             end = last

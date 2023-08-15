@@ -18,10 +18,10 @@ from acro.acro_stata_parser import (
 # pylint: disable=redefined-outer-name
 
 
-@pytest.fixture
-def acro() -> ACRO:
-    """Initialise ACRO."""
-    return ACRO()
+# @pytest.fixture
+# def acro() -> ACRO:
+#    """Initialise ACRO."""
+#    return ACRO()
 
 
 @pytest.fixture

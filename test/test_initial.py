@@ -158,6 +158,17 @@ def test_ols(data, acro):
     """Ordinary Least Squares test."""
     new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
     new_df = new_df.dropna()
+    # OLS too few Dof
+    endog = new_df.inc_activity.iloc[0:10]
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]].iloc[0:10]
+    exog = add_constant(exog)
+    results = acro.ols(endog, exog)
+    assert results.df_resid == 6
+    res = acro.results.get_index(-1)
+    summary = res.summary.split(";")
+    assert summary[0] == "fail"
+    acro.remove_output(res.uid)
+
     # OLS
     endog = new_df.inc_activity
     exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
@@ -412,7 +423,7 @@ def test_add_to_acro(data, monkeypatch):
     src_path = "test_add_to_acro"
     dest_path = "sdc_results"
     file_path = "crosstab.pkl"
-    if not os.path.exists(src_path):
+    if not os.path.exists(src_path):  # pragma no cover
         table.to_pickle(file_path)
         os.mkdir(src_path)
         shutil.move(file_path, src_path, copy_function=shutil.copytree)

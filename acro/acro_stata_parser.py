@@ -160,7 +160,9 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     """
     # sanity checking
     # can only call init if acro object has not been created
-    if command != "init" and isinstance(stata_config.stata_acro, str):
+    if command != "init" and isinstance(
+        stata_config.stata_acro, str
+    ):  # pragma: no cover
         return "You must run acro init before any other acro commands"
 
     # Sometime_TODO de-abbreviate according to
@@ -193,18 +195,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
 
 def run_session_command(command: str, varlist: list) -> str:
     """Runs session commands that are data-independent."""
-    # global variable is created by stata python session
-    # global stata_acro #pylint: disable=global-variable-undefined
     outcome = ""
-    suffix = "json"
-    out_dir = "stata_outputs"
-    if len(varlist) == 1:
-        out_dir = varlist[0]
-    if len(varlist) == 2:
-        out_dir = varlist[0]
-        preference = varlist[1]
-        if preference == "xlsx":
-            suffix = "xlsx"
 
     if command == "init":
         # initialise the acro object
@@ -212,12 +203,21 @@ def run_session_command(command: str, varlist: list) -> str:
         outcome = "acro analysis session created\n"
 
     elif command == "finalise":
+        suffix = "json"
+        out_dir = "stata_outputs"
+        if len(varlist) == 1:
+            out_dir = varlist[0]
+        if len(varlist) == 2:
+            out_dir = varlist[0]
+            preference = varlist[1]
+            if preference == "xlsx":
+                suffix = "xlsx"
         stata_config.stata_acro.finalise(out_dir, suffix)
         outcome = "outputs and stata_outputs.json written\n"
 
     elif command == "print_outputs":
         stata_config.stata_acro.print_outputs()
-    else:
+    else:  # pragma: no cover
         outcome = f"unrecognised session management command {command}\n"
     return outcome
 
@@ -245,7 +245,7 @@ def run_output_command(command: str, varlist: list) -> str:
         elif command == "add_exception":
             stata_config.stata_acro.add_exception(the_output, the_str)
             outcome = f"Exception request added to output {the_output}.\n"
-        else:
+        else:  # pragma: no cover
             outcome = f"unrecognised outcome management command {command}\n"
 
     return outcome
@@ -331,7 +331,7 @@ def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:
         y_var.name = depvar
         results = stata_config.stata_acro.logit(y_var, x_var)
         res_str = get_regr_results(results, "Logit Regression")
-    else:
+    else:  # pragma: no cover
         res_str = f"unrecognised regression command {command}\n"
     return res_str
 

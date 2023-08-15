@@ -139,6 +139,10 @@ def test_apply_stata_expstmt(data):
     assert smaller2.shape[0] == 400
     assert not smaller2.equals(smaller), "counting from front/back should be different"
 
+    exp = "gg"  # invalid exp returns empty dataframe
+    smaller = apply_stata_expstmt(exp, data)
+    assert smaller.shape[0] == 0
+
 
 def test_parse_table_details(data):
     """
@@ -166,8 +170,26 @@ def test_parse_table_details(data):
     assert not details["totals"], "totals should be False"
     assert details["suppress"], "suppress should be True"
 
+    # invalid var in by list
+    options = "by(football) contents(mean ) "
+    details = parse_table_details(varlist, varnames, options)
+    correct = "Error: word football in by-list is not a variables name"
+    errstring = f" rows {details['errmsg']} should be {correct}"
+    assert details["errmsg"] == correct, errstring
+
 
 # -----acro management----------------------------------------------------
+
+# def test_stata_acro_notinit():
+#     ''' should have to call init first'''
+#     ret = dummy_acrohandler(
+#         data, command="finalise", varlist="", exclusion="", exp="", weights="", options=""
+#     )
+#     assert (
+#         ret == "You must run acro init before any other acro commands\n"
+#     ), f"wrong string for acro command before init: {ret}\n"
+
+
 def test_stata_acro_init():
     """
     Tests creation of an acro object at the start of a session
@@ -448,3 +470,18 @@ def test_stata_finalise(monkeypatch):
     )
     correct = "outputs and stata_outputs.json written\n"
     assert ret == correct, f"returned string {ret} should be {correct}\n"
+
+
+def test_stata_unknown(data):
+    """Unknown acro command."""
+    ret = dummy_acrohandler(
+        data,
+        command="foo",
+        varlist=" survivor inc_activity inc_grants inc_donations total_costs",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+    )
+    correct = "acro command not recognised: foo"
+    assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"

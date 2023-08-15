@@ -147,9 +147,9 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     Runs the appropriate command on a pre-existing ACRO object stata_acro
     Returns the result as a formatted string.
     """
-    #sanity checking
-    #can only call init if acro object has not been created
-    if command != "init" and isinstance(stata_config.stata_acro,str):
+    # sanity checking
+    # can only call init if acro object has not been created
+    if command != "init" and isinstance(stata_config.stata_acro, str):
         return "You must run acro init before any other acro commands"
 
     # Sometime_TODO de-abbreviate according to

@@ -64,14 +64,25 @@ def test_find_brace_contents():
     assert not res
     assert substr == "foo not found"
 
+    incomplete = "by(grant_type) contents(mean sd inc_activity suppress nototals"
+    res, substr = find_brace_contents("contents", incomplete)
+    assert not res
+    assert substr == "phrase not completed"
+
 
 def test_apply_stata_ifstmt(data):
     """Tests that if statements work for selection."""
+    # empty ifstring
+    ifstring = ""
+    smaller = apply_stata_ifstmt(ifstring, data)
+    assert smaller.equals(data), "should be same for empty ifstring"
+
     ifstring = "year!=2013"
     all_list = list(data["year"].unique())
     smaller = apply_stata_ifstmt(ifstring, data)
     all_list.remove(2013)
     assert list(smaller["year"].unique()) == all_list
+
     ifstring2 = "year != 2013 & year <2015"
     all_list.remove(2015)
     smaller2 = apply_stata_ifstmt(ifstring2, data)
@@ -92,6 +103,13 @@ def test_apply_stata_expstmt(data):
     assert smaller.shape[0] == 5
     assert (smaller.iloc[-1].fillna(0).values == data.iloc[4].fillna(0).values).all()
 
+    exp = "F/-5"
+    smaller = apply_stata_expstmt(exp, data)
+    assert smaller.shape[0] == length - 5
+    assert (
+        smaller.iloc[-1].fillna(0).values == data.iloc[length - 6].fillna(0).values
+    ).all()
+
     exp = "-6/l"
     smaller = apply_stata_expstmt(exp, data)
     assert smaller.shape[0] == 5
@@ -110,6 +128,16 @@ def test_apply_stata_expstmt(data):
     exp = "500/450"
     smaller = apply_stata_expstmt(exp, data)
     assert smaller.shape[0] == length - 1 - 500
+
+    # missing / counts from front/back so same size but different
+    exp = "400"
+    smaller = apply_stata_expstmt(exp, data)
+    assert smaller.shape[0] == 400
+
+    exp = "-400"
+    smaller2 = apply_stata_expstmt(exp, data)
+    assert smaller2.shape[0] == 400
+    assert not smaller2.equals(smaller), "counting from front/back should be different"
 
 
 def test_parse_table_details(data):

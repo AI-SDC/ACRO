@@ -36,29 +36,43 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     Parses an in exp statemnt from stata and uses it
     to subset a dataframe by set of row indices.
     """
+    # pylint:disable=too-many-branches
     # stata allows f and F for first item  and l/L for last
     last = len(all_data) - 1
 
-    token = raw.split("/")
-    # first index
-    if token[0] == "f" or token[0] == "F":
-        start = 0
-    else:
-        start = int(token[0])
-    if start < 0:
-        start = last + 1 + start
-    # last
     if "/" not in raw:
-        end = last
-    elif token[1] == "l" or token[1] == "L":
-        end = last
+        if raw in ["f", "F"]:
+            pos = 0
+        elif raw in ["l", "L"]:
+            pos = last
+        else:
+            pos = int(raw)
+        if pos > 0:
+            start = 0
+            end = min(pos, last)
+        else:
+            offset = last + pos
+            start = max(offset, 0)
+            end = last
     else:
-        end = int(token[1])
-    if end < 0:
-        end = last + 1 + end
-    # enforce start <=end
-    if start > end:
-        end = last
+        token: list = raw.split("/")
+        # first index
+        if token[0] in ["f", "F"]:
+            start = 0
+        else:
+            start = int(token[0])
+        if start < 0:
+            start = last + 1 + start
+        # last index
+        if token[1] in ["l", "L"]:
+            end = last
+        else:
+            end = int(token[1])
+            if end < 0:
+                end = last + 1 + end
+        # enforce start <=end
+        if start > end:
+            end = last
 
     return all_data.iloc[start:end]
 
@@ -75,12 +89,12 @@ def find_brace_contents(word: str, raw: str):
         return False, f"{word} not found"
     idx += len(word) + 1
     substr = ""
-    while raw[idx] != ")" and idx < len(raw):
+    while idx < len(raw) and raw[idx] != ")":
         substr += raw[idx]
         idx += 1
 
     if idx == len(raw):
-        return False, "phrase nor completed"
+        return False, "phrase not completed"
     return True, substr
 
 

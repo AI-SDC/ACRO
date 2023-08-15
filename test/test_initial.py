@@ -410,7 +410,7 @@ def test_add_to_acro(data, monkeypatch):
     table = pd.crosstab(data.year, data.grant_type)
     # save the output to a file and add this file to a directory
     src_path = "test_add_to_acro"
-    dest_path = "sdc_restults"
+    dest_path = "sdc_results"
     file_path = "crosstab.pkl"
     if not os.path.exists(src_path):
         table.to_pickle(file_path)

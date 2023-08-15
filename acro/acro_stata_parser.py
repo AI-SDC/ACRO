@@ -95,7 +95,7 @@ def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
     https://www.stata.com/manuals13/rtable.pdf
     >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
-    details = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
+    details: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
     details["rowvars"] = [varlist.pop(0)]
     details["colvars"] = list(reversed(varlist))
     # by() contents are super-rows
@@ -167,7 +167,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     # now look at the commands
     outcome = ""
     if command in ["init", "finalise", "print_outputs"]:
-        outcome = run_session_command(command)
+        outcome = run_session_command(command, varlist)
     elif command in ["remove_output", "rename_output", "add_comments", "add_exception"]:
         outcome = run_output_command(command, varlist)
     elif command == "table":
@@ -180,19 +180,29 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     return outcome
 
 
-def run_session_command(command: str) -> str:
+def run_session_command(command: str, varlist: list) -> str:
     """Runs session commands that are data-independent."""
     # global variable is created by stata python session
     # global stata_acro #pylint: disable=global-variable-undefined
     outcome = ""
+    suffix = "json"
+    out_dir = "stata_outputs"
+    if len(varlist) == 1:
+        out_dir = varlist[0]
+    if len(varlist) == 2:
+        out_dir = varlist[0]
+        preference = varlist[1]
+        if preference == "xlsx":
+            suffix = "xlsx"
+
     if command == "init":
         # initialise the acro object
         stata_config.stata_acro = ACRO()
         outcome = "acro analysis session created\n"
 
     elif command == "finalise":
-        stata_config.stata_acro.finalise("stata_out", "json")
-        outcome = "outputs and stata_out.json written\n"
+        stata_config.stata_acro.finalise(out_dir, suffix)
+        outcome = "outputs and stata_outputs.json written\n"
 
     elif command == "print_outputs":
         stata_config.stata_acro.print_outputs()

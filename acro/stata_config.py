@@ -4,5 +4,6 @@ accessible from acro files and stata
 mutable hence use of lower case naming
 Jim Smith 2023.
 """
+import acro
 
-stata_acro = "empty"  # pylint:disable=invalid-name
+stata_acro = acro.ACRO()

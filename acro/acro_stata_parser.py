@@ -42,7 +42,10 @@ def parse_location_token(token: str, last: int) -> int:
     else:
         try:
             pos = int(token)
+            if pos > 0:
+                pos -= 1
         except ValueError:
+            print("valuerror")
             pos = 0
     return pos
 
@@ -56,7 +59,7 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     if "/" not in raw:
         pos = parse_location_token(raw, last)
         if pos < 0:
-            start = max(0, last + pos)
+            start = max(0, last + pos + 1)
             end = last
         else:
             start = 0
@@ -67,16 +70,16 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
         # first index
         start = parse_location_token(token[0], last)
         if start < 0:
-            start = last + 1 + start
+            start = last + 1 + start  # -1==last
         # last index
         end = parse_location_token(token[1], last)
         if end < 0:
-            end = last + 1 + end
+            end = last + end  # -1==last
         # enforce start <=end
         if start > end:
             end = last
 
-    return all_data.iloc[start:end]
+    return all_data.iloc[start : end + 1]
 
 
 def find_brace_contents(word: str, raw: str):
@@ -145,7 +148,7 @@ def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
 
 
 def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
-    data: pd.DataFrame,
+    mydata: pd.DataFrame,
     command: str,
     varlist_as_str: str,
     exclusion: str,
@@ -172,10 +175,13 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     # print(f' split varlist is {varlist}')
 
     # data reduction
-    if len(exclusion) > 0:
-        data = apply_stata_ifstmt(exclusion, data)
+    # print(f'before in {mydata.shape}')
     if len(exp) > 0:
-        data = apply_stata_expstmt(exp, data)
+        mydata = apply_stata_expstmt(exp, mydata)
+    # print(f'after in, before if {mydata.shape}')
+    if len(exclusion) > 0:
+        mydata = apply_stata_ifstmt(exclusion, mydata)
+    # print(f'after both {mydata.shape}')
 
     # now look at the commands
     outcome = ""
@@ -184,10 +190,10 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     elif command in ["remove_output", "rename_output", "add_comments", "add_exception"]:
         outcome = run_output_command(command, varlist)
     elif command == "table":
-        outcome = run_table_command(data, varlist, weights, options)
+        outcome = run_table_command(mydata, varlist, weights, options)
 
     elif command in ["regress", "probit", "logit"]:
-        outcome = run_regression(command, data, varlist)
+        outcome = run_regression(command, mydata, varlist)
     else:
         outcome = f"acro command not recognised: {command}"
     return outcome
@@ -228,15 +234,24 @@ def run_output_command(command: str, varlist: list) -> str:
     rest (if relevant) is string passed to command.
     """
     if len(varlist) == 0:
-        outcome = "syntax error: please pass the name of the output to be changed"
-    else:
-        the_output = varlist.pop(0)
-        the_str = " ".join(varlist)
+        return "syntax error: please pass the name of the output to be changed"
 
-        if command == "remove_output":
-            stata_config.stata_acro.remove_output(the_output)
-            outcome = f"output {the_output} removed.\n"
-        elif command == "rename_output":
+    the_output = varlist.pop(0)
+    # safety
+    if (
+        the_output not in stata_config.stata_acro.results.results.keys()
+    ):  # pylint:disable=consider-iterating-dictionary
+        return f"no output with name  {the_output} in current acro session.\n"
+
+    if command == "remove_output":
+        stata_config.stata_acro.remove_output(the_output)
+        outcome = f"output {the_output} removed.\n"
+    elif command in ["rename_output", "add_comments", "add_exception"]:
+        # more arguments needed
+        the_str = " ".join(varlist)
+        if len(the_str) == 0:
+            return f"not enough arguments provided for command {command}.\n"
+        if command == "rename_output":
             stata_config.stata_acro.rename_output(the_output, the_str)
             outcome = f"output {the_output} renamed to {the_str}.\n"
         elif command == "add_comments":
@@ -245,8 +260,8 @@ def run_output_command(command: str, varlist: list) -> str:
         elif command == "add_exception":
             stata_config.stata_acro.add_exception(the_output, the_str)
             outcome = f"Exception request added to output {the_output}.\n"
-        else:  # pragma: no cover
-            outcome = f"unrecognised outcome management command {command}\n"
+    else:  # pragma: no cover
+        outcome = f"unrecognised outcome management command {command}\n"
 
     return outcome
 
@@ -262,7 +277,7 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     then returns a prettified versaion of the cross_tab dataframe.
     """
     weights_empty = len(weights) == 0
-    if not weights_empty:
+    if not weights_empty:  # pragma
         return f"weights not currently implemented for _{weights}_\n"
 
     varnames = data.columns
@@ -277,15 +292,24 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     for col in details["colvars"]:
         cols.append(data[col])
     if len(aggfuncs) > 0 and len(details["values"]) > 0:
-        safe_output = stata_config.stata_acro.crosstab(
-            index=rows,
-            columns=cols,
-            aggfunc=aggfuncs,
-            values=details["values"],
-            # suppress=details['suppress'],
-            margins=details["totals"],
-            margins_name="Total",
-        )
+        try:
+            safe_output = stata_config.stata_acro.crosstab(
+                index=rows,
+                columns=cols,
+                aggfunc=aggfuncs,
+                values=details["values"],
+                # suppress=details['suppress'],
+                margins=details["totals"],
+                margins_name="Total",
+            )
+        except ValueError:
+            errmsg = (
+                f'rows={details["rowvars"]} '
+                f'columns={details["colvars"]} '
+                f'values={details["values"]} '
+                f"aggfunc={aggfuncs}"
+            )
+            return errmsg
     else:
         safe_output = stata_config.stata_acro.crosstab(
             index=rows,

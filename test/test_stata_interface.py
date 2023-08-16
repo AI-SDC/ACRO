@@ -2,6 +2,7 @@
 
 import os
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -89,59 +90,63 @@ def test_apply_stata_ifstmt(data):
     assert list(smaller2["year"].unique()) == all_list
 
 
-def test_apply_stata_expstmt(data):
+def test_apply_stata_expstmt():
     """Tests that in statements work for row selection."""
-    length = data.shape[0]
+    data = np.zeros(100)
+    for i in range(100):
+        data[i] = i
+    data = pd.DataFrame(data, columns=["vals"])
+    length = 100
     # use of f/F and l/L for first and last with specified row range
+
     exp = "f/5"
     smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 5
-    assert (smaller.iloc[-1].fillna(0).values == data.iloc[4].fillna(0).values).all()
+    assert smaller.shape[0] == 5, data
 
     exp = "F/5"
     smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 5
+    assert smaller.shape[0] == 5, data
     assert (smaller.iloc[-1].fillna(0).values == data.iloc[4].fillna(0).values).all()
 
     exp = "F/-5"
     smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == length - 5
+    assert smaller.shape[0] == length - 5, f"{smaller.shape[0]} != 95\n{data}"
     assert (
         smaller.iloc[-1].fillna(0).values == data.iloc[length - 6].fillna(0).values
     ).all()
 
     exp = "-6/l"
     smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 5
+    assert smaller.shape[0] == 6, data
     assert (
-        smaller.iloc[-1].fillna(0).values == data.iloc[length - 2].fillna(0).values
+        smaller.iloc[-1].fillna(0).values == data.iloc[length - 1].fillna(0).values
     ).all()
 
     exp = "-6/L"
     smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 5
+    assert smaller.shape[0] == 6, data
     assert (
-        smaller.iloc[-1].fillna(0).values == data.iloc[length - 2].fillna(0).values
+        smaller.iloc[-1].fillna(0).values == data.iloc[length - 1].fillna(0).values
     ).all()
 
     # invalid range should default to end of dataframe
-    exp = "500/450"
+    exp = "50/45"
     smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == length - 1 - 500
+    assert smaller.shape[0] == length - 49, f"smaller.shape[0] !=51,{smaller}"
 
     # missing / counts from front/back so same size but different
-    exp = "400"
+    exp = "40"
     smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 400
+    assert smaller.shape[0] == 40, data
 
-    exp = "-400"
+    exp = "-40"
     smaller2 = apply_stata_expstmt(exp, data)
-    assert smaller2.shape[0] == 400
+    assert smaller2.shape[0] == 40
     assert not smaller2.equals(smaller), "counting from front/back should be different"
 
     exp = "gg"  # invalid exp returns empty dataframe
     smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 0
+    assert smaller.shape[0] == 1, smaller
 
 
 def test_parse_table_details(data):
@@ -274,6 +279,59 @@ def test_stata_rename_outputs():
     assert value == the_str, f"{value} should be\n{the_str}\n"
 
 
+def test_stata_incomplete_output_commands():
+    """Tests handling incomplete or wony outpu commands
+    assumes simple table has been created by earlier tests.
+    """
+    # output to change not provided
+    the_str = "renamed_output"
+    the_output = ""
+    command = "rename_output"
+    ret = dummy_acrohandler(
+        data,
+        command,
+        "",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+    )
+    correct = "syntax error: please pass the name of the output to be changed"
+    assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
+
+    # ensure object is present
+    # in our case we just renamed output 0 so it is not there
+    the_str = "renamed_output"
+    the_output = "output_0"
+    ret = dummy_acrohandler(
+        data,
+        "rename_output",
+        the_output,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+    )
+    correct = f"no output with name  {the_output} in current acro session.\n"
+    assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
+
+    # output present but not enough info provided to enact command
+    the_str = ""
+    the_output = "renamed_output"
+    command = "rename_output"
+    ret = dummy_acrohandler(
+        data,
+        command,
+        the_output + " " + the_str,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+    )
+    correct = f"not enough arguments provided for command {command}.\n"
+    assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
+
+
 def test_stata_add_comments():
     """
     Tests adding comments to  outputs
@@ -342,6 +400,127 @@ def test_stata_remove_output():
         f"{stata_config.stata_acro.results.__dict__}\n"
     )
     assert not stata_config.stata_acro.results.results, errmsg
+
+
+def test_stata_exclusion_in_context(data):
+    """Tests that the subsetting code gets called properly from table handler."""
+    # if condition
+    correct1 = (
+        "------------------|\n"
+        "grant_type     |G |\n"
+        "survivor       |  |\n"
+        "------------------|\n"
+        "Dead in 2015   |18|\n"
+        "Alive in 2015  |72|\n"
+        "------------------|\n"
+    )
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "survivor grant_type",
+        exclusion='grant_type == "G"',
+        exp="",
+        weights="",
+        options="nototals",
+    )
+    ret = ret.replace("NaN", "0")
+    ret = ret.replace(".0", "")
+    assert ret.split() == correct1.split(), f"got\n{ret}\n expected\n{correct1}"
+
+    # in expression
+    correct2 = (
+        "------------------------------------|\n"
+        "grant_type     |G   |N    |R    |R/G|\n"
+        "survivor       |    |     |     |   |\n"
+        "------------------------------------|\n"
+        "Dead in 2015   |12  |  0  |158  | 0 |\n"
+        "Alive in 2015  |30  |222  | 48  |30 |\n"
+        "------------------------------------|\n"
+    )
+    ret2 = dummy_acrohandler(
+        data,
+        "table",
+        "survivor grant_type",
+        exclusion="",
+        exp="1/500",
+        weights="",
+        options="nototals",
+    )
+    ret2 = ret2.replace("NaN", "0")
+    ret2 = ret2.replace(".0", "")
+    assert ret2.split() == correct2.split(), f"got\n{ret2}\n expected\n{correct2}"
+
+    # both
+    rets3 = dummy_acrohandler(
+        data,
+        "table",
+        "survivor grant_type",
+        exclusion='grant_type == "G"',
+        exp="1/500",
+        weights="",
+        options="nototals",
+    )
+    correct3 = (
+        "------------------|\n"
+        "grant_type     |G |\n"
+        "survivor       |  |\n"
+        "------------------|\n"
+        "Dead in 2015   |12|\n"
+        "Alive in 2015  |30|\n"
+        "------------------|\n"
+    )
+    rets3 = rets3.replace("NaN", "0")
+    rets3 = rets3.replace(".0", "")
+    assert rets3.split() == correct3.split(), f"got\n{rets3}\n expected\n{correct3}"
+
+
+def test_table_weights(data):
+    """Weights are not currently supported."""
+    weights = [0, 0, 0]
+    correct = f"weights not currently implemented for _{weights}_\n"
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "survivor grant_type",
+        exclusion="",
+        exp="",
+        weights=weights,
+        options="nototals",
+    )
+    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+
+# def test_table_aggcfn(data):
+#     """
+#     testing behaviour with aggregation function
+#     """
+#     correct = ""
+#     ret = dummy_acrohandler(
+#          data,
+#          "table",
+#          "survivor year",
+#          exclusion="",
+#          exp="",
+#          weights="",
+#          options=" contents(mean grant_type) suppress  nototals"
+#      )
+#     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+
+def test_table_invalidvar(data):
+    """Checking table deetails are valid."""
+
+    correct = "Error: word foo in by-list is not a variables name"
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "survivor grant_type ",
+        exclusion="",
+        exp="",
+        weights="",
+        options="by(foo) ",
+    )
+    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
 
 def test_stata_probit(data):
@@ -463,6 +642,22 @@ def test_stata_finalise(monkeypatch):
         data,
         command="finalise",
         varlist="test_outputs xlsx",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+    )
+    correct = "outputs and stata_outputs.json written\n"
+    assert ret == correct, f"returned string {ret} should be {correct}\n"
+
+
+def test_stata_finalise_default_filetype(monkeypatch):
+    """Checks finalise gets called correctly."""
+    monkeypatch.setattr("builtins.input", lambda _: "Let me have it")
+    ret = dummy_acrohandler(
+        data,
+        command="finalise",
+        varlist="test_outputs",
         exclusion="",
         exp="",
         weights="",

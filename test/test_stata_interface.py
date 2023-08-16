@@ -504,14 +504,13 @@ def test_table_aggcfn(data):
         "2012      1625441.625   2934010.75 |\n"
         "2013      1868730.500   4579002.00 |\n"
         "2014      2182281.500   3612917.50 |\n"
-        "2015      2571766.250   3375528.25 |\n"
         "-----------------------------------|\n\n"
     )
     ret = dummy_acrohandler(
         data,
         "table",
         "year survivor",
-        exclusion="",
+        exclusion="year<2015",
         exp="1/100",
         weights="",
         options="contents(mean inc_activity) nototals",

@@ -516,7 +516,7 @@ def test_table_aggcfn(data):
         weights="",
         options="contents(mean inc_activity) nototals",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
     # can't have lsts for index or columns at present
     correct = (

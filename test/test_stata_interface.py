@@ -490,21 +490,65 @@ def test_table_weights(data):
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
 
-# def test_table_aggcfn(data):
-#     """
-#     testing behaviour with aggregation function
-#     """
-#     correct = ""
-#     ret = dummy_acrohandler(
-#          data,
-#          "table",
-#          "survivor year",
-#          exclusion="",
-#          exp="",
-#          weights="",
-#          options=" contents(mean grant_type) suppress  nototals"
-#      )
-#     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+def test_table_aggcfn(data):
+    """Testing behaviour with aggregation function."""
+    # ok
+    correct = (
+        "-----------------------------------|\n"
+        "         mean                      |\n"
+        "survivor Dead in 2015 Alive in 2015|\n"
+        "year                               |\n"
+        "-----------------------------------|\n"
+        "2010      2056816.000  10050917.00 |\n"
+        "2011      1264158.000   3468009.75 |\n"
+        "2012      1625441.625   2934010.75 |\n"
+        "2013      1868730.500   4579002.00 |\n"
+        "2014      2182281.500   3612917.50 |\n"
+        "2015      2571766.250   3375528.25 |\n"
+        "-----------------------------------|\n\n"
+    )
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "year survivor",
+        exclusion="",
+        exp="1/100",
+        weights="",
+        options="contents(mean inc_activity) nototals",
+    )
+    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+    # can't have lsts for index or columns at present
+    correct = (
+        "acro crosstab with an aggregation function "
+        " does not currently support hierarchies within rows or columns"
+    )
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "year survivor survivor",
+        exclusion="",
+        exp="1/100",
+        weights="",
+        options="contents(mean inc_activity) nototals",
+    )
+    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+    # pandas does not allows multiple arrays for values
+    correct = (
+        "pandas crosstab can  aggregate over multiple functions "
+        "but only over one feature/attribute: provided as 'value'"
+    )
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "year survivor ",
+        exclusion="",
+        exp="1/100",
+        weights="",
+        options="contents(mean inc_activity inc_grants) nototals",
+    )
+    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
 
 def test_table_invalidvar(data):

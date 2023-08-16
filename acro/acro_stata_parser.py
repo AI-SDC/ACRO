@@ -238,9 +238,9 @@ def run_output_command(command: str, varlist: list) -> str:
 
     the_output = varlist.pop(0)
     # safety
-    if (
+    if (  # pylint:disable=consider-iterating-dictionary
         the_output not in stata_config.stata_acro.results.results.keys()
-    ):  # pylint:disable=consider-iterating-dictionary
+    ):
         return f"no output with name  {the_output} in current acro session.\n"
 
     if command == "remove_output":
@@ -292,24 +292,32 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     for col in details["colvars"]:
         cols.append(data[col])
     if len(aggfuncs) > 0 and len(details["values"]) > 0:
-        try:
-            safe_output = stata_config.stata_acro.crosstab(
-                index=rows,
-                columns=cols,
-                aggfunc=aggfuncs,
-                values=details["values"],
-                # suppress=details['suppress'],
-                margins=details["totals"],
-                margins_name="Total",
+        # sanity checking
+        if len(rows) > 1 or len(cols) > 1:
+            msg = (
+                "acro crosstab with an aggregation function "
+                " does not currently support hierarchies within rows or columns"
             )
-        except ValueError:
-            errmsg = (
-                f'rows={details["rowvars"]} '
-                f'columns={details["colvars"]} '
-                f'values={details["values"]} '
-                f"aggfunc={aggfuncs}"
+            return msg
+
+        if len(details["values"]) > 1:
+            msg = (
+                "pandas crosstab can  aggregate over multiple functions "
+                "but only over one feature/attribute: provided as 'value'"
             )
-            return errmsg
+            return msg
+        val = details["values"][0]
+        values = data[val]
+
+        safe_output = stata_config.stata_acro.crosstab(
+            index=rows[0],
+            columns=cols[0],
+            aggfunc=aggfuncs,
+            values=values,
+            margins=details["totals"],
+            margins_name="Total",
+        )
+
     else:
         safe_output = stata_config.stata_acro.crosstab(
             index=rows,

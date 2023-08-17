@@ -14,6 +14,7 @@ import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import yaml
+from matplotlib import pyplot as plt
 from pandas import DataFrame
 from statsmodels.discrete.discrete_model import BinaryResultsWrapper
 from statsmodels.iolib.table import SimpleTable
@@ -810,6 +811,122 @@ class ACRO:
             output=utils.get_summary_dataframes(tables),
         )
         return results
+
+    def surv_func(
+        self,
+        time,
+        status,
+        output,
+        entry=None,
+        title=None,
+        freq_weights=None,
+        exog=None,
+        bw_factor=1.0,
+        filename="kaplan-meier.png",
+    ) -> DataFrame:
+        """Estimates the survival function.
+
+        Parameters
+        ----------
+        time : array_like
+            An array of times (censoring times or event times)
+        status : array_like
+            Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning
+            that the event occurs at the given value in time; status==0 indicatesthat censoring
+            has occurred, meaning that the event occurs after the given value in time.
+        output : str
+            A string determine the type of output. Available options are ‘table’, ‘plot’.
+        entry : array_like, optional An array of entry times for handling
+            left truncation (the subject is not in the risk set on or before the entry time)
+        title : str
+            Optional title used for plots and summary output.
+        freq_weights : array_like
+            Optional frequency weights
+        exog : array_like
+            Optional, if present used to account for violation of independent censoring.
+        bw_factor : float
+            Band-width multiplier for kernel-based estimation. Only used if exog is provided.
+        filename : str
+            The name of the file where the plot will be saved. Only used if the output
+            is a plot.
+
+        Returns
+        -------
+        DataFrame
+            The survival table.
+        """
+        logger.debug("surv_func()")
+        command: str = utils.get_command("surv_func()", stack())
+        survival_function: DataFrame = (
+            sm.SurvfuncRight(  # pylint: disable=too-many-function-args
+                time,
+                status,
+                entry,
+                title,
+                freq_weights,
+                exog,
+                bw_factor,
+            )
+        )
+        masks = {}
+        survival_table = survival_function.summary()
+        t_values = (
+            survival_table["num at risk"].shift(periods=1)
+            - survival_table["num at risk"]
+        )
+        t_values.loc[t_values.index[0]] = survival_table["num at risk"].loc[
+            survival_table.index[0]
+        ]
+        t_values = t_values < utils.THRESHOLD
+        masks["threshold"] = t_values
+        masks["threshold"] = masks["threshold"].to_frame()
+
+        masks["threshold"].insert(0, "Surv prob", t_values, True)
+        masks["threshold"].insert(1, "Surv prob SE", t_values, True)
+        masks["threshold"].insert(3, "num events", t_values, True)
+
+        # build the sdc dictionary
+        sdc: dict = utils.get_table_sdc(masks, self.suppress)
+        # get the status and summary
+        status, summary = utils.get_summary(sdc)
+        # apply the suppression
+        safe_table, outcome = utils.apply_suppression(survival_table, masks)
+
+        # record output
+        if output == "table":
+            if self.suppress:
+                survival_table = safe_table
+            self.results.add(
+                status=status,
+                output_type="table",
+                properties={"method": "surv_func"},
+                sdc=sdc,
+                command=command,
+                summary=summary,
+                outcome=outcome,
+                output=[survival_table],
+            )
+            return survival_table
+
+        if output == "plot":
+            plot = survival_function.plot()
+            try:  # pragma: no cover
+                os.makedirs("acro_artifacts")
+                logger.debug("Directory acro_artifacts created successfully")
+            except FileExistsError:
+                logger.debug("Directory acro_artifacts already exists")
+            plt.savefig(f"acro_artifacts/{filename}")
+            self.results.add(
+                status=status,
+                output_type="survival plot",
+                properties={"method": "surv_func"},
+                sdc=sdc,
+                command=command,
+                summary=summary,
+                outcome=pd.DataFrame(),
+                output=[os.path.normpath(filename)],
+            )
+            return plot
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

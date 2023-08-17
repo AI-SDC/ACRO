@@ -54,7 +54,7 @@ def load_output(path: str, output: list[str]) -> list[str] | list[DataFrame]:
             filename = os.path.normpath(f"{path}/{filename}")
             loaded.append(pd.read_csv(filename))
     if len(loaded) < 1:  # output is path(s) to custom file(s)
-        return output
+        return output  # pragma: no cover
     return loaded
 
 
@@ -423,7 +423,10 @@ class Records:
                     str(record),
                     record.status,
                 )
-                record.exception = input("")
+                try:
+                    record.exception = input("")
+                except EOFError:  # pragma: no cover
+                    record.exception = "No request passed from stata"
 
     def finalise(self, path: str, ext: str) -> None:
         """Creates a results file for checking.
@@ -507,8 +510,9 @@ class Records:
             summary = []
             command = []
             for output_id, output in self.results.items():
-                if output.output_type == "custom":
-                    continue  # avoid writing custom outputs
+                # avoid writing custom outputs
+                if output.output_type == "custom":  # pragma: no cover
+                    continue
                 sheet.append(output_id)
                 command.append(output.command)
                 summary.append(output.summary)
@@ -519,7 +523,8 @@ class Records:
             # individual sheets
             for output_id, output in self.results.items():
                 if output.output_type == "custom":
-                    continue  # avoid writing custom outputs
+                    # avoid writing custom outputs
+                    continue  # pragma: no cover
                 # command and summary
                 start = 0
                 tmp_df = pd.DataFrame(

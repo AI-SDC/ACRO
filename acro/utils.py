@@ -313,8 +313,14 @@ def get_aggfunc(aggfunc: str | None) -> Callable | None:
     logger.debug("get_aggfunc()")
     func = None
     if aggfunc is not None:
-        if not isinstance(aggfunc, str) or aggfunc not in AGGFUNC:
-            raise ValueError(f"aggfunc {aggfunc} must be: {', '.join(AGGFUNC.keys())}")
+        if not isinstance(aggfunc, str):  # pragma: no cover
+            raise ValueError(
+                f"aggfunc {aggfunc} must be:" f"{', '.join(AGGFUNC.keys())}"
+            )
+        if aggfunc not in AGGFUNC:  # pragma: no cover
+            raise ValueError(
+                f"aggfunc {aggfunc} must be: " f"{', '.join(AGGFUNC.keys())}"
+            )
         func = AGGFUNC[aggfunc]
     logger.debug("aggfunc: %s", func)
     return func
@@ -351,16 +357,18 @@ def get_aggfuncs(
             if function is not None:
                 functions.append(function)
         logger.debug("aggfuncs: %s", functions)
-        if len(functions) < 1:
+        if len(functions) < 1:  # pragma: no cover
             raise ValueError(f"invalid aggfuncs: {aggfuncs}")
         return functions
-    raise ValueError("aggfuncs must be: either str or list[str]")
+    raise ValueError("aggfuncs must be: either str or list[str]")  # pragma: no cover
 
 
-def prettify_table_string(table: pd.DataFrame) -> str:
+def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> str:
     """
     Adds delimiters to table.to_string()
     to improve readability for onscreen display.
+    Splits fields on whitespace unless an optional separator is provided
+    e.g. ',' for csv.
     """
     hdelim = "-"
     vdelim = "|"
@@ -371,7 +379,11 @@ def prettify_table_string(table: pd.DataFrame) -> str:
     rowlen = len(as_strings[0])
 
     # get top level column labels and their positions
-    rowone_strings = as_strings[0].split()
+    if separator is not None:
+        rowone_strings = as_strings[0].split(separator)
+    else:
+        rowone_strings = as_strings[0].split()
+
     vals = rowone_strings[1:]
     positions = []
     for val in vals:

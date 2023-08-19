@@ -75,6 +75,8 @@ class ACRO:
         utils.SAFE_NK_N = self.config["safe_nk_n"]
         utils.SAFE_NK_K = self.config["safe_nk_k"]
         utils.CHECK_MISSING_VALUES = self.config["check_missing_values"]
+        # set globals for survival analysis
+        self.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
 
     def finalise(self, path: str = "outputs", ext="json") -> Records:
         """Creates a results file for checking.
@@ -812,7 +814,7 @@ class ACRO:
         )
         return results
 
-    def surv_func(
+    def surv_func(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         time,
         status,
@@ -874,10 +876,7 @@ class ACRO:
             survival_table["num at risk"].shift(periods=1)
             - survival_table["num at risk"]
         )
-        t_values.loc[t_values.index[0]] = survival_table["num at risk"].loc[
-            survival_table.index[0]
-        ]
-        t_values = t_values < utils.THRESHOLD
+        t_values = t_values < self.SURVIVAL_THRESHOLD
         masks["threshold"] = t_values
         masks["threshold"] = masks["threshold"].to_frame()
 
@@ -908,14 +907,62 @@ class ACRO:
             )
             return survival_table
 
-        if output == "plot":
-            plot = survival_function.plot()
+        elif output == "plot":
+            if self.suppress:
+                death_censored = (
+                    survival_table["num at risk"].shift(periods=1)
+                    - survival_table["num at risk"]
+                )
+                death_censored = death_censored.tolist()
+                survivor = survival_table["num at risk"].tolist()
+                deaths = survival_table["num events"].tolist()
+                rounded_num_of_deaths = []
+                rounded_num_at_risk = []
+                sub_total = 0
+                total_death = 0
+
+                for i in range(0, len(survivor)):
+                    if i == 0:
+                        rounded_num_at_risk.append(survivor[i])
+                        rounded_num_of_deaths.append(deaths[i])
+                        continue
+                    sub_total += death_censored[i]
+                    total_death += deaths[i]
+                    if sub_total < self.SURVIVAL_THRESHOLD:
+                        rounded_num_at_risk.append(rounded_num_at_risk[i - 1])
+                        rounded_num_of_deaths.append(0)
+                    else:
+                        rounded_num_at_risk.append(survivor[i])
+                        rounded_num_of_deaths.append(total_death)
+                        total_death = 0
+                        sub_total = 0
+
+                # calculate the surv prob
+                rounded_survival_func = []
+                for i in range(0, len(rounded_num_of_deaths)):
+                    if i == 0:
+                        rounded_survival_func.append(survival_table["Surv prob"][i])
+                        continue
+                    rounded_survival_func.insert(
+                        i,
+                        (
+                            (rounded_num_at_risk[i] - rounded_num_of_deaths[i])
+                            / rounded_num_at_risk[i]
+                        )
+                        * rounded_survival_func[i - 1],
+                    )
+                survival_table["rounded_survival_fun"] = rounded_survival_func
+                plot = survival_table.plot(y="rounded_survival_fun", ylim=0)
+            else:
+                plot = survival_function.plot()
+
             try:  # pragma: no cover
                 os.makedirs("acro_artifacts")
                 logger.debug("Directory acro_artifacts created successfully")
             except FileExistsError:
                 logger.debug("Directory acro_artifacts already exists")
             plt.savefig(f"acro_artifacts/{filename}")
+            # record output
             self.results.add(
                 status=status,
                 output_type="survival plot",
@@ -927,6 +974,11 @@ class ACRO:
                 output=[os.path.normpath(filename)],
             )
             return plot
+
+        else:
+            return (
+                "To get the survival table or plot you have to specify the output type"
+            )
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

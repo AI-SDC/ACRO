@@ -76,7 +76,7 @@ class ACRO:
         utils.SAFE_NK_K = self.config["safe_nk_k"]
         utils.CHECK_MISSING_VALUES = self.config["check_missing_values"]
         # set globals for survival analysis
-        self.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
+        self.survival_threshold = self.config["survival_safe_threshold"]
 
     def finalise(self, path: str = "outputs", ext="json") -> Records:
         """Creates a results file for checking.
@@ -876,10 +876,10 @@ class ACRO:
             survival_table["num at risk"].shift(periods=1)
             - survival_table["num at risk"]
         )
-        t_values = t_values < self.SURVIVAL_THRESHOLD
+        t_values = t_values < self.survival_threshold
         masks["threshold"] = t_values
         masks["threshold"] = masks["threshold"].to_frame()
-
+        
         masks["threshold"].insert(0, "Surv prob", t_values, True)
         masks["threshold"].insert(1, "Surv prob SE", t_values, True)
         masks["threshold"].insert(3, "num events", t_values, True)
@@ -907,7 +907,7 @@ class ACRO:
             )
             return survival_table
 
-        elif output == "plot":
+        if output == "plot":
             if self.suppress:
                 death_censored = (
                     survival_table["num at risk"].shift(periods=1)
@@ -921,37 +921,38 @@ class ACRO:
                 sub_total = 0
                 total_death = 0
 
-                for i in range(0, len(survivor)):
+                for i,data in enumerate(survivor):
                     if i == 0:
-                        rounded_num_at_risk.append(survivor[i])
+                        rounded_num_at_risk.append(data)
                         rounded_num_of_deaths.append(deaths[i])
                         continue
                     sub_total += death_censored[i]
                     total_death += deaths[i]
-                    if sub_total < self.SURVIVAL_THRESHOLD:
+                    if sub_total < self.survival_threshold:
                         rounded_num_at_risk.append(rounded_num_at_risk[i - 1])
                         rounded_num_of_deaths.append(0)
                     else:
-                        rounded_num_at_risk.append(survivor[i])
+                        rounded_num_at_risk.append(data)
                         rounded_num_of_deaths.append(total_death)
                         total_death = 0
                         sub_total = 0
 
                 # calculate the surv prob
                 rounded_survival_func = []
-                for i in range(0, len(rounded_num_of_deaths)):
+                for i, data in enumerate(rounded_num_of_deaths):
                     if i == 0:
                         rounded_survival_func.append(survival_table["Surv prob"][i])
                         continue
                     rounded_survival_func.insert(
                         i,
                         (
-                            (rounded_num_at_risk[i] - rounded_num_of_deaths[i])
+                            (rounded_num_at_risk[i] - data)
                             / rounded_num_at_risk[i]
                         )
                         * rounded_survival_func[i - 1],
                     )
                 survival_table["rounded_survival_fun"] = rounded_survival_func
+                print(survival_table)
                 plot = survival_table.plot(y="rounded_survival_fun", ylim=0)
             else:
                 plot = survival_function.plot()

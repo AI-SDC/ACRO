@@ -973,9 +973,7 @@ class ACRO:
             )
             return plot
 
-        return (
-            "To get the survival table or plot you have to specify the output type"
-        )
+        return "To get the survival table or plot you have to specify the output type"
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

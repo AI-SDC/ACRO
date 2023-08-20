@@ -879,7 +879,7 @@ class ACRO:
         t_values = t_values < self.survival_threshold
         masks["threshold"] = t_values
         masks["threshold"] = masks["threshold"].to_frame()
-        
+
         masks["threshold"].insert(0, "Surv prob", t_values, True)
         masks["threshold"].insert(1, "Surv prob SE", t_values, True)
         masks["threshold"].insert(3, "num events", t_values, True)
@@ -921,7 +921,7 @@ class ACRO:
                 sub_total = 0
                 total_death = 0
 
-                for i,data in enumerate(survivor):
+                for i, data in enumerate(survivor):
                     if i == 0:
                         rounded_num_at_risk.append(data)
                         rounded_num_of_deaths.append(deaths[i])
@@ -945,10 +945,7 @@ class ACRO:
                         continue
                     rounded_survival_func.insert(
                         i,
-                        (
-                            (rounded_num_at_risk[i] - data)
-                            / rounded_num_at_risk[i]
-                        )
+                        ((rounded_num_at_risk[i] - data) / rounded_num_at_risk[i])
                         * rounded_survival_func[i - 1],
                     )
                 survival_table["rounded_survival_fun"] = rounded_survival_func

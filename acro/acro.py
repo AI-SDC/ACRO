@@ -188,6 +188,15 @@ class ACRO:
         logger.debug("crosstab()")
         command: str = utils.get_command("crosstab()", stack())
 
+        # syntax checking
+        if aggfunc is not None:
+            if values is None or isinstance(values, list):
+                raise ValueError(
+                    "If you pass an aggregation function to crosstab "
+                    "you must also specify a single values column "
+                    "to aggregate over."
+                )
+
         # convert [list of] string to [list of] function
         aggfunc = utils.get_aggfuncs(aggfunc)
 
@@ -224,10 +233,11 @@ class ACRO:
                 nk_funcs.extend([utils.agg_nk for i in range(1, num)])
                 missing_funcs.extend([utils.agg_missing for i in range(1, num)])
             # threshold check- doesn't matter what we pass for value
+
             t_values = pd.crosstab(  # type: ignore
                 index,
                 columns,
-                values=index,
+                values=values,
                 rownames=rownames,
                 colnames=colnames,
                 aggfunc=freq_funcs,

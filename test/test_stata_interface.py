@@ -494,22 +494,18 @@ def test_table_aggcfn(data):
     """Testing behaviour with aggregation function."""
     # ok
     correct = (
-        "-----------------------------------|\n"
-        "         mean                      |\n"
-        "survivor Dead in 2015 Alive in 2015|\n"
-        "year                               |\n"
-        "-----------------------------------|\n"
-        "2010      2056816.000  10050917.00 |\n"
-        "2011      1264158.000   3468009.75 |\n"
-        "2012      1625441.625   2934010.75 |\n"
-        "2013      1868730.500   4579002.00 |\n"
-        "2014      2182281.500   3612917.50 |\n"
-        "-----------------------------------|\n\n"
+        "-----------------------------------------------------------------------------|\n"
+        "year           |2010        |2011        |2012         |2013       |2014     |\n"
+        "survivor       |            |            |             |           |         |\n"
+        "-----------------------------------------------------------------------------|\n"
+        "Dead in 2015   | 2056816.0  |1264158.00  |1625441.625  |1868730.5  |2182281.5|\n"
+        "Alive in 2015  |10050917.0  |3468009.75  |2934010.750  |4579002.0  |3612917.5|\n"
+        "-----------------------------------------------------------------------------|\n"
     )
     ret = dummy_acrohandler(
         data,
         "table",
-        "year survivor",
+        "survivor year",
         exclusion="year<2015",
         exp="1/100",
         weights="",
@@ -517,21 +513,38 @@ def test_table_aggcfn(data):
     )
     assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
-    # can't have lsts for index or columns at present
+    # lists for index or columns
+    # pylint:disable=duplicate-code
     correct = (
-        "acro crosstab with an aggregation function "
-        " does not currently support hierarchies within rows or columns"
+        "--------------------------------------------------------------------------|\n"
+        "grant_type          |G            |N           |R             |R/G        |\n"
+        "year survivor       |             |            |              |           |\n"
+        "--------------------------------------------------------------------------|\n"
+        "2010 Dead in 2015   |   186595.0  |       0.0  |1.723599e+07  |        0.0|\n"
+        "     Alive in 2015  |415955648.0  |52865600.0  |6.791129e+08  | 24592000.0|\n"
+        "2011 Dead in 2015   |   313857.0  |       0.0  |1.890400e+07  |        0.0|\n"
+        "     Alive in 2015  |432670912.0  |66714452.0  |1.002141e+09  | 86171000.0|\n"
+        "2012 Dead in 2015   |   256855.0  |       0.0  |2.616444e+07  |        0.0|\n"
+        "     Alive in 2015  |461257408.0  |64777124.0  |1.013167e+09  |107716000.0|\n"
+        "2013 Dead in 2015   |   203742.0  |       0.0  |2.913558e+07  |        0.0|\n"
+        "     Alive in 2015  |476995328.0  |86806336.0  |1.048305e+09  |104197000.0|\n"
+        "2014 Dead in 2015   |   180190.0  |       0.0  |3.074519e+07  |        0.0|\n"
+        "     Alive in 2015  |499584192.0  |74486664.0  |1.035069e+09  |106287000.0|\n"
+        "2015 Dead in 2015   |   154362.0  |       0.0  |1.488808e+07  |        0.0|\n"
+        "     Alive in 2015  |472163392.0  |56155352.0  |9.932494e+08  |105224000.0|\n"
+        "--------------------------------------------------------------------------|\n\n"
     )
     ret = dummy_acrohandler(
         data,
         "table",
-        "year survivor survivor",
+        " survivor grant_type",
         exclusion="",
-        exp="1/100",
+        exp="",
         weights="",
-        options="contents(mean inc_activity) nototals",
+        options="by(year) contents(sum inc_activity) nototals",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    #    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    assert ret == correct, f"got\n{ret}\n expected\n{correct}"
 
     # pandas does not allows multiple arrays for values
     correct = (
@@ -551,7 +564,7 @@ def test_table_aggcfn(data):
 
 
 def test_table_invalidvar(data):
-    """Checking table deetails are valid."""
+    """Checking table details are valid."""
 
     correct = "Error: word foo in by-list is not a variables name"
     ret = dummy_acrohandler(

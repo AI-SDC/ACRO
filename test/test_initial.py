@@ -476,3 +476,50 @@ def test_prettify_tablestring(data):
         pd.crosstab([mydata.year], [mydata.grant_type])
     )
     assert simple_str == correct2, f"got:\n{simple_str}\nexpected:\n{correct2}\n"
+
+
+def test_hierachical_aggregation(data, acro):
+    """Should work with hierarchies in rows/columns."""
+    acro.suppress = False
+    the_data = data[data.grant_type != "G"]
+    result = acro.crosstab(
+        [the_data.year, the_data.survivor],
+        [the_data.grant_type],
+        values=the_data.inc_activity,
+        aggfunc="sum",
+    )
+    res = utils.prettify_table_string(result)
+    correct = (
+        "------------------------------------------------------------|\n"
+        "grant_type          |N           |R             |R/G        |\n"
+        "year survivor       |            |              |           |\n"
+        "------------------------------------------------------------|\n"
+        "2010 Dead in 2015   |       0.0  |1.723599e+07  |        0.0|\n"
+        "     Alive in 2015  |52865600.0  |6.791129e+08  | 24592000.0|\n"
+        "2011 Dead in 2015   |       0.0  |1.890400e+07  |        0.0|\n"
+        "     Alive in 2015  |66714452.0  |1.002141e+09  | 86171000.0|\n"
+        "2012 Dead in 2015   |       0.0  |2.616444e+07  |        0.0|\n"
+        "     Alive in 2015  |64777124.0  |1.013167e+09  |107716000.0|\n"
+        "2013 Dead in 2015   |       0.0  |2.913558e+07  |        0.0|\n"
+        "     Alive in 2015  |86806336.0  |1.048305e+09  |104197000.0|\n"
+        "2014 Dead in 2015   |       0.0  |3.074519e+07  |        0.0|\n"
+        "     Alive in 2015  |74486664.0  |1.035069e+09  |106287000.0|\n"
+        "2015 Dead in 2015   |       0.0  |1.488808e+07  |        0.0|\n"
+        "     Alive in 2015  |56155352.0  |9.932494e+08  |105224000.0|\n"
+        "------------------------------------------------------------|\n"
+    )
+    assert res.split() == correct.split(), f"got\n{res}\nexpected\n{correct}\n"
+
+
+def test_single_values_column(data, acro):
+    """Pandas does not allows multiple arrays for values."""
+
+    with pytest.raises(ValueError):
+        _ = acro.crosstab(
+            data.year,
+            data.grant_type,
+            values=[data.inc_activity, data.inc_activity],
+            aggfunc="mean",
+        )
+    with pytest.raises(ValueError):
+        _ = acro.crosstab(data.year, data.grant_type, values=None, aggfunc="mean")

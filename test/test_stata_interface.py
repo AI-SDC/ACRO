@@ -514,7 +514,7 @@ def test_table_aggcfn(data):
     assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
     # lists for index or columns
-
+    # pylint: disable=duplicate-code
     correct = (
         "------------------------------------------------------------|\n"
         "grant_type          |N           |R             |R/G        |\n"

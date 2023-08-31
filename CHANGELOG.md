@@ -5,6 +5,9 @@
 Changes:
 *   Add installation support for Python 3.8 and 3.9 ([#135](https://github.com/AI-SDC/ACRO/pull/135))
 *   Add a directory of outputs to an acro object and creates a results file for checking ([#130](https://github.com/AI-SDC/ACRO/pull/130))
+*   Improve screen formatting of tables ([#139](https://github.com/AI-SDC/ACRO/pull/139))
+*   Integrate Stata support ([#142](https://github.com/AI-SDC/ACRO/pull/142))
+*   Fix crosstab when index or columns is a list and there is an aggregation function ([#147](https://github.com/AI-SDC/ACRO/pull/147))
 
 ## Version 0.4.2 (Jul 13, 2023)
 

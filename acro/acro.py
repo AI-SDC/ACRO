@@ -191,6 +191,15 @@ class ACRO:
         logger.debug("crosstab()")
         command: str = utils.get_command("crosstab()", stack())
 
+        # syntax checking
+        if aggfunc is not None:
+            if values is None or isinstance(values, list):
+                raise ValueError(
+                    "If you pass an aggregation function to crosstab "
+                    "you must also specify a single values column "
+                    "to aggregate over."
+                )
+
         # convert [list of] string to [list of] function
         aggfunc = utils.get_aggfuncs(aggfunc)
 
@@ -227,10 +236,11 @@ class ACRO:
                 nk_funcs.extend([utils.agg_nk for i in range(1, num)])
                 missing_funcs.extend([utils.agg_missing for i in range(1, num)])
             # threshold check- doesn't matter what we pass for value
+
             t_values = pd.crosstab(  # type: ignore
                 index,
                 columns,
-                values=index,
+                values=values,
                 rownames=rownames,
                 colnames=colnames,
                 aggfunc=freq_funcs,
@@ -898,15 +908,16 @@ class ACRO:
             )
             return table
         if output == "plot":
-            self.plot(
+            plot = self.plot(
                 survival_table, survival_func, filename, status, sdc, command, summary
             )
-        else:
-            return (
-                "To get the survival table or plot you have to specify the output type"
-            )
+            return plot
+        return (
+            "To get the survival table or plot you have to specify the output type"
+        )
 
-    def table(self, survival_table, safe_table, status, sdc, command, summary, outcome):
+    def table(  # pylint: disable=too-many-arguments,too-many-locals
+            self, survival_table, safe_table, status, sdc, command, summary, outcome):
         """Create the survival table according to the status of suppressing."""
         if self.suppress:
             survival_table = safe_table
@@ -922,7 +933,7 @@ class ACRO:
         )
         return survival_table
 
-    def plot(
+    def plot(  # pylint: disable=too-many-arguments,too-many-locals
         self, survival_table, survival_func, filename, status, sdc, command, summary
     ):
         """Create the survival plot according to the status of suppressing."""
@@ -989,10 +1000,6 @@ class ACRO:
             output=[os.path.normpath(filename)],
         )
         return plot
-
-        return (
-            "To get the survival table or plot you have to specify the output type"
-        )
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

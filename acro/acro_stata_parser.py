@@ -104,9 +104,9 @@ def find_brace_contents(word: str, raw: str):
 
 
 def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
-    """Function to parse stata-13 style table calls
+    """Function to parse stata-16 style table calls
     Note this is not for latest version of stata, syntax here:
-    https://www.stata.com/manuals13/rtable.pdf
+    https://www.stata.com/manuals16/rtable.pdf
     >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
     details: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
@@ -287,18 +287,22 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
 
     aggfuncs = list(map(lambda x: x.replace("sd", "std"), details["aggfuncs"]))
     rows, cols = [], []
+    # don't pass single aggfunc as a list
+    if len(aggfuncs) == 1:
+        aggfuncs = aggfuncs[0]
+
     for row in details["rowvars"]:
         rows.append(data[row])
     for col in details["colvars"]:
         cols.append(data[col])
     if len(aggfuncs) > 0 and len(details["values"]) > 0:
         # sanity checking
-        if len(rows) > 1 or len(cols) > 1:
-            msg = (
-                "acro crosstab with an aggregation function "
-                " does not currently support hierarchies within rows or columns"
-            )
-            return msg
+        # if len(rows) > 1 or len(cols) > 1:
+        #     msg = (
+        #         "acro crosstab with an aggregation function "
+        #         " does not currently support hierarchies within rows or columns"
+        #     )
+        #     return msg
 
         if len(details["values"]) > 1:
             msg = (
@@ -310,8 +314,8 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
         values = data[val]
 
         safe_output = stata_config.stata_acro.crosstab(
-            index=rows[0],
-            columns=cols[0],
+            index=rows,
+            columns=cols,
             aggfunc=aggfuncs,
             values=values,
             margins=details["totals"],

@@ -912,12 +912,11 @@ class ACRO:
                 survival_table, survival_func, filename, status, sdc, command, summary
             )
             return plot
-        return (
-            "To get the survival table or plot you have to specify the output type"
-        )
+        return "To get the survival table or plot you have to specify the output type"
 
     def table(  # pylint: disable=too-many-arguments,too-many-locals
-            self, survival_table, safe_table, status, sdc, command, summary, outcome):
+        self, survival_table, safe_table, status, sdc, command, summary, outcome
+    ):
         """Create the survival table according to the status of suppressing."""
         if self.suppress:
             survival_table = safe_table

@@ -7,6 +7,7 @@ import shutil
 import numpy as np
 import pandas as pd
 import pytest
+import statsmodels.api as sm
 
 from acro import ACRO, add_constant, add_to_acro, record, utils
 from acro.record import Records, load_records
@@ -476,3 +477,19 @@ def test_prettify_tablestring(data):
         pd.crosstab([mydata.year], [mydata.grant_type])
     )
     assert simple_str == correct2, f"got:\n{simple_str}\nexpected:\n{correct2}\n"
+
+
+def test_surv_func(acro):
+    """Test survival tables and plots."""
+    data = sm.datasets.get_rdataset("flchain", "survival").data
+    df = data.loc[data.sex == "F", :]
+    _ = acro.surv_func(df.futime, df.death, output="table")
+    output = acro.results.get_index(0)
+    correct_summary: str = "fail; threshold: 3864 cells suppressed; "
+    assert (
+        output.summary == correct_summary
+    ), f"\n{output.summary}\n should be \n{correct_summary}\n"
+
+    filename = "kaplan-mier.png"
+    _ = acro.surv_func(df.futime, df.death, output="plot", filename=filename)
+    assert os.path.exists(f"acro_artifacts/{filename}")

@@ -859,7 +859,7 @@ class ACRO:
         """
         logger.debug("surv_func()")
         command: str = utils.get_command("surv_func()", stack())
-        survival_function: DataFrame = (
+        survival_func: DataFrame = (
             sm.SurvfuncRight(  # pylint: disable=too-many-function-args
                 time,
                 status,
@@ -871,7 +871,7 @@ class ACRO:
             )
         )
         masks = {}
-        survival_table = survival_function.summary()
+        survival_table = survival_func.summary()
         t_values = (
             survival_table["num at risk"].shift(periods=1)
             - survival_table["num at risk"]
@@ -893,89 +893,102 @@ class ACRO:
 
         # record output
         if output == "table":
-            if self.suppress:
-                survival_table = safe_table
-            self.results.add(
-                status=status,
-                output_type="table",
-                properties={"method": "surv_func"},
-                sdc=sdc,
-                command=command,
-                summary=summary,
-                outcome=outcome,
-                output=[survival_table],
+            table = self.table(
+                survival_table, safe_table, status, sdc, command, summary, outcome
             )
-            return survival_table
-
+            return table
         if output == "plot":
-            if self.suppress:
-                death_censored = (
-                    survival_table["num at risk"].shift(periods=1)
-                    - survival_table["num at risk"]
-                )
-                death_censored = death_censored.tolist()
-                survivor = survival_table["num at risk"].tolist()
-                deaths = survival_table["num events"].tolist()
-                rounded_num_of_deaths = []
-                rounded_num_at_risk = []
-                sub_total = 0
-                total_death = 0
-
-                for i, data in enumerate(survivor):
-                    if i == 0:
-                        rounded_num_at_risk.append(data)
-                        rounded_num_of_deaths.append(deaths[i])
-                        continue
-                    sub_total += death_censored[i]
-                    total_death += deaths[i]
-                    if sub_total < self.survival_threshold:
-                        rounded_num_at_risk.append(rounded_num_at_risk[i - 1])
-                        rounded_num_of_deaths.append(0)
-                    else:
-                        rounded_num_at_risk.append(data)
-                        rounded_num_of_deaths.append(total_death)
-                        total_death = 0
-                        sub_total = 0
-
-                # calculate the surv prob
-                rounded_survival_func = []
-                for i, data in enumerate(rounded_num_of_deaths):
-                    if i == 0:
-                        rounded_survival_func.append(survival_table["Surv prob"][i])
-                        continue
-                    rounded_survival_func.insert(
-                        i,
-                        ((rounded_num_at_risk[i] - data) / rounded_num_at_risk[i])
-                        * rounded_survival_func[i - 1],
-                    )
-                survival_table["rounded_survival_fun"] = rounded_survival_func
-                print(survival_table)
-                plot = survival_table.plot(y="rounded_survival_fun", ylim=0)
-            else:
-                plot = survival_function.plot()
-
-            try:  # pragma: no cover
-                os.makedirs("acro_artifacts")
-                logger.debug("Directory acro_artifacts created successfully")
-            except FileExistsError:
-                logger.debug("Directory acro_artifacts already exists")
-            plt.savefig(f"acro_artifacts/{filename}")
-            # record output
-            self.results.add(
-                status=status,
-                output_type="survival plot",
-                properties={"method": "surv_func"},
-                sdc=sdc,
-                command=command,
-                summary=summary,
-                outcome=pd.DataFrame(),
-                output=[os.path.normpath(filename)],
+            self.plot(
+                survival_table, survival_func, filename, status, sdc, command, summary
             )
-            return plot
+        else:
+            return (
+                "To get the survival table or plot you have to specify the output type"
+            )
 
-        return (
-            "To get the survival table or plot you have to specify the output type"
+    def table(self, survival_table, safe_table, status, sdc, command, summary, outcome):
+        """Create the survival table according to the status of suppressing."""
+        if self.suppress:
+            survival_table = safe_table
+        self.results.add(
+            status=status,
+            output_type="table",
+            properties={"method": "surv_func"},
+            sdc=sdc,
+            command=command,
+            summary=summary,
+            outcome=outcome,
+            output=[survival_table],
         )
+        return survival_table
+
+    def plot(
+        self, survival_table, survival_func, filename, status, sdc, command, summary
+    ):
+        """Create the survival plot according to the status of suppressing."""
+        if self.suppress:
+            death_censored = (
+                survival_table["num at risk"].shift(periods=1)
+                - survival_table["num at risk"]
+            )
+            death_censored = death_censored.tolist()
+            survivor = survival_table["num at risk"].tolist()
+            deaths = survival_table["num events"].tolist()
+            rounded_num_of_deaths = []
+            rounded_num_at_risk = []
+            sub_total = 0
+            total_death = 0
+
+            for i, data in enumerate(survivor):
+                if i == 0:
+                    rounded_num_at_risk.append(data)
+                    rounded_num_of_deaths.append(deaths[i])
+                    continue
+                sub_total += death_censored[i]
+                total_death += deaths[i]
+                if sub_total < self.survival_threshold:
+                    rounded_num_at_risk.append(rounded_num_at_risk[i - 1])
+                    rounded_num_of_deaths.append(0)
+                else:
+                    rounded_num_at_risk.append(data)
+                    rounded_num_of_deaths.append(total_death)
+                    total_death = 0
+                    sub_total = 0
+
+            # calculate the surv prob
+            rounded_survival_func = []
+            for i, data in enumerate(rounded_num_of_deaths):
+                if i == 0:
+                    rounded_survival_func.append(survival_table["Surv prob"][i])
+                    continue
+                rounded_survival_func.insert(
+                    i,
+                    ((rounded_num_at_risk[i] - data) / rounded_num_at_risk[i])
+                    * rounded_survival_func[i - 1],
+                )
+            survival_table["rounded_survival_fun"] = rounded_survival_func
+            plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
+        else:
+            plot = survival_func.plot()
+
+        try:  # pragma: no cover
+            os.makedirs("acro_artifacts")
+            logger.debug("Directory acro_artifacts created successfully")
+        except FileExistsError:
+            logger.debug("Directory acro_artifacts already exists")
+        plt.savefig(f"acro_artifacts/{filename}")
+        # record output
+        self.results.add(
+            status=status,
+            output_type="survival plot",
+            properties={"method": "surv_func"},
+            sdc=sdc,
+            command=command,
+            summary=summary,
+            outcome=pd.DataFrame(),
+            output=[os.path.normpath(filename)],
+        )
+        return plot
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

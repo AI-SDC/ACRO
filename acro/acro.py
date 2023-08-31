@@ -915,8 +915,7 @@ class ACRO:
         return None
 
     def table(  # pylint: disable=too-many-arguments,too-many-locals
-        self, survival_table, safe_table, status, sdc, command, summary, outcome
-    ):
+            self, survival_table, safe_table, status, sdc, command, summary, outcome):
         """Creates the survival table according to the status of suppressing."""
         if self.suppress:
             survival_table = safe_table

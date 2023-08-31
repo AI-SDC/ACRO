@@ -540,3 +540,8 @@ def test_surv_func(acro):
     filename = "kaplan-mier.png"
     _ = acro.surv_func(data.futime, data.death, output="plot", filename=filename)
     assert os.path.exists(f"acro_artifacts/{filename}")
+    acro.add_exception("output_0", "I need this")
+    acro.add_exception("output_1", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_1 = results.get_index(1)
+    assert output_1.output == [filename]

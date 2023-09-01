@@ -84,6 +84,7 @@
 <span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
 <span class="kn">import</span> <span class="nn">statsmodels.formula.api</span> <span class="k">as</span> <span class="nn">smf</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
 <span class="kn">from</span> <span class="nn">statsmodels.discrete.discrete_model</span> <span class="kn">import</span> <span class="n">BinaryResultsWrapper</span>
 <span class="kn">from</span> <span class="nn">statsmodels.iolib.table</span> <span class="kn">import</span> <span class="n">SimpleTable</span>
@@ -144,6 +145,8 @@
         <span class="n">utils</span><span class="o">.</span><span class="n">SAFE_NK_N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_n&quot;</span><span class="p">]</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">SAFE_NK_K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;safe_nk_k&quot;</span><span class="p">]</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">CHECK_MISSING_VALUES</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;check_missing_values&quot;</span><span class="p">]</span>
+        <span class="c1"># set globals for survival analysis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">survival_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;survival_safe_threshold&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="ACRO.finalise"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;outputs&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Records</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a results file for checking.</span>
@@ -890,6 +893,187 @@
             <span class="n">output</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">get_summary_dataframes</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="ACRO.surv_func"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.surv_func">[docs]</a>    <span class="k">def</span> <span class="nf">surv_func</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments,too-many-locals</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">,</span>
+        <span class="n">status</span><span class="p">,</span>
+        <span class="n">output</span><span class="p">,</span>
+        <span class="n">entry</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">freq_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">exog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">bw_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;kaplan-meier.png&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimates the survival function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time : array_like</span>
+<span class="sd">            An array of times (censoring times or event times)</span>
+<span class="sd">        status : array_like</span>
+<span class="sd">            Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning</span>
+<span class="sd">            that the event occurs at the given value in time; status==0 indicatesthat censoring</span>
+<span class="sd">            has occurred, meaning that the event occurs after the given value in time.</span>
+<span class="sd">        output : str</span>
+<span class="sd">            A string determine the type of output. Available options are ‘table’, ‘plot’.</span>
+<span class="sd">        entry : array_like, optional An array of entry times for handling</span>
+<span class="sd">            left truncation (the subject is not in the risk set on or before the entry time)</span>
+<span class="sd">        title : str</span>
+<span class="sd">            Optional title used for plots and summary output.</span>
+<span class="sd">        freq_weights : array_like</span>
+<span class="sd">            Optional frequency weights</span>
+<span class="sd">        exog : array_like</span>
+<span class="sd">            Optional, if present used to account for violation of independent censoring.</span>
+<span class="sd">        bw_factor : float</span>
+<span class="sd">            Band-width multiplier for kernel-based estimation. Only used if exog is provided.</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            The name of the file where the plot will be saved. Only used if the output</span>
+<span class="sd">            is a plot.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DataFrame</span>
+<span class="sd">            The survival table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;surv_func()&quot;</span><span class="p">)</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="s2">&quot;surv_func()&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">())</span>
+        <span class="n">survival_func</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">sm</span><span class="o">.</span><span class="n">SurvfuncRight</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-function-args</span>
+                <span class="n">time</span><span class="p">,</span>
+                <span class="n">status</span><span class="p">,</span>
+                <span class="n">entry</span><span class="p">,</span>
+                <span class="n">title</span><span class="p">,</span>
+                <span class="n">freq_weights</span><span class="p">,</span>
+                <span class="n">exog</span><span class="p">,</span>
+                <span class="n">bw_factor</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">survival_table</span> <span class="o">=</span> <span class="n">survival_func</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        <span class="n">t_values</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">survival_table</span><span class="p">[</span><span class="s2">&quot;num at risk&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">survival_table</span><span class="p">[</span><span class="s2">&quot;num at risk&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">t_values</span> <span class="o">=</span> <span class="n">t_values</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">survival_threshold</span>
+        <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_values</span>
+        <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+
+        <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Surv prob&quot;</span><span class="p">,</span> <span class="n">t_values</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Surv prob SE&quot;</span><span class="p">,</span> <span class="n">t_values</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;num events&quot;</span><span class="p">,</span> <span class="n">t_values</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># build the sdc dictionary</span>
+        <span class="n">sdc</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_table_sdc</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">)</span>
+        <span class="c1"># get the status and summary</span>
+        <span class="n">status</span><span class="p">,</span> <span class="n">summary</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">sdc</span><span class="p">)</span>
+        <span class="c1"># apply the suppression</span>
+        <span class="n">safe_table</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">apply_suppression</span><span class="p">(</span><span class="n">survival_table</span><span class="p">,</span> <span class="n">masks</span><span class="p">)</span>
+
+        <span class="c1"># record output</span>
+        <span class="k">if</span> <span class="n">output</span> <span class="o">==</span> <span class="s2">&quot;table&quot;</span><span class="p">:</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span>
+                <span class="n">survival_table</span><span class="p">,</span> <span class="n">safe_table</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">sdc</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">table</span>
+        <span class="k">if</span> <span class="n">output</span> <span class="o">==</span> <span class="s2">&quot;plot&quot;</span><span class="p">:</span>
+            <span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">survival_table</span><span class="p">,</span> <span class="n">survival_func</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">sdc</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">summary</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">plot</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ACRO.table"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.table">[docs]</a>    <span class="k">def</span> <span class="nf">table</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments,too-many-locals</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">survival_table</span><span class="p">,</span> <span class="n">safe_table</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">sdc</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">outcome</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates the survival table according to the status of suppressing.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">:</span>
+            <span class="n">survival_table</span> <span class="o">=</span> <span class="n">safe_table</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;table&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;surv_func&quot;</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="n">sdc</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">outcome</span><span class="p">,</span>
+            <span class="n">output</span><span class="o">=</span><span class="p">[</span><span class="n">survival_table</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">survival_table</span></div>
+
+<div class="viewcode-block" id="ACRO.plot"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-arguments,too-many-locals</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">survival_table</span><span class="p">,</span> <span class="n">survival_func</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">sdc</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">summary</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates the survival plot according to the status of suppressing.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">:</span>
+            <span class="n">survival_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rounded_survival_table</span><span class="p">(</span><span class="n">survival_table</span><span class="p">)</span>
+            <span class="n">plot</span> <span class="o">=</span> <span class="n">survival_table</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s2">&quot;rounded_survival_fun&quot;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">plot</span> <span class="o">=</span> <span class="n">survival_func</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;acro_artifacts&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Directory acro_artifacts created successfully&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Directory acro_artifacts already exists&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;acro_artifacts/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># record output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;survival plot&quot;</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;surv_func&quot;</span><span class="p">},</span>
+            <span class="n">sdc</span><span class="o">=</span><span class="n">sdc</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+            <span class="n">outcome</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span>
+            <span class="n">output</span><span class="o">=</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">filename</span><span class="p">)],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">plot</span></div>
+
+<div class="viewcode-block" id="ACRO.rounded_survival_table"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.rounded_survival_table">[docs]</a>    <span class="k">def</span> <span class="nf">rounded_survival_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">survival_table</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the rounded surival function.&quot;&quot;&quot;</span>
+        <span class="n">death_censored</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">survival_table</span><span class="p">[</span><span class="s2">&quot;num at risk&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">survival_table</span><span class="p">[</span><span class="s2">&quot;num at risk&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">death_censored</span> <span class="o">=</span> <span class="n">death_censored</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">survivor</span> <span class="o">=</span> <span class="n">survival_table</span><span class="p">[</span><span class="s2">&quot;num at risk&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">deaths</span> <span class="o">=</span> <span class="n">survival_table</span><span class="p">[</span><span class="s2">&quot;num events&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">rounded_num_of_deaths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">rounded_num_at_risk</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sub_total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">total_death</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">survivor</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">rounded_num_at_risk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">rounded_num_of_deaths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deaths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">continue</span>
+            <span class="n">sub_total</span> <span class="o">+=</span> <span class="n">death_censored</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">total_death</span> <span class="o">+=</span> <span class="n">deaths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">sub_total</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">survival_threshold</span><span class="p">:</span>
+                <span class="n">rounded_num_at_risk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rounded_num_at_risk</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">rounded_num_of_deaths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rounded_num_at_risk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">rounded_num_of_deaths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_death</span><span class="p">)</span>
+                <span class="n">total_death</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">sub_total</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># calculate the surv prob</span>
+        <span class="n">rounded_survival_func</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rounded_num_of_deaths</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">rounded_survival_func</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">survival_table</span><span class="p">[</span><span class="s2">&quot;Surv prob&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">continue</span>
+            <span class="n">rounded_survival_func</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                <span class="n">i</span><span class="p">,</span>
+                <span class="p">((</span><span class="n">rounded_num_at_risk</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="n">rounded_num_at_risk</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="o">*</span> <span class="n">rounded_survival_func</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="n">survival_table</span><span class="p">[</span><span class="s2">&quot;rounded_survival_fun&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rounded_survival_func</span>
+        <span class="k">return</span> <span class="n">survival_table</span></div>
 
 <div class="viewcode-block" id="ACRO.rename_output"><a class="viewcode-back" href="../../acro.html#acro.acro.ACRO.rename_output">[docs]</a>    <span class="k">def</span> <span class="nf">rename_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Rename an output.</span>

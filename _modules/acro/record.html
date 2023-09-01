@@ -124,7 +124,7 @@
             <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">loaded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loaded</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># output is path(s) to custom file(s)</span>
-        <span class="k">return</span> <span class="n">output</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">return</span> <span class="n">output</span>
     <span class="k">return</span> <span class="n">loaded</span></div>
 
 
@@ -245,6 +245,9 @@
                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
                     <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
                     <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_type</span> <span class="o">==</span> <span class="s2">&quot;survival plot&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span></div>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -493,10 +496,7 @@
                     <span class="nb">str</span><span class="p">(</span><span class="n">record</span><span class="p">),</span>
                     <span class="n">record</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">record</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">EOFError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-                    <span class="n">record</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="s2">&quot;No request passed from stata&quot;</span></div>
+                <span class="n">record</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.finalise"><a class="viewcode-back" href="../../record.html#acro.record.Records.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a results file for checking.</span>
@@ -516,6 +516,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">finalise_excel</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid file extension. Options: {json, xlsx}&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;acro_artifacts&quot;</span><span class="p">):</span>
+            <span class="n">add_acro_artifacts</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_checksums</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;outputs written to: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
@@ -580,9 +582,8 @@
             <span class="n">summary</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">command</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="c1"># avoid writing custom outputs</span>
-                <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">output_type</span> <span class="o">==</span> <span class="s2">&quot;custom&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">output_type</span> <span class="o">==</span> <span class="s2">&quot;custom&quot;</span><span class="p">:</span>
+                    <span class="k">continue</span>  <span class="c1"># avoid writing custom outputs</span>
                 <span class="n">sheet</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_id</span><span class="p">)</span>
                 <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
                 <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
@@ -593,8 +594,7 @@
             <span class="c1"># individual sheets</span>
             <span class="k">for</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">output_type</span> <span class="o">==</span> <span class="s2">&quot;custom&quot;</span><span class="p">:</span>
-                    <span class="c1"># avoid writing custom outputs</span>
-                    <span class="k">continue</span>  <span class="c1"># pragma: no cover</span>
+                    <span class="k">continue</span>  <span class="c1"># avoid writing custom outputs</span>
                 <span class="c1"># command and summary</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">tmp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -633,6 +633,20 @@
                     <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sha256</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;There is no file to do the checksums&quot;</span><span class="p">)</span>  <span class="c1"># pragma: no cover</span></div></div>
+
+
+<div class="viewcode-block" id="add_acro_artifacts"><a class="viewcode-back" href="../../record.html#acro.record.add_acro_artifacts">[docs]</a><span class="k">def</span> <span class="nf">add_acro_artifacts</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy any file from the acro_artifacts directory to the output</span>
+<span class="sd">        directory then delete the directory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Name of the folder that files are to be written.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;acro_artifacts&quot;</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;acro_artifacts/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="s2">&quot;acro_artifacts&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="load_records"><a class="viewcode-back" href="../../record.html#acro.record.load_records">[docs]</a><span class="k">def</span> <span class="nf">load_records</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Records</span><span class="p">:</span>

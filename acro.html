@@ -138,20 +138,32 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.pivot_table" title="acro.acro.ACRO.pivot_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pivot_table</span></code></a>(data[, values, index, columns, ...])</p></td>
 <td><p>Create a spreadsheet-style pivot table as a DataFrame.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.print_outputs" title="acro.acro.ACRO.print_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_outputs</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.plot" title="acro.acro.ACRO.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>(survival_table, survival_func, ...)</p></td>
+<td><p>Creates the survival plot according to the status of suppressing.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.print_outputs" title="acro.acro.ACRO.print_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_outputs</span></code></a>()</p></td>
 <td><p>Prints the current results dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.probit" title="acro.acro.ACRO.probit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.probit" title="acro.acro.ACRO.probit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
 <td><p>Fits Probit model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.probitr" title="acro.acro.ACRO.probitr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probitr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.probitr" title="acro.acro.ACRO.probitr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probitr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
 <td><p>Fits Probit model from a formula and dataframe.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.remove_output" title="acro.acro.ACRO.remove_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_output</span></code></a>(key)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.remove_output" title="acro.acro.ACRO.remove_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_output</span></code></a>(key)</p></td>
 <td><p>Removes an output from the results.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.rename_output" title="acro.acro.ACRO.rename_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename_output</span></code></a>(old, new)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.rename_output" title="acro.acro.ACRO.rename_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename_output</span></code></a>(old, new)</p></td>
 <td><p>Rename an output.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.rounded_survival_table" title="acro.acro.ACRO.rounded_survival_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rounded_survival_table</span></code></a>(survival_table)</p></td>
+<td><p>Calculates the rounded surival function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#acro.acro.ACRO.surv_func" title="acro.acro.ACRO.surv_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">surv_func</span></code></a>(time, status, output[, entry, ...])</p></td>
+<td><p>Estimates the survival function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#acro.acro.ACRO.table" title="acro.acro.ACRO.table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table</span></code></a>(survival_table, safe_table, status, ...)</p></td>
+<td><p>Creates the survival table according to the status of suppressing.</p></td>
 </tr>
 </tbody>
 </table>
@@ -479,6 +491,12 @@ all values for categorical groupers.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">survival_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">survival_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acro/acro.html#ACRO.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the survival plot according to the status of suppressing.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="acro.acro.ACRO.print_outputs">
 <span class="sig-name descname"><span class="pre">print_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.print_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.print_outputs" title="Permalink to this definition"></a></dt>
 <dd><p>Prints the current results dictionary.</p>
@@ -594,6 +612,57 @@ a numpy structured or rec array, a dictionary, or a pandas DataFrame.</p>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.rounded_survival_table">
+<span class="sig-name descname"><span class="pre">rounded_survival_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">survival_table</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acro/acro.html#ACRO.rounded_survival_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.rounded_survival_table" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the rounded surival function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.surv_func">
+<span class="sig-name descname"><span class="pre">surv_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kaplan-meier.png'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/acro/acro.html#ACRO.surv_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.surv_func" title="Permalink to this definition"></a></dt>
+<dd><p>Estimates the survival function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>time</strong><span class="classifier">array_like</span></dt><dd><p>An array of times (censoring times or event times)</p>
+</dd>
+<dt><strong>status</strong><span class="classifier">array_like</span></dt><dd><p>Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning
+that the event occurs at the given value in time; status==0 indicatesthat censoring
+has occurred, meaning that the event occurs after the given value in time.</p>
+</dd>
+<dt><strong>output</strong><span class="classifier">str</span></dt><dd><p>A string determine the type of output. Available options are ‘table’, ‘plot’.</p>
+</dd>
+<dt><strong>entry</strong><span class="classifier">array_like, optional An array of entry times for handling</span></dt><dd><p>left truncation (the subject is not in the risk set on or before the entry time)</p>
+</dd>
+<dt><strong>title</strong><span class="classifier">str</span></dt><dd><p>Optional title used for plots and summary output.</p>
+</dd>
+<dt><strong>freq_weights</strong><span class="classifier">array_like</span></dt><dd><p>Optional frequency weights</p>
+</dd>
+<dt><strong>exog</strong><span class="classifier">array_like</span></dt><dd><p>Optional, if present used to account for violation of independent censoring.</p>
+</dd>
+<dt><strong>bw_factor</strong><span class="classifier">float</span></dt><dd><p>Band-width multiplier for kernel-based estimation. Only used if exog is provided.</p>
+</dd>
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The name of the file where the plot will be saved. Only used if the output
+is a plot.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>DataFrame</dt><dd><p>The survival table.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="acro.acro.ACRO.table">
+<span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">survival_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcome</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acro/acro.html#ACRO.table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#acro.acro.ACRO.table" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the survival table according to the status of suppressing.</p>
 </dd></dl>
 
 </dd></dl>

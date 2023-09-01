@@ -33,6 +33,7 @@ SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
 CHECK_MISSING_VALUES: bool = False
 
+
 class tables:
     """Creates tabular data.
 
@@ -41,6 +42,7 @@ class tables:
     suppress : bool
         Whether to automatically apply suppression.
     """
+
     def __init__(self, suppress):
         self.suppress = suppress
 
@@ -199,7 +201,7 @@ class tables:
             mask = mask.astype(int)
             mask.replace({0: False, 1: True}, inplace=True)
             masks[name] = mask
-        
+
         # build the sdc dictionary
         sdc: dict = self.get_table_sdc(masks, self.suppress)
         # get the status and summary
@@ -359,7 +361,7 @@ class tables:
             output=[table],
         )
         return table
-    
+
     def surv_func(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         time,
@@ -570,8 +572,10 @@ class tables:
         logger.debug("aggfunc: %s", func)
         return func
 
-    def get_aggfuncs(self, aggfuncs: str | list[str] | None,
-        ) -> Callable | list[Callable] | None:
+    def get_aggfuncs(
+        self,
+        aggfuncs: str | list[str] | None,
+    ) -> Callable | list[Callable] | None:
         """Checks whether a list of aggregation functions is allowed and returns
         the appropriate functions.
 
@@ -603,7 +607,9 @@ class tables:
             if len(functions) < 1:  # pragma: no cover
                 raise ValueError(f"invalid aggfuncs: {aggfuncs}")
             return functions
-        raise ValueError("aggfuncs must be: either str or list[str]")  # pragma: no cover
+        raise ValueError(
+            "aggfuncs must be: either str or list[str]"
+        )  # pragma: no cover
 
     def agg_negative(self, vals: Series) -> bool:
         """Aggregation function that returns whether any values are negative.
@@ -696,9 +702,9 @@ class tables:
             Whether the threshold rule is violated.
         """
         return vals.count() < THRESHOLD
-    
+
     def apply_suppression(
-    self, table: DataFrame, masks: dict[str, DataFrame]
+        self, table: DataFrame, masks: dict[str, DataFrame]
     ) -> tuple[DataFrame, DataFrame]:
         """Applies suppression to a table.
 
@@ -816,4 +822,3 @@ class tables:
             summary = status
         logger.info("get_summary(): %s", summary)
         return status, summary
-    

@@ -21,7 +21,7 @@ logger = logging.getLogger("acro")
 
 class regression:
     """Creates regression models."""
-    
+
     def ols(  # pylint: disable=too-many-locals
         self, endog, exog=None, missing="none", hasconst=None, **kwargs
     ) -> RegressionResultsWrapper:
@@ -360,7 +360,7 @@ class regression:
             output=self.get_summary_dataframes(tables),
         )
         return results
-    
+
     def get_summary_dataframes(self, results: list[SimpleTable]) -> list[DataFrame]:
         """Converts a list of SimpleTable objects to a list of DataFrame objects.
 
@@ -379,7 +379,7 @@ class regression:
             table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
             tables.append(table_df)
         return tables
-    
+
     def __check_model_dof(self, name: str, model) -> tuple[str, str, float]:
         """Check model DOF.
 

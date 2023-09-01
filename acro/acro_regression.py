@@ -22,6 +22,7 @@ logger = logging.getLogger("acro")
 
 class Regression:
     """Creates regression models."""
+
     def __init__(self, config) -> None:
         self.config = config
         self.results: Records = Records()

@@ -21,7 +21,15 @@ setup(
     setup_requires=["wheel"],
     package_data={"acro": ["default.yaml"]},
     python_requires=">=3.8",
-    install_requires=["lxml", "numpy", "openpyxl", "pandas", "PyYAML", "statsmodels"],
+    install_requires=[
+        "lxml",
+        "matplotlib",
+        "numpy",
+        "openpyxl",
+        "pandas",
+        "PyYAML",
+        "statsmodels",
+    ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

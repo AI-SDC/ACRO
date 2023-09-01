@@ -23,4 +23,7 @@ safe_pratio_p: 0.10
 
 # refuse checking for missing values
 check_missing_values: False
+
+# frequency threshols for survival tables and plots
+survival_safe_threshold: 10
 ...

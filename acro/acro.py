@@ -14,6 +14,7 @@ import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import yaml
+from matplotlib import pyplot as plt
 from pandas import DataFrame
 from statsmodels.discrete.discrete_model import BinaryResultsWrapper
 from statsmodels.iolib.table import SimpleTable
@@ -74,6 +75,8 @@ class ACRO:
         utils.SAFE_NK_N = self.config["safe_nk_n"]
         utils.SAFE_NK_K = self.config["safe_nk_k"]
         utils.CHECK_MISSING_VALUES = self.config["check_missing_values"]
+        # set globals for survival analysis
+        self.survival_threshold = self.config["survival_safe_threshold"]
 
     def finalise(self, path: str = "outputs", ext="json") -> Records:
         """Creates a results file for checking.
@@ -820,6 +823,187 @@ class ACRO:
             output=utils.get_summary_dataframes(tables),
         )
         return results
+
+    def surv_func(  # pylint: disable=too-many-arguments,too-many-locals
+        self,
+        time,
+        status,
+        output,
+        entry=None,
+        title=None,
+        freq_weights=None,
+        exog=None,
+        bw_factor=1.0,
+        filename="kaplan-meier.png",
+    ) -> DataFrame:
+        """Estimates the survival function.
+
+        Parameters
+        ----------
+        time : array_like
+            An array of times (censoring times or event times)
+        status : array_like
+            Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning
+            that the event occurs at the given value in time; status==0 indicatesthat censoring
+            has occurred, meaning that the event occurs after the given value in time.
+        output : str
+            A string determine the type of output. Available options are ‘table’, ‘plot’.
+        entry : array_like, optional An array of entry times for handling
+            left truncation (the subject is not in the risk set on or before the entry time)
+        title : str
+            Optional title used for plots and summary output.
+        freq_weights : array_like
+            Optional frequency weights
+        exog : array_like
+            Optional, if present used to account for violation of independent censoring.
+        bw_factor : float
+            Band-width multiplier for kernel-based estimation. Only used if exog is provided.
+        filename : str
+            The name of the file where the plot will be saved. Only used if the output
+            is a plot.
+
+        Returns
+        -------
+        DataFrame
+            The survival table.
+        """
+        logger.debug("surv_func()")
+        command: str = utils.get_command("surv_func()", stack())
+        survival_func: DataFrame = (
+            sm.SurvfuncRight(  # pylint: disable=too-many-function-args
+                time,
+                status,
+                entry,
+                title,
+                freq_weights,
+                exog,
+                bw_factor,
+            )
+        )
+        masks = {}
+        survival_table = survival_func.summary()
+        t_values = (
+            survival_table["num at risk"].shift(periods=1)
+            - survival_table["num at risk"]
+        )
+        t_values = t_values < self.survival_threshold
+        masks["threshold"] = t_values
+        masks["threshold"] = masks["threshold"].to_frame()
+
+        masks["threshold"].insert(0, "Surv prob", t_values, True)
+        masks["threshold"].insert(1, "Surv prob SE", t_values, True)
+        masks["threshold"].insert(3, "num events", t_values, True)
+
+        # build the sdc dictionary
+        sdc: dict = utils.get_table_sdc(masks, self.suppress)
+        # get the status and summary
+        status, summary = utils.get_summary(sdc)
+        # apply the suppression
+        safe_table, outcome = utils.apply_suppression(survival_table, masks)
+
+        # record output
+        if output == "table":
+            table = self.table(
+                survival_table, safe_table, status, sdc, command, summary, outcome
+            )
+            return table
+        if output == "plot":
+            plot = self.plot(
+                survival_table, survival_func, filename, status, sdc, command, summary
+            )
+            return plot
+        return None
+
+    def table(  # pylint: disable=too-many-arguments,too-many-locals
+        self, survival_table, safe_table, status, sdc, command, summary, outcome
+    ):
+        """Creates the survival table according to the status of suppressing."""
+        if self.suppress:
+            survival_table = safe_table
+        self.results.add(
+            status=status,
+            output_type="table",
+            properties={"method": "surv_func"},
+            sdc=sdc,
+            command=command,
+            summary=summary,
+            outcome=outcome,
+            output=[survival_table],
+        )
+        return survival_table
+
+    def plot(  # pylint: disable=too-many-arguments,too-many-locals
+        self, survival_table, survival_func, filename, status, sdc, command, summary
+    ):
+        """Creates the survival plot according to the status of suppressing."""
+        if self.suppress:
+            survival_table = self.rounded_survival_table(survival_table)
+            plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
+        else:  # pragma: no cover
+            plot = survival_func.plot()
+
+        try:
+            os.makedirs("acro_artifacts")
+            logger.debug("Directory acro_artifacts created successfully")
+        except FileExistsError:  # pragma: no cover
+            logger.debug("Directory acro_artifacts already exists")
+        plt.savefig(f"acro_artifacts/{filename}")
+        # record output
+        self.results.add(
+            status=status,
+            output_type="survival plot",
+            properties={"method": "surv_func"},
+            sdc=sdc,
+            command=command,
+            summary=summary,
+            outcome=pd.DataFrame(),
+            output=[os.path.normpath(filename)],
+        )
+        return plot
+
+    def rounded_survival_table(self, survival_table):
+        """Calculates the rounded surival function."""
+        death_censored = (
+            survival_table["num at risk"].shift(periods=1)
+            - survival_table["num at risk"]
+        )
+        death_censored = death_censored.tolist()
+        survivor = survival_table["num at risk"].tolist()
+        deaths = survival_table["num events"].tolist()
+        rounded_num_of_deaths = []
+        rounded_num_at_risk = []
+        sub_total = 0
+        total_death = 0
+
+        for i, data in enumerate(survivor):
+            if i == 0:
+                rounded_num_at_risk.append(data)
+                rounded_num_of_deaths.append(deaths[i])
+                continue
+            sub_total += death_censored[i]
+            total_death += deaths[i]
+            if sub_total < self.survival_threshold:
+                rounded_num_at_risk.append(rounded_num_at_risk[i - 1])
+                rounded_num_of_deaths.append(0)
+            else:
+                rounded_num_at_risk.append(data)
+                rounded_num_of_deaths.append(total_death)
+                total_death = 0
+                sub_total = 0
+
+        # calculate the surv prob
+        rounded_survival_func = []
+        for i, data in enumerate(rounded_num_of_deaths):
+            if i == 0:
+                rounded_survival_func.append(survival_table["Surv prob"][i])
+                continue
+            rounded_survival_func.insert(
+                i,
+                ((rounded_num_at_risk[i] - data) / rounded_num_at_risk[i])
+                * rounded_survival_func[i - 1],
+            )
+        survival_table["rounded_survival_fun"] = rounded_survival_func
+        return survival_table
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

@@ -1,4 +1,4 @@
-matplotlib==3.6.0
+matplotlib==3.7.2
 numpy==1.23.1
 numpydoc==1.4.0
 pandas==1.4.4

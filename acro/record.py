@@ -54,7 +54,7 @@ def load_output(path: str, output: list[str]) -> list[str] | list[DataFrame]:
             filename = os.path.normpath(f"{path}/{filename}")
             loaded.append(pd.read_csv(filename))
     if len(loaded) < 1:  # output is path(s) to custom file(s)
-        return output  # pragma: no cover
+        return output
     return loaded
 
 
@@ -175,6 +175,9 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
                 if os.path.exists(filename):
                     shutil.copy(filename, path)
                     output.append(Path(filename).name)
+        if self.output_type == "survival plot":
+            for filename in self.output:
+                output.append(Path(filename).name)
         return output
 
     def __str__(self) -> str:
@@ -423,10 +426,7 @@ class Records:
                     str(record),
                     record.status,
                 )
-                try:
-                    record.exception = input("")
-                except EOFError:  # pragma: no cover
-                    record.exception = "No request passed from stata"
+                record.exception = input("")
 
     def finalise(self, path: str, ext: str) -> None:
         """Creates a results file for checking.
@@ -446,6 +446,8 @@ class Records:
             self.finalise_excel(path)
         else:
             raise ValueError("Invalid file extension. Options: {json, xlsx}")
+        if os.path.exists("acro_artifacts"):
+            add_acro_artifacts(path)
         self.write_checksums(path)
         logger.info("outputs written to: %s", path)
 
@@ -510,9 +512,8 @@ class Records:
             summary = []
             command = []
             for output_id, output in self.results.items():
-                # avoid writing custom outputs
-                if output.output_type == "custom":  # pragma: no cover
-                    continue
+                if output.output_type == "custom":
+                    continue  # avoid writing custom outputs
                 sheet.append(output_id)
                 command.append(output.command)
                 summary.append(output.summary)
@@ -523,8 +524,7 @@ class Records:
             # individual sheets
             for output_id, output in self.results.items():
                 if output.output_type == "custom":
-                    # avoid writing custom outputs
-                    continue  # pragma: no cover
+                    continue  # avoid writing custom outputs
                 # command and summary
                 start = 0
                 tmp_df = pd.DataFrame(
@@ -563,6 +563,20 @@ class Records:
                     file.write(sha256)
         else:
             logger.debug("There is no file to do the checksums")  # pragma: no cover
+
+
+def add_acro_artifacts(path: str) -> None:
+    """Copy any file from the acro_artifacts directory to the output
+        directory then delete the directory.
+
+    Parameters
+    ----------
+    path : str
+        Name of the folder that files are to be written.
+    """
+    for filename in os.listdir("acro_artifacts"):
+        shutil.copy(f"acro_artifacts/{filename}", path)
+    shutil.rmtree("acro_artifacts")
 
 
 def load_records(path: str) -> Records:

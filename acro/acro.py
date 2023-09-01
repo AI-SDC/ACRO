@@ -12,8 +12,8 @@ import statsmodels.api as sm
 import yaml
 
 from . import acro_tables
-from .acro_regression import regression
-from .acro_tables import tables
+from .acro_regression import Regression
+from .acro_tables import Tables
 from .record import Records
 from .version import __version__
 
@@ -22,7 +22,7 @@ logger = logging.getLogger("acro")
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-class ACRO(tables, regression):
+class ACRO(Tables, Regression):
     """ACRO: Automatic Checking of Research Outputs.
 
     Attributes
@@ -52,7 +52,8 @@ class ACRO(tables, regression):
         suppress : bool, default False
             Whether to automatically apply suppression.
         """
-        tables.__init__(self, suppress)
+        Tables.__init__(self, suppress)
+        Regression.__init__(self, config)
         self.config: dict = {}
         self.results: Records = Records()
         self.suppress: bool = suppress
@@ -70,7 +71,7 @@ class ACRO(tables, regression):
         acro_tables.SAFE_NK_K = self.config["safe_nk_k"]
         acro_tables.CHECK_MISSING_VALUES = self.config["check_missing_values"]
         # set globals for survival analysis
-        self.survival_threshold = self.config["survival_safe_threshold"]
+        acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
 
     def finalise(self, path: str = "outputs", ext="json") -> Records:
         """Creates a results file for checking.

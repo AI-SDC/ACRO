@@ -26,7 +26,7 @@ setup(
         "matplotlib",
         "numpy",
         "openpyxl",
-        "pandas",
+        "pandas~=1.4.4",
         "PyYAML",
         "statsmodels",
     ],

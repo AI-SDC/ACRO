@@ -9,6 +9,7 @@ Changes:
 *   Integrate Stata support ([#142](https://github.com/AI-SDC/ACRO/pull/142))
 *   Fix crosstab when index or columns is a list and there is an aggregation function ([#147](https://github.com/AI-SDC/ACRO/pull/147))
 *   Add support for survival analysis ([#145](https://github.com/AI-SDC/ACRO/pull/145))
+*   Update pandas version dependency to 1.5 ([#150](https://github.com/AI-SDC/ACRO/pull/150))
 
 ## Version 0.4.2 (Jul 13, 2023)
 

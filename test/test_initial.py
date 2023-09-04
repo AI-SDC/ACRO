@@ -404,7 +404,7 @@ def test_suppression_error(caplog, acro):
     mask_data = {"col1": [np.NaN, True], "col2": [True, True]}
     table = pd.DataFrame(data=table_data)
     masks = {"test": pd.DataFrame(data=mask_data)}
-    acro.apply_suppression(table, masks)
+    acro_tables.apply_suppression(table, masks)
     assert "problem mask test is not binary" in caplog.text
 
 

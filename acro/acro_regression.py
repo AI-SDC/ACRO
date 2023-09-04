@@ -72,7 +72,7 @@ class Regression:
             command=command,
             summary=summary,
             outcome=DataFrame(),
-            output=self.get_summary_dataframes(tables),
+            output=get_summary_dataframes(tables),
         )
         return results
 
@@ -136,7 +136,7 @@ class Regression:
             command=command,
             summary=summary,
             outcome=DataFrame(),
-            output=self.get_summary_dataframes(tables),
+            output=get_summary_dataframes(tables),
         )
         return results
 
@@ -185,7 +185,7 @@ class Regression:
             command=command,
             summary=summary,
             outcome=DataFrame(),
-            output=self.get_summary_dataframes(tables),
+            output=get_summary_dataframes(tables),
         )
         return results
 
@@ -249,7 +249,7 @@ class Regression:
             command=command,
             summary=summary,
             outcome=DataFrame(),
-            output=self.get_summary_dataframes(tables),
+            output=get_summary_dataframes(tables),
         )
         return results
 
@@ -298,7 +298,7 @@ class Regression:
             command=command,
             summary=summary,
             outcome=DataFrame(),
-            output=self.get_summary_dataframes(tables),
+            output=get_summary_dataframes(tables),
         )
         return results
 
@@ -362,28 +362,9 @@ class Regression:
             command=command,
             summary=summary,
             outcome=DataFrame(),
-            output=self.get_summary_dataframes(tables),
+            output=get_summary_dataframes(tables),
         )
         return results
-
-    def get_summary_dataframes(self, results: list[SimpleTable]) -> list[DataFrame]:
-        """Converts a list of SimpleTable objects to a list of DataFrame objects.
-
-        Parameters
-        ----------
-        results : list[SimpleTable]
-            Results from fitting statsmodel.
-
-        Returns
-        -------
-        list[DataFrame]
-            List of DataFrame objects.
-        """
-        tables: list[DataFrame] = []
-        for table in results:
-            table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
-            tables.append(table_df)
-        return tables
 
     def __check_model_dof(self, name: str, model) -> tuple[str, str, float]:
         """Check model DOF.
@@ -415,3 +396,23 @@ class Regression:
             summary = f"pass; dof={dof} >= {threshold}"
         logger.info("%s() outcome: %s", name, summary)
         return status, summary, float(dof)
+
+
+def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
+    """Converts a list of SimpleTable objects to a list of DataFrame objects.
+
+    Parameters
+    ----------
+    results : list[SimpleTable]
+        Results from fitting statsmodel.
+
+    Returns
+    -------
+    list[DataFrame]
+        List of DataFrame objects.
+    """
+    tables: list[DataFrame] = []
+    for table in results:
+        table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
+        tables.append(table_df)
+    return tables

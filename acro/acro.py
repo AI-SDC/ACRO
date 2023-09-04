@@ -8,7 +8,6 @@ import os
 import pathlib
 import warnings
 
-import statsmodels.api as sm
 import yaml
 
 from . import acro_tables
@@ -31,8 +30,8 @@ class ACRO(Tables, Regression):
         Safe parameters and their values.
     results : Records
         The current outputs including the results of checks.
-    output_id : int
-        The next identifier to be assigned to an output.
+    suppress : bool
+        Whether to automatically apply suppression
 
     Examples
     --------
@@ -167,36 +166,6 @@ class ACRO(Tables, Regression):
             The comment.
         """
         self.results.add_exception(output, reason)
-
-
-def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
-    """Add a column of ones to an array.
-
-    Parameters
-    ----------
-    data : array_like
-        A column-ordered design matrix.
-    prepend : bool
-        If true, the constant is in the first column. Else the constant is
-        appended (last column).
-    has_constant : str {'raise', 'add', 'skip'}
-        Behavior if data already has a constant. The default will return
-        data without adding another constant. If 'raise', will raise an
-        error if any column has a constant value. Using 'add' will add a
-        column of 1s if a constant column is present.
-
-    Returns
-    -------
-    array_like
-        The original values with a constant (column of ones) as the first
-        or last column. Returned value type depends on input type.
-
-    Notes
-    -----
-    When the input is a pandas Series or DataFrame, the added column's name
-    is 'const'.
-    """
-    return sm.add_constant(data, prepend=prepend, has_constant=has_constant)
 
 
 def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:

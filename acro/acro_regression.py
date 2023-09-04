@@ -416,3 +416,33 @@ def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
         table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
         tables.append(table_df)
     return tables
+
+
+def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
+    """Add a column of ones to an array.
+
+    Parameters
+    ----------
+    data : array_like
+        A column-ordered design matrix.
+    prepend : bool
+        If true, the constant is in the first column. Else the constant is
+        appended (last column).
+    has_constant : str {'raise', 'add', 'skip'}
+        Behavior if data already has a constant. The default will return
+        data without adding another constant. If 'raise', will raise an
+        error if any column has a constant value. Using 'add' will add a
+        column of 1s if a constant column is present.
+
+    Returns
+    -------
+    array_like
+        The original values with a constant (column of ones) as the first
+        or last column. Returned value type depends on input type.
+
+    Notes
+    -----
+    When the input is a pandas Series or DataFrame, the added column's name
+    is 'const'.
+    """
+    return sm.add_constant(data, prepend=prepend, has_constant=has_constant)

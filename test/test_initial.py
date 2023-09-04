@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 import statsmodels.api as sm
 
-from acro import ACRO, add_constant, add_to_acro, record, utils
+from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
 from acro.record import Records, load_records
 
 # pylint: disable=redefined-outer-name
@@ -378,7 +378,7 @@ def test_custom_output(acro):
 
 def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with negative values."""
-    utils.CHECK_MISSING_VALUES = True
+    acro_tables.CHECK_MISSING_VALUES = True
     data.loc[0:10, "inc_grants"] = np.NaN
     _ = acro.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
@@ -404,7 +404,7 @@ def test_suppression_error(caplog):
     mask_data = {"col1": [np.NaN, True], "col2": [True, True]}
     table = pd.DataFrame(data=table_data)
     masks = {"test": pd.DataFrame(data=mask_data)}
-    utils.apply_suppression(table, masks)
+    acro_tables.apply_suppression(table, masks)
     assert "problem mask test is not binary" in caplog.text
 
 

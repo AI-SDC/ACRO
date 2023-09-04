@@ -6,8 +6,8 @@ MIT licenses apply.
 import pandas as pd
 import statsmodels.iolib.summary as sm_iolib_summary
 
-from acro import ACRO, add_constant, stata_config
-from acro.utils import get_summary_dataframes, prettify_table_string
+from acro import ACRO, acro_regression, add_constant, stata_config
+from acro.utils import prettify_table_string
 
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
@@ -375,7 +375,7 @@ def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:
 def get_regr_results(results: sm_iolib_summary.Summary, title: str) -> str:
     """Translates statsmodels.io.summary object into prettified table."""
     res_str = title + "\n"
-    for table in get_summary_dataframes(results.summary().tables):
+    for table in acro_regression.get_summary_dataframes(results.summary().tables):
         res_str += prettify_table_string(table, separator=",") + "\n"
         res_str += f"{results.summary().extra_txt}\n"
     return res_str

@@ -1,4 +1,4 @@
-"""ACRO: Tables functions."""
+"""ACRO: Regression functions."""
 
 from __future__ import annotations
 

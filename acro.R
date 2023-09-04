@@ -10,6 +10,13 @@ acro_crosstab <- function(index, columns, values=NULL, aggfunc=NULL)
     return(table)
 }
 
+acro_table <- function(index, columns)
+{
+    "ACRO crosstab without aggregation function"
+    table = ac$crosstab(index, columns)
+    return(table)
+}
+
 acro_pivot_table <- function(data, values=NULL, index=NULL, columns=NULL, aggfunc="mean")
 {
     "ACRO pivot table"

@@ -63,6 +63,17 @@ table = acro_crosstab(index, columns, values=values, aggfunc=aggfunc)
 table
 ```
 
+```{r}
+index = data[, c("recommend")]
+columns = data[, c("parents")]
+
+table = acro_table(index, columns)
+```
+
+```{r}
+table
+```
+
 ### Add Comments to Output
 
 ```{r}

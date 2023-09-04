@@ -398,7 +398,7 @@ def test_missing(data, acro, monkeypatch):
     assert output_1.exception == "Let me have it"
 
 
-def test_suppression_error(caplog, acro):
+def test_suppression_error(caplog):
     """Apply suppression type error test."""
     table_data = {"col1": [1, 2], "col2": [3, 4]}
     mask_data = {"col1": [np.NaN, True], "col2": [True, True]}

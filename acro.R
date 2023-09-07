@@ -10,10 +10,12 @@ acro_crosstab <- function(index, columns, values=NULL, aggfunc=NULL)
     return(table)
 }
 
-acro_table <- function(index, columns)
+acro_table <- function(index, columns, dnn=NULL)
 {
     "ACRO crosstab without aggregation function"
-    table = ac$crosstab(index, columns)
+    rownames = list(dnn[1])
+    colnames = list(dnn[2])
+    table = ac$crosstab(index, columns, rownames=rownames, colnames=colnames)
     return(table)
 }
 

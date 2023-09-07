@@ -67,7 +67,7 @@ table
 index = data[, c("recommend")]
 columns = data[, c("parents")]
 
-table = acro_table(index, columns)
+table = acro_table(index, columns,  dnn=c("rows", "columns"))
 ```
 
 ```{r}

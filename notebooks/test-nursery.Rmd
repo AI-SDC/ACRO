@@ -67,7 +67,7 @@ table
 index = data[, c("recommend")]
 columns = data[, c("parents")]
 
-table = acro_table(index, columns,  dnn=c("rows", "columns"))
+table = acro_table(data[, c("recommend")], columns, dnn=c("rows", "columns"), deparse.level = 1, useNa = "no")
 ```
 
 ```{r}
@@ -215,4 +215,10 @@ acro_print_outputs()
 ```{r}
 #acro_finalise("RTEST", "xlsx")
 acro_finalise("RTEST", "json")
+```
+
+## Get the documentation for crosstab function
+
+```{r}
+acro_help("acro_crosstab")
 ```

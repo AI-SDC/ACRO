@@ -1,4 +1,6 @@
 library(reticulate)  # import Python modules
+library(admiraldev)
+library(stringr)
 
 acro <- import("acro")
 ac <- acro$ACRO()
@@ -9,6 +11,44 @@ acro_crosstab <- function(index, columns, values=NULL, aggfunc=NULL)
     table = ac$crosstab(index, columns, values=values, aggfunc=aggfunc)
     return(table)
 }
+
+acro_table <- function(index, columns, dnn=NULL, deparse.level=0, ...)
+{
+    "ACRO crosstab without aggregation function"
+    if (is.null(dnn)) {
+        if (deparse.level == 0) {
+        rownames <- list("")
+        colnames <- list("")
+        } else if (deparse.level == 1) {
+            tryCatch({
+                index_symbol <- assert_symbol(substitute(index))
+                rownames <- list(deparse(index_symbol))},
+                error = function(e) {
+                    rownames <<- list("")
+            })
+            tryCatch({
+                column_symbol <- assert_symbol(substitute(columns))
+                colnames <- list(deparse(column_symbol))},
+                error = function(e) {
+                    colnames <<- list("")
+            })
+        } else if (deparse.level == 2) {
+            rownames <- list(deparse((substitute(index))))
+            colnames <- list(deparse(substitute(columns)))
+        }
+    }
+    else {
+        rownames <- list(dnn[1])
+        colnames <- list(dnn[2])
+    }
+
+    table <- ac$crosstab(index, columns, rownames=rownames, colnames=colnames)
+    # Check for any unused arguments
+      if (length(list(...)) > 0) {
+        warning("Unused arguments were provided: ", paste0(names(list(...)), collapse = ", "), "\n", "To find more help about the function use: acro_help(\"acro_table\")\n")
+      }
+    return(table)
+    }
 
 acro_pivot_table <- function(data, values=NULL, index=NULL, columns=NULL, aggfunc="mean")
 {
@@ -78,3 +118,15 @@ acro_finalise <- function(path, ext)
     "Write outputs to file"
     ac$finalise(path, ext)
 }
+
+acro_help <- function(command)
+{
+    "Get the help documentation of the functions"
+    if (command ==  "acro_table") {
+        command = "crosstab"
+    } else {
+        command = str_remove(command, "acro_")
+    }
+    command <- ac[[command]]
+    py_help(command)
+    }

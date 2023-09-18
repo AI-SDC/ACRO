@@ -26,4 +26,7 @@ check_missing_values: False
 
 # frequency threshols for survival tables and plots
 survival_safe_threshold: 10
+
+# consider zeros to be disclosive
+zeros_are_disclosive: True
 ...

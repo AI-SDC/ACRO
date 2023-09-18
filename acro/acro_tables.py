@@ -19,12 +19,12 @@ from .record import Records
 logger = logging.getLogger("acro")
 
 
-AGGFUNC: dict[str, Callable] = {
-    "mean": np.mean,
-    "median": np.median,
-    "sum": np.sum,
-    "std": np.std,
-    "freq": np.size,
+AGGFUNC: dict[str, str] = {
+    "mean": "mean",
+    "median": "median",
+    "sum": "sum",
+    "std": "std",
+    "count": "count",
 }
 
 # aggregation function parameters
@@ -33,6 +33,7 @@ SAFE_PRATIO_P: float = 0.1
 SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
 CHECK_MISSING_VALUES: bool = False
+ZEROS_ARE_DISCLOSIVE: bool = True
 
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
@@ -114,7 +115,7 @@ class Tables:
                 )
 
         # convert [list of] string to [list of] function
-        aggfunc = get_aggfuncs(aggfunc)
+        agg_func = get_aggfuncs(aggfunc)
 
         # requested table
         table: DataFrame = pd.crosstab(  # type: ignore
@@ -123,7 +124,7 @@ class Tables:
             values,
             rownames,
             colnames,
-            aggfunc,
+            agg_func,
             margins,
             margins_name,
             dropna,
@@ -133,17 +134,17 @@ class Tables:
         # suppression masks to apply based on the following checks
         masks: dict[str, DataFrame] = {}
 
-        if aggfunc is not None:
+        if agg_func is not None:
             # create lists with single entry for when there is only one aggfunc
-            freq_funcs: list[Callable] = [AGGFUNC["freq"]]
+            count_funcs: list[str] = [AGGFUNC["count"]]
             neg_funcs: list[Callable] = [agg_negative]
             pperc_funcs: list[Callable] = [agg_p_percent]
             nk_funcs: list[Callable] = [agg_nk]
             missing_funcs: list[Callable] = [agg_missing]
             # then expand them to deal with extra columns as needed
-            if isinstance(aggfunc, list):
-                num = len(aggfunc)
-                freq_funcs.extend([AGGFUNC["freq"] for i in range(1, num)])
+            if isinstance(agg_func, list):
+                num = len(agg_func)
+                count_funcs.extend([AGGFUNC["count"] for i in range(1, num)])
                 neg_funcs.extend([agg_negative for i in range(1, num)])
                 pperc_funcs.extend([agg_p_percent for i in range(1, num)])
                 nk_funcs.extend([agg_nk for i in range(1, num)])
@@ -156,12 +157,17 @@ class Tables:
                 values=values,
                 rownames=rownames,
                 colnames=colnames,
-                aggfunc=freq_funcs,
+                aggfunc=count_funcs,
                 margins=margins,
                 margins_name=margins_name,
                 dropna=dropna,
                 normalize=normalize,
             )
+
+            if dropna or margins:
+                for col in t_values.columns:
+                    if t_values[col].sum() == 0:
+                        t_values = t_values.drop(col, axis=1)
             t_values = t_values < THRESHOLD
             masks["threshold"] = t_values
             # check for negative values -- currently unsupported
@@ -172,11 +178,21 @@ class Tables:
                 masks["negative"] = negative
             # p-percent check
             masks["p-ratio"] = pd.crosstab(  # type: ignore
-                index, columns, values, aggfunc=pperc_funcs, margins=margins
+                index,
+                columns,
+                values,
+                aggfunc=pperc_funcs,
+                margins=margins,  
+                dropna=dropna
             )
             # nk values check
             masks["nk-rule"] = pd.crosstab(  # type: ignore
-                index, columns, values, aggfunc=nk_funcs, margins=margins
+                index,
+                columns,
+                values,
+                aggfunc=nk_funcs,
+                margins=margins,  
+                dropna=dropna
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
@@ -215,6 +231,131 @@ class Tables:
         safe_table, outcome = apply_suppression(table, masks)
         if self.suppress:
             table = safe_table
+            if margins:
+                if aggfunc is None:
+                    table = table.drop(margins_name, axis=1)
+                    rows_total = table.sum(axis=1)
+                    table.loc[:, margins_name] = rows_total
+                    table = table.drop(margins_name, axis=0)
+                    cols_total = table.sum(axis=0)
+                    table.loc[margins_name] = cols_total
+                if aggfunc == "mean":
+                    count_table = pd.crosstab(  # type: ignore
+                        index,
+                        columns,
+                        values=values,
+                        rownames=rownames,
+                        colnames=colnames,
+                        aggfunc="count",
+                        margins=margins,
+                        margins_name=margins_name,
+                        dropna=dropna,
+                        normalize=normalize,
+                    )
+                    count_table = count_table.where(table.notna(), other=np.nan)
+                    columns_to_keep = table.columns
+                    count_table = count_table[columns_to_keep]
+                    if not isinstance(
+                        count_table.columns, pd.MultiIndex
+                    ) and not isinstance(count_table.index, pd.MultiIndex):
+                        count_table = count_table.drop(margins_name, axis=1)
+                        count_table.loc[:, margins_name] = count_table.sum(axis=1)
+                        count_table = count_table.drop(margins_name, axis=0)
+                        count_table.loc[(margins_name)] = count_table.sum(axis=0)
+                        table[margins_name] = 1
+                        table.loc[margins_name, :] = 1
+                        multip_table = count_table * table
+                        table[margins_name] = (
+                            multip_table.drop(margins_name, axis=1).sum(axis=1)
+                            / multip_table[margins_name]
+                        )
+                        table.loc[margins_name, :] = (
+                            multip_table.drop(margins_name, axis=0).sum()
+                            / multip_table.loc[margins_name, :]
+                        )
+                        table.loc[margins_name, margins_name] = (
+                            multip_table.drop(index=margins_name, columns=margins_name)
+                            .sum()
+                            .sum()
+                        ) / multip_table.loc[margins_name, margins_name]
+
+                    if isinstance(count_table.columns, pd.MultiIndex) and isinstance(
+                        count_table.index, pd.MultiIndex
+                    ):  # multidimensional columns and rows
+                        count_table = count_table.drop(margins_name, axis=1, level=0)
+                        count_table.loc[:, margins_name] = count_table.sum(axis=1)
+                        count_table = count_table.drop(margins_name, axis=0)
+                        count_table.loc[(margins_name, ""), :] = count_table.sum(axis=0)
+                        table[margins_name] = 1
+                        table.loc[margins_name, :] = 1
+                        multip_table = count_table * table
+                        table[margins_name] = (
+                            multip_table.drop(margins_name, axis=1, level=0).sum(axis=1)
+                            / multip_table[margins_name]
+                        )
+                        table.loc[(margins_name, ""), :] = (
+                            multip_table.drop(margins_name, axis=0).sum()
+                            / multip_table.loc[(margins_name, ""), :]
+                        )
+                        table.loc[margins_name, margins_name] = (
+                            multip_table.drop(index=margins_name, columns=margins_name)
+                            .sum()
+                            .sum()
+                        ) / multip_table.loc[margins_name, margins_name][0]
+
+                    if isinstance(
+                        count_table.columns, pd.MultiIndex
+                    ) and not isinstance(
+                        count_table.index, pd.MultiIndex
+                    ):  # multidimensional columns
+                        count_table = count_table.drop(margins_name, axis=1, level=0)
+                        count_table.loc[:, margins_name] = count_table.sum(axis=1)
+                        count_table = count_table.drop(margins_name, axis=0)
+                        count_table.loc[(margins_name)] = count_table.sum(axis=0)
+                        table[margins_name] = 1
+                        table.loc[margins_name, :] = 1
+                        multip_table = count_table * table
+                        table[margins_name] = (
+                            multip_table.drop(margins_name, axis=1, level=0).sum(axis=1)
+                            / multip_table[margins_name]
+                        )
+                        table.loc[margins_name, :] = (
+                            multip_table.drop(margins_name, axis=0).sum()
+                            / multip_table.loc[margins_name, :]
+                        )
+                        table.loc[margins_name, margins_name] = (
+                            multip_table.drop(index=margins_name, columns=margins_name)
+                            .sum()
+                            .sum()
+                        ) / multip_table.loc[margins_name, margins_name][0]
+
+                    if isinstance(count_table.index, pd.MultiIndex) and not isinstance(
+                        count_table.columns, pd.MultiIndex
+                    ):  # multidimensional rows
+                        count_table = count_table.where(table.notna(), other=np.nan)
+                        columns_to_keep = table.columns
+                        count_table = count_table[columns_to_keep]
+                        count_table = count_table.drop(margins_name, axis=1)
+                        count_table.loc[:, margins_name] = count_table.sum(axis=1)
+                        count_table = count_table.drop(margins_name, axis=0)
+                        count_table.loc[(margins_name, ""), :] = count_table.sum(axis=0)
+                        table[margins_name] = 1
+                        table.loc[margins_name, :] = 1
+                        multip_table = count_table * table
+                        table[margins_name] = (
+                            multip_table.drop(margins_name, axis=1).sum(axis=1)
+                            / multip_table[margins_name]
+                        )
+                        table.loc[(margins_name, ""), :] = (
+                            multip_table.drop(margins_name, axis=0).sum()
+                            / multip_table.loc[(margins_name, ""), :]
+                        )
+                        table.loc[margins_name, margins_name] = (
+                            multip_table.drop(index=margins_name, columns=margins_name)
+                            .sum()
+                            .sum()
+                        ) / multip_table.loc[margins_name, margins_name][0]
+
         # record output
         self.results.add(
             status=status,
@@ -317,7 +458,7 @@ class Tables:
         # threshold check
         agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
         t_values = pd.pivot_table(  # type: ignore
-            data, values, index, columns, aggfunc=agg
+            data, values, index, columns, aggfunc=agg, margins=margins
         )
         masks["threshold"] = t_values
 
@@ -325,26 +466,33 @@ class Tables:
             # check for negative values -- currently unsupported
             agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
             negative = pd.pivot_table(  # type: ignore
-                data, values, index, columns, aggfunc=agg
+                data, values, index, columns, aggfunc=agg, margins=margins
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
             agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
             masks["p-ratio"] = pd.pivot_table(  # type: ignore
-                data, values, index, columns, aggfunc=agg
+                data, values, index, columns, aggfunc=agg, margins=margins
             )
             # nk values check
             agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
             masks["nk-rule"] = pd.pivot_table(  # type: ignore
-                data, values, index, columns, aggfunc=agg
+                data, values, index, columns, aggfunc=agg, margins=margins
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
                 agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
                 masks["missing"] = pd.pivot_table(  # type: ignore
-                    data, values, index, columns, aggfunc=agg
+                    data, values, index, columns, aggfunc=agg, margins=margins
                 )
+
+        # pd.pivot_table returns nan for an empty cell
+        for name, mask in masks.items():
+            mask.fillna(value=1, inplace=True)
+            mask = mask.astype(int)
+            mask.replace({0: False, 1: True}, inplace=True)
+            masks[name] = mask
 
         # build the sdc dictionary
         sdc: dict = get_table_sdc(masks, self.suppress)
@@ -504,7 +652,6 @@ class Tables:
         )
         return plot
 
-
 def rounded_survival_table(survival_table):
     """Calculates the rounded surival function."""
     death_censored = (
@@ -548,8 +695,7 @@ def rounded_survival_table(survival_table):
     survival_table["rounded_survival_fun"] = rounded_survival_func
     return survival_table
 
-
-def get_aggfunc(aggfunc: str | None) -> Callable | None:
+def get_aggfunc(aggfunc: str | None) -> str | None:
     """Checks whether an aggregation function is allowed and returns the
     appropriate function.
 
@@ -578,10 +724,9 @@ def get_aggfunc(aggfunc: str | None) -> Callable | None:
     logger.debug("aggfunc: %s", func)
     return func
 
-
 def get_aggfuncs(
     aggfuncs: str | list[str] | None,
-) -> Callable | list[Callable] | None:
+) -> str | list[str] | None:
     """Checks whether a list of aggregation functions is allowed and returns
     the appropriate functions.
 
@@ -604,7 +749,7 @@ def get_aggfuncs(
         logger.debug("aggfuncs: %s", function)
         return function
     if isinstance(aggfuncs, list):
-        functions: list[Callable] = []
+        functions: list[str] = []
         for function_name in aggfuncs:
             function = get_aggfunc(function_name)
             if function is not None:
@@ -614,7 +759,6 @@ def get_aggfuncs(
             raise ValueError(f"invalid aggfuncs: {aggfuncs}")
         return functions
     raise ValueError("aggfuncs must be: either str or list[str]")  # pragma: no cover
-
 
 def agg_negative(vals: Series) -> bool:
     """Aggregation function that returns whether any values are negative.
@@ -631,7 +775,6 @@ def agg_negative(vals: Series) -> bool:
     """
     return vals.min() < 0
 
-
 def agg_missing(vals: Series) -> bool:
     """Aggregation function that returns whether any values are missing.
 
@@ -646,7 +789,6 @@ def agg_missing(vals: Series) -> bool:
         Whether a missing value was found.
     """
     return vals.isna().sum() != 0
-
 
 def agg_p_percent(vals: Series) -> bool:
     """Aggregation function that returns whether the p percent rule is violated.
@@ -667,12 +809,19 @@ def agg_p_percent(vals: Series) -> bool:
     bool
         whether the p percent rule is violated.
     """
+    assert isinstance(vals, Series), "vals is not a pandas series"
+    logger.debug(f"vals is {vals} with size {vals.size}")
     sorted_vals = vals.sort_values(ascending=False)
     total: float = sorted_vals.sum()
+    if total <= 0.0 or vals.size <= 1:
+        logger.debug("not calculating ppercent due to small size")
+        if ZEROS_ARE_DISCLOSIVE:
+            return True
+        else:
+            return False
     sub_total = total - sorted_vals.iloc[0] - sorted_vals.iloc[1]
     p_val: float = sub_total / sorted_vals.iloc[0] if total > 0 else 1
     return p_val < SAFE_PRATIO_P
-
 
 def agg_nk(vals: Series) -> bool:
     """Aggregation function that returns whether the top n items account for
@@ -695,7 +844,6 @@ def agg_nk(vals: Series) -> bool:
         return (n_total / total) > SAFE_NK_K
     return False
 
-
 def agg_threshold(vals: Series) -> bool:
     """Aggregation function that returns whether the number of contributors is
     below a threshold.
@@ -711,7 +859,6 @@ def agg_threshold(vals: Series) -> bool:
         Whether the threshold rule is violated.
     """
     return vals.count() < THRESHOLD
-
 
 def apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]
@@ -755,10 +902,16 @@ def apply_suppression(
                 outcome_df += tmp_df
             except TypeError:
                 logger.warning("problem mask %s is not binary", name)
+            except ValueError:
+                raise ValueError(
+                    f"name is {name} \n mask is {mask} \n table is {table}",
+                    name,
+                    mask,
+                    safe_df,
+                )
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
     return safe_df, outcome_df
-
 
 def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
     """Returns the SDC dictionary using the suppression masks.
@@ -778,7 +931,7 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
     sdc["summary"]["p-ratio"] = 0
     sdc["summary"]["nk-rule"] = 0
     for name, mask in masks.items():
-        sdc["summary"][name] = int(mask.to_numpy().sum())
+        sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
     # positions of cells to be suppressed
     sdc["cells"]["negative"] = []
     sdc["cells"]["missing"] = []
@@ -791,7 +944,6 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
             row_index, col_index = pos
             sdc["cells"][name].append([int(row_index), int(col_index)])
     return sdc
-
 
 def get_summary(sdc: dict) -> tuple[str, str]:
     """Returns the status and summary of the suppression masks.

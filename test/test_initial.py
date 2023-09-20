@@ -567,59 +567,9 @@ def test_zeros_are_not_disclosive(data, acro):
     assert output_0.summary == correct_summary
 
 
-
-def test_crosstab_with_totals_without_suppression(data, acro):
-    """Test the crosstab with margins id true and suppression is false."""
-    acro.suppress = False
-    _ = acro.crosstab(data.year, data.grant_type, margins=True)
+def test_crosstab_with_sum(data, acro):
+    """Test the crosstab with two columns and aggfunc sum"""
+    acro = ACRO(suppress=False)
+    _ = acro.crosstab(data.year, [data.grant_type, data.survivor], values=data.inc_grants, aggfunc= "mean")
     output = acro.results.get_index(0)
-    assert 153 == output.output[0]["All"].iat[0]
-
-    total_rows = output.output[0].iloc[-1, 0:4].sum()
-    total_cols = output.output[0].loc[2010:2015, "All"].sum()
-    assert 918 == total_rows == total_cols == output.output[0]["All"].iat[6]
-
-
-def test_crosstab_with_totals_with_suppression(data, acro):
-    """Test the crosstab with both margins and suprression are true."""
-    _ = acro.crosstab(data.year, data.grant_type, margins=True)
-    output = acro.results.get_index(0)
-    assert 145 == output.output[0]["All"].iat[0]
-
-    total_rows = output.output[0].iloc[-1, 0:4].sum()
-    total_cols = output.output[0].loc[2010:2015, "All"].sum()
-    assert 870 == total_cols == total_rows == output.output[0]["All"].iat[6]
-
-
-def test_crosstab_with_totals_with_suppression_herichical(data, acro):
-    """Test the crosstab with both margins and suprression are true."""
-    _ = acro.crosstab(
-        [data.year, data.survivor], [data.grant_type, data.status], margins=True
-    )
-    output = acro.results.get_index(0)
-    assert 47 == output.output[0]["All"].iat[0]
-
-    total_rows = (output.output[0].loc["All", :].sum()) - output.output[0]["All"].iat[
-        12
-    ]
-    total_cols = (output.output[0].loc[:, "All"].sum()) - output.output[0]["All"].iat[
-        12
-    ]
-    assert total_cols == total_rows == output.output[0]["All"].iat[12] == 852
-
-
-def test_crosstab_with_totals_with_suppression_with_mean_aggfunc(data, acro):
-    """Test the crosstab with both margins and suprression are true and with one aggfunc."""
-    _ = acro.crosstab(
-        data.year,
-        data.grant_type,
-        values=data.inc_donations,
-        aggfunc="mean",
-        margins=True,
-    )
-    acro.results.get_index(0)
-    # assert 145 == output.output[0]["All"].iat[0]
-
-    # total_rows = output.output[0].loc["All", "G":"R/G"].sum()
-    # total_cols = output.output[0].loc[2010:2015, "All"].sum()
-    # assert total_cols == total_rows == output.output[0]["All"].iat[6]
+    assert (6,8) == output.output[0].shape

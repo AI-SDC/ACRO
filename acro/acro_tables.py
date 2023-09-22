@@ -814,10 +814,7 @@ def agg_p_percent(vals: Series) -> bool:
     total: float = sorted_vals.sum()
     if total <= 0.0 or vals.size <= 1:
         logger.debug("not calculating ppercent due to small size")
-        if ZEROS_ARE_DISCLOSIVE:
-            return True
-        else:
-            return False
+        return bool(ZEROS_ARE_DISCLOSIVE)
     sub_total = total - sorted_vals.iloc[0] - sorted_vals.iloc[1]
     p_val: float = sub_total / sorted_vals.iloc[0] if total > 0 else 1
     return p_val < SAFE_PRATIO_P
@@ -904,13 +901,13 @@ def apply_suppression(
                 outcome_df += tmp_df
             except TypeError:
                 logger.warning("problem mask %s is not binary", name)
-            except ValueError:
-                raise ValueError(
-                    f"name is {name} \n mask is {mask} \n table is {table}",
-                    name,
-                    mask,
-                    safe_df,
+            except ValueError as ve:
+                error_message = (
+                    f"An error occurred with the following details"
+                    f":\n Name: {name}\n Mask: {mask}\n Table: {table}"
                 )
+                raise ValueError(error_message) from ve
+
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
     return safe_df, outcome_df

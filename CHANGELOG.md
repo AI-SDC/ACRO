@@ -3,6 +3,10 @@
 ## Development
 
 Changes:
+
+## Version 0.4.3 (Sep 22, 2023)
+
+Changes:
 *   Add installation support for Python 3.8 and 3.9 ([#135](https://github.com/AI-SDC/ACRO/pull/135))
 *   Add a directory of outputs to an acro object and creates a results file for checking ([#130](https://github.com/AI-SDC/ACRO/pull/130))
 *   Improve screen formatting of tables ([#139](https://github.com/AI-SDC/ACRO/pull/139))

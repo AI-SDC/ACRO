@@ -549,7 +549,7 @@ def test_surv_func(acro):
 
 def test_zeros_are_not_disclosive(data, acro):
     """Test that zeros are handled as not disclosive when the parameter () is False."""
-    acro_tables.ZEROS_ARE_DISCLOSIVE=False
+    acro_tables.ZEROS_ARE_DISCLOSIVE = False
     _ = acro.pivot_table(
         data,
         index=["grant_type"],
@@ -568,8 +568,13 @@ def test_zeros_are_not_disclosive(data, acro):
 
 
 def test_crosstab_with_sum(data, acro):
-    """Test the crosstab with two columns and aggfunc sum"""
+    """Test the crosstab with two columns and aggfunc sum."""
     acro = ACRO(suppress=False)
-    _ = acro.crosstab(data.year, [data.grant_type, data.survivor], values=data.inc_grants, aggfunc= "mean")
+    _ = acro.crosstab(
+        data.year,
+        [data.grant_type, data.survivor],
+        values=data.inc_grants,
+        aggfunc="mean",
+    )
     output = acro.results.get_index(0)
-    assert (6,8) == output.output[0].shape
+    assert (6, 8) == output.output[0].shape

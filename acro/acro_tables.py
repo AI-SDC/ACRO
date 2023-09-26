@@ -493,6 +493,7 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
     dropna,
     normalize,
 ):
+    """Creates masks to specify the cells to suppress"""
     # suppression masks to apply based on the following checks
     masks: dict[str, DataFrame] = {}
 

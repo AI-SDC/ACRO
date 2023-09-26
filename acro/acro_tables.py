@@ -134,93 +134,18 @@ class Tables:
             normalize,
         )
 
-        # suppression masks to apply based on the following checks
-        masks: dict[str, DataFrame] = {}
-
-        if agg_func is not None:
-            # create lists with single entry for when there is only one aggfunc
-            count_funcs: list[str] = [AGGFUNC["count"]]
-            neg_funcs: list[Callable] = [agg_negative]
-            pperc_funcs: list[Callable] = [agg_p_percent]
-            nk_funcs: list[Callable] = [agg_nk]
-            missing_funcs: list[Callable] = [agg_missing]
-            # then expand them to deal with extra columns as needed
-            if isinstance(agg_func, list):
-                num = len(agg_func)
-                count_funcs.extend([AGGFUNC["count"] for i in range(1, num)])
-                neg_funcs.extend([agg_negative for i in range(1, num)])
-                pperc_funcs.extend([agg_p_percent for i in range(1, num)])
-                nk_funcs.extend([agg_nk for i in range(1, num)])
-                missing_funcs.extend([agg_missing for i in range(1, num)])
-            # threshold check- doesn't matter what we pass for value
-
-            t_values = pd.crosstab(  # type: ignore
-                index,
-                columns,
-                values=values,
-                rownames=rownames,
-                colnames=colnames,
-                aggfunc=count_funcs,
-                margins=margins,
-                margins_name=margins_name,
-                dropna=dropna,
-                normalize=normalize,
-            )
-
-            if dropna or margins:
-                for col in t_values.columns:
-                    if t_values[col].sum() == 0:
-                        t_values = t_values.drop(col, axis=1)
-            t_values = t_values < THRESHOLD
-            masks["threshold"] = t_values
-            # check for negative values -- currently unsupported
-            negative = pd.crosstab(  # type: ignore
-                index, columns, values, aggfunc=neg_funcs, margins=margins
-            )
-            if negative.to_numpy().sum() > 0:
-                masks["negative"] = negative
-            # p-percent check
-            masks["p-ratio"] = pd.crosstab(  # type: ignore
-                index,
-                columns,
-                values,
-                aggfunc=pperc_funcs,
-                margins=margins,
-                dropna=dropna,
-            )
-            # nk values check
-            masks["nk-rule"] = pd.crosstab(  # type: ignore
-                index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
-            )
-            # check for missing values -- currently unsupported
-            if CHECK_MISSING_VALUES:
-                masks["missing"] = pd.crosstab(  # type: ignore
-                    index, columns, values, aggfunc=missing_funcs, margins=margins
-                )
-        else:
-            # threshold check- doesn't matter what we pass for value
-            t_values = pd.crosstab(  # type: ignore
-                index,
-                columns,
-                values=None,
-                rownames=rownames,
-                colnames=colnames,
-                aggfunc=None,
-                margins=margins,
-                margins_name=margins_name,
-                dropna=dropna,
-                normalize=normalize,
-            )
-            t_values = t_values < THRESHOLD
-            masks["threshold"] = t_values
-
-        # pd.crosstab returns nan for an empty cell
-        for name, mask in masks.items():
-            mask.fillna(value=1, inplace=True)
-            mask = mask.astype(int)
-            mask.replace({0: False, 1: True}, inplace=True)
-            masks[name] = mask
-
+        masks = create_crosstab_masks(
+            index,
+            columns,
+            values,
+            rownames,
+            colnames,
+            agg_func,
+            margins,
+            margins_name,
+            dropna,
+            normalize,
+        )
         # build the sdc dictionary
         sdc: dict = get_table_sdc(masks, self.suppress)
         # get the status and summary
@@ -556,6 +481,107 @@ class Tables:
         return plot
 
 
+def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
+    index,
+    columns,
+    values,
+    rownames,
+    colnames,
+    agg_func,
+    margins,
+    margins_name,
+    dropna,
+    normalize,
+):
+    # suppression masks to apply based on the following checks
+    masks: dict[str, DataFrame] = {}
+
+    if agg_func is not None:
+        # create lists with single entry for when there is only one aggfunc
+        count_funcs: list[str] = [AGGFUNC["count"]]
+        neg_funcs: list[Callable] = [agg_negative]
+        pperc_funcs: list[Callable] = [agg_p_percent]
+        nk_funcs: list[Callable] = [agg_nk]
+        missing_funcs: list[Callable] = [agg_missing]
+        # then expand them to deal with extra columns as needed
+        if isinstance(agg_func, list):
+            num = len(agg_func)
+            count_funcs.extend([AGGFUNC["count"] for i in range(1, num)])
+            neg_funcs.extend([agg_negative for i in range(1, num)])
+            pperc_funcs.extend([agg_p_percent for i in range(1, num)])
+            nk_funcs.extend([agg_nk for i in range(1, num)])
+            missing_funcs.extend([agg_missing for i in range(1, num)])
+        # threshold check- doesn't matter what we pass for value
+
+        t_values = pd.crosstab(  # type: ignore
+            index,
+            columns,
+            values=values,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=count_funcs,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+
+        if dropna or margins:
+            for col in t_values.columns:
+                if t_values[col].sum() == 0:
+                    t_values = t_values.drop(col, axis=1)
+        t_values = t_values < THRESHOLD
+        masks["threshold"] = t_values
+        # check for negative values -- currently unsupported
+        negative = pd.crosstab(  # type: ignore
+            index, columns, values, aggfunc=neg_funcs, margins=margins
+        )
+        if negative.to_numpy().sum() > 0:
+            masks["negative"] = negative
+        # p-percent check
+        masks["p-ratio"] = pd.crosstab(  # type: ignore
+            index,
+            columns,
+            values,
+            aggfunc=pperc_funcs,
+            margins=margins,
+            dropna=dropna,
+        )
+        # nk values check
+        masks["nk-rule"] = pd.crosstab(  # type: ignore
+            index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
+        )
+        # check for missing values -- currently unsupported
+        if CHECK_MISSING_VALUES:
+            masks["missing"] = pd.crosstab(  # type: ignore
+                index, columns, values, aggfunc=missing_funcs, margins=margins
+            )
+    else:
+        # threshold check- doesn't matter what we pass for value
+        t_values = pd.crosstab(  # type: ignore
+            index,
+            columns,
+            values=None,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=None,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+        t_values = t_values < THRESHOLD
+        masks["threshold"] = t_values
+
+    # pd.crosstab returns nan for an empty cell
+    for name, mask in masks.items():
+        mask.fillna(value=1, inplace=True)
+        mask = mask.astype(int)
+        mask.replace({0: False, 1: True}, inplace=True)
+        masks[name] = mask
+    return masks
+
+
 def rounded_survival_table(survival_table):
     """Calculates the rounded surival function."""
     death_censored = (
@@ -719,7 +745,6 @@ def agg_p_percent(vals: Series) -> bool:
         whether the p percent rule is violated.
     """
     assert isinstance(vals, Series), "vals is not a pandas series"
-    logger.debug(f"vals is {vals} with size {vals.size}")
     sorted_vals = vals.sort_values(ascending=False)
     total: float = sorted_vals.sum()
     if total <= 0.0 or vals.size <= 1:
@@ -1041,7 +1066,7 @@ def get_index_columns(index, columns, data) -> tuple[list | Series, list | Serie
     return index_new, columns_new
 
 
-def crosstab_with_totals(
+def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     masks,
     aggfunc,
     index,
@@ -1131,7 +1156,7 @@ def crosstab_with_totals(
     return table
 
 
-def manual_crossstab_with_totals(
+def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     table,
     aggfunc,
     index,
@@ -1188,7 +1213,7 @@ def manual_crossstab_with_totals(
             "Please create a table for each aggregation function"
         )
         return None
-    elif aggfunc is None or aggfunc == "sum" or aggfunc == "count":
+    if aggfunc is None or aggfunc == "sum" or aggfunc == "count":
         table = recalculate_margin(table, margins_name)
 
     elif aggfunc == "mean":

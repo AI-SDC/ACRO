@@ -12,6 +12,7 @@ Changes:
 *   Update pandas version dependency to 1.5 ([#150](https://github.com/AI-SDC/ACRO/pull/150))
 *   Refactor ACRO class ([#152](https://github.com/AI-SDC/ACRO/pull/152))
 *   Adding support for table function in R ([#153](https://github.com/AI-SDC/ACRO/pull/153))
+*   Update table suppression when totals are true ([#160](https://github.com/AI-SDC/ACRO/pull/160))
 
 ## Version 0.4.2 (Jul 13, 2023)
 

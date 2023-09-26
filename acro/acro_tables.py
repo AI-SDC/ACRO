@@ -64,6 +64,7 @@ class Tables:
         margins_name: str = "All",
         dropna: bool = True,
         normalize=False,
+        show_suppressed=False,
     ) -> DataFrame:
         """Compute a simple cross tabulation of two (or more) factors.  By
         default, computes a frequency table of the factors unless an array of
@@ -97,6 +98,8 @@ class Tables:
             - If passed 'index' will normalize over each row.
             - If passed 'columns' will normalize over each column.
             - If margins is `True`, will also normalize margin values.
+        show_suppressed : bool. default False
+            how the totals are being calculated when the suppression is true
 
         Returns
         -------
@@ -227,127 +230,34 @@ class Tables:
         if self.suppress:
             table = safe_table
             if margins:
-                # initialize a list to store queries for true cells
-                true_cell_queries = []
-                for _, mask in masks.items():
-                    # drop the name of the mask
-                    mask = mask.droplevel(0, axis=1)
-                    # identify level names for rows and columns
-                    index_level_names = mask.index.names
-                    column_level_names = mask.columns.names
-
-                    # iterate through the masks to identify the true cells and extract queries
-                    for column_level_values in mask.columns:
-                        for index_level_values in mask.index:
-                            if (
-                                mask.loc[index_level_values, column_level_values]
-                                # == True
-                            ):
-                                if isinstance(index_level_values, tuple):
-                                    index_query = " & ".join(
-                                        [
-                                            f"({level} == {val})"
-                                            if isinstance(val, (int, float))
-                                            else f'({level} == "{val}")'
-                                            for level, val in zip(
-                                                index_level_names, index_level_values
-                                            )
-                                        ]
-                                    )
-                                else:
-                                    index_query = " & ".join(
-                                        [
-                                            f"({index_level_names} == {index_level_values})"
-                                            if isinstance(
-                                                index_level_values, (int, float)
-                                            )
-                                            else (
-                                                f"({index_level_names}"
-                                                f'== "{index_level_values}")'
-                                            )
-                                        ]
-                                    )
-                                if isinstance(column_level_values, tuple):
-                                    column_query = " & ".join(
-                                        [
-                                            f"({level} == {val})"
-                                            if isinstance(val, (int, float))
-                                            else f'({level} == "{val}")'
-                                            for level, val in zip(
-                                                column_level_names, column_level_values
-                                            )
-                                        ]
-                                    )
-                                else:
-                                    column_query = " & ".join(
-                                        [
-                                            f"({column_level_names} == {column_level_values})"
-                                            if isinstance(
-                                                column_level_values, (int, float)
-                                            )
-                                            else (
-                                                f"({column_level_names}"
-                                                f'== "{column_level_values}")'
-                                            )
-                                        ]
-                                    )
-                                query = f"{index_query} & {column_query}"
-                                true_cell_queries.append(query)
-
-                # delete the duplication
-                true_cell_queries = list(set(true_cell_queries))
-
-                # create dataframe from the index and columns parameters
-                if isinstance(index, list):
-                    index_df = pd.concat(index, axis=1)
-                elif isinstance(index, pd.Series):
-                    index_df = pd.DataFrame({index.name: index})
-                if isinstance(columns, list):
-                    columns_df = pd.concat(columns, axis=1)
-                elif isinstance(columns, pd.Series):
-                    columns_df = pd.DataFrame({columns.name: columns})
-                data = pd.concat([index_df, columns_df], axis=1)
-
-                # apply the queries to the data
-                for query in true_cell_queries:
-                    query = str(query).replace("['", "").replace("']", "")
-                    data = data.query(f"not ({query})")
-
-                # get the index and columns from the data after the queries are applied
-                try:
-                    if isinstance(index, list):
-                        index_new = []
-                        for _, val in enumerate(index):
-                            index_new.append(data[val.name])
-                    else:
-                        index_new = data[index.name]
-
-                    if isinstance(columns, list):
-                        columns_new = []
-                        for _, val in enumerate(columns):
-                            columns_new.append(data[val.name])
-                    else:
-                        columns_new = data[columns.name]
-
-                    # apply the crosstab with the new index and columns
-                    table = pd.crosstab(  # type: ignore
-                        index_new,
-                        columns_new,
-                        values=values,
-                        rownames=rownames,
-                        colnames=colnames,
-                        aggfunc=aggfunc,
-                        margins=margins,
-                        margins_name=margins_name,
-                        dropna=dropna,
-                        normalize=normalize,
+                if show_suppressed:
+                    table = manual_crossstab_with_totals(
+                        table,
+                        aggfunc,
+                        index,
+                        columns,
+                        values,
+                        rownames,
+                        colnames,
+                        margins,
+                        margins_name,
+                        dropna,
+                        normalize,
                     )
-                except ValueError:
-                    logger.info(
-                        "All the cells in this data are discolsive."
-                        " Thus suppression can not be applied"
+                else:
+                    table = crosstab_with_totals(
+                        masks,
+                        aggfunc,
+                        index,
+                        columns,
+                        values,
+                        rownames,
+                        colnames,
+                        margins,
+                        margins_name,
+                        dropna,
+                        normalize,
                     )
-                    return None
 
         # record output
         self.results.add(
@@ -901,12 +811,12 @@ def apply_suppression(
                 outcome_df += tmp_df
             except TypeError:
                 logger.warning("problem mask %s is not binary", name)
-            except ValueError as ve:
+            except ValueError as error:
                 error_message = (
                     f"An error occurred with the following details"
                     f":\n Name: {name}\n Mask: {mask}\n Table: {table}"
                 )
-                raise ValueError(error_message) from ve
+                raise ValueError(error_message) from error
 
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
@@ -987,3 +897,389 @@ def get_summary(sdc: dict) -> tuple[str, str]:
         summary = status
     logger.info("get_summary(): %s", summary)
     return status, summary
+
+
+def get_queries(masks, aggfunc) -> list[str]:
+    """Returns a list of the boolean conditions for each true cell in the suppression masks.
+
+    Parameters
+    ----------
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+    aggfunc : str | None
+        The aggregation function
+
+    Returns
+    -------
+    str
+        The boolean conditions for each true cell in the suppression masks.
+    """
+    # initialize a list to store queries for true cells
+    true_cell_queries = []
+    for _, mask in masks.items():
+        # drop the name of the mask
+        if aggfunc is not None:
+            mask = mask.droplevel(0, axis=1)
+        # identify level names for rows and columns
+        index_level_names = mask.index.names
+        column_level_names = mask.columns.names
+
+        # iterate through the masks to identify the true cells and extract queries
+        for column_level_values in mask.columns:
+            for index_level_values in mask.index:
+                if mask.loc[index_level_values, column_level_values]:
+                    if isinstance(index_level_values, tuple):
+                        index_query = " & ".join(
+                            [
+                                f"({level} == {val})"
+                                if isinstance(val, (int, float))
+                                else f'({level} == "{val}")'
+                                for level, val in zip(
+                                    index_level_names, index_level_values
+                                )
+                            ]
+                        )
+                    else:
+                        index_query = " & ".join(
+                            [
+                                f"({index_level_names} == {index_level_values})"
+                                if isinstance(index_level_values, (int, float))
+                                else (
+                                    f"({index_level_names}"
+                                    f'== "{index_level_values}")'
+                                )
+                            ]
+                        )
+                    if isinstance(column_level_values, tuple):
+                        column_query = " & ".join(
+                            [
+                                f"({level} == {val})"
+                                if isinstance(val, (int, float))
+                                else f'({level} == "{val}")'
+                                for level, val in zip(
+                                    column_level_names, column_level_values
+                                )
+                            ]
+                        )
+                    else:
+                        column_query = " & ".join(
+                            [
+                                f"({column_level_names} == {column_level_values})"
+                                if isinstance(column_level_values, (int, float))
+                                else (
+                                    f"({column_level_names}"
+                                    f'== "{column_level_values}")'
+                                )
+                            ]
+                        )
+                    query = f"{index_query} & {column_query}"
+                    true_cell_queries.append(query)
+    # delete the duplication
+    true_cell_queries = list(set(true_cell_queries))
+    return true_cell_queries
+
+
+def create_dataframe(index, columns) -> DataFrame:
+    """Combining the index and columns in a dataframe and return the datframe.
+
+    Parameters
+    ----------
+    index : array-like, Series, or list of arrays/Series
+        Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+
+    Returns
+    -------
+    Dataframe
+        Table of the index and columns combined.
+    """
+    if isinstance(index, list):
+        index_df = pd.concat(index, axis=1)
+    elif isinstance(index, pd.Series):
+        index_df = pd.DataFrame({index.name: index})
+    if isinstance(columns, list):
+        columns_df = pd.concat(columns, axis=1)
+    elif isinstance(columns, pd.Series):
+        columns_df = pd.DataFrame({columns.name: columns})
+    data = pd.concat([index_df, columns_df], axis=1)
+    return data
+
+
+def get_index_columns(index, columns, data) -> tuple[list | Series, list | Series]:
+    """Get the index and columns from the data dataframe.
+
+    Parameters
+    ----------
+    index : array-like, Series, or list of arrays/Series
+        Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+    data : dataframe
+        Table of the index and columns combined.
+
+    Returns
+    -------
+    List | Series
+        The index extracted from the data.
+    List | Series
+        The columns extracted from the data.
+    """
+    if isinstance(index, list):
+        index_new = []
+        for _, val in enumerate(index):
+            index_new.append(data[val.name])
+    else:
+        index_new = data[index.name]
+
+    if isinstance(columns, list):
+        columns_new = []
+        for _, val in enumerate(columns):
+            columns_new.append(data[val.name])
+    else:
+        columns_new = data[columns.name]
+    return index_new, columns_new
+
+
+def crosstab_with_totals(
+    masks,
+    aggfunc,
+    index,
+    columns,
+    values,
+    rownames,
+    colnames,
+    margins,
+    margins_name,
+    dropna,
+    normalize,
+) -> DataFrame:
+    """Recalculate the crosstab table when margins are true and suppression is true.
+
+    Parameters
+    ----------
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+    aggfunc : str | None
+        The aggregation function.
+    index : array-like, Series, or list of arrays/Series
+        Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+    index : array-like, Series, or list of arrays/Series
+            Values to group by in the rows.
+        columns : array-like, Series, or list of arrays/Series
+            Values to group by in the columns.
+        values : array-like, optional
+            Array of values to aggregate according to the factors.
+            Requires `aggfunc` be specified.
+        rownames : sequence, default None
+            If passed, must match number of row arrays passed.
+        colnames : sequence, default None
+            If passed, must match number of column arrays passed.
+        aggfunc : str, optional
+            If specified, requires `values` be specified as well.
+        margins : bool, default False
+            Add row/column margins (subtotals).
+        margins_name : str, default 'All'
+            Name of the row/column that will contain the totals
+            when margins is True.
+        dropna : bool, default True
+            Do not include columns whose entries are all NaN.
+        normalize : bool, {'all', 'index', 'columns'}, or {0,1}, default False
+            Normalize by dividing all values by the sum of values.
+            - If passed 'all' or `True`, will normalize over all values.
+            - If passed 'index' will normalize over each row.
+            - If passed 'columns' will normalize over each column.
+            - If margins is `True`, will also normalize margin values.
+
+    Returns
+    -------
+    DataFrame
+        Crosstabulation of data
+    """
+    true_cell_queries = get_queries(masks, aggfunc)
+    data = create_dataframe(index, columns)
+
+    # apply the queries to the data
+    for query in true_cell_queries:
+        query = str(query).replace("['", "").replace("']", "")
+        data = data.query(f"not ({query})")
+
+    # get the index and columns from the data after the queries are applied
+    try:
+        index_new, columns_new = get_index_columns(index, columns, data)
+        # apply the crosstab with the new index and columns
+        table = pd.crosstab(  # type: ignore
+            index_new,
+            columns_new,
+            values=values,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=aggfunc,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+    except ValueError:
+        logger.warning(
+            "All the cells in this data are discolsive."
+            " Thus suppression can not be applied"
+        )
+        return None
+    return table
+
+
+def manual_crossstab_with_totals(
+    table,
+    aggfunc,
+    index,
+    columns,
+    values,
+    rownames,
+    colnames,
+    margins,
+    margins_name,
+    dropna,
+    normalize,
+) -> DataFrame:
+    """Recalculate the crosstab table when margins are true and suppression is true.
+
+    Parameters
+    ----------
+    table : Dataframe
+        The suppressed table.
+    aggfunc : str | None
+        The aggregation function.
+    index : array-like, Series, or list of arrays/Series
+            Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+    values : array-like, optional
+        Array of values to aggregate according to the factors.
+        Requires `aggfunc` be specified.
+    rownames : sequence, default None
+        If passed, must match number of row arrays passed.
+    colnames : sequence, default None
+        If passed, must match number of column arrays passed.
+    margins : bool, default False
+        Add row/column margins (subtotals).
+    margins_name : str, default 'All'
+        Name of the row/column that will contain the totals
+        when margins is True.
+    dropna : bool, default True
+        Do not include columns whose entries are all NaN.
+    normalize : bool, {'all', 'index', 'columns'}, or {0,1}, default False
+        Normalize by dividing all values by the sum of values.
+        - If passed 'all' or `True`, will normalize over all values.
+        - If passed 'index' will normalize over each row.
+        - If passed 'columns' will normalize over each column.
+        - If margins is `True`, will also normalize margin values.
+
+    Returns
+    -------
+    DataFrame
+        Crosstabulation of data
+    """
+    if isinstance(aggfunc, list):
+        logger.warning(
+            "We can not calculate the margins with a list of aggregation functions. "
+            "Please create a table for each aggregation function"
+        )
+        return None
+    elif aggfunc is None or aggfunc == "sum" or aggfunc == "count":
+        table = recalculate_margin(table, margins_name)
+
+    elif aggfunc == "mean":
+        count_table = pd.crosstab(  # type: ignore
+            index,
+            columns,
+            values=values,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc="count",
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+        # suppress the cells in the count by mimicking the suppressed cells in the table
+        count_table = count_table.where(table.notna(), other=np.nan)
+        # delete any columns from the count_table that are not in the table
+        columns_to_keep = table.columns
+        count_table = count_table[columns_to_keep]
+        count_table = count_table.sort_index(axis=1)
+        # recalculate the margins considering the nan values
+        count_table = recalculate_margin(count_table, margins_name)
+        # multiply the table by the count table
+        table[margins_name] = 1
+        table.loc[margins_name, :] = 1
+        multip_table = count_table * table
+        multip_table = multip_table.sort_index(axis=1)
+        # calculate the margins columns
+        table[margins_name] = (
+            multip_table.drop(margins_name, axis=1).sum(axis=1)
+            / multip_table[margins_name]
+        )
+        # calculate the margins row
+        if not isinstance(count_table.index, pd.MultiIndex):  # single row
+            table.loc[margins_name, :] = (
+                multip_table.drop(margins_name, axis=0).sum()
+                / multip_table.loc[margins_name, :]
+            )
+        else:  # multiple rows
+            table.loc[(margins_name, ""), :] = (
+                multip_table.drop(margins_name, axis=0).sum()
+                / multip_table.loc[(margins_name, ""), :]
+            )
+        # calculate the grand margin
+        if not isinstance(count_table.columns, pd.MultiIndex) and not isinstance(
+            count_table.index, pd.MultiIndex
+        ):  # single column, single row
+            table.loc[margins_name, margins_name] = (
+                multip_table.drop(index=margins_name, columns=margins_name).sum().sum()
+            ) / multip_table.loc[margins_name, margins_name]
+        else:  # multiple columns or multiple rows
+            table.loc[margins_name, margins_name] = (
+                multip_table.drop(index=margins_name, columns=margins_name).sum().sum()
+            ) / multip_table.loc[margins_name, margins_name][0]
+
+    elif aggfunc == "std":
+        table = table.drop(margins_name, axis=1)
+        table = table.drop(margins_name, axis=0)
+        logger.warning(
+            "The margins with the std agg func can not be calculated. "
+            "Please set the show_suppressed to false to calculate it."
+        )
+        return table
+    return table
+
+
+def recalculate_margin(table, margins_name) -> DataFrame:
+    """Recalculate the margins in a table.
+
+    Parameters
+    ----------
+    table : Dataframe
+        The suppressed table.
+    margins_name : str, default 'All'
+        Name of the row/column that will contain the totals
+
+    Returns
+    -------
+    DataFrame
+        Table with new calculated margins
+    """
+    table = table.drop(margins_name, axis=1)
+    rows_total = table.sum(axis=1)
+    table.loc[:, margins_name] = rows_total
+    if isinstance(table.index, pd.MultiIndex):
+        table = table.drop(margins_name, axis=0)
+        cols_total = table.sum(axis=0)
+        table.loc[(margins_name, ""), :] = cols_total
+    else:
+        table = table.drop(margins_name, axis=0)
+        cols_total = table.sum(axis=0)
+        table.loc[margins_name] = cols_total
+    return table

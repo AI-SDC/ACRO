@@ -832,7 +832,7 @@ def apply_suppression(
                 outcome_df += tmp_df
             except TypeError:
                 logger.warning("problem mask %s is not binary", name)
-            except ValueError as error:  # pragma: no cove
+            except ValueError as error:  # pragma: no cover
                 error_message = (
                     f"An error occurred with the following details"
                     f":\n Name: {name}\n Mask: {mask}\n Table: {table}"

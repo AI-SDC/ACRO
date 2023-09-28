@@ -588,8 +588,8 @@ def test_crosstab_with_totals_with_suppression_herichical(data, acro):
     assert ("G", "dead") not in output.output[0].columns
 
 
-def test_crosstab_with_totals_with_suppression_with_aggfunc(data, acro):
-    """Test the crosstab with both margins and suprression are true and with one aggfunc."""
+def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
+    """Test the crosstab with both margins and suprression are true and with aggfunc mean."""
     _ = acro.crosstab(
         data.year,
         data.grant_type,
@@ -601,6 +601,28 @@ def test_crosstab_with_totals_with_suppression_with_aggfunc(data, acro):
     assert 8689781 == output.output[0]["All"].iat[0]
     assert 5425170.5 == output.output[0]["All"].iat[6]
     assert "R/G" not in output.output[0].columns
+
+
+def test_crosstab_with_totals_and_empty_data(data, acro, caplog):
+    """Test the crosstab with both margins and suprression are true
+    and with a dataset that all its data violate one or more rule.
+    """
+    data = data[
+        (data.year == 2010)
+        & (data.grant_type == "G")
+        & (data.survivor == "Dead in 2015")
+    ]
+    _ = acro.crosstab(
+        data.year,
+        [data.grant_type, data.survivor],
+        values=data.inc_grants,
+        aggfunc="mean",
+        margins=True,
+    )
+    assert (
+        "All the cells in this data are discolsive. Thus suppression can not be applied"
+        in caplog.text
+    )
 
 
 def test_crosstab_with_manual_totals_with_suppression(data, acro):
@@ -707,7 +729,7 @@ if RUN_TEST:
             data.year,
             [data.grant_type, data.survivor],
             values=data.inc_grants,
-            aggfunc="mean",
+            aggfunc="sum",
         )
         output = acro.results.get_index(0)
         assert (6, 8) == output.output[0].shape
@@ -721,8 +743,8 @@ if RUN_TEST:
         )
         output = acro.results.get_index(0)
         correct_summary: str = (
-            "fail; threshold: 12 cells may need suppressing;"
-            " p-ratio: 2 cells may need suppressing; "
+            "fail; threshold: 14 cells may need suppressing;"
+            " p-ratio: 4 cells may need suppressing; "
             "nk-rule: 2 cells may need suppressing; "
         )
         assert (
@@ -732,6 +754,55 @@ if RUN_TEST:
         correctval = 97383496.0
         errmsg = f"{output.output[0]['mean']['R/G'].sum()} should be {correctval}"
         assert correctval == output.output[0]["mean"]["R/G"].sum(), errmsg
+
+    def test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
+        """Test the crosstab with both margins and suprression are true
+        and with a list of aggfuncs while using the total manual function.
+        """
+        _ = acro.crosstab(
+            data.year,
+            data.grant_type,
+            values=data.inc_grants,
+            aggfunc=["count", "std"],
+            margins=True,
+        )
+        _ = acro.crosstab(
+            data.year,
+            data.grant_type,
+            values=data.inc_grants,
+            aggfunc="count",
+            margins=True,
+        )
+        _ = acro.crosstab(
+            data.year,
+            data.grant_type,
+            values=data.inc_grants,
+            aggfunc="std",
+            margins=True,
+        )
+        output = acro.results.get_index(0)
+        assert 8 == output.output[0].shape[1]
+        output_1 = acro.results.get_index(1)
+        output_2 = acro.results.get_index(2)
+        output_3 = pd.concat([output_1.output[0], output_2.output[0]], axis=1)
+        output_4 = (output.output[0]).droplevel(0, axis=1)
+        assert output_3.equals(output_4)
+
+    def test_crosstab_with_totals_with_suppression_with_two_aggfuncs_herichical(
+        data, acro
+    ):
+        """Test the crosstab with both margins and suprression are true
+        and with a list of aggfuncs and list of columns while using the total manual function.
+        """
+        _ = acro.crosstab(
+            data.year,
+            [data.grant_type, data.survivor],
+            values=data.inc_grants,
+            aggfunc=["count", "std"],
+            margins=True,
+        )
+        output = acro.results.get_index(0)
+        assert ("G", "Dead in 2015") in output.output[0].columns
 
     def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
         data, acro, caplog

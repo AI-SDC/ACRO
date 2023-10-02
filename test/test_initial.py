@@ -527,7 +527,9 @@ def test_surv_func(acro):
 
 
 def test_zeros_are_not_disclosive(data, acro):
-    """Test that zeros are handled as not disclosive when the parameter (zeros_are_disclosive) is False."""
+    """Test that zeros are handled as not disclosive when
+    the parameter (zeros_are_disclosive) is False.
+    """
     acro_tables.ZEROS_ARE_DISCLOSIVE = False
     _ = acro.pivot_table(
         data,
@@ -792,7 +794,8 @@ if RUN_TEST:
         data, acro
     ):
         """Test the crosstab with both margins and suppression are true
-        and with a list of aggfuncs and a list of columns while using the total manual function.
+        and with a list of aggfuncs and a list of columns while using
+        the total manual function.
         """
         _ = acro.crosstab(
             data.year,

@@ -1136,7 +1136,7 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
         )
     except ValueError:
         logger.warning(
-            "All the cells in this data are discolsive."
+            "All the cells in this data are disclosive."
             " Thus suppression can not be applied"
         )
         return None

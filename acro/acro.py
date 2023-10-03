@@ -69,6 +69,7 @@ class ACRO(Tables, Regression):
         acro_tables.SAFE_NK_N = self.config["safe_nk_n"]
         acro_tables.SAFE_NK_K = self.config["safe_nk_k"]
         acro_tables.CHECK_MISSING_VALUES = self.config["check_missing_values"]
+        acro_tables.ZEROS_ARE_DISCLOSIVE = self.config["zeros_are_disclosive"]
         # set globals for survival analysis
         acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
 

@@ -1,5 +1,5 @@
 """ACRO: Tables functions."""
-
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import logging
@@ -19,12 +19,12 @@ from .record import Records
 logger = logging.getLogger("acro")
 
 
-AGGFUNC: dict[str, Callable] = {
-    "mean": np.mean,
-    "median": np.median,
-    "sum": np.sum,
-    "std": np.std,
-    "freq": np.size,
+AGGFUNC: dict[str, str] = {
+    "mean": "mean",
+    "median": "median",
+    "sum": "sum",
+    "std": "std",
+    "count": "count",
 }
 
 # aggregation function parameters
@@ -33,6 +33,7 @@ SAFE_PRATIO_P: float = 0.1
 SAFE_NK_N: int = 2
 SAFE_NK_K: float = 0.9
 CHECK_MISSING_VALUES: bool = False
+ZEROS_ARE_DISCLOSIVE: bool = True
 
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
@@ -63,6 +64,7 @@ class Tables:
         margins_name: str = "All",
         dropna: bool = True,
         normalize=False,
+        show_suppressed=False,
     ) -> DataFrame:
         """Compute a simple cross tabulation of two (or more) factors.  By
         default, computes a frequency table of the factors unless an array of
@@ -96,6 +98,8 @@ class Tables:
             - If passed 'index' will normalize over each row.
             - If passed 'columns' will normalize over each column.
             - If margins is `True`, will also normalize margin values.
+        show_suppressed : bool. default False
+            how the totals are being calculated when the suppression is true
 
         Returns
         -------
@@ -114,7 +118,7 @@ class Tables:
                 )
 
         # convert [list of] string to [list of] function
-        aggfunc = get_aggfuncs(aggfunc)
+        agg_func = get_aggfuncs(aggfunc)
 
         # requested table
         table: DataFrame = pd.crosstab(  # type: ignore
@@ -123,90 +127,25 @@ class Tables:
             values,
             rownames,
             colnames,
-            aggfunc,
+            agg_func,
             margins,
             margins_name,
             dropna,
             normalize,
         )
 
-        # suppression masks to apply based on the following checks
-        masks: dict[str, DataFrame] = {}
-
-        if aggfunc is not None:
-            # create lists with single entry for when there is only one aggfunc
-            freq_funcs: list[Callable] = [AGGFUNC["freq"]]
-            neg_funcs: list[Callable] = [agg_negative]
-            pperc_funcs: list[Callable] = [agg_p_percent]
-            nk_funcs: list[Callable] = [agg_nk]
-            missing_funcs: list[Callable] = [agg_missing]
-            # then expand them to deal with extra columns as needed
-            if isinstance(aggfunc, list):
-                num = len(aggfunc)
-                freq_funcs.extend([AGGFUNC["freq"] for i in range(1, num)])
-                neg_funcs.extend([agg_negative for i in range(1, num)])
-                pperc_funcs.extend([agg_p_percent for i in range(1, num)])
-                nk_funcs.extend([agg_nk for i in range(1, num)])
-                missing_funcs.extend([agg_missing for i in range(1, num)])
-            # threshold check- doesn't matter what we pass for value
-
-            t_values = pd.crosstab(  # type: ignore
-                index,
-                columns,
-                values=values,
-                rownames=rownames,
-                colnames=colnames,
-                aggfunc=freq_funcs,
-                margins=margins,
-                margins_name=margins_name,
-                dropna=dropna,
-                normalize=normalize,
-            )
-            t_values = t_values < THRESHOLD
-            masks["threshold"] = t_values
-            # check for negative values -- currently unsupported
-            negative = pd.crosstab(  # type: ignore
-                index, columns, values, aggfunc=neg_funcs, margins=margins
-            )
-            if negative.to_numpy().sum() > 0:
-                masks["negative"] = negative
-            # p-percent check
-            masks["p-ratio"] = pd.crosstab(  # type: ignore
-                index, columns, values, aggfunc=pperc_funcs, margins=margins
-            )
-            # nk values check
-            masks["nk-rule"] = pd.crosstab(  # type: ignore
-                index, columns, values, aggfunc=nk_funcs, margins=margins
-            )
-            # check for missing values -- currently unsupported
-            if CHECK_MISSING_VALUES:
-                masks["missing"] = pd.crosstab(  # type: ignore
-                    index, columns, values, aggfunc=missing_funcs, margins=margins
-                )
-        else:
-            # threshold check- doesn't matter what we pass for value
-            t_values = pd.crosstab(  # type: ignore
-                index,
-                columns,
-                values=None,
-                rownames=rownames,
-                colnames=colnames,
-                aggfunc=None,
-                margins=margins,
-                margins_name=margins_name,
-                dropna=dropna,
-                normalize=normalize,
-            )
-            t_values = t_values < THRESHOLD
-            masks["threshold"] = t_values
-
-        # pd.crosstab returns nan for an empty cell
-        for name, mask in masks.items():
-            mask.fillna(value=1, inplace=True)
-            mask = mask.astype(int)
-            mask.replace({0: False, 1: True}, inplace=True)
-            masks[name] = mask
-
+        masks = create_crosstab_masks(
+            index,
+            columns,
+            values,
+            rownames,
+            colnames,
+            agg_func,
+            margins,
+            margins_name,
+            dropna,
+            normalize,
+        )
         # build the sdc dictionary
         sdc: dict = get_table_sdc(masks, self.suppress)
         # get the status and summary
@@ -215,6 +154,36 @@ class Tables:
         safe_table, outcome = apply_suppression(table, masks)
         if self.suppress:
             table = safe_table
+            if margins:
+                if show_suppressed:
+                    table = manual_crossstab_with_totals(
+                        table,
+                        aggfunc,
+                        index,
+                        columns,
+                        values,
+                        rownames,
+                        colnames,
+                        margins,
+                        margins_name,
+                        dropna,
+                        normalize,
+                    )
+                else:
+                    table = crosstab_with_totals(
+                        masks,
+                        aggfunc,
+                        index,
+                        columns,
+                        values,
+                        rownames,
+                        colnames,
+                        margins,
+                        margins_name,
+                        dropna,
+                        normalize,
+                    )
+
         # record output
         self.results.add(
             status=status,
@@ -317,7 +286,7 @@ class Tables:
         # threshold check
         agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
         t_values = pd.pivot_table(  # type: ignore
-            data, values, index, columns, aggfunc=agg
+            data, values, index, columns, aggfunc=agg, margins=margins
         )
         masks["threshold"] = t_values
 
@@ -325,26 +294,33 @@ class Tables:
             # check for negative values -- currently unsupported
             agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
             negative = pd.pivot_table(  # type: ignore
-                data, values, index, columns, aggfunc=agg
+                data, values, index, columns, aggfunc=agg, margins=margins
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
             agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
             masks["p-ratio"] = pd.pivot_table(  # type: ignore
-                data, values, index, columns, aggfunc=agg
+                data, values, index, columns, aggfunc=agg, margins=margins
             )
             # nk values check
             agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
             masks["nk-rule"] = pd.pivot_table(  # type: ignore
-                data, values, index, columns, aggfunc=agg
+                data, values, index, columns, aggfunc=agg, margins=margins
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
                 agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
                 masks["missing"] = pd.pivot_table(  # type: ignore
-                    data, values, index, columns, aggfunc=agg
+                    data, values, index, columns, aggfunc=agg, margins=margins
                 )
+
+        # pd.pivot_table returns nan for an empty cell
+        for name, mask in masks.items():
+            mask.fillna(value=1, inplace=True)
+            mask = mask.astype(int)
+            mask.replace({0: False, 1: True}, inplace=True)
+            masks[name] = mask
 
         # build the sdc dictionary
         sdc: dict = get_table_sdc(masks, self.suppress)
@@ -505,6 +481,103 @@ class Tables:
         return plot
 
 
+def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
+    index,
+    columns,
+    values,
+    rownames,
+    colnames,
+    agg_func,
+    margins,
+    margins_name,
+    dropna,
+    normalize,
+):
+    """Creates masks to specify the cells to suppress."""
+    # suppression masks to apply based on the following checks
+    masks: dict[str, DataFrame] = {}
+
+    if agg_func is not None:
+        # create lists with single entry for when there is only one aggfunc
+        count_funcs: list[str] = [AGGFUNC["count"]]
+        neg_funcs: list[Callable] = [agg_negative]
+        pperc_funcs: list[Callable] = [agg_p_percent]
+        nk_funcs: list[Callable] = [agg_nk]
+        missing_funcs: list[Callable] = [agg_missing]
+        # then expand them to deal with extra columns as needed
+        if isinstance(agg_func, list):
+            num = len(agg_func)
+            count_funcs.extend([AGGFUNC["count"] for i in range(1, num)])
+            neg_funcs.extend([agg_negative for i in range(1, num)])
+            pperc_funcs.extend([agg_p_percent for i in range(1, num)])
+            nk_funcs.extend([agg_nk for i in range(1, num)])
+            missing_funcs.extend([agg_missing for i in range(1, num)])
+        # threshold check- doesn't matter what we pass for value
+
+        t_values = pd.crosstab(  # type: ignore
+            index,
+            columns,
+            values=values,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=count_funcs,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+
+        if dropna or margins:
+            for col in t_values.columns:
+                if t_values[col].sum() == 0:
+                    t_values = t_values.drop(col, axis=1)
+        t_values = t_values < THRESHOLD
+        masks["threshold"] = t_values
+        # check for negative values -- currently unsupported
+        negative = pd.crosstab(  # type: ignore
+            index, columns, values, aggfunc=neg_funcs, margins=margins
+        )
+        if negative.to_numpy().sum() > 0:
+            masks["negative"] = negative
+        # p-percent check
+        masks["p-ratio"] = pd.crosstab(  # type: ignore
+            index, columns, values, aggfunc=pperc_funcs, margins=margins, dropna=dropna
+        )
+        # nk values check
+        masks["nk-rule"] = pd.crosstab(  # type: ignore
+            index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
+        )
+        # check for missing values -- currently unsupported
+        if CHECK_MISSING_VALUES:
+            masks["missing"] = pd.crosstab(  # type: ignore
+                index, columns, values, aggfunc=missing_funcs, margins=margins
+            )
+    else:
+        # threshold check- doesn't matter what we pass for value
+        t_values = pd.crosstab(  # type: ignore
+            index,
+            columns,
+            values=None,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=None,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+        t_values = t_values < THRESHOLD
+        masks["threshold"] = t_values
+
+    # pd.crosstab returns nan for an empty cell
+    for name, mask in masks.items():
+        mask.fillna(value=1, inplace=True)
+        mask = mask.astype(int)
+        mask.replace({0: False, 1: True}, inplace=True)
+        masks[name] = mask
+    return masks
+
+
 def rounded_survival_table(survival_table):
     """Calculates the rounded surival function."""
     death_censored = (
@@ -549,7 +622,7 @@ def rounded_survival_table(survival_table):
     return survival_table
 
 
-def get_aggfunc(aggfunc: str | None) -> Callable | None:
+def get_aggfunc(aggfunc: str | None) -> str | None:
     """Checks whether an aggregation function is allowed and returns the
     appropriate function.
 
@@ -581,7 +654,7 @@ def get_aggfunc(aggfunc: str | None) -> Callable | None:
 
 def get_aggfuncs(
     aggfuncs: str | list[str] | None,
-) -> Callable | list[Callable] | None:
+) -> str | list[str] | None:
     """Checks whether a list of aggregation functions is allowed and returns
     the appropriate functions.
 
@@ -604,7 +677,7 @@ def get_aggfuncs(
         logger.debug("aggfuncs: %s", function)
         return function
     if isinstance(aggfuncs, list):
-        functions: list[Callable] = []
+        functions: list[str] = []
         for function_name in aggfuncs:
             function = get_aggfunc(function_name)
             if function is not None:
@@ -667,8 +740,12 @@ def agg_p_percent(vals: Series) -> bool:
     bool
         whether the p percent rule is violated.
     """
+    assert isinstance(vals, Series), "vals is not a pandas series"
     sorted_vals = vals.sort_values(ascending=False)
     total: float = sorted_vals.sum()
+    if total <= 0.0 or vals.size <= 1:
+        logger.debug("not calculating ppercent due to small size")
+        return bool(ZEROS_ARE_DISCLOSIVE)
     sub_total = total - sorted_vals.iloc[0] - sorted_vals.iloc[1]
     p_val: float = sub_total / sorted_vals.iloc[0] if total > 0 else 1
     return p_val < SAFE_PRATIO_P
@@ -755,6 +832,13 @@ def apply_suppression(
                 outcome_df += tmp_df
             except TypeError:
                 logger.warning("problem mask %s is not binary", name)
+            except ValueError as error:  # pragma: no cover
+                error_message = (
+                    f"An error occurred with the following details"
+                    f":\n Name: {name}\n Mask: {mask}\n Table: {table}"
+                )
+                raise ValueError(error_message) from error
+
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
     return safe_df, outcome_df
@@ -778,7 +862,7 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
     sdc["summary"]["p-ratio"] = 0
     sdc["summary"]["nk-rule"] = 0
     for name, mask in masks.items():
-        sdc["summary"][name] = int(mask.to_numpy().sum())
+        sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
     # positions of cells to be suppressed
     sdc["cells"]["negative"] = []
     sdc["cells"]["missing"] = []
@@ -834,3 +918,380 @@ def get_summary(sdc: dict) -> tuple[str, str]:
         summary = status
     logger.info("get_summary(): %s", summary)
     return status, summary
+
+
+def get_queries(masks, aggfunc) -> list[str]:
+    """Returns a list of the boolean conditions for each true cell in the suppression masks.
+
+    Parameters
+    ----------
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+    aggfunc : str | None
+        The aggregation function
+
+    Returns
+    -------
+    str
+        The boolean conditions for each true cell in the suppression masks.
+    """
+    # initialize a list to store queries for true cells
+    true_cell_queries = []
+    for _, mask in masks.items():
+        # drop the name of the mask
+        if aggfunc is not None:
+            mask = mask.droplevel(0, axis=1)
+        # identify level names for rows and columns
+        index_level_names = mask.index.names
+        column_level_names = mask.columns.names
+        # iterate through the masks to identify the true cells and extract queries
+        for col_index, col_label in enumerate(mask.columns):
+            for row_index, row_label in enumerate(mask.index):
+                if mask.iloc[row_index, col_index]:
+                    if isinstance(row_label, tuple):
+                        index_query = " & ".join(
+                            [
+                                f"({level} == {val})"
+                                if isinstance(val, (int, float))
+                                else f'({level} == "{val}")'
+                                for level, val in zip(index_level_names, row_label)
+                            ]
+                        )
+                    else:
+                        index_query = " & ".join(
+                            [
+                                f"({index_level_names} == {row_label})"
+                                if isinstance(row_label, (int, float))
+                                else (f"({index_level_names}" f'== "{row_label}")')
+                            ]
+                        )
+                    if isinstance(col_label, tuple):
+                        column_query = " & ".join(
+                            [
+                                f"({level} == {val})"
+                                if isinstance(val, (int, float))
+                                else f'({level} == "{val}")'
+                                for level, val in zip(column_level_names, col_label)
+                            ]
+                        )
+                    else:
+                        column_query = " & ".join(
+                            [
+                                f"({column_level_names} == {col_label})"
+                                if isinstance(col_label, (int, float))
+                                else (f"({column_level_names}" f'== "{col_label}")')
+                            ]
+                        )
+                    query = f"{index_query} & {column_query}"
+                    true_cell_queries.append(query)
+    # delete the duplication
+    true_cell_queries = list(set(true_cell_queries))
+    return true_cell_queries
+
+
+def create_dataframe(index, columns) -> DataFrame:
+    """Combining the index and columns in a dataframe and return the datframe.
+
+    Parameters
+    ----------
+    index : array-like, Series, or list of arrays/Series
+        Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+
+    Returns
+    -------
+    Dataframe
+        Table of the index and columns combined.
+    """
+    if isinstance(index, list):
+        index_df = pd.concat(index, axis=1)
+    elif isinstance(index, pd.Series):
+        index_df = pd.DataFrame({index.name: index})
+    if isinstance(columns, list):
+        columns_df = pd.concat(columns, axis=1)
+    elif isinstance(columns, pd.Series):
+        columns_df = pd.DataFrame({columns.name: columns})
+    data = pd.concat([index_df, columns_df], axis=1)
+    return data
+
+
+def get_index_columns(index, columns, data) -> tuple[list | Series, list | Series]:
+    """Get the index and columns from the data dataframe.
+
+    Parameters
+    ----------
+    index : array-like, Series, or list of arrays/Series
+        Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+    data : dataframe
+        Table of the index and columns combined.
+
+    Returns
+    -------
+    List | Series
+        The index extracted from the data.
+    List | Series
+        The columns extracted from the data.
+    """
+    shift = 1
+    if isinstance(index, list):
+        index_new = []
+        for i in range(len(index)):
+            index_new.append(data.iloc[:, i])
+        shift = len(index)
+    else:
+        index_new = data[index.name]
+
+    if isinstance(columns, list):
+        columns_new = []
+        for i in range(shift, shift + len(columns)):
+            columns_new.append(data.iloc[:, i])
+    else:
+        columns_new = data[columns.name]
+    return index_new, columns_new
+
+
+def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
+    masks,
+    aggfunc,
+    index,
+    columns,
+    values,
+    rownames,
+    colnames,
+    margins,
+    margins_name,
+    dropna,
+    normalize,
+) -> DataFrame:
+    """Recalculate the crosstab table when margins are true and suppression is true.
+
+    Parameters
+    ----------
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+    aggfunc : str | None
+        The aggregation function.
+    index : array-like, Series, or list of arrays/Series
+        Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+    index : array-like, Series, or list of arrays/Series
+            Values to group by in the rows.
+        columns : array-like, Series, or list of arrays/Series
+            Values to group by in the columns.
+        values : array-like, optional
+            Array of values to aggregate according to the factors.
+            Requires `aggfunc` be specified.
+        rownames : sequence, default None
+            If passed, must match number of row arrays passed.
+        colnames : sequence, default None
+            If passed, must match number of column arrays passed.
+        aggfunc : str, optional
+            If specified, requires `values` be specified as well.
+        margins : bool, default False
+            Add row/column margins (subtotals).
+        margins_name : str, default 'All'
+            Name of the row/column that will contain the totals
+            when margins is True.
+        dropna : bool, default True
+            Do not include columns whose entries are all NaN.
+        normalize : bool, {'all', 'index', 'columns'}, or {0,1}, default False
+            Normalize by dividing all values by the sum of values.
+            - If passed 'all' or `True`, will normalize over all values.
+            - If passed 'index' will normalize over each row.
+            - If passed 'columns' will normalize over each column.
+            - If margins is `True`, will also normalize margin values.
+
+    Returns
+    -------
+    DataFrame
+        Crosstabulation of data
+    """
+    true_cell_queries = get_queries(masks, aggfunc)
+    data = create_dataframe(index, columns)
+
+    # apply the queries to the data
+    for query in true_cell_queries:
+        query = str(query).replace("['", "").replace("']", "")
+        data = data.query(f"not ({query})")
+
+    # get the index and columns from the data after the queries are applied
+    try:
+        index_new, columns_new = get_index_columns(index, columns, data)
+        # apply the crosstab with the new index and columns
+        table = pd.crosstab(  # type: ignore
+            index_new,
+            columns_new,
+            values=values,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=aggfunc,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+    except ValueError:
+        logger.warning(
+            "All the cells in this data are disclosive."
+            " Thus suppression can not be applied"
+        )
+        return None
+    return table
+
+
+def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
+    table,
+    aggfunc,
+    index,
+    columns,
+    values,
+    rownames,
+    colnames,
+    margins,
+    margins_name,
+    dropna,
+    normalize,
+) -> DataFrame:
+    """Recalculate the crosstab table when margins are true and suppression is true.
+
+    Parameters
+    ----------
+    table : Dataframe
+        The suppressed table.
+    aggfunc : str | None
+        The aggregation function.
+    index : array-like, Series, or list of arrays/Series
+            Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+    values : array-like, optional
+        Array of values to aggregate according to the factors.
+        Requires `aggfunc` be specified.
+    rownames : sequence, default None
+        If passed, must match number of row arrays passed.
+    colnames : sequence, default None
+        If passed, must match number of column arrays passed.
+    margins : bool, default False
+        Add row/column margins (subtotals).
+    margins_name : str, default 'All'
+        Name of the row/column that will contain the totals
+        when margins is True.
+    dropna : bool, default True
+        Do not include columns whose entries are all NaN.
+    normalize : bool, {'all', 'index', 'columns'}, or {0,1}, default False
+        Normalize by dividing all values by the sum of values.
+        - If passed 'all' or `True`, will normalize over all values.
+        - If passed 'index' will normalize over each row.
+        - If passed 'columns' will normalize over each column.
+        - If margins is `True`, will also normalize margin values.
+
+    Returns
+    -------
+    DataFrame
+        Crosstabulation of data
+    """
+    if isinstance(aggfunc, list):
+        logger.warning(
+            "We can not calculate the margins with a list of aggregation functions. "
+            "Please create a table for each aggregation function"
+        )
+        return None
+    if aggfunc is None or aggfunc == "sum" or aggfunc == "count":
+        table = recalculate_margin(table, margins_name)
+
+    elif aggfunc == "mean":
+        count_table = pd.crosstab(  # type: ignore
+            index,
+            columns,
+            values=values,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc="count",
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+        # suppress the cells in the count by mimicking the suppressed cells in the table
+        count_table = count_table.where(table.notna(), other=np.nan)
+        # delete any columns from the count_table that are not in the table
+        columns_to_keep = table.columns
+        count_table = count_table[columns_to_keep]
+        count_table = count_table.sort_index(axis=1)
+        # recalculate the margins considering the nan values
+        count_table = recalculate_margin(count_table, margins_name)
+        # multiply the table by the count table
+        table[margins_name] = 1
+        table.loc[margins_name, :] = 1
+        multip_table = count_table * table
+        multip_table = multip_table.sort_index(axis=1)
+        # calculate the margins columns
+        table[margins_name] = (
+            multip_table.drop(margins_name, axis=1).sum(axis=1)
+            / multip_table[margins_name]
+        )
+        # calculate the margins row
+        if not isinstance(count_table.index, pd.MultiIndex):  # single row
+            table.loc[margins_name, :] = (
+                multip_table.drop(margins_name, axis=0).sum()
+                / multip_table.loc[margins_name, :]
+            )
+        else:  # multiple rows
+            table.loc[(margins_name, ""), :] = (
+                multip_table.drop(margins_name, axis=0).sum()
+                / multip_table.loc[(margins_name, ""), :]
+            )
+        # calculate the grand margin
+        if not isinstance(count_table.columns, pd.MultiIndex) and not isinstance(
+            count_table.index, pd.MultiIndex
+        ):  # single column, single row
+            table.loc[margins_name, margins_name] = (
+                multip_table.drop(index=margins_name, columns=margins_name).sum().sum()
+            ) / multip_table.loc[margins_name, margins_name]
+        else:  # multiple columns or multiple rows
+            table.loc[margins_name, margins_name] = (
+                multip_table.drop(index=margins_name, columns=margins_name).sum().sum()
+            ) / multip_table.loc[margins_name, margins_name][0]
+
+    elif aggfunc == "std":
+        table = table.drop(margins_name, axis=1)
+        table = table.drop(margins_name, axis=0)
+        logger.warning(
+            "The margins with the std agg func can not be calculated. "
+            "Please set the show_suppressed to false to calculate it."
+        )
+        return table
+    return table
+
+
+def recalculate_margin(table, margins_name) -> DataFrame:
+    """Recalculate the margins in a table.
+
+    Parameters
+    ----------
+    table : Dataframe
+        The suppressed table.
+    margins_name : str, default 'All'
+        Name of the row/column that will contain the totals
+
+    Returns
+    -------
+    DataFrame
+        Table with new calculated margins
+    """
+    table = table.drop(margins_name, axis=1)
+    rows_total = table.sum(axis=1)
+    table.loc[:, margins_name] = rows_total
+    if isinstance(table.index, pd.MultiIndex):
+        table = table.drop(margins_name, axis=0)
+        cols_total = table.sum(axis=0)
+        table.loc[(margins_name, ""), :] = cols_total
+    else:
+        table = table.drop(margins_name, axis=0)
+        cols_total = table.sum(axis=0)
+        table.loc[margins_name] = cols_total
+    return table

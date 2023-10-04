@@ -210,7 +210,7 @@ class Tables:
         dropna: bool = True,
         margins_name: str = "All",
         observed: bool = False,
-        sort: bool = True
+        sort: bool = True,
     ) -> DataFrame:
         """Create a spreadsheet-style pivot table as a DataFrame.
 
@@ -1264,7 +1264,7 @@ def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments,too-many
         # delete any columns from the count_table that are not in the table
         columns_to_keep = table.columns
         count_table = count_table[columns_to_keep]
-        if count_table.index.is_numeric():
+        if count_table.index.is_numeric():  # pragma: no cover
             count_table = count_table.sort_index(axis=1)
         # recalculate the margins considering the nan values
         count_table = recalculate_margin(count_table, margins_name)
@@ -1272,7 +1272,7 @@ def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments,too-many
         table[margins_name] = 1
         table.loc[margins_name, :] = 1
         multip_table = count_table * table
-        if multip_table.index.is_numeric():
+        if multip_table.index.is_numeric():  # pragma: no cover
             multip_table = multip_table.sort_index(axis=1)
         # calculate the margins columns
         table[margins_name] = (

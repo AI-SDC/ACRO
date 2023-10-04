@@ -210,7 +210,7 @@ class Tables:
         dropna: bool = True,
         margins_name: str = "All",
         observed: bool = False,
-        sort: bool = True
+        sort: bool = True,
     ) -> DataFrame:
         """Create a spreadsheet-style pivot table as a DataFrame.
 

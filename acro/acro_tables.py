@@ -210,8 +210,7 @@ class Tables:
         dropna: bool = True,
         margins_name: str = "All",
         observed: bool = False,
-        sort: bool = True,
-        show_suppressed: bool = False,
+        sort: bool = True
     ) -> DataFrame:
         """Create a spreadsheet-style pivot table as a DataFrame.
 
@@ -255,8 +254,6 @@ class Tables:
             all values for categorical groupers.
         sort : bool, default True
             Specifies if the result should be sorted.
-        show_suppressed : bool, default False
-            how the totals are being calculated when the suppression is true.
 
         Returns
         -------

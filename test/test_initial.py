@@ -722,6 +722,30 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(
     )
 
 
+def test_pivot_table_with_totals_with_suppression(data, acro):
+    """Test the pivot table with both margins and suppression are true."""
+    _ = acro.pivot_table(
+        data,
+        index=["year"],
+        columns=["grant_type"],
+        values=["inc_grants"],
+        aggfunc="count",
+        margins=True,
+    )
+    output = acro.results.get_index(0)
+    assert 74 == output.output[0][("inc_grants", "All")].iat[0]
+
+    total_rows = output.output[0].iloc[-1, 0:3].sum()
+    total_cols = output.output[0].loc[2010:2015, ("inc_grants", "All")].sum()
+    assert (
+        766
+        == total_cols
+        == total_rows
+        == output.output[0][("inc_grants", "All")].iat[6]
+    )
+    assert "R/G" not in output.output[0].columns
+
+
 if RUN_TEST:
 
     def test_crosstab_with_sum(data, acro):

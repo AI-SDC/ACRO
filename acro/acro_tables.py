@@ -133,6 +133,22 @@ class Tables:
             dropna,
             normalize,
         )
+        # delete empty columns from table
+        deleted_cols = []
+        for col in table.columns:
+            if table[col].sum() == 0:
+                table = table.drop(col, axis=1)
+                deleted_cols.append(col)
+        # create a message with the deleted column's names
+        if len(deleted_cols) > 0:
+            deleted_cols = [
+                f"{col}" for col in deleted_cols
+            ]  # to handle column's names of type tuple
+            msg = ", ".join(deleted_cols)
+            comments = [f"Empty columns: {msg} were deleted."]
+            logger.info(comments)
+        else:  # pragma: no cover
+            comments = None
 
         masks = create_crosstab_masks(
             index,
@@ -195,6 +211,7 @@ class Tables:
             summary=summary,
             outcome=outcome,
             output=[table],
+            comments=comments,
         )
         return table
 

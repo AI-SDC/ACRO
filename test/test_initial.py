@@ -42,6 +42,24 @@ def test_crosstab_without_suppression(data):
     assert 48 == output.output[0]["R/G"].sum()
 
 
+def test_crosstab_with_aggfunc_sum(data, acro):
+    """Test the crosstab with two columns and aggfunc sum."""
+    acro = ACRO(suppress=False)
+    _ = acro.crosstab(
+        data.year,
+        [data.grant_type, data.survivor],
+        values=data.inc_grants,
+        aggfunc="sum",
+    )
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise()
+    output_0 = results.get_index(0)
+    comment = (
+        "Empty columns: ('N', 'Dead in 2015'), ('R/G', 'Dead in 2015') were deleted."
+    )
+    assert output_0.comments == [comment]
+
+
 def test_crosstab_threshold(data, acro):
     """Crosstab threshold test."""
     _ = acro.crosstab(data.year, data.grant_type)
@@ -572,7 +590,7 @@ def test_crosstab_with_totals_with_suppression(data, acro):
     assert "R/G" not in output.output[0].columns
 
 
-def test_crosstab_with_totals_with_suppression_herichical(data, acro):
+def test_crosstab_with_totals_with_suppression_hierarchical(data, acro):
     """Test the crosstab with both margins and suppression are true."""
     _ = acro.crosstab(
         [data.year, data.survivor], [data.grant_type, data.status], margins=True
@@ -641,7 +659,7 @@ def test_crosstab_with_manual_totals_with_suppression(data, acro):
     assert "R/G" in output.output[0].columns
 
 
-def test_crosstab_with_manual_totals_with_suppression_herichical(data, acro):
+def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
     """Test the crosstab with both margins and suppression
     are true with multilevel indexes and columns while using the total manual function.
     """
@@ -682,7 +700,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, ac
     assert "R/G" in output.output[0].columns
 
 
-def test_herichical_crosstab_with_manual_totals_with_mean(data, acro):
+def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
     """Test the crosstab with both margins and suppression are true, with
     aggfunc mean and with multilevel columns and rows while using the total manual function.
     """
@@ -748,18 +766,6 @@ def test_pivot_table_with_totals_with_suppression(data, acro):
 
 if RUN_TEST:
 
-    def test_crosstab_with_sum(data, acro):
-        """Test the crosstab with two columns and aggfunc sum."""
-        acro = ACRO(suppress=False)
-        _ = acro.crosstab(
-            data.year,
-            [data.grant_type, data.survivor],
-            values=data.inc_grants,
-            aggfunc="sum",
-        )
-        output = acro.results.get_index(0)
-        assert (6, 8) == output.output[0].shape
-
     def test_crosstab_multiple_aggregate_function(data, acro):
         """Crosstab with multiple agg funcs."""
         acro = ACRO(suppress=False)
@@ -814,7 +820,7 @@ if RUN_TEST:
         output_4 = (output.output[0]).droplevel(0, axis=1)
         assert output_3.equals(output_4)
 
-    def test_crosstab_with_totals_with_suppression_with_two_aggfuncs_herichical(
+    def test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
         data, acro
     ):
         """Test the crosstab with both margins and suppression are true

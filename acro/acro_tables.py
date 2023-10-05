@@ -443,18 +443,18 @@ class Tables:
 
         # record output
         if output == "table":
-            table = self.table(
+            table = self.survival_table(
                 survival_table, safe_table, status, sdc, command, summary, outcome
             )
             return table
         if output == "plot":
-            plot = self.plot(
+            plot = self.survival_plot(
                 survival_table, survival_func, filename, status, sdc, command, summary
             )
             return plot
         return None
 
-    def table(  # pylint: disable=too-many-arguments,too-many-locals
+    def survival_table(  # pylint: disable=too-many-arguments,too-many-locals
         self, survival_table, safe_table, status, sdc, command, summary, outcome
     ):
         """Creates the survival table according to the status of suppressing."""
@@ -472,7 +472,7 @@ class Tables:
         )
         return survival_table
 
-    def plot(  # pylint: disable=too-many-arguments,too-many-locals
+    def survival_plot(  # pylint: disable=too-many-arguments,too-many-locals
         self, survival_table, survival_func, filename, status, sdc, command, summary
     ):
         """Creates the survival plot according to the status of suppressing."""

@@ -32,6 +32,15 @@ def acro() -> ACRO:
     return ACRO(suppress=True)
 
 
+def clean_up(name):
+    """Removes unwanted files or directory."""
+    if os.path.exists(name):
+        if os.path.isfile(name):
+            os.remove(name)
+        elif os.path.isdir(name):
+            shutil.rmtree(name)
+
+
 def test_crosstab_without_suppression(data):
     """Crosstab threshold without automatic suppression."""
     acro = ACRO(suppress=False)
@@ -849,3 +858,10 @@ if RUN_TEST:
             "We can not calculate the margins with a list of aggregation functions. "
             "Please create a table for each aggregation function" in caplog.text
         )
+
+
+def test_cleanup():
+    """Gets rid of files created during tests."""
+    names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]
+    for name in names:
+        clean_up(name)

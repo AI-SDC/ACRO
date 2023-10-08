@@ -750,6 +750,6 @@ def test_stata_unknown(data):
 
 def test_cleanup():
     """Gets rid of files created during tests."""
-    names = ["test_outputs"]
+    names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]
     for name in names:
         clean_up(name)

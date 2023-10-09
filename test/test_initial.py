@@ -50,13 +50,25 @@ def test_crosstab_with_aggfunc_sum(data, acro):
         values=data.inc_grants,
         aggfunc="sum",
     )
+    _ = acro.crosstab(
+        [data.grant_type, data.survivor],
+        data.year,
+        values=data.inc_grants,
+        aggfunc="sum",
+    )
     acro.add_exception("output_0", "Let me have it")
+    acro.add_exception("output_1", "I need this output")
     results: Records = acro.finalise()
     output_0 = results.get_index(0)
-    comment = (
+    output_1 = results.get_index(1)
+    comment_0 = (
         "Empty columns: ('N', 'Dead in 2015'), ('R/G', 'Dead in 2015') were deleted."
     )
-    assert output_0.comments == [comment]
+    comment_1 = (
+        "Empty rows: ('N', 'Dead in 2015'), ('R/G', 'Dead in 2015') were deleted."
+    )
+    assert output_0.comments == [comment_0]
+    assert output_1.comments == [comment_1]
 
 
 def test_crosstab_threshold(data, acro):

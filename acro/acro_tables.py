@@ -133,22 +133,28 @@ class Tables:
             dropna,
             normalize,
         )
-        # delete empty columns from table
+        # delete empty rows and columns from table
+        deleted_rows = []
         deleted_cols = []
-        for col in table.columns:
-            if table[col].sum() == 0:
-                table = table.drop(col, axis=1)
-                deleted_cols.append(col)
+        # define empty columns and rows using boolean masks
+        empty_cols_mask = table.sum(axis=0) == 0
+        empty_rows_mask = table.sum(axis=1) == 0
+
+        deleted_cols = list(table.columns[empty_cols_mask])
+        table = table.loc[:, ~empty_cols_mask]
+        deleted_rows = list(table.index[empty_rows_mask])
+        table = table.loc[~empty_rows_mask, :]
+
         # create a message with the deleted column's names
-        if len(deleted_cols) > 0:
-            deleted_cols = [
-                f"{col}" for col in deleted_cols
-            ]  # to handle column's names of type tuple
-            msg = ", ".join(deleted_cols)
-            comments = [f"Empty columns: {msg} were deleted."]
-            logger.info(comments)
-        else:  # pragma: no cover
-            comments = None
+        comments = []
+        if deleted_cols:
+            msg_cols = ", ".join(str(col) for col in deleted_cols)
+            comments.append(f"Empty columns: {msg_cols} were deleted.")
+        if deleted_rows:
+            msg_rows = ", ".join(str(row) for row in deleted_rows)
+            comments.append(f"Empty rows: {msg_rows} were deleted.")
+        if comments:
+            logger.info(" ".join(comments))
 
         masks = create_crosstab_masks(
             index,
@@ -565,10 +571,14 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
             normalize=normalize,
         )
 
+        # drop empty columns and rows
         if dropna or margins:
-            for col in t_values.columns:
-                if t_values[col].sum() == 0:
-                    t_values = t_values.drop(col, axis=1)
+            empty_cols_mask = t_values.sum(axis=0) == 0
+            empty_rows_mask = t_values.sum(axis=1) == 0
+
+            t_values = t_values.loc[:, ~empty_cols_mask]
+            t_values = t_values.loc[~empty_rows_mask, :]
+
         t_values = t_values < THRESHOLD
         masks["threshold"] = t_values
         # check for negative values -- currently unsupported

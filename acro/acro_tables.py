@@ -69,7 +69,7 @@ class Tables:
         """Compute a simple cross tabulation of two (or more) factors.  By
         default, computes a frequency table of the factors unless an array of
         values and an aggregation function are passed.
-        
+
         To provide consistent behaviour with different aggregation functions,
         'empty' rows or columns -i.e. that  are all NaN or 0 (count,sum) are removed.
 

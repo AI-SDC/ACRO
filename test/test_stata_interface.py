@@ -290,7 +290,7 @@ def test_stata_rename_outputs():
 
 
 def test_stata_incomplete_output_commands():
-    """Tests handling incomplete or wony outpu commands
+    """Tests handling incomplete or wrong output commands
     assumes simple table has been created by earlier tests.
     """
     # output to change not provided

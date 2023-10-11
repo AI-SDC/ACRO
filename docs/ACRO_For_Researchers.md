@@ -89,7 +89,7 @@ The finalise function will:
 
 ## Frequently Asked Questions
 ### What if I want to run my code many times before I decide exactly what to send for approval?
-ACRO naturally suppors this way of working. It will not produce the output folder until you are satisfied and add acro.finalise() to the end of your script.
+ACRO naturally supports this way of working. It will not produce the output folder until you are satisfied and add acro.finalise() to the end of your script.
 ### Why is my data exported as unformatted .csv files?
 The outputs are saved in row format (as csv files) for the output checkers to check and make decisions. Although, you can change the format, if you like, the csv files should be there for the checking.
 ### Why is ACRO Python-based ‘under-the-hood’?

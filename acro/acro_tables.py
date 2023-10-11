@@ -662,7 +662,7 @@ def rounded_survival_table(survival_table):
     rounded_survival_func = []
     for i, data in enumerate(rounded_num_of_deaths):
         if i == 0:
-            rounded_survival_func.append(survival_table["Surv prob"][i])
+            rounded_survival_func.append(survival_table["Surv prob"].iloc[i])
             continue
         rounded_survival_func.insert(
             i,

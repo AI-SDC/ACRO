@@ -1,6 +1,7 @@
 """This module contains unit tests for the stata interface."""
 
 import os
+import shutil
 
 import numpy as np
 import pandas as pd
@@ -31,6 +32,15 @@ def data() -> pd.DataFrame:
     path = os.path.join("data", "test_data.dta")
     data = pd.read_stata(path)
     return data
+
+
+def clean_up(name):
+    """Removes unwanted files or directory."""
+    if os.path.exists(name):
+        if os.path.isfile(name):
+            os.remove(name)
+        elif os.path.isdir(name):
+            shutil.rmtree(name)
 
 
 def dummy_acrohandler(
@@ -280,7 +290,7 @@ def test_stata_rename_outputs():
 
 
 def test_stata_incomplete_output_commands():
-    """Tests handling incomplete or wony outpu commands
+    """Tests handling incomplete or wrong output commands
     assumes simple table has been created by earlier tests.
     """
     # output to change not provided
@@ -736,3 +746,10 @@ def test_stata_unknown(data):
     )
     correct = "acro command not recognised: foo"
     assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
+
+
+def test_cleanup():
+    """Gets rid of files created during tests."""
+    names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]
+    for name in names:
+        clean_up(name)

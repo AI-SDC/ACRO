@@ -556,12 +556,8 @@ class Tables:
         'histogram.png' will be used as the filename. A number will be appended automatically
         to the filename to avoid overwriting the files.
 
-        Returns
-        -------
-        matplotlib.Axes
-
-        Parameters:
-        -----------
+        Parameters
+        ----------
         data : DataFrame
             The pandas object holding the data.
         column : str
@@ -606,6 +602,10 @@ class Tables:
             Whether to show the legend.
         filename:
             The name of the file where the plot will be saved.
+
+        Returns
+        -------
+        matplotlib.Axes
         """
         logger.debug("hist()")
         command: str = utils.get_command("hist()", stack())

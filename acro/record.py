@@ -175,9 +175,11 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
                 if os.path.exists(filename):
                     shutil.copy(filename, path)
                     output.append(Path(filename).name)
-        if self.output_type == "survival plot":
+        if self.output_type == "survival plot" or self.output_type == "histogram":
             for filename in self.output:
-                output.append(Path(filename).name)
+                if os.path.exists(filename):
+                    output.append(Path(filename).name)
+                    shutil.copy(filename, path)
         return output
 
     def __str__(self) -> str:
@@ -446,9 +448,10 @@ class Records:
             self.finalise_excel(path)
         else:
             raise ValueError("Invalid file extension. Options: {json, xlsx}")
-        if os.path.exists("acro_artifacts"):
-            add_acro_artifacts(path)
         self.write_checksums(path)
+        # check if the directory acro_artifacts exists and delete it
+        if os.path.exists("acro_artifacts"):
+            shutil.rmtree("acro_artifacts")
         logger.info("outputs written to: %s", path)
 
     def finalise_json(self, path: str) -> None:
@@ -563,20 +566,6 @@ class Records:
                     file.write(sha256)
         else:
             logger.debug("There is no file to do the checksums")  # pragma: no cover
-
-
-def add_acro_artifacts(path: str) -> None:
-    """Copy any file from the acro_artifacts directory to the output
-        directory then delete the directory.
-
-    Parameters
-    ----------
-    path : str
-        Name of the folder that files are to be written.
-    """
-    for filename in os.listdir("acro_artifacts"):
-        shutil.copy(f"acro_artifacts/{filename}", path)
-    shutil.rmtree("acro_artifacts")
 
 
 def load_records(path: str) -> Records:

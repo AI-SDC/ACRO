@@ -548,7 +548,13 @@ class Tables:
         filename="histogram.png",
         **kwargs,
     ):
-        """Create a histogram.
+        """Creates a histogram from a single column.
+        The dataset and the column's name should be passed to the function as parameters.
+        If more than one column is used the histogram will not be calculated.
+
+        To save the histogram plot to a file, the user can specify a filename otherwise
+        'histogram.png' will be used as the filename. A number will be appended automatically
+        to the filename to avoid overwriting the files.
 
         Returns
         -------
@@ -558,8 +564,8 @@ class Tables:
         -----------
         data : DataFrame
             The pandas object holding the data.
-        column : str or sequence, optional
-            If passed, will be used to limit data to a subset of columns.
+        column : str
+            The column that will be used to plot the histogram.
         by : object, optional
             If passed, then used to form histograms for separate groups.
         grid : bool, default True

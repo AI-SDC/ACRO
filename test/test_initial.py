@@ -872,7 +872,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
 
 def test_histogram_discolsive(data, acro, caplog):
     """Test a discolsive histogram."""
-    filename = r"acro_artifacts\histogram_0.png"
+    filename = os.path.normpath("acro_artifacts/histogram_0.png")
     _ = acro.hist(data, "inc_grants")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
@@ -888,7 +888,7 @@ def test_histogram_discolsive(data, acro, caplog):
 
 def test_histogram_non_disclosive(data, acro):
     """Test a non discolsive histogram."""
-    filename = r"acro_artifacts\histogram_0.png"
+    filename = os.path.normpath("acro_artifacts/histogram_0.png")
     _ = acro.hist(data, "inc_grants", bins=1)
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")

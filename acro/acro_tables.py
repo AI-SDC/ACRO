@@ -527,7 +527,7 @@ class Tables:
         )
         return plot
 
-    def hist(
+    def hist(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         data,
         column,
@@ -623,7 +623,8 @@ class Tables:
             status = "fail"
             if self.suppress:
                 logger.warning(
-                    f"Histogram will not be shown as the {column} column is disclosive."
+                    "Histogram will not be shown as the %s column is disclosive.",
+                    column,
                 )
             else:  # pragma: no cover
                 data.hist(
@@ -664,7 +665,7 @@ class Tables:
                 legend=legend,
                 **kwargs,
             )
-        logger.info(f"status: {status}")
+        logger.info("status: %s", status)
 
         # create the summary
         min_value = data[column].min()

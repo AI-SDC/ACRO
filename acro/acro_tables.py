@@ -527,6 +527,195 @@ class Tables:
         )
         return plot
 
+    def hist(  # pylint: disable=too-many-arguments,too-many-locals
+        self,
+        data,
+        column,
+        by=None,
+        grid=True,
+        xlabelsize=None,
+        xrot=None,
+        ylabelsize=None,
+        yrot=None,
+        ax=None,
+        sharex=False,
+        sharey=False,
+        figsize=None,
+        layout=None,
+        bins=10,
+        backend=None,
+        legend=False,
+        filename="histogram.png",
+        **kwargs,
+    ):
+        """Creates a histogram from a single column.
+        The dataset and the column's name should be passed to the function as parameters.
+        If more than one column is used the histogram will not be calculated.
+
+        To save the histogram plot to a file, the user can specify a filename otherwise
+        'histogram.png' will be used as the filename. A number will be appended automatically
+        to the filename to avoid overwriting the files.
+
+        Returns
+        -------
+        matplotlib.Axes
+
+        Parameters:
+        -----------
+        data : DataFrame
+            The pandas object holding the data.
+        column : str
+            The column that will be used to plot the histogram.
+        by : object, optional
+            If passed, then used to form histograms for separate groups.
+        grid : bool, default True
+            Whether to show axis grid lines.
+        xlabelsize : int, default None
+            If specified changes the x-axis label size.
+        xrot : float, default None
+            Rotation of x axis labels. For example, a value of 90 displays
+            the x labels rotated 90 degrees clockwise.
+        ylabelsize : int, default None
+            If specified changes the y-axis label size.
+        yrot : float, default None
+            Rotation of y axis labels. For example, a value of 90 displays
+            the y labels rotated 90 degrees clockwise.
+        ax : Matplotlib axes object, default None
+            The axes to plot the histogram on.
+        sharex : bool, default True if ax is None else False
+            In case subplots=True, share x axis and set some x axis labels to invisible;
+            defaults to True if ax is None otherwise False if an ax is passed in.
+            Note that passing in both an ax and sharex=True will alter all x axis
+            labels for all subplots in a figure.
+        sharey : bool, default False
+            In case subplots=True, share y axis and set some y axis labels to invisible.
+        figsize : tuple, optional
+            The size in inches of the figure to create.
+            Uses the value in matplotlib.rcParams by default.
+        layout : tuple, optional
+            Tuple of (rows, columns) for the layout of the histograms.
+        bins : int or sequence, default 10
+            Number of histogram bins to be used. If an integer is given, bins + 1 bin edges are
+            calculated and returned. If bins is a sequence, gives bin edges,
+            including left edge of first bin and right edge of last bin.
+        backend : str, default None
+            Backend to use instead of the backend specified in the option plotting.backend.
+            For instance, ‘matplotlib’. Alternatively, to specify the plotting.backend for the
+            whole session, set pd.options.plotting.backend.
+        legend : bool, default False
+            Whether to show the legend.
+        filename:
+            The name of the file where the plot will be saved.
+        """
+        logger.debug("hist()")
+        command: str = utils.get_command("hist()", stack())
+
+        if isinstance(data, list):  # pragma: no cover
+            logger.info(
+                "Calculating histogram for more than one columns is "
+                "not currently supported. Please do each column separately."
+            )
+            return
+
+        freq, _ = np.histogram(  # pylint: disable=too-many-function-args
+            data[column], bins, range=(data[column].min(), data[column].max())
+        )
+
+        # threshold check
+        threshold_mask = freq < THRESHOLD
+
+        # plot the histogram
+        if np.any(threshold_mask):  # the column is disclosive
+            status = "fail"
+            if self.suppress:
+                logger.warning(
+                    "Histogram will not be shown as the %s column is disclosive.",
+                    column,
+                )
+            else:  # pragma: no cover
+                data.hist(
+                    column=column,
+                    by=by,
+                    grid=grid,
+                    xlabelsize=xlabelsize,
+                    xrot=xrot,
+                    ylabelsize=ylabelsize,
+                    yrot=yrot,
+                    ax=ax,
+                    sharex=sharex,
+                    sharey=sharey,
+                    figsize=figsize,
+                    layout=layout,
+                    bins=bins,
+                    backend=backend,
+                    legend=legend,
+                    **kwargs,
+                )
+        else:
+            status = "review"
+            data.hist(
+                column=column,
+                by=by,
+                grid=grid,
+                xlabelsize=xlabelsize,
+                xrot=xrot,
+                ylabelsize=ylabelsize,
+                yrot=yrot,
+                ax=ax,
+                sharex=sharex,
+                sharey=sharey,
+                figsize=figsize,
+                layout=layout,
+                bins=bins,
+                backend=backend,
+                legend=legend,
+                **kwargs,
+            )
+        logger.info("status: %s", status)
+
+        # create the summary
+        min_value = data[column].min()
+        max_value = data[column].max()
+        summary = (
+            f"Please check the minimum and the maximum values. "
+            f"The minimum value of the {column} column is: {min_value}. "
+            f"The maximum value of the {column} column is: {max_value}"
+        )
+
+        # create the acro_artifacts directory to save the plot in it
+        try:
+            os.makedirs("acro_artifacts")
+            logger.debug("Directory acro_artifacts created successfully")
+        except FileExistsError:  # pragma: no cover
+            logger.debug("Directory acro_artifacts already exists")
+
+        # create a unique filename with number to avoid overwrite
+        filename, extension = os.path.splitext(filename)
+        if not extension:  # pragma: no cover
+            logger.info("Please provide a valid file extension")
+            return
+        increment_number = 0
+        while os.path.exists(
+            f"acro_artifacts/{filename}_{increment_number}{extension}"
+        ):
+            increment_number += 1
+        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+
+        # save the plot to the acro artifacts directory
+        plt.savefig(unique_filename)
+
+        # record output
+        self.results.add(
+            status=status,
+            output_type="histogram",
+            properties={"method": "histogram"},
+            sdc={},
+            command=command,
+            summary=summary,
+            outcome=pd.DataFrame(),
+            output=[os.path.normpath(unique_filename)],
+        )
+
 
 def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
     index,

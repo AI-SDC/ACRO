@@ -358,7 +358,7 @@ def test_rename_output(data, acro):
     results = acro.finalise(PATH)
     assert output_0.uid == new_name
     assert orig_name not in results.get_keys()
-    assert os.path.exists(f"outputs/{new_name}_0.csv")
+    assert os.path.exists(f"{PATH}/{new_name}_0.csv")
     # rename an output that doesn't exist
     with pytest.raises(ValueError):
         acro.rename_output("123", "name")

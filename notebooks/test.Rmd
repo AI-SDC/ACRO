@@ -148,3 +148,9 @@ acro_remove_output("output_3")
 ```{r}
 acro_finalise("RTEST", "json")
 ```
+
+## Use the help function
+
+```{r}
+acro_help("acro_pivot_table")
+```

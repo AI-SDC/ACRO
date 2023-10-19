@@ -119,14 +119,15 @@ acro_finalise <- function(path, ext)
     ac$finalise(path, ext)
 }
 
-acro_help <- function(command)
+acro_help <- function(command, family="")
 {
     "Get the help documentation of the functions"
-    if (command ==  "acro_table") {
-        command = "crosstab"
-    } else {
-        command = str_remove(command, "acro_")
-    }
+    # mapping the r commands to their corresponding python commands
+    command_map <- c("acro_table" = "crosstab", "acro_lm" = "olsr",
+                    "acro_glm" = ifelse(family %in% c("", "logit"), "logitr", "probitr"))
+
+    # get the command
+    command <- ifelse(command %in% names(command_map), command_map[command], sub("acro_", "", command))
     command <- ac[[command]]
     py_help(command)
-    }
+}

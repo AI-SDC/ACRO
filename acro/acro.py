@@ -73,7 +73,7 @@ class ACRO(Tables, Regression):
         # set globals for survival analysis
         acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
 
-    def finalise(self, path: str = "outputs", ext="json") -> Records:
+    def finalise(self, path: str = "outputs", ext="json") -> Records | None:
         """Creates a results file for checking.
 
         Parameters
@@ -88,6 +88,14 @@ class ACRO(Tables, Regression):
         Records
             Object storing the outputs.
         """
+        # check if the path exists
+        if os.path.exists(path):
+            logger.warning(
+                "Results file can not be created. "
+                "Directory %s already exists. Please choose a different directory name.",
+                path,
+            )
+            return None
         self.results.finalise(path, ext)
         config_filename: str = os.path.normpath(f"{path}/config.json")
         try:

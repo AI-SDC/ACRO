@@ -58,7 +58,7 @@ def test_crosstab_with_aggfunc_sum(data, acro):
     )
     acro.add_exception("output_0", "Let me have it")
     acro.add_exception("output_1", "I need this output")
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
     comment_0 = (
@@ -69,6 +69,7 @@ def test_crosstab_with_aggfunc_sum(data, acro):
     )
     assert output_0.comments == [comment_0]
     assert output_1.comments == [comment_1]
+    shutil.rmtree(PATH)
 
 
 def test_crosstab_threshold(data, acro):
@@ -82,10 +83,11 @@ def test_crosstab_threshold(data, acro):
         row, col = pos
         assert np.isnan(output.output[0].iloc[row, col])
     acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
     output = results.get_index(0)
     assert output.summary == correct_summary
+    shutil.rmtree(PATH)
 
 
 def test_crosstab_multiple(data, acro):
@@ -94,13 +96,14 @@ def test_crosstab_multiple(data, acro):
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
     )
     acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     correct_summary: str = (
         "fail; threshold: 7 cells suppressed; p-ratio: 2 cells suppressed; "
         "nk-rule: 1 cells suppressed; "
     )
     output = results.get_index(0)
     assert output.summary == correct_summary
+    shutil.rmtree(PATH)
 
 
 def test_negatives(data, acro):
@@ -114,12 +117,13 @@ def test_negatives(data, acro):
     )
     acro.add_exception("output_0", "Let me have it")
     acro.add_exception("output_1", "I want this")
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     correct_summary: str = "review; negative values found"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
     assert output_0.summary == correct_summary
     assert output_1.summary == correct_summary
+    shutil.rmtree(PATH)
 
 
 def test_pivot_table_without_suppression(data):
@@ -138,10 +142,11 @@ def test_pivot_table_pass(data, acro):
     _ = acro.pivot_table(
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     correct_summary: str = "pass"
     output_0 = results.get_index(0)
     assert output_0.summary == correct_summary
+    shutil.rmtree(PATH)
 
 
 def test_pivot_table_cols(data, acro):
@@ -154,13 +159,14 @@ def test_pivot_table_cols(data, acro):
         aggfunc=["mean", "std"],
     )
     acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     correct_summary: str = (
         "fail; threshold: 14 cells suppressed; "
         "p-ratio: 4 cells suppressed; nk-rule: 2 cells suppressed; "
     )
     output_0 = results.get_index(0)
     assert output_0.summary == correct_summary
+    shutil.rmtree(PATH)
 
 
 def test_ols(data, acro):
@@ -192,12 +198,13 @@ def test_ols(data, acro):
     assert results.df_resid == 807
     assert results.rsquared == pytest.approx(0.894, 0.001)
     # Finalise
-    results = acro.finalise()
+    results = acro.finalise(PATH)
     correct_summary: str = "pass; dof=807.0 >= 10"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
     assert output_0.summary == correct_summary
     assert output_1.summary == correct_summary
+    shutil.rmtree(PATH)
 
 
 def test_probit_logit(data, acro):
@@ -234,7 +241,7 @@ def test_probit_logit(data, acro):
     assert results.df_resid == 806
     assert results.prsquared == pytest.approx(0.214, 0.01)
     # Finalise
-    results = acro.finalise()
+    results = acro.finalise(PATH)
     correct_summary: str = "pass; dof=806.0 >= 10"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
@@ -244,6 +251,7 @@ def test_probit_logit(data, acro):
     assert output_1.summary == correct_summary
     assert output_2.summary == correct_summary
     assert output_3.summary == correct_summary
+    shutil.rmtree(PATH)
 
 
 def test_finalise_excel(data, acro):
@@ -257,6 +265,7 @@ def test_finalise_excel(data, acro):
     correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
     assert load_data.iloc[0, 0] == "Command"
     assert load_data.iloc[0, 1] == correct_cell
+    shutil.rmtree(PATH)
 
 
 def test_output_removal(data, acro, monkeypatch):
@@ -266,12 +275,13 @@ def test_output_removal(data, acro, monkeypatch):
     _ = acro.crosstab(data.year, data.grant_type)
     exceptions = ["I want it", "Let me have it", "Please!"]
     monkeypatch.setattr("builtins.input", lambda _: exceptions.pop(0))
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     output_0 = results.get("output_0")
     output_1 = results.get("output_1")
+    shutil.rmtree(PATH)
     # remove something that is there
     acro.remove_output(output_0.uid)
-    results = acro.finalise()
+    results = acro.finalise(PATH)
     correct_summary: str = "fail; threshold: 6 cells suppressed; "
     keys = results.get_keys()
     assert output_0.uid not in keys
@@ -281,6 +291,7 @@ def test_output_removal(data, acro, monkeypatch):
     # remove something that is not there
     with pytest.raises(ValueError):
         acro.remove_output("123")
+    shutil.rmtree(PATH)
 
 
 def test_load_output():
@@ -329,6 +340,7 @@ def test_finalise_json(data, acro):
         json_data = json.load(file)
     results: dict = json_data["results"]
     assert results[orig.uid]["files"][0]["name"] == f"{orig.uid}_0.csv"
+    shutil.rmtree(PATH)
 
 
 def test_rename_output(data, acro):
@@ -337,28 +349,30 @@ def test_rename_output(data, acro):
     _ = acro.crosstab(data.year, data.grant_type)
     acro.add_exception("output_0", "Let me have it")
     acro.add_exception("output_1", "I want this")
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
     orig_name = output_0.uid
     new_name = "cross_table"
     acro.rename_output(orig_name, new_name)
-    results = acro.finalise()
+    shutil.rmtree(PATH)
+    results = acro.finalise(PATH)
     assert output_0.uid == new_name
     assert orig_name not in results.get_keys()
-    assert os.path.exists(f"outputs/{new_name}_0.csv")
+    assert os.path.exists(f"{PATH}/{new_name}_0.csv")
     # rename an output that doesn't exist
     with pytest.raises(ValueError):
         acro.rename_output("123", "name")
     # rename an output to another that already exists
     with pytest.raises(ValueError):
         acro.rename_output("output_1", "cross_table")
+    shutil.rmtree(PATH)
 
 
 def test_add_comments(data, acro):
     """Adding comments to output test."""
     _ = acro.crosstab(data.year, data.grant_type)
     acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
     assert output_0.comments == []
     comment = "This is a cross table between year and grant_type"
@@ -370,6 +384,7 @@ def test_add_comments(data, acro):
     # add a comment to something that is not there
     with pytest.raises(ValueError):
         acro.add_comments("123", "comment")
+    shutil.rmtree(PATH)
 
 
 def test_custom_output(acro):
@@ -382,6 +397,7 @@ def test_custom_output(acro):
     output_0 = results.get_index(0)
     assert output_0.output == [file_path]
     assert os.path.exists(os.path.normpath(f"{PATH}/XandY.jpeg"))
+    shutil.rmtree(PATH)
 
 
 def test_missing(data, acro, monkeypatch):
@@ -396,7 +412,7 @@ def test_missing(data, acro, monkeypatch):
     )
     exceptions = ["I want it", "Let me have it"]
     monkeypatch.setattr("builtins.input", lambda _: exceptions.pop(0))
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     correct_summary: str = "review; missing values found"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
@@ -404,6 +420,7 @@ def test_missing(data, acro, monkeypatch):
     assert output_1.summary == correct_summary
     assert output_0.exception == "I want it"
     assert output_1.exception == "Let me have it"
+    shutil.rmtree(PATH)
 
 
 def test_suppression_error(caplog):
@@ -553,6 +570,7 @@ def test_surv_func(acro):
     results: Records = acro.finalise(path=PATH)
     output_1 = results.get_index(1)
     assert output_1.output == [filename]
+    shutil.rmtree(PATH)
 
 
 def test_zeros_are_not_disclosive(data, acro):
@@ -568,13 +586,14 @@ def test_zeros_are_not_disclosive(data, acro):
         aggfunc=["mean", "std"],
     )
     acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise()
+    results: Records = acro.finalise(PATH)
     correct_summary: str = (
         "fail; threshold: 14 cells suppressed; "
         "p-ratio: 2 cells suppressed; nk-rule: 2 cells suppressed; "
     )
     output_0 = results.get_index(0)
     assert output_0.summary == correct_summary
+    shutil.rmtree(PATH)
 
 
 def test_crosstab_with_totals_without_suppression(data, acro):
@@ -884,6 +903,7 @@ def test_histogram_discolsive(data, acro, caplog):
         in caplog.text
     )
     assert output_0.status == "fail"
+    shutil.rmtree(PATH)
 
 
 def test_histogram_non_disclosive(data, acro):
@@ -896,3 +916,18 @@ def test_histogram_non_disclosive(data, acro):
     output_0 = results.get_index(0)
     assert output_0.output == [filename]
     assert output_0.status == "review"
+    shutil.rmtree(PATH)
+
+
+def test_finalise_with_existing_path(data, acro, caplog):
+    """Using a path that already exists when finalising."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
+    acro.finalise(PATH)
+    _ = acro.crosstab(data.status, data.grant_type)
+    acro.finalise(PATH)
+    assert (
+        "Results file can not be created. Directory RES_PYTEST "
+        "already exists. Please choose a different directory name." in caplog.text
+    )
+    shutil.rmtree(PATH)

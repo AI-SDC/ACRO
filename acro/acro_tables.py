@@ -518,7 +518,7 @@ class Tables:
         filename, extension = os.path.splitext(filename)
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
-            return
+            return None
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
@@ -633,7 +633,7 @@ class Tables:
                 "Calculating histogram for more than one columns is "
                 "not currently supported. Please do each column separately."
             )
-            return
+            return None
 
         freq, _ = np.histogram(  # pylint: disable=too-many-function-args
             data[column], bins, range=(data[column].min(), data[column].max())
@@ -711,7 +711,7 @@ class Tables:
         filename, extension = os.path.splitext(filename)
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
-            return
+            return None
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"

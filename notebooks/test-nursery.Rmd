@@ -7,6 +7,7 @@ output: html_notebook
 # install.packages("haven")
 # install.packages("reticulate")
 # install.packages("farff")
+# install.packages("survival")
 ```
 
 ## Import Libraries
@@ -67,7 +68,7 @@ table
 index = data[, c("recommend")]
 columns = data[, c("parents")]
 
-table = acro_table(data[, c("recommend")], columns, dnn=c("rows", "columns"), deparse.level = 1, useNa = "no")
+table = acro_table(index, columns, dnn= c("recommend", "parents"), deparse.level=0)
 ```
 
 ```{r}
@@ -92,6 +93,25 @@ table = acro_pivot_table(data, values=values, index=index, aggfunc=aggfunc)
 
 ```{r}
 table
+```
+
+### ACRO histogram
+
+```{r}
+acro_hist(data, "children")
+```
+
+### ACRO survival analysis
+
+```{r}
+data(package = "survival")
+
+# Load the lung dataset
+data(lung)
+#head(lung)
+
+acro_surv_func(time=lung$time, status=lung$status, output ="plot")
+```
 ```
 
 # Regression examples using ACRO

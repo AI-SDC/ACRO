@@ -562,9 +562,9 @@ def test_surv_func(acro):
         output.summary == correct_summary
     ), f"\n{output.summary}\n should be \n{correct_summary}\n"
 
-    filename = "kaplan-mier.png"
-    _ = acro.surv_func(data.futime, data.death, output="plot", filename=filename)
-    assert os.path.exists(f"acro_artifacts/{filename}")
+    filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
+    _ = acro.surv_func(data.futime, data.death, output="plot")
+    assert os.path.exists(filename)
     acro.add_exception("output_0", "I need this")
     acro.add_exception("output_1", "Let me have it")
     results: Records = acro.finalise(path=PATH)

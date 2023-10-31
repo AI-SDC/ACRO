@@ -1,6 +1,7 @@
 library(reticulate)  # import Python modules
 library(admiraldev)
-library(stringr)
+library(png)
+library(grid)
 
 acro <- import("acro")
 ac <- acro$ACRO()
@@ -17,32 +18,32 @@ acro_table <- function(index, columns, dnn=NULL, deparse.level=0, ...)
     "ACRO crosstab without aggregation function"
     if (is.null(dnn)) {
         if (deparse.level == 0) {
-        rownames <- list("")
-        colnames <- list("")
+        row_names <- list("")
+        col_names <- list("")
         } else if (deparse.level == 1) {
             tryCatch({
                 index_symbol <- assert_symbol(substitute(index))
-                rownames <- list(deparse(index_symbol))},
+                row_names <- list(deparse(index_symbol))},
                 error = function(e) {
-                    rownames <<- list("")
+                    row_names <- list("")
             })
             tryCatch({
                 column_symbol <- assert_symbol(substitute(columns))
-                colnames <- list(deparse(column_symbol))},
+                col_names <- list(deparse(column_symbol))},
                 error = function(e) {
-                    colnames <<- list("")
+                    col_names <- list("")
             })
         } else if (deparse.level == 2) {
-            rownames <- list(deparse((substitute(index))))
-            colnames <- list(deparse(substitute(columns)))
+            row_names <- list(deparse((substitute(index))))
+            col_names <- list(deparse(substitute(columns)))
         }
     }
     else {
-        rownames <- list(dnn[1])
-        colnames <- list(dnn[2])
+        row_names <- list(dnn[1])
+        col_names <- list(dnn[2])
     }
 
-    table <- ac$crosstab(index, columns, rownames=rownames, colnames=colnames)
+    table <- ac$crosstab(index, columns, rownames=row_names, colnames=col_names)
     # Check for any unused arguments
       if (length(list(...)) > 0) {
         warning("Unused arguments were provided: ", paste0(names(list(...)), collapse = ", "), "\n", "To find more help about the function use: acro_help(\"acro_table\")\n")
@@ -75,6 +76,24 @@ acro_glm <- function(formula, data, family)
         stop("Invalid family. Options = {'logit', 'probit'}");
     }
     model$summary()
+}
+
+acro_hist <- function(data, column, breaks=10, freq=TRUE, col=NULL, filename="histogram.png"){
+    "ACRO histogram"
+    histogram = ac$hist(data=data, column=column, bins=breaks, density=freq, color=col, filename=filename)
+    # Load the saved histogram
+    image <- readPNG(histogram)
+    grid.raster(image)
+}
+
+acro_surv_func <- function(time, status, output, filename="kaplan-meier.png"){
+    "Estimates the survival function. Produce either a plot of table"
+    results = ac$surv_func(time=time, status=status, output=output, filename=filename)
+    if (output=="plot"){
+        # Load the saved survival plot
+        image <- readPNG(results[[2]])
+        grid.raster(image)
+        }
 }
 
 acro_rename_output <- function(old, new)

@@ -474,10 +474,10 @@ class Tables:
             )
             return table
         if output == "plot":
-            plot = self.survival_plot(
+            plot, filename = self.survival_plot(
                 survival_table, survival_func, filename, status, sdc, command, summary
             )
-            return plot
+            return (plot, filename)
         return None
 
     def survival_table(  # pylint: disable=too-many-arguments,too-many-locals
@@ -513,7 +513,22 @@ class Tables:
             logger.debug("Directory acro_artifacts created successfully")
         except FileExistsError:  # pragma: no cover
             logger.debug("Directory acro_artifacts already exists")
-        plt.savefig(f"acro_artifacts/{filename}")
+
+        # create a unique filename with number to avoid overwrite
+        filename, extension = os.path.splitext(filename)
+        if not extension:  # pragma: no cover
+            logger.info("Please provide a valid file extension")
+            return None
+        increment_number = 0
+        while os.path.exists(
+            f"acro_artifacts/{filename}_{increment_number}{extension}"
+        ):  # pragma: no cover
+            increment_number += 1
+        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+
+        # save the plot to the acro artifacts directory
+        plt.savefig(unique_filename)
+
         # record output
         self.results.add(
             status=status,
@@ -523,9 +538,9 @@ class Tables:
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),
-            output=[os.path.normpath(filename)],
+            output=[os.path.normpath(unique_filename)],
         )
-        return plot
+        return (plot, unique_filename)
 
     def hist(  # pylint: disable=too-many-arguments,too-many-locals
         self,
@@ -606,6 +621,9 @@ class Tables:
         Returns
         -------
         matplotlib.Axes
+            The histogram.
+        str
+            The name of the file where the histogram is saved.
         """
         logger.debug("hist()")
         command: str = utils.get_command("hist()", stack())
@@ -615,7 +633,7 @@ class Tables:
                 "Calculating histogram for more than one columns is "
                 "not currently supported. Please do each column separately."
             )
-            return
+            return None
 
         freq, _ = np.histogram(  # pylint: disable=too-many-function-args
             data[column], bins, range=(data[column].min(), data[column].max())
@@ -693,11 +711,11 @@ class Tables:
         filename, extension = os.path.splitext(filename)
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
-            return
+            return None
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
-        ):
+        ):  # pragma: no cover
             increment_number += 1
         unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
 
@@ -715,6 +733,7 @@ class Tables:
             outcome=pd.DataFrame(),
             output=[os.path.normpath(unique_filename)],
         )
+        return unique_filename
 
 
 def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals

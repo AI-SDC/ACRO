@@ -137,27 +137,7 @@ class Tables:
             normalize,
         )
         # delete empty rows and columns from table
-        deleted_rows = []
-        deleted_cols = []
-        # define empty columns and rows using boolean masks
-        empty_cols_mask = table.sum(axis=0) == 0
-        empty_rows_mask = table.sum(axis=1) == 0
-
-        deleted_cols = list(table.columns[empty_cols_mask])
-        table = table.loc[:, ~empty_cols_mask]
-        deleted_rows = list(table.index[empty_rows_mask])
-        table = table.loc[~empty_rows_mask, :]
-
-        # create a message with the deleted column's names
-        comments = []
-        if deleted_cols:
-            msg_cols = ", ".join(str(col) for col in deleted_cols)
-            comments.append(f"Empty columns: {msg_cols} were deleted.")
-        if deleted_rows:
-            msg_rows = ", ".join(str(row) for row in deleted_rows)
-            comments.append(f"Empty rows: {msg_rows} were deleted.")
-        if comments:
-            logger.info(" ".join(comments))
+        table, comments = delete_empty_rows_columns(table)
 
         masks = create_crosstab_masks(
             index,
@@ -244,6 +224,9 @@ class Tables:
         (hierarchical indexes) on the index and columns of the result
         DataFrame.
 
+        To provide consistent behaviour with different aggregation functions,
+        'empty' rows or columns -i.e. that  are all NaN or 0 (count,sum) are removed.
+
         Parameters
         ----------
         data : DataFrame
@@ -306,6 +289,9 @@ class Tables:
             observed,
             sort,
         )
+
+        # delete empty rows and columns from table
+        table, comments = delete_empty_rows_columns(table)
 
         # suppression masks to apply based on the following checks
         masks: dict[str, DataFrame] = {}
@@ -387,6 +373,7 @@ class Tables:
             summary=summary,
             outcome=outcome,
             output=[table],
+            comments=comments,
         )
         return table
 
@@ -835,6 +822,45 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
         mask.replace({0: False, 1: True}, inplace=True)
         masks[name] = mask
     return masks
+
+
+def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
+    """Deletes empty rows and columns from table.
+
+    Parameters
+    ----------
+    table : DataFrame
+        The table where the empty rows and columns will be deleted from.
+
+    Returns
+    -------
+    DataFrame
+        The resulting table where the empty columns and rows were deleted.
+    list[str]
+        A comment showing information about the deleted columns and rows.
+    """
+    deleted_rows = []
+    deleted_cols = []
+    # define empty columns and rows using boolean masks
+    empty_cols_mask = table.sum(axis=0) == 0
+    empty_rows_mask = table.sum(axis=1) == 0
+
+    deleted_cols = list(table.columns[empty_cols_mask])
+    table = table.loc[:, ~empty_cols_mask]
+    deleted_rows = list(table.index[empty_rows_mask])
+    table = table.loc[~empty_rows_mask, :]
+
+    # create a message with the deleted column's names
+    comments = []
+    if deleted_cols:
+        msg_cols = ", ".join(str(col) for col in deleted_cols)
+        comments.append(f"Empty columns: {msg_cols} were deleted.")
+    if deleted_rows:
+        msg_rows = ", ".join(str(row) for row in deleted_rows)
+        comments.append(f"Empty rows: {msg_rows} were deleted.")
+    if comments:
+        logger.info(" ".join(comments))
+    return (table, comments)
 
 
 def rounded_survival_table(survival_table):

@@ -3,6 +3,15 @@
 ## Development
 
 Changes:
+*   Update table suppression when totals are true for pivot table ([#165](https://github.com/AI-SDC/ACRO/pull/165))
+*   Fix the problem of shape mismatch when there are two columns and the aggfunc is count or sum ([#167](https://github.com/AI-SDC/ACRO/pull/167))
+*   Remove all files and folders created during testing ([#168](https://github.com/AI-SDC/ACRO/pull/168))
+*   Create an example notebook with simple examples of acro ([#170](https://github.com/AI-SDC/ACRO/pull/170))
+*   Add support for histogram ([#176](https://github.com/AI-SDC/ACRO/pull/176))
+*   Add inherited members from acro_tables and acro_regression to the sphinx docs ([#177](https://github.com/AI-SDC/ACRO/pull/177))
+*   Update the R help function ([#178](https://github.com/AI-SDC/ACRO/pull/178))
+*   Update the finalise function by checking the provided folder name and ask for new one if it exists ([#179](https://github.com/AI-SDC/ACRO/pull/179))
+*   Add histogram and survival analysis to R ([#182](https://github.com/AI-SDC/ACRO/pull/182))
 
 ## Version 0.4.3 (Sep 22, 2023)
 

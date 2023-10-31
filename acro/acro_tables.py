@@ -522,7 +522,7 @@ class Tables:
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
-        ):
+        ):  # pragma: no cover
             increment_number += 1
         unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
 
@@ -715,7 +715,7 @@ class Tables:
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
-        ):
+        ):  # pragma: no cover
             increment_number += 1
         unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
 

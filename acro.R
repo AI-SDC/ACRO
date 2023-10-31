@@ -90,7 +90,7 @@ acro_surv_func <- function(time, status, output, filename="kaplan-meier.png"){
     "Estimates the survival function. Produce either a plot of table"
     results = ac$surv_func(time=time, status=status, output=output, filename=filename)
     if (output=="plot"){
-        # Loasd the saved survival plot
+        # Load the saved survival plot
         image <- readPNG(results[[2]])
         grid.raster(image)
         }

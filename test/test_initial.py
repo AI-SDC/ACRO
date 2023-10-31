@@ -169,6 +169,39 @@ def test_pivot_table_cols(data, acro):
     shutil.rmtree(PATH)
 
 
+def test_pivot_table_with_aggfunc_sum(data, acro):
+    """Test the pivot table with two columns and aggfunc sum."""
+    acro = ACRO(suppress=False)
+    _ = acro.pivot_table(
+        data,
+        index="year",
+        columns=["grant_type", "survivor"],
+        values="inc_grants",
+        aggfunc="sum",
+    )
+    _ = acro.pivot_table(
+        data,
+        index=["grant_type", "survivor"],
+        columns="year",
+        values="inc_grants",
+        aggfunc="sum",
+    )
+    acro.add_exception("output_0", "Let me have it")
+    acro.add_exception("output_1", "I need this output")
+    results: Records = acro.finalise(PATH)
+    output_0 = results.get_index(0)
+    output_1 = results.get_index(1)
+    comment_0 = (
+        "Empty columns: ('N', 'Dead in 2015'), ('R/G', 'Dead in 2015') were deleted."
+    )
+    comment_1 = (
+        "Empty rows: ('N', 'Dead in 2015'), ('R/G', 'Dead in 2015') were deleted."
+    )
+    assert output_0.comments == [comment_0]
+    assert output_1.comments == [comment_1]
+    shutil.rmtree(PATH)
+
+
 def test_ols(data, acro):
     """Ordinary Least Squares test."""
     new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]

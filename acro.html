@@ -514,6 +514,8 @@ a numpy structured or rec array, a dictionary, or a pandas DataFrame.</p>
 <p>The levels in the pivot table will be stored in MultiIndex objects
 (hierarchical indexes) on the index and columns of the result
 DataFrame.</p>
+<p>To provide consistent behaviour with different aggregation functions,
+‘empty’ rows or columns -i.e. that  are all NaN or 0 (count,sum) are removed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">

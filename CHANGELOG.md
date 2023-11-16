@@ -1,8 +1,12 @@
 # Changelog
 
 ## Development
+## Version 0.4.5 (November 15, 2023)
+* Changes
+* CI updates, version numbers
 
-## Version 0.4.4 (16th November, 2023)
+
+## Version 0.4.4 (November 15, 2023)
 
 Changes:
 *   Update table suppression when totals are true for pivot table ([#165](https://github.com/AI-SDC/ACRO/pull/165))

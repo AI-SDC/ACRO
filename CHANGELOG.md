@@ -2,6 +2,8 @@
 
 ## Development
 
+## Version 0.4.4 (16th November, 2023)
+
 Changes:
 *   Update table suppression when totals are true for pivot table ([#165](https://github.com/AI-SDC/ACRO/pull/165))
 *   Fix the problem of shape mismatch when there are two columns and the aggfunc is count or sum ([#167](https://github.com/AI-SDC/ACRO/pull/167))

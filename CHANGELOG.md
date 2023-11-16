@@ -5,7 +5,7 @@
 * Changes
 * CI updates, version numbers
 
-   
+
 ## Version 0.4.4 (November 15, 2023)
 
 Changes:

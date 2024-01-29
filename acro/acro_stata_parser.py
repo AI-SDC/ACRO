@@ -3,6 +3,7 @@ File with commands to manage the stata-acro interface
 Jim Smith 2023 @james.smith@uwe.ac.uk
 MIT licenses apply.
 """
+
 import pandas as pd
 import statsmodels.iolib.summary as sm_iolib_summary
 
@@ -118,9 +119,9 @@ def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
         extras = superrows.split()
         for word in extras:
             if word not in varnames:
-                details[
-                    "errmsg"
-                ] = f"Error: word {word} in by-list is not a variables name"
+                details["errmsg"] = (
+                    f"Error: word {word} in by-list is not a variables name"
+                )
                 return details
             if word not in details["rowvars"]:
                 details["rowvars"].insert(0, word)

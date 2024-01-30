@@ -41,6 +41,16 @@ def test_crosstab_without_suppression(data):
     assert 48 == output.output[0]["R/G"].sum()
 
 
+def test_crosstab_with_aggfunc_mode(data):
+    """Crosstab threshold without automatic suppression."""
+    acro = ACRO(suppress=False)
+    _ = acro.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc="mode"
+    )
+    output = acro.results.get_index(0)
+    assert 913000 == output.output[0]["R/G"].iat[0]
+
+
 def test_crosstab_with_aggfunc_sum(data, acro):
     """Test the crosstab with two columns and aggfunc sum."""
     acro = ACRO(suppress=False)

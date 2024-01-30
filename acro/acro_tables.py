@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import random
 from collections.abc import Callable
 from inspect import stack
 
@@ -19,12 +20,18 @@ from .record import Records
 logger = logging.getLogger("acro")
 
 
-AGGFUNC: dict[str, str] = {
+def mode_aggfunc(values):
+    modes = values.mode()
+    return random.choice(modes)
+
+
+AGGFUNC: dict[str, str | Callable] = {
     "mean": "mean",
     "median": "median",
     "sum": "sum",
     "std": "std",
     "count": "count",
+    "mode": mode_aggfunc,
 }
 
 # aggregation function parameters
@@ -136,9 +143,11 @@ class Tables:
             dropna,
             normalize,
         )
-        # delete empty rows and columns from table
-        table, comments = delete_empty_rows_columns(table)
-
+        comments: list[str] = []
+        # do not delete empty rows and columns from table if the aggfunc is mode
+        if agg_func is not mode_aggfunc:
+            # delete empty rows and columns from table
+            table, comments = delete_empty_rows_columns(table)
         masks = create_crosstab_masks(
             index,
             columns,
@@ -741,7 +750,7 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
 
     if agg_func is not None:
         # create lists with single entry for when there is only one aggfunc
-        count_funcs: list[str] = [AGGFUNC["count"]]
+        count_funcs: list[str | Callable] = [AGGFUNC["count"]]
         neg_funcs: list[Callable] = [agg_negative]
         pperc_funcs: list[Callable] = [agg_p_percent]
         nk_funcs: list[Callable] = [agg_nk]
@@ -755,49 +764,64 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
             nk_funcs.extend([agg_nk for i in range(1, num)])
             missing_funcs.extend([agg_missing for i in range(1, num)])
         # threshold check- doesn't matter what we pass for value
-
-        t_values = pd.crosstab(  # type: ignore
-            index,
-            columns,
-            values=values,
-            rownames=rownames,
-            colnames=colnames,
-            aggfunc=count_funcs,
-            margins=margins,
-            margins_name=margins_name,
-            dropna=dropna,
-            normalize=normalize,
-        )
-
-        # drop empty columns and rows
-        if dropna or margins:
-            empty_cols_mask = t_values.sum(axis=0) == 0
-            empty_rows_mask = t_values.sum(axis=1) == 0
-
-            t_values = t_values.loc[:, ~empty_cols_mask]
-            t_values = t_values.loc[~empty_rows_mask, :]
-
-        t_values = t_values < THRESHOLD
-        masks["threshold"] = t_values
-        # check for negative values -- currently unsupported
-        negative = pd.crosstab(  # type: ignore
-            index, columns, values, aggfunc=neg_funcs, margins=margins
-        )
-        if negative.to_numpy().sum() > 0:
-            masks["negative"] = negative
-        # p-percent check
-        masks["p-ratio"] = pd.crosstab(  # type: ignore
-            index, columns, values, aggfunc=pperc_funcs, margins=margins, dropna=dropna
-        )
-        # nk values check
-        masks["nk-rule"] = pd.crosstab(  # type: ignore
-            index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
-        )
-        # check for missing values -- currently unsupported
-        if CHECK_MISSING_VALUES:
-            masks["missing"] = pd.crosstab(  # type: ignore
-                index, columns, values, aggfunc=missing_funcs, margins=margins
+        if agg_func is mode_aggfunc:
+            # check that all observations dont have the same value
+            masks["all-values-are-same"] = pd.crosstab(  # type: ignore
+                index,
+                columns,
+                values,
+                aggfunc=agg_values_are_same,
+                margins=margins,
+                dropna=dropna,
             )
+        else:
+            t_values = pd.crosstab(  # type: ignore
+                index,
+                columns,
+                values=values,
+                rownames=rownames,
+                colnames=colnames,
+                aggfunc=count_funcs,
+                margins=margins,
+                margins_name=margins_name,
+                dropna=dropna,
+                normalize=normalize,
+            )
+
+            # drop empty columns and rows
+            if dropna or margins:
+                empty_cols_mask = t_values.sum(axis=0) == 0
+                empty_rows_mask = t_values.sum(axis=1) == 0
+
+                t_values = t_values.loc[:, ~empty_cols_mask]
+                t_values = t_values.loc[~empty_rows_mask, :]
+
+            t_values = t_values < THRESHOLD
+            masks["threshold"] = t_values
+            # check for negative values -- currently unsupported
+            negative = pd.crosstab(  # type: ignore
+                index, columns, values, aggfunc=neg_funcs, margins=margins
+            )
+            if negative.to_numpy().sum() > 0:
+                masks["negative"] = negative
+            # p-percent check
+            masks["p-ratio"] = pd.crosstab(  # type: ignore
+                index,
+                columns,
+                values,
+                aggfunc=pperc_funcs,
+                margins=margins,
+                dropna=dropna,
+            )
+            # nk values check
+            masks["nk-rule"] = pd.crosstab(  # type: ignore
+                index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
+            )
+            # check for missing values -- currently unsupported
+            if CHECK_MISSING_VALUES:
+                masks["missing"] = pd.crosstab(  # type: ignore
+                    index, columns, values, aggfunc=missing_funcs, margins=margins
+                )
     else:
         # threshold check- doesn't matter what we pass for value
         t_values = pd.crosstab(  # type: ignore
@@ -907,7 +931,7 @@ def rounded_survival_table(survival_table):
     return survival_table
 
 
-def get_aggfunc(aggfunc: str | None) -> str | None:
+def get_aggfunc(aggfunc: str | None) -> str | Callable | None:
     """Checks whether an aggregation function is allowed and returns the
     appropriate function.
 
@@ -939,7 +963,7 @@ def get_aggfunc(aggfunc: str | None) -> str | None:
 
 def get_aggfuncs(
     aggfuncs: str | list[str] | None,
-) -> str | list[str] | None:
+) -> str | Callable | list[str | Callable] | None:
     """Checks whether a list of aggregation functions is allowed and returns
     the appropriate functions.
 
@@ -962,7 +986,7 @@ def get_aggfuncs(
         logger.debug("aggfuncs: %s", function)
         return function
     if isinstance(aggfuncs, list):
-        functions: list[str] = []
+        functions: list[str | Callable] = []
         for function_name in aggfuncs:
             function = get_aggfunc(function_name)
             if function is not None:
@@ -1075,6 +1099,26 @@ def agg_threshold(vals: Series) -> bool:
     return vals.count() < THRESHOLD
 
 
+def agg_values_are_same(vals: Series) -> bool:
+    """Aggregation function that returns whether all observations having
+    the same value.
+
+    Parameters
+    ----------
+    vals : Series
+        Series to calculate if all the values are the same.
+
+    Returns
+    -------
+    bool
+        Whether the values are the same.
+    """
+    # order observations
+    sorted_vals = vals.sort_values(ascending=False)
+    # check x[1] ≠ x[N]
+    return sorted_vals.iloc[0] == sorted_vals.iloc[-1]
+
+
 def apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]
 ) -> tuple[DataFrame, DataFrame]:
@@ -1146,6 +1190,7 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
     sdc["summary"]["threshold"] = 0
     sdc["summary"]["p-ratio"] = 0
     sdc["summary"]["nk-rule"] = 0
+    sdc["summary"]["all-values-are-same"] = 0
     for name, mask in masks.items():
         sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
     # positions of cells to be suppressed
@@ -1154,6 +1199,7 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
     sdc["cells"]["threshold"] = []
     sdc["cells"]["p-ratio"] = []
     sdc["cells"]["nk-rule"] = []
+    sdc["cells"]["all-values-are-same"] = []
     for name, mask in masks.items():
         true_positions = np.column_stack(np.where(mask.values))
         for pos in true_positions:
@@ -1196,6 +1242,12 @@ def get_summary(sdc: dict) -> tuple[str, str]:
             status = "fail"
         if sdc_summary["nk-rule"] > 0:
             summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
+            status = "fail"
+        if sdc_summary["all-values-are-same"] > 0:
+            summary += (
+                f"all-values-are-same: {sdc_summary['all-values-are-same']} "
+                f"cells {sup}; "
+            )
             status = "fail"
     if summary != "":
         summary = f"{status}; {summary}"

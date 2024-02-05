@@ -1,4 +1,5 @@
 """ACRO: Tables functions."""
+
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
@@ -1298,35 +1299,43 @@ def get_queries(masks, aggfunc) -> list[str]:
                     if isinstance(row_label, tuple):
                         index_query = " & ".join(
                             [
-                                f"({level} == {val})"
-                                if isinstance(val, (int, float))
-                                else f'({level} == "{val}")'
+                                (
+                                    f"({level} == {val})"
+                                    if isinstance(val, (int, float))
+                                    else f'({level} == "{val}")'
+                                )
                                 for level, val in zip(index_level_names, row_label)
                             ]
                         )
                     else:
                         index_query = " & ".join(
                             [
-                                f"({index_level_names} == {row_label})"
-                                if isinstance(row_label, (int, float))
-                                else (f"({index_level_names}" f'== "{row_label}")')
+                                (
+                                    f"({index_level_names} == {row_label})"
+                                    if isinstance(row_label, (int, float))
+                                    else (f"({index_level_names}" f'== "{row_label}")')
+                                )
                             ]
                         )
                     if isinstance(col_label, tuple):
                         column_query = " & ".join(
                             [
-                                f"({level} == {val})"
-                                if isinstance(val, (int, float))
-                                else f'({level} == "{val}")'
+                                (
+                                    f"({level} == {val})"
+                                    if isinstance(val, (int, float))
+                                    else f'({level} == "{val}")'
+                                )
                                 for level, val in zip(column_level_names, col_label)
                             ]
                         )
                     else:
                         column_query = " & ".join(
                             [
-                                f"({column_level_names} == {col_label})"
-                                if isinstance(col_label, (int, float))
-                                else (f"({column_level_names}" f'== "{col_label}")')
+                                (
+                                    f"({column_level_names} == {col_label})"
+                                    if isinstance(col_label, (int, float))
+                                    else (f"({column_level_names}" f'== "{col_label}")')
+                                )
                             ]
                         )
                     query = f"{index_query} & {column_query}"

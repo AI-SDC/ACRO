@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
-import random
+import secrets
 from collections.abc import Callable
 from inspect import stack
 
@@ -20,9 +20,21 @@ from .record import Records
 logger = logging.getLogger("acro")
 
 
-def mode_aggfunc(values):
+def mode_aggfunc(values) -> Series:
+    """Calculate the mode or randomly selects one of the modes from a pandas Series.
+
+    Parameters
+    ----------
+    values : Series
+        A pandas Series for which to calculate the mode.
+
+    Returns
+    -------
+    Series
+        The mode. If there are multiple modes, randomly selects and returns one of the modes.
+    """
     modes = values.mode()
-    return random.choice(modes)
+    return secrets.choice(modes)
 
 
 AGGFUNC: dict[str, str | Callable] = {
@@ -1113,11 +1125,8 @@ def agg_values_are_same(vals: Series) -> bool:
     bool
         Whether the values are the same.
     """
-    # order observations
-    sorted_vals = vals.sort_values(ascending=False)
-    # check x[1] ≠ x[N]
-    return sorted_vals.iloc[0] == sorted_vals.iloc[-1]
-
+    # the obseravtions are not the same
+    return vals.nunique(dropna=True) == 1
 
 def apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]

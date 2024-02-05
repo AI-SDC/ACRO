@@ -48,6 +48,8 @@ def test_crosstab_with_aggfunc_mode(data):
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mode"
     )
     output = acro.results.get_index(0)
+    correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
+    assert output.summary == correct_summary
     assert 913000 == output.output[0]["R/G"].iat[0]
 
 

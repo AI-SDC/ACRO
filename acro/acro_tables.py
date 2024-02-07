@@ -779,6 +779,9 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
         # threshold check- doesn't matter what we pass for value
         if agg_func is mode_aggfunc:
             # check that all observations dont have the same value
+            logger.info(
+                "If there are multiple modes, one of them is randomly selected and displayed."
+            )
             masks["all-values-are-same"] = pd.crosstab(  # type: ignore
                 index,
                 columns,
@@ -1126,8 +1129,9 @@ def agg_values_are_same(vals: Series) -> bool:
     bool
         Whether the values are the same.
     """
-    # the obseravtions are not the same
+    # the observations are not the same
     return vals.nunique(dropna=True) == 1
+
 
 def apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]

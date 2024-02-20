@@ -114,6 +114,7 @@ class Regression:
         data must define __getitem__ with the keys in the formula terms
         args and kwargs are passed on to the model instantiation. E.g.,
         a numpy structured or rec array, a dictionary, or a pandas DataFrame.
+        Arguments are passed in the same order as statsmodels.
         """
         logger.debug("olsr()")
         command: str = utils.get_command("olsr()", stack())
@@ -122,7 +123,7 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
+            *args,  # noqa: B026
             **kwargs,
         )
         results = model.fit()
@@ -227,6 +228,7 @@ class Regression:
         data must define __getitem__ with the keys in the formula terms
         args and kwargs are passed on to the model instantiation. E.g.,
         a numpy structured or rec array, a dictionary, or a pandas DataFrame.
+        Arguments are passed in the same order as statsmodels.
         """
         logger.debug("logitr()")
         command: str = utils.get_command("logitr()", stack())
@@ -235,7 +237,7 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
+            *args,  # noqa: B026
             **kwargs,
         )
         results = model.fit()
@@ -340,6 +342,7 @@ class Regression:
         data must define __getitem__ with the keys in the formula terms
         args and kwargs are passed on to the model instantiation. E.g.,
         a numpy structured or rec array, a dictionary, or a pandas DataFrame.
+        Arguments are passed in the same order as statsmodels.
         """
         logger.debug("probitr()")
         command: str = utils.get_command("probitr()", stack())
@@ -348,7 +351,7 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
+            *args,  # noqa: B026
             **kwargs,
         )
         results = model.fit()

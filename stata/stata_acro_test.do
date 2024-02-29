@@ -1,6 +1,7 @@
 quietly{
 adopath +"."
 
+version 16
 use "../data/test_data", clear
 
 
@@ -19,6 +20,28 @@ noisily display `""'
 noisily display `"now calling: acro table survivor grant_type"'
 noisily acro table survivor grant_type
 
+noisily display `""'
+
+**** complex tabulation
+noisily display `"************ Tables with hierarchical rows     ************"'
+noisily display `"calling table year grant_type, by(survivor)"'
+noisily table year grant_type, by(survivor)
+noisily display `""'
+noisily display `"now calling: acro table year grant_type, by(survivor)"'
+noisily acro table year grant_type, by(survivor)
+
+noisily display `""'
+noisily display `""'
+
+**** complex tabulation
+noisily display `"************ Tables with hierarchical columns     ************"'
+noisily display `"calling table year survivor grant_type, contents(count inc_grants sd inc_grants)"'
+noisily table year survivor grant_type, contents(count inc_grants sd inc_grants)
+noisily display `""'
+noisily display `"now calling: acro table year survivor grant_type, contents(count inc_grants sd inc_grants)"'
+noisily acro table year survivor grant_type, contents(count inc_grants sd inc_grants)
+
+noisily display `""'
 noisily display `""'
 **** tabulation with contents
 * acro table year survivor if year>2013, contents(freq mean inc_activity sd inc_activity)

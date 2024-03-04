@@ -1500,6 +1500,28 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
                 dropna=dropna,
                 normalize=normalize,
             )
+
+            table, _ = delete_empty_rows_columns(table)
+            masks = create_crosstab_masks(
+                index_new,
+                columns_new,
+                values,
+                rownames,
+                colnames,
+                aggfunc,
+                margins,
+                margins_name,
+                dropna,
+                normalize,
+            )
+
+            # Force the apply_suppression not to display the outcome dataframe
+            previous_level = logger.getEffectiveLevel()
+            logger.setLevel(logging.WARNING)
+            # apply the suppression
+            table, _ = apply_suppression(table, masks)
+            logger.setLevel(previous_level)
+
         else:
             table = pd.pivot_table(  # type: ignore
                 data=data,

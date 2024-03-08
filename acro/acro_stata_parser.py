@@ -113,20 +113,21 @@ def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
     >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
     details: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
-    #details["rowvars"] = [varlist.pop(0)]
-    #details["colvars"] = list(reversed(varlist))
+    # details["rowvars"] = [varlist.pop(0)]
+    # details["colvars"] = list(reversed(varlist))
 
     details["rowvars"] = varlist.pop(0).split()
     details["colvars"] = varlist.pop(0).split()
-    if len(details["rowvars"])==0 or len(details["colvars"])==0:
-        details["errmsg"] = "To calculate cross tabulation, you need to provide at least one row and one column."
+    if len(details["rowvars"]) == 0 or len(details["colvars"]) == 0:
+        details["errmsg"] = (
+            "To calculate cross tabulation, you need to provide at least one row and one column."
+        )
         return details
-    #print(details["rowvars"])
-    #print(details["colvars"])
+    # print(details["rowvars"])
+    # print(details["colvars"])
     if varlist:
         details["tables"] = varlist.pop(0).split()
-        #print(f"table is {details['tables']}")
-
+        # print(f"table is {details['tables']}")
 
     # by() contents are super-rows
     found, superrows = find_brace_contents("by", options)
@@ -187,12 +188,14 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     # Sometime_TODO de-abbreviate according to
     # https://www.stata.com/manuals13/u11.pdf#u11.1.3ifexp
 
-    #varlist: list = varlist_as_str.split()
+    # varlist: list = varlist_as_str.split()
 
-    vars_within_parentheses = re.findall(r'\((.*?)\)', varlist_as_str) # (year survivor) grant_type ---->  ["year survivor", "grant_type"]
-    vars_outside_parentheses = re.findall(r'\b(?![^(]*\))\w+\b', varlist_as_str)
+    vars_within_parentheses = re.findall(
+        r"\((.*?)\)", varlist_as_str
+    )  # (year survivor) grant_type ---->  ["year survivor", "grant_type"]
+    vars_outside_parentheses = re.findall(r"\b(?![^(]*\))\w+\b", varlist_as_str)
     varlist = vars_within_parentheses + vars_outside_parentheses
-    print(f' split varlist is {varlist}')
+    print(f" split varlist is {varlist}")
 
     # data reduction
     # print(f'before in {mydata.shape}')
@@ -316,26 +319,26 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     # The number of datasets will be equal to the numebr of unique values in the tables var
     # Crosstabulation will be calculate for each dataset
     if "tables" in details:
-            #print(f"table is {details['tables']}")
-            for table in details['tables']:
-                unique_values = data[table].unique()
-                #print(f"unique_values are {unique_values}")
-                for value in unique_values:
-                    exclusion = f"{table}=='{value}'"
-                    #print(f"exclusion is {exclusion}")
-                    my_data = apply_stata_ifstmt(exclusion, data)
-                    set_of_data.insert(0,my_data)
-    #print(f"set of data is {set_of_data}")
+        # print(f"table is {details['tables']}")
+        for table in details["tables"]:
+            unique_values = data[table].unique()
+            # print(f"unique_values are {unique_values}")
+            for value in unique_values:
+                exclusion = f"{table}=='{value}'"
+                # print(f"exclusion is {exclusion}")
+                my_data = apply_stata_ifstmt(exclusion, data)
+                set_of_data.insert(0, my_data)
+    # print(f"set of data is {set_of_data}")
 
     for my_data in set_of_data:
         rows, cols = [], []
-        #print(f"my data is {my_data}")
+        # print(f"my data is {my_data}")
         for row in details["rowvars"]:
             rows.append(my_data[row])
         for col in details["colvars"]:
             cols.append(my_data[col])
-        #print(f"rows are {rows}")
-        #print(f"cols are {cols}")
+        # print(f"rows are {rows}")
+        # print(f"cols are {cols}")
         if len(aggfuncs) > 0 and len(details["values"]) > 0:
             # sanity checking
             # if len(rows) > 1 or len(cols) > 1:
@@ -369,8 +372,7 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
                 # suppress=details['suppress'],
                 margins=details["totals"],
                 margins_name="Total",
-            
-             )
+            )
         options_str = ""
         formatting = [
             "cellwidth",
@@ -381,13 +383,16 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
             "left",
         ]
         if any(word in options for word in formatting):
-            options_str = "acro does not currently support table formatting commands.\n "
+            options_str = (
+                "acro does not currently support table formatting commands.\n "
+            )
         print(prettify_table_string(safe_output))
-        #results = []
-        #results.append(prettify_table_string(safe_output))
-    #return options_str + prettify_table_string(safe_output) + "\n"
-    #return results
-            
+        # results = []
+        # results.append(prettify_table_string(safe_output))
+    # return options_str + prettify_table_string(safe_output) + "\n"
+    # return results
+
+
 def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:
     """Interprets and runs appropriate regression command."""
     # get components of formula

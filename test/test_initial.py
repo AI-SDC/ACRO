@@ -732,6 +732,7 @@ def test_crosstab_with_manual_totals_with_suppression(data, acro):
     total_cols = output.output[0].loc[2010:2015, "All"].sum()
     assert 870 == total_cols == total_rows == output.output[0]["All"].iat[6]
     assert "R/G" in output.output[0].columns
+    assert np.isnan(output.output[0]["R/G"].iat[0])
 
 
 def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
@@ -755,6 +756,7 @@ def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
     ]
     assert total_cols == total_rows == output.output[0]["All"].iat[12] == 852
     assert ("G", "dead") in output.output[0].columns
+    assert np.isnan(output.output[0][("G", "dead")].iat[0])
 
 
 def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, acro):
@@ -773,6 +775,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, ac
     assert 8689780 == round(output.output[0]["All"].iat[0])
     assert 5425170 == round(output.output[0]["All"].iat[6])
     assert "R/G" in output.output[0].columns
+    assert np.isnan(output.output[0]["R/G"].iat[0])
 
 
 def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
@@ -791,6 +794,7 @@ def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
     assert 1385162 == round(output.output[0]["All"].iat[0])
     assert 5434959 == round(output.output[0]["All"].iat[12])
     assert ("G", "Dead in 2015") in output.output[0].columns
+    assert np.isnan(output.output[0][("G", "Dead in 2015")].iat[0])
 
 
 def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(
@@ -809,6 +813,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(
     )
     output = acro.results.get_index(0)
     assert "All" not in output.output[0].columns
+    assert np.isnan(output.output[0]["R/G"].iat[0])
     assert (
         "The margins with the std agg func can not be calculated. "
         "Please set the show_suppressed to false to calculate it." in caplog.text

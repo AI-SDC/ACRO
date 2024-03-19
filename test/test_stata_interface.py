@@ -12,7 +12,7 @@ from acro import ACRO
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,
-    find_brace_contents,
+    find_brace_word,
     parse_and_run,
     parse_table_details,
 )
@@ -51,32 +51,32 @@ def dummy_acrohandler(
     Most notably the presence of a global variable called stata_acro.
     """
     acro_outstr = parse_and_run(
-        data, command, varlist, exclusion, exp, weights, options
+        data, command, varlist, exclusion, exp, weights, options, stata_version="16"
     )
 
     return acro_outstr
 
 
 # --- Helper functions-----------------------------------------------------
-def test_find_brace_contents():
+def test_find_brace_word():
     """Tests helper function
     that extracts contents 'A B C'
     of something specified via X(A B C)
     on the stata command line.
     """
     options = "by(grant_type) contents(mean sd inc_activity) suppress nototals"
-    res, substr = find_brace_contents("by", options)
+    res, substr = find_brace_word("by", options)
     assert res
     assert substr == "grant_type"
-    res, substr = find_brace_contents("contents", options)
+    res, substr = find_brace_word("contents", options)
     assert res
     assert substr == "mean sd inc_activity"
-    res, substr = find_brace_contents("foo", options)
+    res, substr = find_brace_word("foo", options)
     assert not res
     assert substr == "foo not found"
 
     incomplete = "by(grant_type) contents(mean sd inc_activity suppress nototals"
-    res, substr = find_brace_contents("contents", incomplete)
+    res, substr = find_brace_word("contents", incomplete)
     assert not res
     assert substr == "phrase not completed"
 
@@ -168,7 +168,7 @@ def test_parse_table_details(data):
     varlist = ["survivor", "grant_type", "year"]
     varnames = data.columns
     options = "by(grant_type) contents(mean sd inc_activity) suppress  nototals"
-    details = parse_table_details(varlist, varnames, options)
+    details = parse_table_details(varlist, varnames, options, stata_version="16")
 
     errstring = f" rows {details['rowvars']} should be ['grant_type','survivor']"
     assert details["rowvars"] == ["grant_type", "survivor"], errstring
@@ -187,7 +187,7 @@ def test_parse_table_details(data):
 
     # invalid var in by list
     options = "by(football) contents(mean ) "
-    details = parse_table_details(varlist, varnames, options)
+    details = parse_table_details(varlist, varnames, options, stata_version="16")
     correct = "Error: word football in by-list is not a variables name"
     errstring = f" rows {details['errmsg']} should be {correct}"
     assert details["errmsg"] == correct, errstring

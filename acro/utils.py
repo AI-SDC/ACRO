@@ -46,6 +46,7 @@ def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> 
     hdelim = "-"
     vdelim = "|"
 
+    table.rename(columns=lambda x: str(x).replace(" ", "_"), inplace=True)
     output = table.to_string(justify="left")
     as_strings = output.split("\n")
     nheaders = len(as_strings) - table.shape[0]

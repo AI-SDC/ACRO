@@ -548,6 +548,21 @@ def test_prettify_tablestring(data):
     )
     assert simple_str == correct2, f"got:\n{simple_str}\nexpected:\n{correct2}\n"
 
+    # test spaces in variable names dealt with
+    correct3 = (
+        "---------------------------------------|\n"
+        "survivor  |Dead_in_2015  |Alive_in_2015|\n"
+        "year      |              |             |\n"
+        "---------------------------------------|\n"
+        "2010      |2             |2            |\n"
+        "2011      |2             |2            |\n"
+        "---------------------------------------|\n"
+    )
+    nospaces__str = utils.prettify_table_string(
+        pd.crosstab([mydata.year], [mydata.survivor])
+    )
+    assert nospaces__str == correct3, f"got:\n{nospaces__str}\nexpected:\n{correct3}\n"
+
 
 def test_hierachical_aggregation(data, acro):
     """Should work with hierarchies in rows/columns."""

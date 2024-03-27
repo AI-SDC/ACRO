@@ -94,6 +94,8 @@ def find_brace_word(word: str, raw: str):
     """
     result = []
     idx = raw.find(word)
+    if idx == -1:
+        return False, f"{word} not found"
     while idx != -1:
         substr = ""
         idx += len(word) + 1
@@ -146,8 +148,8 @@ def parse_table_details(
         if len(details["rowvars"]) == 0 or len(details["colvars"]) == 0:
             details["errmsg"] = (
                 "acro does not currently support one dimensioanl tables. "
-                "To calculate cross tabulation, you need to provide at least "
-                "one row and one column."
+                "To calculate cross tabulation, you need to provide at "
+                "least one row and one column."
             )
             return details
         # print(details["rowvars"])
@@ -157,7 +159,6 @@ def parse_table_details(
             # print(f"table is {details['tables']}")
 
         contents_found, content = find_brace_word("statistic", options)
-
     # contents can be variable names or aggregation functions
     details["aggfuncs"], details["values"] = list([]), list([])
     if contents_found and len(content) > 0:
@@ -205,29 +206,8 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     # Sometime_TODO de-abbreviate according to
     # https://www.stata.com/manuals13/u11.pdf#u11.1.3ifexp
 
-    if stata_version == "16":
-        varlist: list = varlist_as_str.split()
-    elif stata_version == "17":
-        # Regular expression pattern to match strings within parentheses
-        pattern = re.compile(r"\((.*?)\)")
-
-        # Extract strings within parentheses
-        strings_within_parentheses = re.findall(pattern, varlist_as_str)
-        # print(f"string_within_parentheses are {strings_within_parentheses}")
-
-        # Remove strings within parentheses from the input string
-        remaining_string = re.sub(pattern, " string_with_parentheses ", varlist_as_str)
-        # print(f"remaining string is {remaining_string}")
-
-        # Combine the strings within parentheses and strings outside parentheses
-        varlist = []
-        for string in remaining_string.split():
-            # print(f"string is {string}")
-            if string == "string_with_parentheses":
-                varlist.append(strings_within_parentheses.pop(0))
-            else:
-                varlist.append(string)
-    # print(f"split varlist is {varlist}")
+    varlist: list = varlist_as_str.split()
+    # print(varlist)
 
     # data reduction
     # print(f'before in {mydata.shape}')
@@ -244,7 +224,10 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
         outcome = run_session_command(command, varlist)
     elif command in ["remove_output", "rename_output", "add_comments", "add_exception"]:
         outcome = run_output_command(command, varlist)
-    elif command == "table":
+    elif command == "table" and stata_version == "16":
+        outcome = run_table_command(mydata, varlist, weights, options, stata_version)
+    elif command == "table" and stata_version == "17":
+        varlist = extract_strings(varlist_as_str)
         outcome = run_table_command(mydata, varlist, weights, options, stata_version)
 
     elif command in ["regress", "probit", "logit"]:
@@ -259,8 +242,16 @@ def run_session_command(command: str, varlist: list) -> str:
     outcome = ""
 
     if command == "init":
+        # pattern = r'\bsuppress\b'
+
+        # Search for the pattern in the input string
+        # match = re.search(pattern, options)
+        # suppress = bool(match)
         # initialise the acro object
+        # stata_config.stata_acro = ACRO(suppress=suppress)
+
         stata_config.stata_acro = ACRO()
+
         outcome = "acro analysis session created\n"
 
     elif command == "finalise":
@@ -310,7 +301,6 @@ def run_output_command(command: str, varlist: list) -> str:
             stata_config.stata_acro.rename_output(the_output, the_str)
             outcome = f"output {the_output} renamed to {the_str}.\n"
         elif command == "add_comments":
-            print("entering the add_comments")
             stata_config.stata_acro.add_comments(the_output, the_str)
             outcome = f"Comments added to output {the_output}.\n"
         elif command == "add_exception":
@@ -320,6 +310,93 @@ def run_output_command(command: str, varlist: list) -> str:
         outcome = f"unrecognised outcome management command {command}\n"
 
     return outcome
+
+
+def extract_var_within_parentheses(input_string):
+    """Given a string, this function extracts the words within the first parentheses
+    from a string.
+    """
+    string_match = re.match(r"\((.*?)\)", input_string)
+    if string_match:
+        string = string_match.group(1).strip()
+        input_string = input_string[len(string_match.group(0)) :].strip()
+    return string, input_string
+
+
+def extract_var_before_parentheses(input_string):
+    """Given a string, this function extracts the words before the first parentheses."""
+    string_match = re.match(r"^(.*?)\(", input_string)
+    if string_match:
+        string = string_match.group(1).strip()
+        input_string = input_string[len(string_match.group(1)) :].strip()
+    return string, input_string
+
+
+def extract_table_var(input_string):
+    """Given a string, this function extracts the words within the parentheses.
+    If there are no parentheses the string is returned.
+    """
+    # If the string starts with parentheses
+    if input_string.startswith("("):
+        string, _ = extract_var_within_parentheses(input_string)
+    elif input_string:
+        string = input_string.strip()
+    return string
+
+
+def extract_colstring_tablestring(input_string):
+    """Given a string, this function extracts the column and the tables
+    variables as a string. It goes through different options eg. whether
+    the column string is between paranthese or not.
+    """
+    colstring = ""
+    tablestring = ""
+    if input_string.startswith("("):
+        colstring, input_string = extract_var_within_parentheses(input_string)
+        if input_string:
+            tablestring = extract_table_var(input_string)
+
+    elif "(" not in input_string:
+        words = input_string.split()
+        colstring = " ".join(words[:])
+
+    else:
+        colstring, input_string = extract_var_before_parentheses(input_string)
+        if input_string:
+            tablestring = extract_table_var(input_string)
+    return colstring, tablestring
+
+
+def extract_strings(input_string):
+    """Given a string, this function extracts the index, column and the tables
+    variables as a string. It goes through different options eg. whether
+    the index string is between paranthese or not.
+    """
+    rowstring = ""
+    colstring = ""
+    tablestring = ""
+
+    if input_string == "":
+        return []
+    # If the string doesn’t have parentheses
+    if "(" not in input_string:
+        words = input_string.split()
+        rowstring = " ".join(words[:-1])
+        colstring = words[-1]
+
+    # If the string has parentheses
+    else:
+        # If there are parentheses at the start of the string
+        if input_string.startswith("("):
+            rowstring, input_string = extract_var_within_parentheses(input_string)
+            colstring, tablestring = extract_colstring_tablestring(input_string)
+
+        else:
+            # If there are parentheses at the middle of the string
+            rowstring, input_string = extract_var_before_parentheses(input_string)
+            colstring, tablestring = extract_colstring_tablestring(input_string)
+    varlist = [rowstring, colstring, tablestring]
+    return varlist
 
 
 def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
@@ -353,7 +430,7 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     # be treated as an exlcion which will be applied to the data.
     # The number of datasets will be equal to the number of unique values in the tables var
     # Crosstabulation will be calculate for each dataset
-    if "tables" in details:
+    if "tables" in details and details["tables"] != []:
         # print(f"table is {details['tables']}")
         msg = (
             "You need to manually check all the outputs for the risk of differncing.\n"
@@ -371,7 +448,6 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
                 set_of_data[exclusion] = my_data
     # print(f"set of data is {set_of_data}")
     results = ""
-    output_count = 0
     for exclusion, my_data in set_of_data.items():
         rows, cols = [], []
         # print(f"my data is {my_data}")
@@ -417,15 +493,7 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
                 margins=details["totals"],
                 margins_name="Total",
             )
-        run_output_command(
-            "add_comments",
-            [
-                f"output_{output_count}",
-                "You need to manually check all the outputs for the risk of differncing.\n",
-            ],
-        )
         results += f"{exclusion}\n{prettify_table_string(safe_output)}\n"
-        output_count += 1
 
         options_str = ""
         formatting = [

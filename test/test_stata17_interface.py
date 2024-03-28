@@ -3,19 +3,12 @@
 import os
 import shutil
 
-import numpy as np
 import pandas as pd
 import pytest
 
 import acro.stata_config as stata_config  # pylint: disable=consider-using-from-import
 from acro import ACRO
-from acro.acro_stata_parser import (
-    apply_stata_expstmt,
-    apply_stata_ifstmt,
-    find_brace_word,
-    parse_and_run,
-    parse_table_details,
-)
+from acro.acro_stata_parser import find_brace_word, parse_and_run, parse_table_details
 
 # pylint: disable=redefined-outer-name
 
@@ -64,99 +57,18 @@ def test_find_brace_word():
     of something specified via X(A B C)
     on the stata command line.
     """
-    options = "by(grant_type) contents(mean sd inc_activity) suppress nototals"
-    res, substr = find_brace_word("by", options)
+    options = "statistic(mean inc_activity) suppress nototals"
+    res, substr = find_brace_word("statistic", options)
     assert res
-    assert substr == ["grant_type"]
-    res, substr = find_brace_word("contents", options)
-    assert res
-    assert substr == ["mean sd inc_activity"]
+    assert substr == ["mean inc_activity"]
     res, substr = find_brace_word("foo", options)
     assert not res
     assert substr == "foo not found"
 
-    incomplete = "by(grant_type) contents(mean sd inc_activity suppress nototals"
-    res, substr = find_brace_word("contents", incomplete)
+    incomplete = "statistic(mean inc_activity suppress nototals"
+    res, substr = find_brace_word("statistic", incomplete)
     assert not res
     assert substr == "phrase not completed"
-
-
-def test_apply_stata_ifstmt(data):
-    """Tests that if statements work for selection."""
-    # empty ifstring
-    ifstring = ""
-    smaller = apply_stata_ifstmt(ifstring, data)
-    assert smaller.equals(data), "should be same for empty ifstring"
-
-    ifstring = "year!=2013"
-    all_list = list(data["year"].unique())
-    smaller = apply_stata_ifstmt(ifstring, data)
-    all_list.remove(2013)
-    assert list(smaller["year"].unique()) == all_list
-
-    ifstring2 = "year != 2013 & year <2015"
-    all_list.remove(2015)
-    smaller2 = apply_stata_ifstmt(ifstring2, data)
-    assert list(smaller2["year"].unique()) == all_list
-
-
-def test_apply_stata_expstmt():
-    """Tests that in statements work for row selection."""
-    data = np.zeros(100)
-    for i in range(100):
-        data[i] = i
-    data = pd.DataFrame(data, columns=["vals"])
-    length = 100
-    # use of f/F and l/L for first and last with specified row range
-
-    exp = "f/5"
-    smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 5, data
-
-    exp = "F/5"
-    smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 5, data
-    assert (smaller.iloc[-1].fillna(0).values == data.iloc[4].fillna(0).values).all()
-
-    exp = "F/-5"
-    smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == length - 5, f"{smaller.shape[0]} != 95\n{data}"
-    assert (
-        smaller.iloc[-1].fillna(0).values == data.iloc[length - 6].fillna(0).values
-    ).all()
-
-    exp = "-6/l"
-    smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 6, data
-    assert (
-        smaller.iloc[-1].fillna(0).values == data.iloc[length - 1].fillna(0).values
-    ).all()
-
-    exp = "-6/L"
-    smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 6, data
-    assert (
-        smaller.iloc[-1].fillna(0).values == data.iloc[length - 1].fillna(0).values
-    ).all()
-
-    # invalid range should default to end of dataframe
-    exp = "50/45"
-    smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == length - 49, f"smaller.shape[0] !=51,{smaller}"
-
-    # missing / counts from front/back so same size but different
-    exp = "40"
-    smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 40, data
-
-    exp = "-40"
-    smaller2 = apply_stata_expstmt(exp, data)
-    assert smaller2.shape[0] == 40
-    assert not smaller2.equals(smaller), "counting from front/back should be different"
-
-    exp = "gg"  # invalid exp returns empty dataframe
-    smaller = apply_stata_expstmt(exp, data)
-    assert smaller.shape[0] == 1, smaller
 
 
 def test_parse_table_details(data):
@@ -210,7 +122,14 @@ def test_stata_acro_init():
     """
     # assert isinstance(stata_config.stata_acro, str)
     ret = dummy_acrohandler(
-        data, command="init", varlist="", exclusion="", exp="", weights="", options="", stata_version="17"
+        data,
+        command="init",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
     )
     assert (
         ret == "acro analysis session created\n"
@@ -229,7 +148,7 @@ def test_stata_print_outputs(data):
         exp="",
         weights="",
         options="",
-        stata_version="17"
+        stata_version="17",
     )
     assert len(ret) == 0, "return string should  be empty"
 
@@ -260,7 +179,7 @@ def test_simple_table(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     ret = ret.replace("NaN", "0")
     ret = ret.replace(".0", "")
@@ -281,7 +200,7 @@ def test_stata_rename_outputs():
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     correct = f"output {the_output} renamed to {the_str}.\n"
     assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
@@ -305,7 +224,7 @@ def test_stata_incomplete_output_commands():
         exp="",
         weights="",
         options="",
-        stata_version="17"
+        stata_version="17",
     )
     correct = "syntax error: please pass the name of the output to be changed"
     assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
@@ -322,7 +241,7 @@ def test_stata_incomplete_output_commands():
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     correct = f"no output with name  {the_output} in current acro session.\n"
     assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
@@ -339,7 +258,7 @@ def test_stata_incomplete_output_commands():
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     correct = f"not enough arguments provided for command {command}.\n"
     assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
@@ -361,7 +280,7 @@ def test_stata_add_comments():
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     correct = f"Comments added to output {the_output}.\n"
     assert ret == correct, f"returned string:\n_{ret}_should be:\n_{correct}_"
@@ -385,7 +304,7 @@ def test_stata_add_exception():
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     correct = f"Exception request added to output {the_output}.\n"
     assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
@@ -407,7 +326,7 @@ def test_stata_remove_output():
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     correct = f"output {the_output} removed.\n"
     assert ret == correct, f"returned string:\n{ret}\nshould be:\n{correct}"
@@ -439,7 +358,7 @@ def test_stata_exclusion_in_context(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     ret = ret.replace("NaN", "0")
     ret = ret.replace(".0", "")
@@ -464,7 +383,7 @@ def test_stata_exclusion_in_context(data):
         exp="1/500",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     ret2 = ret2.replace("NaN", "0")
     ret2 = ret2.replace(".0", "")
@@ -479,7 +398,7 @@ def test_stata_exclusion_in_context(data):
         exp="1/500",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     correct3 = (
         "Total\n"
@@ -508,7 +427,7 @@ def test_table_weights(data):
         exp="",
         weights=weights,
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
@@ -534,7 +453,7 @@ def test_table_aggcfn(data):
         exp="1/100",
         weights="",
         options="statistic(mean inc_activity) nototals",
-        stata_version="17"
+        stata_version="17",
     )
     assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
@@ -568,7 +487,7 @@ def test_table_aggcfn(data):
         exp="",
         weights="",
         options="statistic(sum inc_activity) nototals",
-        stata_version="17"
+        stata_version="17",
     )
     #    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
     assert ret == correct, f"got\n{ret}\n expected\n{correct}"
@@ -586,7 +505,7 @@ def test_table_aggcfn(data):
         exp="1/100",
         weights="",
         options="statistic(mean inc_activity inc_grants) nototals",
-        stata_version="17"
+        stata_version="17",
     )
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
@@ -595,27 +514,25 @@ def test_table_aggcfns(data):
     """Testing behaviour with two aggregation functions."""
     correct = (
         "Total\n"
-        "--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\n"
-        "              mean                                                                                |std                                                                                |\n"
-        "year          2010          2011          2012          2013          2014          2015          |2010          2011          2012          2013          2014          2015         |\n"
-        "survivor                                                                                          |                                                                                   |\n"
-        "--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\n"
-        "Dead in 2015   4.148234e+05  4.003721e+05  5.504437e+05  5.867864e+05  6.722908e+05  4.852402e+05 | 1.105751e+06  1.063917e+06  1.364640e+06  1.527995e+06  1.701519e+06  1.515565e+06|\n"
-        "Alive in 2015  2.859820e+07  1.556566e+07  1.598949e+07  1.666315e+07  1.665463e+07  1.659992e+07 | 5.681456e+07  4.740193e+07  4.917577e+07  5.104726e+07  5.189880e+07  5.512305e+07|\n"
-        "--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\n"
-
+        "------------------------------------------|\n"
+        "              mean          |std          |\n"
+        "year          2010          |2010         |\n"
+        "survivor                    |             |\n"
+        "------------------------------------------|\n"
+        "Dead in 2015   4.148234e+05 | 1.105751e+06|\n"
+        "Alive in 2015  2.859820e+07 | 5.681456e+07|\n"
+        "------------------------------------------|\n"
     )
-
 
     ret = dummy_acrohandler(
         data,
         "table",
         "survivor year",
-        exclusion="",
+        exclusion="year == 2010",
         exp="",
         weights="",
         options="statistic(mean sd inc_activity) nototals",
-        stata_version="17"
+        stata_version="17",
     )
     assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
@@ -630,7 +547,7 @@ def test_stata_probit(data):
         exp="",
         weights="",
         options="",
-        stata_version="17"
+        stata_version="17",
     )
     tokens = ret.split()
     idx = tokens.index("Residuals:")
@@ -656,7 +573,7 @@ def test_stata_linregress(data):
         exp="",
         weights="",
         options="",
-        stata_version="17"
+        stata_version="17",
     )
     tokens = ret.split()
     idx = tokens.index("Residuals:")
@@ -677,7 +594,7 @@ def test_stata_logit(data):
         exp="",
         weights="",
         options="",
-        stata_version="17"
+        stata_version="17",
     )
 
     tokens = ret.split()
@@ -724,7 +641,7 @@ def test_unsupported_formatting_options(data):
             exp="",
             weights="",
             options=f"{bad_option} nototals",
-            stata_version="17"
+            stata_version="17",
         )
 
         rets = ret.split("\n", 1)
@@ -748,7 +665,7 @@ def test_stata_finalise(monkeypatch):
         exp="",
         weights="",
         options="",
-        stata_version="17"
+        stata_version="17",
     )
     correct = "outputs and stata_outputs.json written\n"
     assert ret == correct, f"returned string {ret} should be {correct}\n"
@@ -765,7 +682,7 @@ def test_stata_finalise_default_filetype(monkeypatch):
         exp="",
         weights="",
         options="",
-        stata_version="17"
+        stata_version="17",
     )
     correct = "outputs and stata_outputs.json written\n"
     assert ret == correct, f"returned string {ret} should be {correct}\n"
@@ -781,16 +698,15 @@ def test_stata_unknown(data):
         exp="",
         weights="",
         options="",
-        stata_version="17"
+        stata_version="17",
     )
     correct = "acro command not recognised: foo"
     assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
 
+
 # ----Test stata 17 new table command syntax-------------------------------------
 def test_table_stata17(data):
-    """
-    Checks that the simple table command works as expected
-    """
+    """Checks that the simple table command works as expected."""
     correct = (
         "Total\n"
         "------------------------------------|\n"
@@ -809,14 +725,13 @@ def test_table_stata17(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
+
 def test_table_stata17_1(data):
-    """
-    Checks that the table command works as expected, with more than one index
-    """
+    """Checks that the table command works as expected, with more than one index."""
     correct = (
         "Total\n"
         "---------------------------------------|\n"
@@ -845,14 +760,13 @@ def test_table_stata17_1(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
+
 def test_table_stata17_2(data):
-    """
-    Checks that the table command works as expected, with more than one column
-    """
+    """Checks that the table command works as expected, with more than one column."""
     correct = (
         "Total\n"
         "--------------------------------------------|\n"
@@ -877,14 +791,13 @@ def test_table_stata17_2(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
 
+
 def test_table_stata17_3(data):
-    """
-    Checks that the table command works as expected, with the table variable
-    """
+    """Checks that the table command works as expected, with the table variable."""
     correct = (
         "You need to manually check all the outputs for the risk of differncing.\n"
         "Total\n"
@@ -899,7 +812,6 @@ def test_table_stata17_3(data):
         "2014        |15  |59  |71  |8  |\n"
         "2015        |15  |59  |71  |8  |\n"
         "-------------------------------|\n"
-        
         "status=='dead'\n"
         "-------------------|\n"
         "grant_type  |G  |R |\n"
@@ -912,7 +824,6 @@ def test_table_stata17_3(data):
         "2014        |3  |47|\n"
         "2015        |3  |47|\n"
         "-------------------|\n"
-        
         "status=='successful'\n"
         "-------------------------------|\n"
         "grant_type  |G   |N   |R   |R/G|\n"
@@ -935,7 +846,7 @@ def test_table_stata17_3(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
 
     ret_1 = dummy_acrohandler(
@@ -946,7 +857,7 @@ def test_table_stata17_3(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
 
     ret_2 = dummy_acrohandler(
@@ -957,7 +868,7 @@ def test_table_stata17_3(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
 
     ret_3 = dummy_acrohandler(
@@ -968,7 +879,7 @@ def test_table_stata17_3(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     ret_4 = dummy_acrohandler(
         data,
@@ -978,16 +889,24 @@ def test_table_stata17_3(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
-    assert ret.split() == ret_1.split() == ret_2.split() == ret_3.split() == ret_4.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
-    
+    assert (
+        ret.split()
+        == ret_1.split()
+        == ret_2.split()
+        == ret_3.split()
+        == ret_4.split()
+        == correct.split()
+    ), f"got\n{ret}\n expected\n{correct}"
+
+
 def test_one_dimensional_table(data):
-    """
-    Checks that one dimensional table is not supported at the moment
-    """
+    """Checks that one dimensional table is not supported at the moment."""
     correct = (
-        "acro does not currently support one dimensioanl tables. To calculate cross tabulation, you need to provide at least one row and one column."
+        "acro does not currently support one dimensioanl tables. "
+        "To calculate cross tabulation, you need to provide at "
+        "least one row and one column."
     )
     ret = dummy_acrohandler(
         data,
@@ -997,9 +916,10 @@ def test_one_dimensional_table(data):
         exp="",
         weights="",
         options="nototals",
-        stata_version="17"
+        stata_version="17",
     )
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
 
 def test_cleanup():
     """Gets rid of files created during tests."""

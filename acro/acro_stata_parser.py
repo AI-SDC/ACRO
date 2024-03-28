@@ -112,6 +112,23 @@ def find_brace_word(word: str, raw: str):
     return True, result
 
 
+def extract_aggfun_values_from_options(details, contents_found, content, varnames):
+    """Extracts the aggfunc and the values from the content."""
+    # contents can be variable names or aggregation functions
+    details["aggfuncs"], details["values"] = list([]), list([])
+    if contents_found and len(content) > 0:
+        for element in content:
+            contents = element.split()
+            for word in contents:
+                if word in varnames:
+                    if word not in details["values"]:
+                        details["values"].append(word)
+                else:
+                    if word not in details["aggfuncs"]:
+                        details["aggfuncs"].append(word)
+    return details
+
+
 def parse_table_details(
     varlist: list, varnames: list, options: str, stata_version: str
 ) -> dict:
@@ -159,18 +176,10 @@ def parse_table_details(
             # print(f"table is {details['tables']}")
 
         contents_found, content = find_brace_word("statistic", options)
-    # contents can be variable names or aggregation functions
-    details["aggfuncs"], details["values"] = list([]), list([])
-    if contents_found and len(content) > 0:
-        for element in content:
-            contents = element.split()
-            for word in contents:
-                if word in varnames:
-                    if word not in details["values"]:
-                        details["values"].append(word)
-                else:
-                    if word not in details["aggfuncs"]:
-                        details["aggfuncs"].append(word)
+
+    details = extract_aggfun_values_from_options(
+        details, contents_found, content, varnames
+    )
 
     # default values
     details["totals"] = False
@@ -399,6 +408,37 @@ def extract_strings(input_string):
     return varlist
 
 
+def creates_datasets(data, details):
+    """This function returns the full dataset if the tables parameter is empty.
+    Otherwise, it divides the dataset to small dataset each one is the dataset when
+    the tables parameter is equal to one of it is unique values.
+    """
+
+    set_of_data = {"Total": data}
+    msg = ""
+    # if tables var parameter was assigned, each table will
+    # be treated as an exclusion which will be applied to the data.
+    # The number of datasets will be equal to the number of unique values in the tables var
+    # Crosstabulation will be calculate for each dataset
+    if "tables" in details and details["tables"] != []:
+        # print(f"table is {details['tables']}")
+        msg = (
+            "You need to manually check all the outputs for the risk of differncing.\n"
+        )
+        for table in details["tables"]:
+            unique_values = data[table].unique()
+            # print(f"unique_values are {unique_values}")
+            for value in unique_values:
+                if isinstance(value, str):
+                    exclusion = f"{table}=='{value}'"
+                else:
+                    exclusion = f"{table}=={value}"
+                # print(f"exclusion is {exclusion}")
+                my_data = apply_stata_ifstmt(exclusion, data)
+                set_of_data[exclusion] = my_data
+    return set_of_data, msg
+
+
 def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     data: pd.DataFrame,
     varlist: list,
@@ -424,29 +464,8 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     if len(aggfuncs) == 1:
         aggfuncs = aggfuncs[0]
 
-    set_of_data = {"Total": data}
-    msg = ""
-    # if tables var parameter was assigned, each table will
-    # be treated as an exlcion which will be applied to the data.
-    # The number of datasets will be equal to the number of unique values in the tables var
-    # Crosstabulation will be calculate for each dataset
-    if "tables" in details and details["tables"] != []:
-        # print(f"table is {details['tables']}")
-        msg = (
-            "You need to manually check all the outputs for the risk of differncing.\n"
-        )
-        for table in details["tables"]:
-            unique_values = data[table].unique()
-            # print(f"unique_values are {unique_values}")
-            for value in unique_values:
-                if isinstance(value, str):
-                    exclusion = f"{table}=='{value}'"
-                else:
-                    exclusion = f"{table}=={value}"
-                # print(f"exclusion is {exclusion}")
-                my_data = apply_stata_ifstmt(exclusion, data)
-                set_of_data[exclusion] = my_data
-    # print(f"set of data is {set_of_data}")
+    set_of_data, msg = creates_datasets(data, details)
+
     results = ""
     for exclusion, my_data in set_of_data.items():
         rows, cols = [], []

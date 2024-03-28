@@ -816,9 +816,46 @@ def test_table_stata17_2(data):
 
 
 def test_table_stata17_3(data):
+    """Checks that the table command works as expected, with herichical tables."""
+    correct = (
+        "Total\n"
+        "----------------------------------------------------|\n"
+        "status             |dead     |successful            |\n"
+        "grant_type         |G    R   |G          N   R   R/G|\n"
+        "year survivor      |         |                      |\n"
+        "----------------------------------------------------|\n"
+        "2010 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
+        "2011 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
+        "2012 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
+        "2013 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
+        "2014 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
+        "2015 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
+        "----------------------------------------------------|\n"
+    )
+
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "(year survivor) (status grant_type)",
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+        stata_version="17",
+    )
+    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+
+def test_table_stata17_4(data):
     """Checks that the table command works as expected, with the table variable."""
     correct = (
-        "You need to manually check all the outputs for the risk of differncing.\n"
+        "You need to manually check all the outputs for the risk of differencing.\n"
         "Total\n"
         "-------------------------------|\n"
         "grant_type  |G   |N   |R   |R/G|\n"

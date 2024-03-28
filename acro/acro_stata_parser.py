@@ -421,7 +421,7 @@ def creates_datasets(data, details):
     if "tables" in details and details["tables"] != []:
         # print(f"table is {details['tables']}")
         msg = (
-            "You need to manually check all the outputs for the risk of differncing.\n"
+            "You need to manually check all the outputs for the risk of differencing.\n"
         )
         for table in details["tables"]:
             unique_values = data[table].unique()

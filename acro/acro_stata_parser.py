@@ -4,6 +4,8 @@ Jim Smith 2023 @james.smith@uwe.ac.uk
 MIT licenses apply.
 """
 
+import re
+
 import pandas as pd
 import statsmodels.iolib.summary as sm_iolib_summary
 
@@ -83,61 +85,101 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     return all_data.iloc[start : end + 1]
 
 
-def find_brace_contents(word: str, raw: str):
+def find_brace_word(word: str, raw: str):
     """
     Given a word followed by a (
     finds and returns as a list of strings
     the rest of the contents up to the closing ).
     first returned value is True/False depending on parsing ok.
     """
+    result = []
     idx = raw.find(word)
     if idx == -1:
         return False, f"{word} not found"
-    idx += len(word) + 1
-    substr = ""
-    while idx < len(raw) and raw[idx] != ")":
-        substr += raw[idx]
-        idx += 1
+    while idx != -1:
+        substr = ""
+        idx += len(word) + 1
+        while idx < len(raw) and raw[idx] != ")":
+            substr += raw[idx]
+            idx += 1
 
-    if idx == len(raw):
-        return False, "phrase not completed"
-    return True, substr
+        if idx == len(raw):
+            return False, "phrase not completed"
+
+        result.append(substr)
+        idx = raw.find(word, idx)
+
+    return True, result
 
 
-def parse_table_details(varlist: list, varnames: list, options: str) -> dict:
+def extract_aggfun_values_from_options(details, contents_found, content, varnames):
+    """Extracts the aggfunc and the values from the content."""
+    # contents can be variable names or aggregation functions
+    details["aggfuncs"], details["values"] = list([]), list([])
+    if contents_found and len(content) > 0:
+        for element in content:
+            contents = element.split()
+            for word in contents:
+                if word in varnames:
+                    if word not in details["values"]:
+                        details["values"].append(word)
+                else:
+                    if word not in details["aggfuncs"]:
+                        details["aggfuncs"].append(word)
+    return details
+
+
+def parse_table_details(
+    varlist: list, varnames: list, options: str, stata_version: str
+) -> dict:
     """Function to parse stata-16 style table calls
     Note this is not for latest version of stata, syntax here:
     https://www.stata.com/manuals16/rtable.pdf
     >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
     details: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
-    details["rowvars"] = [varlist.pop(0)]
-    details["colvars"] = list(reversed(varlist))
-    # by() contents are super-rows
-    found, superrows = find_brace_contents("by", options)
-    if found and len(superrows) > 0:
-        extras = superrows.split()
-        for word in extras:
-            if word not in varnames:
-                details["errmsg"] = (
-                    f"Error: word {word} in by-list is not a variables name"
-                )
-                return details
-            if word not in details["rowvars"]:
-                details["rowvars"].insert(0, word)
 
-    # contents can be variable names or aggregation functions
-    details["aggfuncs"], details["values"] = list([]), list([])
-    found, content = find_brace_contents("contents", options)
-    if found and len(content) > 0:
-        contents = content.split()
-        for word in contents:
-            if word in varnames:
-                if word not in details["values"]:
-                    details["values"].append(word)
-            else:
-                if word not in details["aggfuncs"]:
-                    details["aggfuncs"].append(word)
+    if stata_version == "16":
+        details["rowvars"] = [varlist.pop(0)]
+        details["colvars"] = list(reversed(varlist))
+
+        contents_found, content = find_brace_word("contents", options)
+
+        # by() contents are super-rows
+        by_found, superrows = find_brace_word("by", options)
+        if by_found and len(superrows) > 0:
+            for row in superrows:
+                extras = row.split()
+                for word in extras:
+                    if word not in varnames:
+                        details["errmsg"] = (
+                            f"Error: word {word} in by-list is not a variables name"
+                        )
+                        return details
+                    if word not in details["rowvars"]:
+                        details["rowvars"].insert(0, word)
+
+    elif stata_version == "17":
+        details["rowvars"] = varlist.pop(0).split()
+        details["colvars"] = varlist.pop(0).split()
+        if len(details["rowvars"]) == 0 or len(details["colvars"]) == 0:
+            details["errmsg"] = (
+                "acro does not currently support one dimensioanl tables. "
+                "To calculate cross tabulation, you need to provide at "
+                "least one row and one column."
+            )
+            return details
+        # print(details["rowvars"])
+        # print(details["colvars"])
+        if varlist:
+            details["tables"] = varlist.pop(0).split()
+            # print(f"table is {details['tables']}")
+
+        contents_found, content = find_brace_word("statistic", options)
+
+    details = extract_aggfun_values_from_options(
+        details, contents_found, content, varnames
+    )
 
     # default values
     details["totals"] = False
@@ -156,6 +198,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     exp: str,
     weights: str,
     options: str,
+    stata_version: str,
 ) -> pd.DataFrame:
     """
     Takes a dataframe and the parsed stata command line.
@@ -173,7 +216,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     # https://www.stata.com/manuals13/u11.pdf#u11.1.3ifexp
 
     varlist: list = varlist_as_str.split()
-    # print(f' split varlist is {varlist}')
+    # print(varlist)
 
     # data reduction
     # print(f'before in {mydata.shape}')
@@ -190,8 +233,11 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
         outcome = run_session_command(command, varlist)
     elif command in ["remove_output", "rename_output", "add_comments", "add_exception"]:
         outcome = run_output_command(command, varlist)
-    elif command == "table":
-        outcome = run_table_command(mydata, varlist, weights, options)
+    elif command == "table" and stata_version == "16":
+        outcome = run_table_command(mydata, varlist, weights, options, stata_version)
+    elif command == "table" and stata_version == "17":
+        varlist = extract_strings(varlist_as_str)
+        outcome = run_table_command(mydata, varlist, weights, options, stata_version)
 
     elif command in ["regress", "probit", "logit"]:
         outcome = run_regression(command, mydata, varlist)
@@ -205,8 +251,16 @@ def run_session_command(command: str, varlist: list) -> str:
     outcome = ""
 
     if command == "init":
+        # pattern = r'\bsuppress\b'
+
+        # Search for the pattern in the input string
+        # match = re.search(pattern, options)
+        # suppress = bool(match)
         # initialise the acro object
+        # stata_config.stata_acro = ACRO(suppress=suppress)
+
         stata_config.stata_acro = ACRO()
+
         outcome = "acro analysis session created\n"
 
     elif command == "finalise":
@@ -267,11 +321,128 @@ def run_output_command(command: str, varlist: list) -> str:
     return outcome
 
 
+def extract_var_within_parentheses(input_string):
+    """Given a string, this function extracts the words within the first parentheses
+    from a string.
+    """
+    string_match = re.match(r"\((.*?)\)", input_string)
+    if string_match:
+        string = string_match.group(1).strip()
+        input_string = input_string[len(string_match.group(0)) :].strip()
+    return string, input_string
+
+
+def extract_var_before_parentheses(input_string):
+    """Given a string, this function extracts the words before the first parentheses."""
+    string_match = re.match(r"^(.*?)\(", input_string)
+    if string_match:
+        string = string_match.group(1).strip()
+        input_string = input_string[len(string_match.group(1)) :].strip()
+    return string, input_string
+
+
+def extract_table_var(input_string):
+    """Given a string, this function extracts the words within the parentheses.
+    If there are no parentheses the string is returned.
+    """
+    # If the string starts with parentheses
+    if input_string.startswith("("):
+        string, _ = extract_var_within_parentheses(input_string)
+    elif input_string:
+        string = input_string.strip()
+    return string
+
+
+def extract_colstring_tablestring(input_string):
+    """Given a string, this function extracts the column and the tables
+    variables as a string. It goes through different options eg. whether
+    the column string is between paranthese or not.
+    """
+    colstring = ""
+    tablestring = ""
+    if input_string.startswith("("):
+        colstring, input_string = extract_var_within_parentheses(input_string)
+        if input_string:
+            tablestring = extract_table_var(input_string)
+
+    elif "(" not in input_string:
+        words = input_string.split()
+        colstring = " ".join(words[:])
+
+    else:
+        colstring, input_string = extract_var_before_parentheses(input_string)
+        if input_string:
+            tablestring = extract_table_var(input_string)
+    return colstring, tablestring
+
+
+def extract_strings(input_string):
+    """Given a string, this function extracts the index, column and the tables
+    variables as a string. It goes through different options eg. whether
+    the index string is between paranthese or not.
+    """
+    rowstring = ""
+    colstring = ""
+    tablestring = ""
+
+    # If the string doesn’t have parentheses
+    if "(" not in input_string:
+        words = input_string.split()
+        rowstring = " ".join(words[:-1])
+        colstring = words[-1]
+
+    # If the string has parentheses
+    else:
+        # If there are parentheses at the start of the string
+        if input_string.startswith("("):
+            rowstring, input_string = extract_var_within_parentheses(input_string)
+            colstring, tablestring = extract_colstring_tablestring(input_string)
+
+        else:
+            # If there are parentheses at the middle of the string
+            rowstring, input_string = extract_var_before_parentheses(input_string)
+            colstring, tablestring = extract_colstring_tablestring(input_string)
+    varlist = [rowstring, colstring, tablestring]
+    return varlist
+
+
+def creates_datasets(data, details):
+    """This function returns the full dataset if the tables parameter is empty.
+    Otherwise, it divides the dataset to small dataset each one is the dataset when
+    the tables parameter is equal to one of it is unique values.
+    """
+
+    set_of_data = {"Total": data}
+    msg = ""
+    # if tables var parameter was assigned, each table will
+    # be treated as an exclusion which will be applied to the data.
+    # The number of datasets will be equal to the number of unique values in the tables var
+    # Crosstabulation will be calculate for each dataset
+    if "tables" in details and details["tables"] != []:
+        # print(f"table is {details['tables']}")
+        msg = (
+            "You need to manually check all the outputs for the risk of differencing.\n"
+        )
+        for table in details["tables"]:
+            unique_values = data[table].unique()
+            # print(f"unique_values are {unique_values}")
+            for value in unique_values:
+                if isinstance(value, str):
+                    exclusion = f"{table}=='{value}'"
+                else:  # pragma: no cover
+                    exclusion = f"{table}=={value}"
+                # print(f"exclusion is {exclusion}")
+                my_data = apply_stata_ifstmt(exclusion, data)
+                set_of_data[exclusion] = my_data
+    return set_of_data, msg
+
+
 def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     data: pd.DataFrame,
     varlist: list,
     weights: str,
     options: str,
+    stata_version: str,
 ) -> str:
     """
     Converts a stata table command into an acro.crosstab
@@ -282,67 +453,79 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
         return f"weights not currently implemented for _{weights}_\n"
 
     varnames = data.columns
-    details = parse_table_details(varlist, varnames, options)
+    details = parse_table_details(varlist, varnames, options, stata_version)
     if len(details["errmsg"]) > 0:
         return details["errmsg"]
 
     aggfuncs = list(map(lambda x: x.replace("sd", "std"), details["aggfuncs"]))
-    rows, cols = [], []
     # don't pass single aggfunc as a list
     if len(aggfuncs) == 1:
         aggfuncs = aggfuncs[0]
 
-    for row in details["rowvars"]:
-        rows.append(data[row])
-    for col in details["colvars"]:
-        cols.append(data[col])
-    if len(aggfuncs) > 0 and len(details["values"]) > 0:
-        # sanity checking
-        # if len(rows) > 1 or len(cols) > 1:
-        #     msg = (
-        #         "acro crosstab with an aggregation function "
-        #         " does not currently support hierarchies within rows or columns"
-        #     )
-        #     return msg
+    set_of_data, msg = creates_datasets(data, details)
 
-        if len(details["values"]) > 1:
-            msg = (
-                "pandas crosstab can  aggregate over multiple functions "
-                "but only over one feature/attribute: provided as 'value'"
+    results = ""
+    for exclusion, my_data in set_of_data.items():
+        rows, cols = [], []
+        # print(f"my data is {my_data}")
+        for row in details["rowvars"]:
+            rows.append(my_data[row])
+        for col in details["colvars"]:
+            cols.append(my_data[col])
+        # print(f"rows are {rows}")
+        # print(f"cols are {cols}")
+        if len(aggfuncs) > 0 and len(details["values"]) > 0:
+            # sanity checking
+            # if len(rows) > 1 or len(cols) > 1:
+            #     msg = (
+            #         "acro crosstab with an aggregation function "
+            #         " does not currently support hierarchies within rows or columns"
+            #     )
+            #     return msg
+
+            if len(details["values"]) > 1:
+                msg = (
+                    "pandas crosstab can  aggregate over multiple functions "
+                    "but only over one feature/attribute: provided as 'value'"
+                )
+                return msg
+            val = details["values"][0]
+            values = data[val]
+            print(exclusion)
+            safe_output = stata_config.stata_acro.crosstab(
+                index=rows,
+                columns=cols,
+                aggfunc=aggfuncs,
+                values=values,
+                margins=details["totals"],
+                margins_name="Total",
             )
-            return msg
-        val = details["values"][0]
-        values = data[val]
 
-        safe_output = stata_config.stata_acro.crosstab(
-            index=rows,
-            columns=cols,
-            aggfunc=aggfuncs,
-            values=values,
-            margins=details["totals"],
-            margins_name="Total",
-        )
+        else:
+            print(exclusion)
+            safe_output = stata_config.stata_acro.crosstab(
+                index=rows,
+                columns=cols,
+                # suppress=details['suppress'],
+                margins=details["totals"],
+                margins_name="Total",
+            )
+        results += f"{exclusion}\n{prettify_table_string(safe_output)}\n"
 
-    else:
-        safe_output = stata_config.stata_acro.crosstab(
-            index=rows,
-            columns=cols,
-            # suppress=details['suppress'],
-            margins=details["totals"],
-            margins_name="Total",
-        )
-    options_str = ""
-    formatting = [
-        "cellwidth",
-        "csepwidth",
-        "stubwidth",
-        "scsepwidth",
-        "center",
-        "left",
-    ]
-    if any(word in options for word in formatting):
-        options_str = "acro does not currently support table formatting commands.\n "
-    return options_str + prettify_table_string(safe_output) + "\n"
+        options_str = ""
+        formatting = [
+            "cellwidth",
+            "csepwidth",
+            "stubwidth",
+            "scsepwidth",
+            "center",
+            "left",
+        ]
+        if any(word in options for word in formatting):
+            options_str = (
+                "acro does not currently support table formatting commands.\n "
+            )
+    return msg + options_str + results
 
 
 def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:

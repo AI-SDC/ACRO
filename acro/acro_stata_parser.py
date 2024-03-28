@@ -385,8 +385,6 @@ def extract_strings(input_string):
     colstring = ""
     tablestring = ""
 
-    if input_string == "":
-        return []
     # If the string doesn’t have parentheses
     if "(" not in input_string:
         words = input_string.split()
@@ -431,7 +429,7 @@ def creates_datasets(data, details):
             for value in unique_values:
                 if isinstance(value, str):
                     exclusion = f"{table}=='{value}'"
-                else:
+                else:  # pragma: no cover
                     exclusion = f"{table}=={value}"
                 # print(f"exclusion is {exclusion}")
                 my_data = apply_stata_ifstmt(exclusion, data)

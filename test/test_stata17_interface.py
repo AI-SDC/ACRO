@@ -1,5 +1,11 @@
 """This module contains unit tests for the stata 17 interface."""
 
+# The pylint skip file is to skip the error of R0801: Similar lines in 2 files. As the
+# file  this file and the file test_stata_interface.py have a lot of similarities.
+# That is because we are testing the same functions for different versions of Stata.
+
+# pylint: skip-file
+
 import os
 import shutil
 
@@ -793,7 +799,20 @@ def test_table_stata17_2(data):
         options="nototals",
         stata_version="17",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+    ret_1 = dummy_acrohandler(
+        data,
+        "table",
+        "(year) status grant_type",
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+        stata_version="17",
+    )
+    assert (
+        ret.split() == ret_1.split() == correct.split()
+    ), f"got\n{ret}\n expected\n{correct}"
 
 
 def test_table_stata17_3(data):

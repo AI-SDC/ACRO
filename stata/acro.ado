@@ -9,7 +9,10 @@
 
 capture program drop acro
 program acro, rclass
+
   syntax anything [if] [in] [fweight  aweight  pweight  iweight] [, *]
+  local stata_version = c(version)
+  *display "`stata_version'"
   *display `"here"'
   *display `" anything is `anything'"'
   tokenize `anything'
@@ -22,7 +25,8 @@ program acro, rclass
   *display `" weights are: `fweight', `aweight', `pweight', `iweight' "'
   *display `" exp is `exp'"'
   *display `"options is `options'"'
-  python: acrohandler("`command'", "`rest'","`if'","`exp'","`weights'","`options'")
+  *display `"stata_version is `stata_version'"'
+  python: acrohandler("`command'", "`rest'","`if'","`exp'","`weights'","`options'", "`stata_version'")
 end
 
 python:
@@ -36,7 +40,7 @@ import acro.stata_config
 from acro import acro_stata_parser
 
 debug = False
-def acrohandler(command, varlist,exclusion,exp,weights,options):
+def acrohandler(command, varlist,exclusion,exp,weights,options, stata_version):
     if debug:
         outline = 'in python acrohandler function: '
         outline +=    f'command = {command} '
@@ -45,6 +49,7 @@ def acrohandler(command, varlist,exclusion,exp,weights,options):
         outline +=    f'exp = {exp} '
         outline +=    f'weights={weights} '
         outline +=    f'options={options} '
+        outline +=    f'my_version={my_version} '
         SFIToolkit.displayln(outline)
 
     #make data object
@@ -61,6 +66,6 @@ def acrohandler(command, varlist,exclusion,exp,weights,options):
         contents.to_csv("contents.csv")
 
     #now do the acro part
-    acro_outstr = acro_stata_parser.parse_and_run (the_data,command,varlist,exclusion,exp,weights,options)
+    acro_outstr = acro_stata_parser.parse_and_run (the_data,command,varlist,exclusion,exp,weights,options,stata_version)
     SFIToolkit.display(acro_outstr)
 end

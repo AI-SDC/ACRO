@@ -234,6 +234,7 @@ def run_output_command(command: str, varlist: list) -> str:
     first element of varlist is output affected
     rest (if relevant) is string passed to command.
     """
+    outcome=""
     if len(varlist) == 0:
         return "syntax error: please pass the name of the output to be changed"
 

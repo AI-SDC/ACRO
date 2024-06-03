@@ -11,7 +11,7 @@ logger = logging.getLogger("acro")
 
 
 def get_command(default: str, stack_list: list[FrameInfo]) -> str:
-    """Returns the calling source line as a string.
+    """Return the calling source line as a string.
 
     Parameters
     ----------
@@ -38,10 +38,9 @@ def get_command(default: str, stack_list: list[FrameInfo]) -> str:
 
 def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> str:
     """
-    Adds delimiters to table.to_string()
-    to improve readability for onscreen display.
-    Splits fields on whitespace unless an optional separator is provided
-    e.g. ',' for csv.
+    Add delimiters to table.to_string() to improve readability for onscreen display.
+
+    Splits fields on whitespace unless an optional separator is provided e.g. ',' for csv.
     """
     hdelim = "-"
     vdelim = "|"

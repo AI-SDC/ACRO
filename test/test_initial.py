@@ -1,4 +1,4 @@
-"""This module contains unit tests."""
+"""Unit tests."""
 
 import json
 import os
@@ -12,7 +12,7 @@ import statsmodels.api as sm
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
 from acro.record import Records, load_records
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name,too-many-lines
 
 PATH: str = "RES_PYTEST"
 
@@ -485,9 +485,7 @@ def test_adding_exception(acro):
 
 
 def test_add_to_acro(data, monkeypatch):
-    """Adding an output that was generated without using acro to an acro object and
-    creates a results file for checking.
-    """
+    """Add an output generated without acro to an acro object and create results file."""
     # create a cross tabulation using pandas
     table = pd.crosstab(data.year, data.grant_type)
     # save the output to a file and add this file to a directory
@@ -599,7 +597,6 @@ def test_hierachical_aggregation(data, acro):
 
 def test_single_values_column(data, acro):
     """Pandas does not allows multiple arrays for values."""
-
     with pytest.raises(ValueError):
         _ = acro.crosstab(
             data.year,
@@ -634,9 +631,7 @@ def test_surv_func(acro):
 
 
 def test_zeros_are_not_disclosive(data, acro):
-    """Test that zeros are handled as not disclosive when
-    the parameter (zeros_are_disclosive) is False.
-    """
+    """Test that zeros are handled as not disclosive when `zeros_are_disclosive=False`."""
     acro_tables.ZEROS_ARE_DISCLOSIVE = False
     _ = acro.pivot_table(
         data,
@@ -714,9 +709,7 @@ def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
 
 
 def test_crosstab_with_totals_and_empty_data(data, acro, caplog):
-    """Test the crosstab with both margins and suppression are true
-    and with a dataset that all its data violate one or more rules.
-    """
+    """Test crosstab when both margins and suppression are true with a disclosive dataset."""
     data = data[
         (data.year == 2010)
         & (data.grant_type == "G")
@@ -736,9 +729,7 @@ def test_crosstab_with_totals_and_empty_data(data, acro, caplog):
 
 
 def test_crosstab_with_manual_totals_with_suppression(data, acro):
-    """Test the crosstab with both margins and
-    suppression are true while using the total manual function.
-    """
+    """Test crosstab when margins and suppression are true with the total manual function."""
     _ = acro.crosstab(data.year, data.grant_type, margins=True, show_suppressed=True)
     output = acro.results.get_index(0)
     assert 145 == output.output[0]["All"].iat[0]
@@ -751,8 +742,9 @@ def test_crosstab_with_manual_totals_with_suppression(data, acro):
 
 
 def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
-    """Test the crosstab with both margins and suppression
-    are true with multilevel indexes and columns while using the total manual function.
+    """Test crosstab when margins and suppression are true with hierarchical data.
+
+    Tests with multilevel indexes and columns while using the total manual function.
     """
     _ = acro.crosstab(
         [data.year, data.survivor],
@@ -775,8 +767,10 @@ def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
 
 
 def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, acro):
-    """Test the crosstab with both margins and suppression are true
-    and with aggfunc mean while using the total manual function.
+    """Test crosstab.
+
+    Tests the crosstab with both margins and suppression are true and with
+    aggfunc mean while using the total manual function.
     """
     _ = acro.crosstab(
         data.year,
@@ -794,8 +788,11 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, ac
 
 
 def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
-    """Test the crosstab with both margins and suppression are true, with
-    aggfunc mean and with multilevel columns and rows while using the total manual function.
+    """Test crosstab.
+
+    Test the crosstab with both margins and suppression are true, with aggfunc
+    mean and with multilevel columns and rows while using the total manual
+    function.
     """
     _ = acro.crosstab(
         [data.year, data.survivor],
@@ -815,7 +812,9 @@ def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
 def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(
     data, acro, caplog
 ):
-    """Test the crosstab with both margins and suppression are true and with
+    """Test crosstab.
+
+    Test the crosstab with both margins and suppression are true and with
     aggfunc std while using the total manual function.
     """
     _ = acro.crosstab(
@@ -882,8 +881,10 @@ def test_crosstab_multiple_aggregate_function(data, acro):
 
 
 def test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
-    """Test the crosstab with both margins and suppression are true
-    and with a list of aggfuncs while using the total manual function.
+    """Test crosstab.
+
+    Test the crosstab with both margins and suppression are true and with a
+    list of aggfuncs while using the total manual function.
     """
     _ = acro.crosstab(
         data.year,
@@ -918,9 +919,11 @@ def test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
 def test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
     data, acro
 ):
-    """Test the crosstab with both margins and suppression are true
-    and with a list of aggfuncs and a list of columns while using
-    the total manual function.
+    """Test crosstab.
+
+    Test the crosstab with both margins and suppression are true and with a
+    list of aggfuncs and a list of columns while using the total manual
+    function.
     """
     _ = acro.crosstab(
         data.year,
@@ -937,8 +940,10 @@ def test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
 def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
     data, acro, caplog
 ):
-    """Test the crosstab with both margins and suppression are true
-    and with a list of aggfuncs while using the total manual function.
+    """Test crosstab.
+
+    Test the crosstab with both margins and suppression are true and with a
+    list of aggfuncs while using the total manual function.
     """
     _ = acro.crosstab(
         data.year,
@@ -985,7 +990,7 @@ def test_histogram_non_disclosive(data, acro):
 
 
 def test_finalise_with_existing_path(data, acro, caplog):
-    """Using a path that already exists when finalising."""
+    """Test using a path that already exists when finalising."""
     _ = acro.crosstab(data.year, data.grant_type)
     acro.add_exception("output_0", "Let me have it")
     acro.finalise(PATH)

@@ -186,7 +186,7 @@ def parse_table_details(
     return details
 
 
-def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
+def parse_and_run(  # pylint: disable=too-many-arguments
     mydata: pd.DataFrame,
     command: str,
     varlist_as_str: str,
@@ -438,7 +438,7 @@ def creates_datasets(data, details):
     return set_of_data, msg
 
 
-def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
+def run_table_command(  # pylint: disable=too-many-locals
     data: pd.DataFrame,
     varlist: list,
     weights: str,

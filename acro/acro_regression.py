@@ -27,7 +27,7 @@ class Regression:
         self.config = config
         self.results: Records = Records()
 
-    def ols(  # pylint: disable=too-many-locals
+    def ols(
         self, endog, exog=None, missing="none", hasconst=None, **kwargs
     ) -> RegressionResultsWrapper:
         """Fits Ordinary Least Squares Regression.
@@ -76,7 +76,7 @@ class Regression:
         )
         return results
 
-    def olsr(  # pylint: disable=too-many-locals,keyword-arg-before-vararg
+    def olsr(  # pylint: disable=keyword-arg-before-vararg
         self, formula, data, subset=None, drop_cols=None, *args, **kwargs
     ) -> RegressionResultsWrapper:
         """Fits Ordinary Least Squares Regression from a formula and dataframe.
@@ -141,7 +141,7 @@ class Regression:
         )
         return results
 
-    def logit(  # pylint: disable=too-many-arguments,too-many-locals
+    def logit(
         self,
         endog,
         exog,
@@ -190,7 +190,7 @@ class Regression:
         )
         return results
 
-    def logitr(  # pylint: disable=too-many-locals,keyword-arg-before-vararg
+    def logitr(  # pylint: disable=keyword-arg-before-vararg
         self, formula, data, subset=None, drop_cols=None, *args, **kwargs
     ) -> RegressionResultsWrapper:
         """Fits Logit model from a formula and dataframe.
@@ -255,7 +255,7 @@ class Regression:
         )
         return results
 
-    def probit(  # pylint: disable=too-many-arguments,too-many-locals
+    def probit(
         self,
         endog,
         exog,
@@ -304,7 +304,7 @@ class Regression:
         )
         return results
 
-    def probitr(  # pylint: disable=too-many-locals,keyword-arg-before-vararg
+    def probitr(  # pylint: disable=keyword-arg-before-vararg
         self, formula, data, subset=None, drop_cols=None, *args, **kwargs
     ) -> RegressionResultsWrapper:
         """Fits Probit model from a formula and dataframe.

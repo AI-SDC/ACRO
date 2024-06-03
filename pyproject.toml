@@ -16,12 +16,16 @@ lint.select = [
   "D",   # pydocstyle
 #  "DTZ", # flake8-datetimez
 #  "E",   # pycodestyle
+#  "EM",  # flake8-errmsg
 #  "ERA", # eradicate
   "F",   # Pyflakes
   "I",   # isort
+  "ICN",  # flake8-import-conventions
   "N",   # pep8-naming
 #  "PD",  # pandas-vet
 #  "PGH", # pygrep-hooks
+  "PIE",  # flake8-pie
+#  "PL",  # Pylint
   "PLC", # Pylint
   "PLE", # Pylint
 #  "PLR", # Pylint
@@ -29,11 +33,14 @@ lint.select = [
 #  "PT",  # flake8-pytest-style
   "Q",   # flake8-quotes
 #  "RET", # flake8-return
+  "RUF100",  # Ruff-specific
 #  "S",   # flake8-bandit
 #  "SIM", # flake8-simplify
 #  "T20", # flake8-print
   "TID", # flake8-tidy-imports
+  "UP",  # pyupgrade
   "W",   # pycodestyle
+  "YTT",  # flake8-2020
 ]
 
 exclude = [
@@ -54,3 +61,22 @@ convention = "numpy"
 [tool.ruff.format]
 docstring-code-format = true
 docstring-code-line-length = 20
+
+[tool.pylint]
+master.py-version = "3.9"
+reports.output-format = "colorized"
+
+[tool.pylint.messages_control]
+enable = [
+    "useless-suppression",
+]
+
+[tool.mypy]
+python_version = "3.9"
+#exclude = "docs/source/conf.py"
+#strict = false
+#warn_unreachable = true
+#ignore_missing_imports = true
+#follow_imports = false
+#disallow_untyped_defs = false
+#disallow_untyped_calls = false

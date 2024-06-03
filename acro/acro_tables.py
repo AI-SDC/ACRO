@@ -299,7 +299,7 @@ class Tables:
         n_agg: int = 1 if not isinstance(aggfunc, list) else len(aggfunc)
 
         # requested table
-        table: DataFrame = pd.pivot_table(  # pylint: disable=too-many-function-args
+        table: DataFrame = pd.pivot_table(
             data,
             values,
             index,
@@ -445,7 +445,7 @@ class Tables:
         """
         logger.debug("surv_func()")
         command: str = utils.get_command("surv_func()", stack())
-        survival_func: DataFrame = sm.SurvfuncRight(  # pylint: disable=too-many-function-args
+        survival_func: DataFrame = sm.SurvfuncRight(
             time,
             status,
             entry,
@@ -488,7 +488,7 @@ class Tables:
             return (plot, filename)
         return None
 
-    def survival_table(  # pylint: disable=too-many-arguments,too-many-locals
+    def survival_table(  # pylint: disable=too-many-arguments
         self, survival_table, safe_table, status, sdc, command, summary, outcome
     ):
         """Create the survival table according to the status of suppressing."""
@@ -506,7 +506,7 @@ class Tables:
         )
         return survival_table
 
-    def survival_plot(  # pylint: disable=too-many-arguments,too-many-locals
+    def survival_plot(  # pylint: disable=too-many-arguments
         self, survival_table, survival_func, filename, status, sdc, command, summary
     ):
         """Create the survival plot according to the status of suppressing."""
@@ -644,7 +644,7 @@ class Tables:
             )
             return None
 
-        freq, _ = np.histogram(  # pylint: disable=too-many-function-args
+        freq, _ = np.histogram(
             data[column], bins, range=(data[column].min(), data[column].max())
         )
 
@@ -1557,7 +1557,7 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     return table
 
 
-def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
+def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
     table,
     aggfunc,
     index,

@@ -58,7 +58,7 @@ def load_output(path: str, output: list[str]) -> list[str] | list[DataFrame]:
     return loaded
 
 
-class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
+class Record:  # pylint: disable=too-many-instance-attributes
     """Stores data related to a single output record.
 
     Attributes

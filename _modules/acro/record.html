@@ -90,7 +90,7 @@
 
 
 <div class="viewcode-block" id="load_outcome"><a class="viewcode-back" href="../../record.html#acro.record.load_outcome">[docs]</a><span class="k">def</span> <span class="nf">load_outcome</span><span class="p">(</span><span class="n">outcome</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a DataFrame from an outcome dictionary.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a DataFrame from an outcome dictionary.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -101,7 +101,7 @@
 
 
 <div class="viewcode-block" id="load_output"><a class="viewcode-back" href="../../record.html#acro.record.load_output">[docs]</a><span class="k">def</span> <span class="nf">load_output</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a loaded output.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a loaded output.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -172,7 +172,7 @@
         <span class="n">output</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">],</span>
         <span class="n">comments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructs a new output record.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a new output record.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -212,7 +212,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">now</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Record.serialize_output"><a class="viewcode-back" href="../../record.html#acro.record.Record.serialize_output">[docs]</a>    <span class="k">def</span> <span class="nf">serialize_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;outputs&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serializes outputs.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize outputs.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -253,7 +253,7 @@
         <span class="k">return</span> <span class="n">output</span></div>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a string representation of a record.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a string representation of a record.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -280,7 +280,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stores data related to a collection of output records.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructs a new object for storing multiple records.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a new object for storing multiple records.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Record</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -296,7 +296,7 @@
         <span class="n">output</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">],</span>
         <span class="n">comments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds an output to the results.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an output to the results.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -336,7 +336,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;add(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">new</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.remove"><a class="viewcode-back" href="../../record.html#acro.record.Records.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes an output from the results.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove an output from the results.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -349,7 +349,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;remove(): </span><span class="si">%s</span><span class="s2"> removed&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.get"><a class="viewcode-back" href="../../record.html#acro.record.Records.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a specified output from the results.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a specified output from the results.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -365,7 +365,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="Records.get_keys"><a class="viewcode-back" href="../../record.html#acro.record.Records.get_keys">[docs]</a>    <span class="k">def</span> <span class="nf">get_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the list of available output keys.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the list of available output keys.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -376,7 +376,7 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
 <div class="viewcode-block" id="Records.get_index"><a class="viewcode-back" href="../../record.html#acro.record.Records.get_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the output at the specified position.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the output at the specified position.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -393,7 +393,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="Records.add_custom"><a class="viewcode-back" href="../../record.html#acro.record.Records.add_custom">[docs]</a>    <span class="k">def</span> <span class="nf">add_custom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds an unsupported output to the results dictionary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an unsupported output to the results dictionary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -443,7 +443,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;rename_output(): </span><span class="si">%s</span><span class="s2"> renamed to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.add_comments"><a class="viewcode-back" href="../../record.html#acro.record.Records.add_comments">[docs]</a>    <span class="k">def</span> <span class="nf">add_comments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds a comment to an output.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a comment to an output.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -458,7 +458,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;a comment was added to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.add_exception"><a class="viewcode-back" href="../../record.html#acro.record.Records.add_exception">[docs]</a>    <span class="k">def</span> <span class="nf">add_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds an exception request to an output.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an exception request to an output.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -473,7 +473,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;exception request was added to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.print"><a class="viewcode-back" href="../../record.html#acro.record.Records.print">[docs]</a>    <span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prints the current results.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print the current results.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -488,7 +488,7 @@
         <span class="k">return</span> <span class="n">outputs</span></div>
 
 <div class="viewcode-block" id="Records.validate_outputs"><a class="viewcode-back" href="../../record.html#acro.record.Records.validate_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">validate_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prompts researcher to complete any required fields.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prompt researcher to complete any required fields.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s2">&quot;pass&quot;</span> <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">exception</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
@@ -501,7 +501,7 @@
                 <span class="n">record</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.finalise"><a class="viewcode-back" href="../../record.html#acro.record.Records.finalise">[docs]</a>    <span class="k">def</span> <span class="nf">finalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a results file for checking.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a results file for checking.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -525,7 +525,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;outputs written to: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.finalise_json"><a class="viewcode-back" href="../../record.html#acro.record.Records.finalise_json">[docs]</a>    <span class="k">def</span> <span class="nf">finalise_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes outputs to a JSON file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write outputs to a JSON file.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -564,7 +564,7 @@
             <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.finalise_excel"><a class="viewcode-back" href="../../record.html#acro.record.Records.finalise_excel">[docs]</a>    <span class="k">def</span> <span class="nf">finalise_excel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes outputs to an excel spreadsheet.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write outputs to an excel spreadsheet.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -613,7 +613,7 @@
                     <span class="n">table</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span> <span class="n">startrow</span><span class="o">=</span><span class="n">start</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Records.write_checksums"><a class="viewcode-back" href="../../record.html#acro.record.Records.write_checksums">[docs]</a>    <span class="k">def</span> <span class="nf">write_checksums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes checksums for each file to checksums folder.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write checksums for each file to checksums folder.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -639,7 +639,7 @@
 
 
 <div class="viewcode-block" id="load_records"><a class="viewcode-back" href="../../record.html#acro.record.load_records">[docs]</a><span class="k">def</span> <span class="nf">load_records</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Records</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads outputs from a JSON file.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load outputs from a JSON file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

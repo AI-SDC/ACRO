@@ -83,9 +83,14 @@
 <dd><p>ACRO: Automatic Checking of Research Outputs.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">acro</span> <span class="o">=</span> <span class="n">ACRO</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
+<span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">acro</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span><span class="s2">&quot;MYFOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">acro</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;MYFOLDER&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;json&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="field-list simple">

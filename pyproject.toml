@@ -23,14 +23,14 @@ lint.select = [
   "ICN",  # flake8-import-conventions
   "N",   # pep8-naming
 #  "PD",  # pandas-vet
-#  "PGH", # pygrep-hooks
+  "PGH", # pygrep-hooks
   "PIE",  # flake8-pie
 #  "PL",  # Pylint
   "PLC", # Pylint
   "PLE", # Pylint
 #  "PLR", # Pylint
 #  "PLW", # Pylint
-#  "PT",  # flake8-pytest-style
+  "PT",  # flake8-pytest-style
   "Q",   # flake8-quotes
 #  "RET", # flake8-return
   "RUF100",  # Ruff-specific

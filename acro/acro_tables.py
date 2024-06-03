@@ -145,7 +145,7 @@ class Tables:
         agg_func = get_aggfuncs(aggfunc)
 
         # requested table
-        table: DataFrame = pd.crosstab(  # type: ignore
+        table: DataFrame = pd.crosstab(
             index,
             columns,
             values,
@@ -321,7 +321,7 @@ class Tables:
 
         # threshold check
         agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
-        t_values = pd.pivot_table(  # type: ignore
+        t_values = pd.pivot_table(
             data, values, index, columns, aggfunc=agg, margins=margins
         )
         masks["threshold"] = t_values
@@ -329,25 +329,25 @@ class Tables:
         if aggfunc is not None:
             # check for negative values -- currently unsupported
             agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
-            negative = pd.pivot_table(  # type: ignore
+            negative = pd.pivot_table(
                 data, values, index, columns, aggfunc=agg, margins=margins
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
             agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
-            masks["p-ratio"] = pd.pivot_table(  # type: ignore
+            masks["p-ratio"] = pd.pivot_table(
                 data, values, index, columns, aggfunc=agg, margins=margins
             )
             # nk values check
             agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
-            masks["nk-rule"] = pd.pivot_table(  # type: ignore
+            masks["nk-rule"] = pd.pivot_table(
                 data, values, index, columns, aggfunc=agg, margins=margins
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
                 agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
-                masks["missing"] = pd.pivot_table(  # type: ignore
+                masks["missing"] = pd.pivot_table(
                     data, values, index, columns, aggfunc=agg, margins=margins
                 )
 
@@ -782,7 +782,7 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
             logger.info(
                 "If there are multiple modes, one of them is randomly selected and displayed."
             )
-            masks["all-values-are-same"] = pd.crosstab(  # type: ignore
+            masks["all-values-are-same"] = pd.crosstab(
                 index,
                 columns,
                 values,
@@ -791,7 +791,7 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
                 dropna=dropna,
             )
         else:
-            t_values = pd.crosstab(  # type: ignore
+            t_values = pd.crosstab(
                 index,
                 columns,
                 values=values,
@@ -815,13 +815,13 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
             t_values = t_values < THRESHOLD
             masks["threshold"] = t_values
             # check for negative values -- currently unsupported
-            negative = pd.crosstab(  # type: ignore
+            negative = pd.crosstab(
                 index, columns, values, aggfunc=neg_funcs, margins=margins
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
-            masks["p-ratio"] = pd.crosstab(  # type: ignore
+            masks["p-ratio"] = pd.crosstab(
                 index,
                 columns,
                 values,
@@ -830,17 +830,17 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
                 dropna=dropna,
             )
             # nk values check
-            masks["nk-rule"] = pd.crosstab(  # type: ignore
+            masks["nk-rule"] = pd.crosstab(
                 index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
-                masks["missing"] = pd.crosstab(  # type: ignore
+                masks["missing"] = pd.crosstab(
                     index, columns, values, aggfunc=missing_funcs, margins=margins
                 )
     else:
         # threshold check- doesn't matter what we pass for value
-        t_values = pd.crosstab(  # type: ignore
+        t_values = pd.crosstab(
             index,
             columns,
             values=None,
@@ -1499,7 +1499,7 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
         if crosstab:
             index_new, columns_new = get_index_columns(index, columns, data)
             # apply the crosstab with the new index and columns
-            table = pd.crosstab(  # type: ignore
+            table = pd.crosstab(
                 index_new,
                 columns_new,
                 values=values,
@@ -1534,7 +1534,7 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
             logger.setLevel(previous_level)
 
         else:
-            table = pd.pivot_table(  # type: ignore
+            table = pd.pivot_table(
                 data=data,
                 values=values,
                 index=index,
@@ -1618,7 +1618,7 @@ def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
         table = recalculate_margin(table, margins_name)
 
     elif aggfunc == "mean":
-        count_table = pd.crosstab(  # type: ignore
+        count_table = pd.crosstab(
             index=index,
             columns=columns,
             values=values,

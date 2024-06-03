@@ -25,7 +25,7 @@ from acro.acro_stata_parser import find_brace_word, parse_and_run, parse_table_d
 #    return ACRO()
 
 
-@pytest.fixture
+@pytest.fixture()
 def data() -> pd.DataFrame:
     """Load test data."""
     path = os.path.join("data", "test_data.dta")

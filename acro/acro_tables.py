@@ -553,13 +553,13 @@ class Tables:
         self,
         data,
         column,
-        by=None,
+        by_val=None,
         grid=True,
         xlabelsize=None,
         xrot=None,
         ylabelsize=None,
         yrot=None,
-        ax=None,
+        axis=None,
         sharex=False,
         sharey=False,
         figsize=None,
@@ -584,7 +584,7 @@ class Tables:
             The pandas object holding the data.
         column : str
             The column that will be used to plot the histogram.
-        by : object, optional
+        by_val : object, optional
             If passed, then used to form histograms for separate groups.
         grid : bool, default True
             Whether to show axis grid lines.
@@ -598,7 +598,7 @@ class Tables:
         yrot : float, default None
             Rotation of y axis labels. For example, a value of 90 displays
             the y labels rotated 90 degrees clockwise.
-        ax : Matplotlib axes object, default None
+        axis : Matplotlib axes object, default None
             The axes to plot the histogram on.
         sharex : bool, default True if ax is None else False
             In case subplots=True, share x axis and set some x axis labels to invisible;
@@ -660,13 +660,13 @@ class Tables:
             else:  # pragma: no cover
                 data.hist(
                     column=column,
-                    by=by,
+                    by=by_val,
                     grid=grid,
                     xlabelsize=xlabelsize,
                     xrot=xrot,
                     ylabelsize=ylabelsize,
                     yrot=yrot,
-                    ax=ax,
+                    ax=axis,
                     sharex=sharex,
                     sharey=sharey,
                     figsize=figsize,
@@ -680,13 +680,13 @@ class Tables:
             status = "review"
             data.hist(
                 column=column,
-                by=by,
+                by=by_val,
                 grid=grid,
                 xlabelsize=xlabelsize,
                 xrot=xrot,
                 ylabelsize=ylabelsize,
                 yrot=yrot,
-                ax=ax,
+                ax=axis,
                 sharex=sharex,
                 sharey=sharey,
                 figsize=figsize,
@@ -1362,15 +1362,31 @@ def create_dataframe(index, columns) -> DataFrame:
     Dataframe
         Table of the index and columns combined.
     """
-    if isinstance(index, list):
-        index_df = pd.concat(index, axis=1)
-    elif isinstance(index, pd.Series):
-        index_df = pd.DataFrame({index.name: index})
-    if isinstance(columns, list):
-        columns_df = pd.concat(columns, axis=1)
-    elif isinstance(columns, pd.Series):
-        columns_df = pd.DataFrame({columns.name: columns})
-    data = pd.concat([index_df, columns_df], axis=1)
+    empty_dataframe = pd.DataFrame([])
+
+    index_df = empty_dataframe
+    try:
+        if isinstance(index, list):
+            index_df = pd.concat(index, axis=1)
+        elif isinstance(index, pd.Series):
+            index_df = pd.DataFrame({index.name: index})
+    except ValueError:
+        index_df = empty_dataframe
+
+    columns_df = empty_dataframe
+    try:
+        if isinstance(columns, list):
+            columns_df = pd.concat(columns, axis=1)
+        elif isinstance(columns, pd.Series):
+            columns_df = pd.DataFrame({columns.name: columns})
+    except ValueError:
+        columns_df = empty_dataframe
+
+    try:
+        data = pd.concat([index_df, columns_df], axis=1)
+    except ValueError:
+        data = empty_dataframe
+
     return data
 
 

@@ -138,6 +138,7 @@ def parse_table_details(
     >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
     details: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
+    contents_found, content = False, []
 
     if stata_version == "16":
         details["rowvars"] = [varlist.pop(0)]
@@ -326,6 +327,7 @@ def extract_var_within_parentheses(input_string):
     """Given a string, this function extracts the words within the first parentheses
     from a string.
     """
+    string = ""
     string_match = re.match(r"\((.*?)\)", input_string)
     if string_match:
         string = string_match.group(1).strip()
@@ -335,6 +337,7 @@ def extract_var_within_parentheses(input_string):
 
 def extract_var_before_parentheses(input_string):
     """Given a string, this function extracts the words before the first parentheses."""
+    string = ""
     string_match = re.match(r"^(.*?)\(", input_string)
     if string_match:
         string = string_match.group(1).strip()
@@ -346,6 +349,7 @@ def extract_table_var(input_string):
     """Given a string, this function extracts the words within the parentheses.
     If there are no parentheses the string is returned.
     """
+    string = ""
     # If the string starts with parentheses
     if input_string.startswith("("):
         string, _ = extract_var_within_parentheses(input_string)

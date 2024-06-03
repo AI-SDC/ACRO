@@ -36,9 +36,14 @@ class ACRO(Tables, Regression):
     Examples
     --------
     >>> acro = ACRO()
-    >>> results = acro.ols(y, x)
+    >>> results = acro.ols(
+    ...     y, x
+    ... )
     >>> results.summary()
-    >>> acro.finalise("MYFOLDER", "json")
+    >>> acro.finalise(
+    ...     "MYFOLDER",
+    ...     "json",
+    ... )
     """
 
     def __init__(self, config: str = "default", suppress: bool = False) -> None:

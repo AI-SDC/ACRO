@@ -32,7 +32,7 @@ def mode_aggfunc(values) -> Series:
     Returns
     -------
     Series
-        The mode. If there are multiple modes, randomly selects and returns one of the modes.
+        The mode. If multiple modes, randomly selects and returns one of the modes.
     """
     modes = values.mode()
     return secrets.choice(modes)
@@ -86,8 +86,9 @@ class Tables:
         normalize=False,
         show_suppressed=False,
     ) -> DataFrame:
-        """Compute a simple cross tabulation of two (or more) factors.  By
-        default, computes a frequency table of the factors unless an array of
+        """Compute a simple cross tabulation of two (or more) factors.
+
+        By default, computes a frequency table of the factors unless an array of
         values and an aggregation function are passed.
 
         To provide consistent behaviour with different aggregation functions,
@@ -411,7 +412,7 @@ class Tables:
         bw_factor=1.0,
         filename="kaplan-meier.png",
     ) -> DataFrame:
-        """Estimates the survival function.
+        """Estimate the survival function.
 
         Parameters
         ----------
@@ -490,7 +491,7 @@ class Tables:
     def survival_table(  # pylint: disable=too-many-arguments,too-many-locals
         self, survival_table, safe_table, status, sdc, command, summary, outcome
     ):
-        """Creates the survival table according to the status of suppressing."""
+        """Create the survival table according to the status of suppressing."""
         if self.suppress:
             survival_table = safe_table
         self.results.add(
@@ -508,7 +509,7 @@ class Tables:
     def survival_plot(  # pylint: disable=too-many-arguments,too-many-locals
         self, survival_table, survival_func, filename, status, sdc, command, summary
     ):
-        """Creates the survival plot according to the status of suppressing."""
+        """Create the survival plot according to the status of suppressing."""
         if self.suppress:
             survival_table = rounded_survival_table(survival_table)
             plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
@@ -570,7 +571,8 @@ class Tables:
         filename="histogram.png",
         **kwargs,
     ):
-        """Creates a histogram from a single column.
+        """Create a histogram from a single column.
+
         The dataset and the column's name should be passed to the function as parameters.
         If more than one column is used the histogram will not be calculated.
 
@@ -755,7 +757,7 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
     dropna,
     normalize,
 ):
-    """Creates masks to specify the cells to suppress."""
+    """Create masks to specify the cells to suppress."""
     # suppression masks to apply based on the following checks
     masks: dict[str, DataFrame] = {}
 
@@ -863,7 +865,7 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
 
 
 def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
-    """Deletes empty rows and columns from table.
+    """Delete empty rows and columns from table.
 
     Parameters
     ----------
@@ -902,7 +904,7 @@ def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
 
 
 def rounded_survival_table(survival_table):
-    """Calculates the rounded surival function."""
+    """Calculate the rounded surival function."""
     death_censored = (
         survival_table["num at risk"].shift(periods=1) - survival_table["num at risk"]
     )
@@ -946,8 +948,7 @@ def rounded_survival_table(survival_table):
 
 
 def get_aggfunc(aggfunc: str | None) -> str | Callable | None:
-    """Checks whether an aggregation function is allowed and returns the
-    appropriate function.
+    """Check whether an aggregation function is allowed and return the appropriate function.
 
     Parameters
     ----------
@@ -978,8 +979,7 @@ def get_aggfunc(aggfunc: str | None) -> str | Callable | None:
 def get_aggfuncs(
     aggfuncs: str | list[str] | None,
 ) -> str | Callable | list[str | Callable] | None:
-    """Checks whether a list of aggregation functions is allowed and returns
-    the appropriate functions.
+    """Check whether aggregation functions are allowed and return appropriate functions.
 
     Parameters
     ----------
@@ -1013,7 +1013,7 @@ def get_aggfuncs(
 
 
 def agg_negative(vals: Series) -> bool:
-    """Aggregation function that returns whether any values are negative.
+    """Return whether any values are negative.
 
     Parameters
     ----------
@@ -1029,7 +1029,7 @@ def agg_negative(vals: Series) -> bool:
 
 
 def agg_missing(vals: Series) -> bool:
-    """Aggregation function that returns whether any values are missing.
+    """Return whether any values are missing.
 
     Parameters
     ----------
@@ -1045,7 +1045,7 @@ def agg_missing(vals: Series) -> bool:
 
 
 def agg_p_percent(vals: Series) -> bool:
-    """Aggregation function that returns whether the p percent rule is violated.
+    """Return whether the p percent rule is violated.
 
     That is, the uncertainty (as a fraction) of the estimate that the second
     highest respondent can make of the highest value. Assuming there are n
@@ -1075,8 +1075,7 @@ def agg_p_percent(vals: Series) -> bool:
 
 
 def agg_nk(vals: Series) -> bool:
-    """Aggregation function that returns whether the top n items account for
-    more than k percent of the total.
+    """Return whether the top n items account for more than k percent of the total.
 
     Parameters
     ----------
@@ -1097,8 +1096,7 @@ def agg_nk(vals: Series) -> bool:
 
 
 def agg_threshold(vals: Series) -> bool:
-    """Aggregation function that returns whether the number of contributors is
-    below a threshold.
+    """Return whether the number of contributors is below a threshold.
 
     Parameters
     ----------
@@ -1114,8 +1112,7 @@ def agg_threshold(vals: Series) -> bool:
 
 
 def agg_values_are_same(vals: Series) -> bool:
-    """Aggregation function that returns whether all observations having
-    the same value.
+    """Return whether all observations having the same value.
 
     Parameters
     ----------
@@ -1134,7 +1131,7 @@ def agg_values_are_same(vals: Series) -> bool:
 def apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]
 ) -> tuple[DataFrame, DataFrame]:
-    """Applies suppression to a table.
+    """Apply suppression to a table.
 
     Parameters
     ----------
@@ -1186,7 +1183,7 @@ def apply_suppression(
 
 
 def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
-    """Returns the SDC dictionary using the suppression masks.
+    """Return the SDC dictionary using the suppression masks.
 
     Parameters
     ----------
@@ -1221,7 +1218,7 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
 
 
 def get_summary(sdc: dict) -> tuple[str, str]:
-    """Returns the status and summary of the suppression masks.
+    """Return the status and summary of the suppression masks.
 
     Parameters
     ----------
@@ -1270,7 +1267,7 @@ def get_summary(sdc: dict) -> tuple[str, str]:
 
 
 def get_queries(masks, aggfunc) -> list[str]:
-    """Returns a list of the boolean conditions for each true cell in the suppression masks.
+    """Return a list of the boolean conditions for each true cell in the suppression masks.
 
     Parameters
     ----------
@@ -1348,7 +1345,7 @@ def get_queries(masks, aggfunc) -> list[str]:
 
 
 def create_dataframe(index, columns) -> DataFrame:
-    """Combining the index and columns in a dataframe and return the datframe.
+    """Combine the index and columns in a dataframe and return the dataframe.
 
     Parameters
     ----------

@@ -402,7 +402,7 @@ class Regression:
 
 
 def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
-    """Converts a list of SimpleTable objects to a list of DataFrame objects.
+    """Convert a list of SimpleTable objects to a list of DataFrame objects.
 
     Parameters
     ----------

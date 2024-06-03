@@ -13,7 +13,7 @@ lint.select = [
   "B",   # flake8-bugbear
 #  "C4",  # flake8-comprehensions
   "C90", # mccabe
-#  "D",   # pydocstyle
+  "D",   # pydocstyle
 #  "DTZ", # flake8-datetimez
 #  "E",   # pycodestyle
 #  "ERA", # eradicate
@@ -42,8 +42,6 @@ exclude = [
 
 lint.ignore = [
 #  "ANN101", # missing-type-self
-#  "D203",   # blank line required before class docstring
-#  "D213",   # multi-line-summary-second-line
 #  "S301",   # unsafe pickle
 ]
 

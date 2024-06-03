@@ -1,5 +1,6 @@
 """
-File with commands to manage the stata-acro interface
+File with commands to manage the stata-acro interface.
+
 Jim Smith 2023 @james.smith@uwe.ac.uk
 MIT licenses apply.
 """
@@ -14,10 +15,7 @@ from acro.utils import prettify_table_string
 
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
-    """
-    Parses an if statement from stata format
-    then uses it to subset a dataframe by contents.
-    """
+    """Parse an if statement from stata format then use it to subset a dataframe by contents."""
     if len(raw) == 0:
         return all_data
 
@@ -36,8 +34,9 @@ def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
 
 def parse_location_token(token: str, last: int) -> int:
     """
-    Parses index position tokens from stata syntax
-    stata allows f and F for first item  and l/L for last.
+    Parse index position tokens from stata syntax.
+
+    Stata allows f and F for first item  and l/L for last.
     """
     lookup: dict = {"f": 0, "F": 0, "l": last, "L": last}
     if token in ["f", "F", "l", "L"]:
@@ -54,10 +53,7 @@ def parse_location_token(token: str, last: int) -> int:
 
 
 def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
-    """
-    Parses an in exp statement from stata and uses it
-    to subset a dataframe by set of row indices.
-    """
+    """Parse an in exp statement from stata and use it to subset a dataframe by row indices."""
     last = len(all_data) - 1
     if "/" not in raw:
         pos = parse_location_token(raw, last)
@@ -86,11 +82,9 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
 
 
 def find_brace_word(word: str, raw: str):
-    """
-    Given a word followed by a (
-    finds and returns as a list of strings
-    the rest of the contents up to the closing ).
-    first returned value is True/False depending on parsing ok.
+    """Return contents as a list of strings between '(' following a word and the closing ')'.
+
+    First returned value is True/False depending on parsing ok.
     """
     result = []
     idx = raw.find(word)
@@ -113,7 +107,7 @@ def find_brace_word(word: str, raw: str):
 
 
 def extract_aggfun_values_from_options(details, contents_found, content, varnames):
-    """Extracts the aggfunc and the values from the content."""
+    """Extract the aggfunc and the values from the content."""
     # contents can be variable names or aggregation functions
     details["aggfuncs"], details["values"] = list([]), list([])
     if contents_found and len(content) > 0:
@@ -132,7 +126,8 @@ def extract_aggfun_values_from_options(details, contents_found, content, varname
 def parse_table_details(
     varlist: list, varnames: list, options: str, stata_version: str
 ) -> dict:
-    """Function to parse stata-16 style table calls
+    """Parse stata-16 style table calls.
+
     Note this is not for latest version of stata, syntax here:
     https://www.stata.com/manuals16/rtable.pdf
     >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
@@ -202,8 +197,9 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
     stata_version: str,
 ) -> pd.DataFrame:
     """
+    Run the appropriate command on a pre-existing ACRO object stata_acro.
+
     Takes a dataframe and the parsed stata command line.
-    Runs the appropriate command on a pre-existing ACRO object stata_acro
     Returns the result as a formatted string.
     """
     # sanity checking
@@ -248,7 +244,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments,too-many-locals
 
 
 def run_session_command(command: str, varlist: list) -> str:
-    """Runs session commands that are data-independent."""
+    """Run session commands that are data-independent."""
     outcome = ""
 
     if command == "init":
@@ -285,8 +281,9 @@ def run_session_command(command: str, varlist: list) -> str:
 
 
 def run_output_command(command: str, varlist: list) -> str:
-    """Runs outcome-level commands
-    first element of varlist is output affected
+    """Run outcome-level commands.
+
+    First element of varlist is output affected
     rest (if relevant) is string passed to command.
     """
     outcome = ""
@@ -324,9 +321,7 @@ def run_output_command(command: str, varlist: list) -> str:
 
 
 def extract_var_within_parentheses(input_string):
-    """Given a string, this function extracts the words within the first parentheses
-    from a string.
-    """
+    """Extract the words within the first parentheses from a string."""
     string = ""
     string_match = re.match(r"\((.*?)\)", input_string)
     if string_match:
@@ -336,7 +331,7 @@ def extract_var_within_parentheses(input_string):
 
 
 def extract_var_before_parentheses(input_string):
-    """Given a string, this function extracts the words before the first parentheses."""
+    """Extract the words before the first parentheses."""
     string = ""
     string_match = re.match(r"^(.*?)\(", input_string)
     if string_match:
@@ -346,7 +341,8 @@ def extract_var_before_parentheses(input_string):
 
 
 def extract_table_var(input_string):
-    """Given a string, this function extracts the words within the parentheses.
+    """Extract the words within the parentheses.
+
     If there are no parentheses the string is returned.
     """
     string = ""
@@ -359,9 +355,9 @@ def extract_table_var(input_string):
 
 
 def extract_colstring_tablestring(input_string):
-    """Given a string, this function extracts the column and the tables
-    variables as a string. It goes through different options eg. whether
-    the column string is between paranthese or not.
+    """Extract the column and the tables variables as a string.
+
+    It goes through different options eg. whether the column string is between paranthese or not.
     """
     colstring = ""
     tablestring = ""
@@ -382,9 +378,9 @@ def extract_colstring_tablestring(input_string):
 
 
 def extract_strings(input_string):
-    """Given a string, this function extracts the index, column and the tables
-    variables as a string. It goes through different options eg. whether
-    the index string is between paranthese or not.
+    """Extract the index, column and the tables variables as a string.
+
+    It goes through different options eg. whether the index string is between paranthese or not.
     """
     rowstring = ""
     colstring = ""
@@ -412,11 +408,11 @@ def extract_strings(input_string):
 
 
 def creates_datasets(data, details):
-    """This function returns the full dataset if the tables parameter is empty.
+    """Return the full dataset if the tables parameter is empty.
+
     Otherwise, it divides the dataset to small dataset each one is the dataset when
     the tables parameter is equal to one of it is unique values.
     """
-
     set_of_data = {"Total": data}
     msg = ""
     # if tables var parameter was assigned, each table will
@@ -449,10 +445,7 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
     options: str,
     stata_version: str,
 ) -> str:
-    """
-    Converts a stata table command into an acro.crosstab
-    then returns a prettified versaion of the cross_tab dataframe.
-    """
+    """Convert a stata table command into an acro.crosstab and return a prettified dataframe."""
     weights_empty = len(weights) == 0
     if not weights_empty:  # pragma
         return f"weights not currently implemented for _{weights}_\n"
@@ -534,7 +527,7 @@ def run_table_command(  # pylint: disable=too-many-arguments,too-many-locals
 
 
 def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:
-    """Interprets and runs appropriate regression command."""
+    """Interpret and run appropriate regression command."""
     # get components of formula
     depvar = varlist[0]
     indep_vars = varlist[1:]
@@ -562,7 +555,7 @@ def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:
 
 
 def get_regr_results(results: sm_iolib_summary.Summary, title: str) -> str:
-    """Translates statsmodels.io.summary object into prettified table."""
+    """Translate statsmodels.io.summary object into prettified table."""
     res_str = title + "\n"
     for table in acro_regression.get_summary_dataframes(results.summary().tables):
         res_str += prettify_table_string(table, separator=",") + "\n"

@@ -20,7 +20,7 @@ logger = logging.getLogger("acro:records")
 
 
 def load_outcome(outcome: dict) -> DataFrame:
-    """Returns a DataFrame from an outcome dictionary.
+    """Return a DataFrame from an outcome dictionary.
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ def load_outcome(outcome: dict) -> DataFrame:
 
 
 def load_output(path: str, output: list[str]) -> list[str] | list[DataFrame]:
-    """Returns a loaded output.
+    """Return a loaded output.
 
     Parameters
     ----------
@@ -102,7 +102,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         output: list[str] | list[DataFrame],
         comments: list[str] | None = None,
     ) -> None:
-        """Constructs a new output record.
+        """Construct a new output record.
 
         Parameters
         ----------
@@ -142,7 +142,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         self.timestamp: str = now.isoformat()
 
     def serialize_output(self, path: str = "outputs") -> list[str]:
-        """Serializes outputs.
+        """Serialize outputs.
 
         Parameters
         ----------
@@ -183,7 +183,7 @@ class Record:  # pylint: disable=too-many-instance-attributes,too-few-public-met
         return output
 
     def __str__(self) -> str:
-        """Returns a string representation of a record.
+        """Return a string representation of a record.
 
         Returns
         -------
@@ -210,7 +210,7 @@ class Records:
     """Stores data related to a collection of output records."""
 
     def __init__(self) -> None:
-        """Constructs a new object for storing multiple records."""
+        """Construct a new object for storing multiple records."""
         self.results: dict[str, Record] = {}
         self.output_id: int = 0
 
@@ -226,7 +226,7 @@ class Records:
         output: list[str] | list[DataFrame],
         comments: list[str] | None = None,
     ) -> None:
-        """Adds an output to the results.
+        """Add an output to the results.
 
         Parameters
         ----------
@@ -266,7 +266,7 @@ class Records:
         logger.info("add(): %s", new.uid)
 
     def remove(self, key: str) -> None:
-        """Removes an output from the results.
+        """Remove an output from the results.
 
         Parameters
         ----------
@@ -279,7 +279,7 @@ class Records:
         logger.info("remove(): %s removed", key)
 
     def get(self, key: str) -> Record:
-        """Returns a specified output from the results.
+        """Return a specified output from the results.
 
         Parameters
         ----------
@@ -295,7 +295,7 @@ class Records:
         return self.results[key]
 
     def get_keys(self) -> list[str]:
-        """Returns the list of available output keys.
+        """Return the list of available output keys.
 
         Returns
         -------
@@ -306,7 +306,7 @@ class Records:
         return list(self.results.keys())
 
     def get_index(self, index: int) -> Record:
-        """Returns the output at the specified position.
+        """Return the output at the specified position.
 
         Parameters
         ----------
@@ -323,7 +323,7 @@ class Records:
         return self.results[key]
 
     def add_custom(self, filename: str, comment: str | None = None) -> None:
-        """Adds an unsupported output to the results dictionary.
+        """Add an unsupported output to the results dictionary.
 
         Parameters
         ----------
@@ -373,7 +373,7 @@ class Records:
         logger.info("rename_output(): %s renamed to %s", old, new)
 
     def add_comments(self, output: str, comment: str) -> None:
-        """Adds a comment to an output.
+        """Add a comment to an output.
 
         Parameters
         ----------
@@ -388,7 +388,7 @@ class Records:
         logger.info("a comment was added to %s", output)
 
     def add_exception(self, output: str, reason: str) -> None:
-        """Adds an exception request to an output.
+        """Add an exception request to an output.
 
         Parameters
         ----------
@@ -403,7 +403,7 @@ class Records:
         logger.info("exception request was added to %s", output)
 
     def print(self) -> str:
-        """Prints the current results.
+        """Print the current results.
 
         Returns
         -------
@@ -418,7 +418,7 @@ class Records:
         return outputs
 
     def validate_outputs(self) -> None:
-        """Prompts researcher to complete any required fields."""
+        """Prompt researcher to complete any required fields."""
         for _, record in self.results.items():
             if record.status != "pass" and record.exception == "":
                 logger.info(
@@ -431,7 +431,7 @@ class Records:
                 record.exception = input("")
 
     def finalise(self, path: str, ext: str) -> None:
-        """Creates a results file for checking.
+        """Create a results file for checking.
 
         Parameters
         ----------
@@ -455,7 +455,7 @@ class Records:
         logger.info("outputs written to: %s", path)
 
     def finalise_json(self, path: str) -> None:
-        """Writes outputs to a JSON file.
+        """Write outputs to a JSON file.
 
         Parameters
         ----------
@@ -494,7 +494,7 @@ class Records:
             )
 
     def finalise_excel(self, path: str) -> None:
-        """Writes outputs to an excel spreadsheet.
+        """Write outputs to an excel spreadsheet.
 
         Parameters
         ----------
@@ -543,7 +543,7 @@ class Records:
                     table.to_excel(writer, sheet_name=output_id, startrow=start)
 
     def write_checksums(self, path: str) -> None:
-        """Writes checksums for each file to checksums folder.
+        """Write checksums for each file to checksums folder.
 
         Parameters
         ----------
@@ -569,7 +569,7 @@ class Records:
 
 
 def load_records(path: str) -> Records:
-    """Loads outputs from a JSON file.
+    """Load outputs from a JSON file.
 
     Parameters
     ----------

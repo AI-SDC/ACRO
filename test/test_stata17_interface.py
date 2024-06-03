@@ -1,4 +1,4 @@
-"""This module contains unit tests for the stata 17 interface."""
+"""Unit tests for the stata 17 interface."""
 
 # The pylint skip file is to skip the error of R0801: Similar lines in 2 files. As the
 # file  this file and the file test_stata_interface.py have a lot of similarities.
@@ -34,7 +34,7 @@ def data() -> pd.DataFrame:
 
 
 def clean_up(name):
-    """Removes unwanted files or directory."""
+    """Remove unwanted files or directory."""
     if os.path.exists(name):
         if os.path.isfile(name):
             os.remove(name)
@@ -46,7 +46,8 @@ def dummy_acrohandler(
     data, command, varlist, exclusion, exp, weights, options, stata_version
 ):  # pylint:disable=too-many-arguments
     """
-    Provides an alternative interface that mimics the code in acro.ado
+    Provide an alternative interface that mimics the code in acro.ado.
+
     Most notably the presence of a global variable called stata_acro.
     """
     acro_outstr = parse_and_run(
@@ -58,11 +59,7 @@ def dummy_acrohandler(
 
 # --- Helper functions-----------------------------------------------------
 def test_find_brace_word():
-    """Tests helper function
-    that extracts contents 'A B C'
-    of something specified via X(A B C)
-    on the stata command line.
-    """
+    """Test helper function that extracts contents 'A B C' of something specified via X(A B C) on the stata command line."""
     options = "statistic(mean inc_activity) suppress nototals"
     res, substr = find_brace_word("statistic", options)
     assert res
@@ -78,11 +75,7 @@ def test_find_brace_word():
 
 
 def test_parse_table_details(data):
-    """
-    Series of checks that the varlist and options are parsed correctly
-    by the helper function.
-    """
-
+    """Check that the varlist and options are parsed correctly by the helper function."""
     varlist = ["survivor", "grant_type", "year"]
     varnames = data.columns
     options = "statistic(mean inc_activity) suppress  nototals"
@@ -121,7 +114,8 @@ def test_parse_table_details(data):
 
 def test_stata_acro_init():
     """
-    Tests creation of an acro object at the start of a session
+    Test creation of an acro object at the start of a session.
+
     For stata this gets held in a variable stata_acro
     Which is initialsied to the string "empty" in the acro.ado file
     Then should be pointed at a new acro instance.
@@ -145,7 +139,7 @@ def test_stata_acro_init():
 
 
 def test_stata_print_outputs(data):
-    """Checks print_outputs gets called."""
+    """Check print_outputs gets called."""
     ret = dummy_acrohandler(
         data,
         command="print_outputs",
@@ -162,7 +156,8 @@ def test_stata_print_outputs(data):
 # ----main SDC functionality-------------------------------------
 def test_simple_table(data):
     """
-    Checks that the simple table command works as expected
+    Check that the simple table command works as expected.
+
     Does via reference to direct call to pd.crosstab()
     To make sure table specification is parsed correctly
     acro SDC analysis is tested elsewhere.
@@ -193,8 +188,9 @@ def test_simple_table(data):
 
 
 def test_stata_rename_outputs():
-    """Tests renaming outputs
-    assumes simple table has been created by earlier tests.
+    """Test renaming outputs.
+
+    Assumes simple table has been created by earlier tests.
     """
     the_str = "renamed_output"
     the_output = "output_0"
@@ -215,8 +211,9 @@ def test_stata_rename_outputs():
 
 
 def test_stata_incomplete_output_commands():
-    """Tests handling incomplete or wrong output commands
-    assumes simple table has been created by earlier tests.
+    """Test handling incomplete or wrong output commands.
+
+    Assumes simple table has been created by earlier tests.
     """
     # output to change not provided
     the_str = "renamed_output"
@@ -272,9 +269,9 @@ def test_stata_incomplete_output_commands():
 
 def test_stata_add_comments():
     """
-    Tests adding comments to  outputs
-    assumes simple table has been created by earlier tests
-    then renamed.
+    Test adding comments to outputs.
+
+    Assumes simple table has been created by earlier tests then renamed.
     """
     the_str = "some comments"
     the_output = "renamed_output"
@@ -296,9 +293,9 @@ def test_stata_add_comments():
 
 def test_stata_add_exception():
     """
-    Tests adding exception to  outputs
-    assumes simple table has been created by earlier tests
-    then renamed.
+    Test adding exception to  outputs.
+
+    Assumes simple table has been created by earlier tests then renamed.
     """
     the_str = "a reason"
     the_output = "renamed_output"
@@ -320,8 +317,9 @@ def test_stata_add_exception():
 
 def test_stata_remove_output():
     """
-    Tests removing  outputs
-    assumes simple table has been created and renamed by earlier tests.
+    Tests removing outputs.
+
+    Assumes simple table has been created and renamed by earlier tests.
     """
     the_output = "renamed_output"
     ret = dummy_acrohandler(
@@ -344,7 +342,7 @@ def test_stata_remove_output():
 
 
 def test_stata_exclusion_in_context(data):
-    """Tests that the subsetting code gets called properly from table handler."""
+    """Test that the subsetting code gets called properly from table handler."""
     # if condition
     correct1 = (
         "Total\n"
@@ -422,7 +420,7 @@ def test_stata_exclusion_in_context(data):
 
 
 def test_table_weights(data):
-    """Weights are not currently supported."""
+    """Test that weights are not currently supported."""
     weights = [0, 0, 0]
     correct = f"weights not currently implemented for _{weights}_\n"
     ret = dummy_acrohandler(
@@ -439,7 +437,7 @@ def test_table_weights(data):
 
 
 def test_table_aggcfn(data):
-    """Testing behaviour with aggregation function."""
+    """Test behaviour with aggregation function."""
     # ok
     correct = (
         "Total\n"
@@ -517,7 +515,7 @@ def test_table_aggcfn(data):
 
 
 def test_table_aggcfns(data):
-    """Testing behaviour with two aggregation functions."""
+    """Test behaviour with two aggregation functions."""
     correct = (
         "Total\n"
         "------------------------------------------|\n"
@@ -544,7 +542,7 @@ def test_table_aggcfns(data):
 
 
 def test_stata_probit(data):
-    """Checks probit gets called correctly."""
+    """Check probit gets called correctly."""
     ret = dummy_acrohandler(
         data,
         command="probit",
@@ -570,7 +568,7 @@ def test_stata_probit(data):
 
 
 def test_stata_linregress(data):
-    """Checks linear regression called correctly."""
+    """Check linear regression called correctly."""
     ret = dummy_acrohandler(
         data,
         command="regress",
@@ -591,7 +589,7 @@ def test_stata_linregress(data):
 
 
 def test_stata_logit(data):
-    """Tests stata logit function."""
+    """Test stata logit function."""
     ret = dummy_acrohandler(
         data,
         command="logit",
@@ -618,7 +616,7 @@ def test_stata_logit(data):
 
 
 def test_unsupported_formatting_options(data):
-    """Checks that user gets warning if they try to format table."""
+    """Check that user gets warning if they try to format table."""
     format_string = "acro does not currently support table formatting commands."
     correct = (
         "Total\n"
@@ -661,7 +659,7 @@ def test_unsupported_formatting_options(data):
 
 
 def test_stata_finalise(monkeypatch):
-    """Checks finalise gets called correctly."""
+    """Check finalise gets called correctly."""
     monkeypatch.setattr("builtins.input", lambda _: "Let me have it")
     ret = dummy_acrohandler(
         data,
@@ -678,7 +676,7 @@ def test_stata_finalise(monkeypatch):
 
 
 def test_stata_finalise_default_filetype(monkeypatch):
-    """Checks finalise gets called correctly."""
+    """Check finalise gets called correctly."""
     monkeypatch.setattr("builtins.input", lambda _: "Let me have it")
     ret = dummy_acrohandler(
         data,
@@ -695,7 +693,7 @@ def test_stata_finalise_default_filetype(monkeypatch):
 
 
 def test_stata_unknown(data):
-    """Unknown acro command."""
+    """Test unknown acro command."""
     ret = dummy_acrohandler(
         data,
         command="foo",
@@ -712,7 +710,7 @@ def test_stata_unknown(data):
 
 # ----Test stata 17 new table command syntax-------------------------------------
 def test_table_stata17(data):
-    """Checks that the simple table command works as expected."""
+    """Check that the simple table command works as expected."""
     correct = (
         "Total\n"
         "------------------------------------|\n"
@@ -737,7 +735,7 @@ def test_table_stata17(data):
 
 
 def test_table_stata17_1(data):
-    """Checks that the table command works as expected, with more than one index."""
+    """Check that the table command works as expected, with more than one index."""
     correct = (
         "Total\n"
         "---------------------------------------|\n"
@@ -772,7 +770,7 @@ def test_table_stata17_1(data):
 
 
 def test_table_stata17_2(data):
-    """Checks that the table command works as expected, with more than one column."""
+    """Check that the table command works as expected, with more than one column."""
     correct = (
         "Total\n"
         "--------------------------------------------|\n"
@@ -816,7 +814,7 @@ def test_table_stata17_2(data):
 
 
 def test_table_stata17_3(data):
-    """Checks that the table command works as expected, with herichical tables."""
+    """Check that the table command works as expected, with herichical tables."""
     correct = (
         "Total\n"
         "----------------------------------------------------|\n"
@@ -853,7 +851,7 @@ def test_table_stata17_3(data):
 
 
 def test_table_stata17_4(data):
-    """Checks that the table command works as expected, with the table variable."""
+    """Check that the table command works as expected, with the table variable."""
     correct = (
         "You need to manually check all the outputs for the risk of differencing.\n"
         "Total\n"
@@ -958,7 +956,7 @@ def test_table_stata17_4(data):
 
 
 def test_one_dimensional_table(data):
-    """Checks that one dimensional table is not supported at the moment."""
+    """Check that one dimensional table is not supported at the moment."""
     correct = (
         "acro does not currently support one dimensioanl tables. "
         "To calculate cross tabulation, you need to provide at "
@@ -978,7 +976,7 @@ def test_one_dimensional_table(data):
 
 
 def test_cleanup():
-    """Gets rid of files created during tests."""
+    """Remove files created during tests."""
     names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]
     for name in names:
         clean_up(name)

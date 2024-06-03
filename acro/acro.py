@@ -47,7 +47,7 @@ class ACRO(Tables, Regression):
     """
 
     def __init__(self, config: str = "default", suppress: bool = False) -> None:
-        """Constructs a new ACRO object and reads parameters from config.
+        """Construct a new ACRO object and reads parameters from config.
 
         Parameters
         ----------
@@ -79,7 +79,7 @@ class ACRO(Tables, Regression):
         acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
 
     def finalise(self, path: str = "outputs", ext="json") -> Records | None:
-        """Creates a results file for checking.
+        """Create a results file for checking.
 
         Parameters
         ----------
@@ -114,7 +114,7 @@ class ACRO(Tables, Regression):
         return self.results
 
     def remove_output(self, key: str) -> None:
-        """Removes an output from the results.
+        """Remove an output from the results.
 
         Parameters
         ----------
@@ -124,7 +124,7 @@ class ACRO(Tables, Regression):
         self.results.remove(key)
 
     def print_outputs(self) -> str:
-        """Prints the current results dictionary.
+        """Print the current results dictionary.
 
         Returns
         -------
@@ -134,7 +134,7 @@ class ACRO(Tables, Regression):
         return self.results.print()
 
     def custom_output(self, filename: str, comment: str = "") -> None:
-        """Adds an unsupported output to the results dictionary.
+        """Add an unsupported output to the results dictionary.
 
         Parameters
         ----------
@@ -158,7 +158,7 @@ class ACRO(Tables, Regression):
         self.results.rename(old, new)
 
     def add_comments(self, output: str, comment: str) -> None:
-        """Adds a comment to an output.
+        """Add a comment to an output.
 
         Parameters
         ----------
@@ -170,7 +170,7 @@ class ACRO(Tables, Regression):
         self.results.add_comments(output, comment)
 
     def add_exception(self, output: str, reason: str) -> None:
-        """Adds an exception request to an output.
+        """Add an exception request to an output.
 
         Parameters
         ----------
@@ -183,7 +183,7 @@ class ACRO(Tables, Regression):
 
 
 def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
-    """Adds outputs to an acro object and creates a results file for checking.
+    """Add outputs to an acro object and creates a results file for checking.
 
     Parameters
     ----------

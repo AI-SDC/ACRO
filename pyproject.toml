@@ -30,7 +30,7 @@ lint.select = [
   "PLE", # Pylint
 #  "PLR", # Pylint
 #  "PLW", # Pylint
-#  "PT",  # flake8-pytest-style
+  "PT",  # flake8-pytest-style
   "Q",   # flake8-quotes
 #  "RET", # flake8-return
   "RUF100",  # Ruff-specific

@@ -17,7 +17,7 @@ from acro.record import Records, load_records
 PATH: str = "RES_PYTEST"
 
 
-@pytest.fixture
+@pytest.fixture()
 def data() -> pd.DataFrame:
     """Load test data."""
     path = os.path.join("data", "test_data.dta")
@@ -25,7 +25,7 @@ def data() -> pd.DataFrame:
     return data
 
 
-@pytest.fixture
+@pytest.fixture()
 def acro() -> ACRO:
     """Initialise ACRO."""
     return ACRO(suppress=True)
@@ -334,14 +334,14 @@ def test_output_removal(data, acro, monkeypatch):
     assert output_1.summary == correct_summary
     acro.print_outputs()
     # remove something that is not there
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unable to remove 123, key not found"):
         acro.remove_output("123")
     shutil.rmtree(PATH)
 
 
 def test_load_output():
     """Empty array when loading output."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="error loading output"):
         record.load_output(PATH, [])
 
 
@@ -350,7 +350,7 @@ def test_finalise_invalid(data, acro):
     _ = acro.crosstab(data.year, data.grant_type)
     output_0 = acro.results.get_index(0)
     output_0.exception = "Let me have it"
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Invalid file extension.*"):
         _ = acro.finalise(PATH, "123")
 
 
@@ -405,10 +405,10 @@ def test_rename_output(data, acro):
     assert orig_name not in results.get_keys()
     assert os.path.exists(f"{PATH}/{new_name}_0.csv")
     # rename an output that doesn't exist
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unable to rename 123, key not found"):
         acro.rename_output("123", "name")
     # rename an output to another that already exists
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unable to rename, cross_table .* exists"):
         acro.rename_output("output_1", "cross_table")
     shutil.rmtree(PATH)
 
@@ -427,7 +427,7 @@ def test_add_comments(data, acro):
     acro.add_comments(output_0.uid, comment_1)
     assert output_0.comments == [comment, comment_1]
     # add a comment to something that is not there
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unable to find 123, key not found"):
         acro.add_comments("123", "comment")
     shutil.rmtree(PATH)
 
@@ -480,7 +480,7 @@ def test_suppression_error(caplog):
 
 def test_adding_exception(acro):
     """Adding an exception to an output that doesn't exist test."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unable to add exception: output_0 .*"):
         acro.add_exception("output_0", "Let me have it")
 
 
@@ -597,14 +597,14 @@ def test_hierachical_aggregation(data, acro):
 
 def test_single_values_column(data, acro):
     """Pandas does not allows multiple arrays for values."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=".*specify a single values column.*"):
         _ = acro.crosstab(
             data.year,
             data.grant_type,
             values=[data.inc_activity, data.inc_activity],
             aggfunc="mean",
         )
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=".*specify a single values column.*"):
         _ = acro.crosstab(data.year, data.grant_type, values=None, aggfunc="mean")
 
 

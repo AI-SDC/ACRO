@@ -444,16 +444,14 @@ class Tables:
         """
         logger.debug("surv_func()")
         command: str = utils.get_command("surv_func()", stack())
-        survival_func: DataFrame = (
-            sm.SurvfuncRight(  # pylint: disable=too-many-function-args
-                time,
-                status,
-                entry,
-                title,
-                freq_weights,
-                exog,
-                bw_factor,
-            )
+        survival_func: DataFrame = sm.SurvfuncRight(  # pylint: disable=too-many-function-args
+            time,
+            status,
+            entry,
+            title,
+            freq_weights,
+            exog,
+            bw_factor,
         )
         masks = {}
         survival_table = survival_func.summary()

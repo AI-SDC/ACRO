@@ -1,12 +1,26 @@
 # Changelog
 
-## Development
-## Version 0.4.5 (November 15, 2023)
-* Changes
-* CI updates, version numbers
+## Version 0.4.6 (Jun 25, 2024)
 
+Changes:
+*   Add mode aggregation function ([#194](https://github.com/AI-SDC/ACRO/pull/194))
+*   Update Stata examples ([#197](https://github.com/AI-SDC/ACRO/pull/197))
+*   Various minor bug fixes, including fixing suppression when `margins=True`
+*   Update CI ([#207](https://github.com/AI-SDC/ACRO/pull/207), [#208](https://github.com/AI-SDC/ACRO/pull/208))
+*   Update packaging ([#209](https://github.com/AI-SDC/ACRO/pull/209))
+*   Improve robustness of `create_dataframe()` ([#211](https://github.com/AI-SDC/ACRO/pull/211))
+*   Add Ruff linting/formatting ([#210](https://github.com/AI-SDC/ACRO/pull/210), [#214](https://github.com/AI-SDC/ACRO/pull/214))
+*   PEP 257 docstring formatting ([#212](https://github.com/AI-SDC/ACRO/pull/212))
+*   Remove useless pylint suppression ([#213](https://github.com/AI-SDC/ACRO/pull/213))
+*   Fix code coverage reporting ([#215](https://github.com/AI-SDC/ACRO/pull/215))
+*   Limit numpy dependency to less than v2.0.0 ([#220](https://github.com/AI-SDC/ACRO/pull/220))
 
-## Version 0.4.4 (November 15, 2023)
+## Version 0.4.5 (Nov 16, 2023)
+
+Changes:
+*   CI updates, version numbers
+
+## Version 0.4.4 (Nov 15, 2023)
 
 Changes:
 *   Update table suppression when totals are true for pivot table ([#165](https://github.com/AI-SDC/ACRO/pull/165))

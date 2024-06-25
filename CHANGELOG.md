@@ -13,6 +13,7 @@ Changes:
 *   PEP 257 docstring formatting ([#212](https://github.com/AI-SDC/ACRO/pull/212))
 *   Remove useless pylint suppression ([#213](https://github.com/AI-SDC/ACRO/pull/213))
 *   Fix code coverage reporting ([#215](https://github.com/AI-SDC/ACRO/pull/215))
+*   Limit numpy dependency to less than v2.0.0 ([#220](https://github.com/AI-SDC/ACRO/pull/220))
 
 ## Version 0.4.5 (Nov 16, 2023)
 

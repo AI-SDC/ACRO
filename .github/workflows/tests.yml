@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      - python12
+      - python312
     paths-ignore:
       - '**.md'
       - '**.cff'

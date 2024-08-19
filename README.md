@@ -57,7 +57,7 @@ For training videos about ACRO, see [training videos](https://drive.google.com/d
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-*******************************************************************************
+### Acknowledgement
 
 This work was funded by UK Research and Innovation under Grant Number MC_PC_23006 as part of Phase 1 of the [DARE UK](https://dareuk.org.uk) (Data and Analytics Research Environments UK) programme, delivered in partnership with Health Data Research UK (HDR UK) and Administrative Data Research UK (ADR UK). The specific project was Semi-Automatic Checking of Research Outputs (SACRO).
 

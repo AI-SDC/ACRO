@@ -31,7 +31,7 @@ functionality to:
 
 ACRO can be installed via [PyPI](https://pypi.org/project/acro/).
 
-If installed in this way, the example [notebooks](../tree/main/notebooks) and the [data](../tree/main/data) files used therein will need to be copied from the repository.
+If installed in this way, the example [notebooks](notebooks) and the [data](data) files used therein will need to be copied from the repository.
 
 ```
 $ pip install acro
@@ -40,8 +40,8 @@ $ pip install acro
 ### Examples
 
 See the example notebooks for:
-* [Python charities dataset](../blob/main/notebooks/test.ipynb)
-* [Python nursery dataset](../blob/main/notebooks/test-nursery.ipynb)
+* [Python charities dataset](notebooks/test.ipynb)
+* [Python nursery dataset](notebooks/test-nursery.ipynb)
 * [R charities dataset](https://ai-sdc.github.io/ACRO/_static/test.nb.html)
 * [R nursery dataset](https://ai-sdc.github.io/ACRO/_static/test-nursery.nb.html)
 

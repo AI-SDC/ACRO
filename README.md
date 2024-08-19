@@ -11,10 +11,7 @@
 
 ## ACRO: Tools for the Automatic Checking of Research Outputs
 
-Statistical agencies and other custodians of secure facilities such as Trusted
-Research Environments (TREs) routinely require the checking of research outputs
-for disclosure risk. This can be a time-consuming and costly task, requiring
-skilled staff.
+This repository holds the Python ACRO package. An R wrapper package is available: [ACRO-R](https://github.com/AI-SDC/ACRO-R).
 
 ACRO (Automatic Checking of Research Outputs) is an open source
 tool for automating the statistical disclosure control (SDC) of research
@@ -35,13 +32,37 @@ functionality to:
 
 ![ACRO workflow and architecture schematic](docs/schematic.png)
 
-See the project [wiki](https://github.com/AI-SDC/ACRO/wiki) for details.
+### Installation
 
-## Coding standards
-Are also described in the project [wiki](https://github.com/AI-SDC/ACRO/wiki)
+ACRO can be installed via [PyPI](https://pypi.org/project/acro/).
+
+If installed in this way, the example [notebooks](../tree/main/notebooks) and the [data](../tree/main/data) files used therein will need to be copied from the repository.
+
+```
+$ pip install acro
+```
+
+### Examples
+
+See the example notebooks for:
+* [Python charities dataset](../blob/main/notebooks/test.ipynb)
+* [Python nursery dataset](../blob/main/notebooks/test-nursery.ipynb)
+* [R charities dataset](https://ai-sdc.github.io/ACRO/_static/test.nb.html)
+* [R nursery dataset](https://ai-sdc.github.io/ACRO/_static/test-nursery.nb.html)
+
+### Documentation
+
+The github-pages contains pre-built [documentation](https://ai-sdc.github.io/ACRO/).
+
+### Training Materials
+
+For training videos about ACRO, see [training videos](https://drive.google.com/drive/folders/1z5zKuZdiNth0c7CLBt3vDEyhGwSIocw_).
+
+### Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 *******************************************************************************
-
 
 This work was funded by UK Research and Innovation under Grant Number MC_PC_23006 as part of Phase 1 of the DARE UK (Data and Analytics Research Environments UK) programme (https://dareuk.org.uk/), delivered in partnership with Health Data Research UK (HDR UK) and Administrative Data Research UK (ADR UK). The specific project was Semi-Automatic Checking of Research Outputs (SACRO).
 

@@ -17,7 +17,7 @@ from acro.record import Records, load_records
 PATH: str = "RES_PYTEST"
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> pd.DataFrame:
     """Load test data."""
     path = os.path.join("data", "test_data.dta")
@@ -25,7 +25,7 @@ def data() -> pd.DataFrame:
     return data
 
 
-@pytest.fixture()
+@pytest.fixture
 def acro() -> ACRO:
     """Initialise ACRO."""
     return ACRO(suppress=True)

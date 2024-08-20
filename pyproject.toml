@@ -45,6 +45,7 @@ lint.select = [
 
 exclude = [
   "__init__.py",
+  "stata/*",
 ]
 
 lint.ignore = [

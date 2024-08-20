@@ -26,7 +26,7 @@ from acro.acro_stata_parser import (
 #    return ACRO()
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> pd.DataFrame:
     """Load test data."""
     path = os.path.join("data", "test_data.dta")

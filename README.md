@@ -37,6 +37,12 @@ If installed in this way, the example [notebooks](notebooks) and the [data](data
 $ pip install acro
 ```
 
+#### Notes for Python 3.12
+
+ACRO currently depends on an older version of Pandas (~1.5.0) for which no pre-compiled wheels are available within pip for Python 3.12. Therefore, in this scenario, Pandas must be built from source. This requires the installation of a C++ compiler before pip installing acro.
+
+For Windows, [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/) and the [C++ build tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) will likely need to be installed first.
+
 ### Examples
 
 See the example notebooks for:

@@ -12,7 +12,7 @@ from acro.version import __version__
 # -- Project information -----------------------------------------------------
 
 project = "ACRO"
-copyright = "2023, ACRO Project Team"
+copyright = "2024, ACRO Project Team"
 author = "ACRO Project Team"
 release = __version__
 

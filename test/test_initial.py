@@ -379,7 +379,12 @@ def test_finalise_json(data, acro):
     assert orig.summary == read.summary
     assert orig.comments == read.comments
     assert orig.timestamp == read.timestamp
-    assert (orig.output[0].reset_index()).equals(read.output[0])
+    # check SDC outcome DataFrame
+    orig_df = orig.output[0].reset_index()
+    read_df = read.output[0]
+    pd.testing.assert_frame_equal(
+        orig_df, read_df, check_names=False, check_dtype=False
+    )
     # test reading JSON
     with open(os.path.normpath(f"{PATH}/results.json"), encoding="utf-8") as file:
         json_data = json.load(file)

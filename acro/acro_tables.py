@@ -1512,6 +1512,9 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
                 normalize=normalize,
             )
 
+            if table.empty:
+                raise ValueError("empty table")
+
             table, _ = delete_empty_rows_columns(table)
             masks = create_crosstab_masks(
                 index_new,

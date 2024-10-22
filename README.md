@@ -8,22 +8,16 @@
 
 This repository holds the Python ACRO package. An R wrapper package is available: [ACRO-R](https://github.com/AI-SDC/ACRO-R).
 
-ACRO (Automatic Checking of Research Outputs) is an open source
-tool for automating the statistical disclosure control (SDC) of research
-outputs. ACRO assists researchers and output checkers by distinguishing between
-research output that is safe to publish, output that requires further analysis,
-and output that cannot be published because of substantial disclosure risk.
+A GUI for viewing and approving outputs is also available: [SACRO-Viewer](https://github.com/AI-SDC/SACRO-Viewer)
 
-It does this by providing a light-weight 'skin' that sits over well-known
-analysis tools, in a variety of languages researchers might use. This adds
-functionality to:
+ACRO (Automatic Checking of Research Outputs) is an open source tool for automating the [statistical disclosure control](https://en.wikipedia.org/wiki/Statistical_disclosure_control) (SDC) of research outputs. ACRO assists researchers and output checkers by distinguishing between research output that is safe to publish, output that requires further analysis, and output that cannot be published because of a substantial risk of disclosing private data.
 
-*   identify potentially disclosive outputs against a range of commonly used
-    disclosure tests;
+It does this by providing a lightweight 'skin' that sits over well-known analysis tools, in a variety of languages researchers might use. This adds functionality to:
+
+*   identify potentially disclosive outputs against a range of commonly used disclosure tests;
 *   suppress outputs where required;
 *   report reasons for suppression;
-*   produce simple summary documents TRE staff can use to streamline their
-    workflow.
+*   produce simple summary documents TRE staff can use to streamline their workflow.
 
 ![ACRO workflow and architecture schematic](docs/schematic.png)
 
@@ -37,15 +31,16 @@ If installed in this way, the example [notebooks](notebooks) and the [data](data
 $ pip install acro
 ```
 
-#### Notes for Python 3.12
+#### Notes for Python 3.13
 
-ACRO currently depends on an older version of Pandas (~1.5.0) for which no pre-compiled wheels are available within pip for Python 3.12. Therefore, in this scenario, Pandas must be built from source. This requires the installation of a C++ compiler before pip installing acro.
+ACRO currently depends on numpy version 1.x.x for which no pre-compiled wheels are available within pip for Python 3.13. Therefore, in this scenario, numpy must be built from source. This requires the installation of a C++ compiler before pip installing acro.
 
-For Windows, [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/) and the [C++ build tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) will likely need to be installed first.
+For Windows, the [Microsoft Visual Studio C++ build tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) will likely need to be installed first.
 
 ### Examples
 
 See the example notebooks for:
+
 * [Python charities dataset](notebooks/test.ipynb)
 * [Python nursery dataset](notebooks/test-nursery.ipynb)
 * [R charities dataset](https://ai-sdc.github.io/ACRO/_static/test.nb.html)

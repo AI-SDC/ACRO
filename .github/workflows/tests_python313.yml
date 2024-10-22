@@ -1,5 +1,5 @@
 ---
-name: Test Python312
+name: Test Python313
 
 on: workflow_dispatch
 
@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.12']
+        python-version: ['3.13']
 
     steps:
       - name: Checkout

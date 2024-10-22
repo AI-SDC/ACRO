@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.4.7 (Oct 22, 2024)
+
+Changes:
+*   Add support for Pandas version 2 ([#237](https://github.com/AI-SDC/ACRO/pull/237))
+
 ## Version 0.4.6 (Jun 25, 2024)
 
 Changes:

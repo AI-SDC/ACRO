@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 title: ACRO
-version: 0.4.6
-doi: 10.5281/zenodo.12535291
-date-released: 2024-06-25
+version: 0.4.7
+doi:
+date-released: 2024-10-22
 license: MIT
 repository-code: https://github.com/AI-SDC/ACRO
 languages:
@@ -13,6 +13,7 @@ keywords:
   - privacy
   - privacy tools
   - statistical disclosure control
+  - statistical software
 authors:
   - family-names: Preen
     given-names: Richard John

@@ -19,7 +19,7 @@ This creates an explicit change in the dynamics so that SDC is something done wi
 
 A graphical user interface ([SACRO-Viewer](https://github.com/AI-SDC/SACRO-Viewer)) supports human checkers by displaying the requested output and results of the checks in an immediately accessible format, highlighting identified issues, potential mitigation options, and tracking decisions made.
 
-Additional analytical programming languages used by researchers are supported by providing front-end packages that interface with the core ACRO Python back-end; for example, see the R wrapper package: [ACRO-R](https://github.com/AI-SDC/ACRO-R).
+Additional programming languages used by researchers are supported by providing front-end packages that interface with the core ACRO Python back-end; for example, see the R wrapper package: [ACRO-R](https://github.com/AI-SDC/ACRO-R).
 
 ![ACRO workflow and architecture schematic](docs/schematic.png)
 

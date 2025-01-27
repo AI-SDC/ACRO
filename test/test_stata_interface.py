@@ -217,9 +217,9 @@ def test_stata_acro_init():
         options="",
         stata_version="16",
     )
-    assert (
-        ret == "acro analysis session created\n"
-    ), f"wrong string for acro init: {ret}\n"
+    assert ret == "acro analysis session created\n", (
+        f"wrong string for acro init: {ret}\n"
+    )
     errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
     assert isinstance(stata_config.stata_acro, ACRO), errmsg
 

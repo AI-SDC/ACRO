@@ -964,13 +964,9 @@ def get_aggfunc(aggfunc: str | None) -> str | Callable | None:
     func = None
     if aggfunc is not None:
         if not isinstance(aggfunc, str):  # pragma: no cover
-            raise ValueError(
-                f"aggfunc {aggfunc} must be:" f"{', '.join(AGGFUNC.keys())}"
-            )
+            raise ValueError(f"aggfunc {aggfunc} must be:{', '.join(AGGFUNC.keys())}")
         if aggfunc not in AGGFUNC:  # pragma: no cover
-            raise ValueError(
-                f"aggfunc {aggfunc} must be: " f"{', '.join(AGGFUNC.keys())}"
-            )
+            raise ValueError(f"aggfunc {aggfunc} must be: {', '.join(AGGFUNC.keys())}")
         func = AGGFUNC[aggfunc]
     logger.debug("aggfunc: %s", func)
     return func
@@ -1312,7 +1308,7 @@ def get_queries(masks, aggfunc) -> list[str]:
                                 (
                                     f"({index_level_names} == {row_label})"
                                     if isinstance(row_label, (int, float))
-                                    else (f"({index_level_names}" f'== "{row_label}")')
+                                    else (f'({index_level_names}== "{row_label}")')
                                 )
                             ]
                         )
@@ -1333,7 +1329,7 @@ def get_queries(masks, aggfunc) -> list[str]:
                                 (
                                     f"({column_level_names} == {col_label})"
                                     if isinstance(col_label, (int, float))
-                                    else (f"({column_level_names}" f'== "{col_label}")')
+                                    else (f'({column_level_names}== "{col_label}")')
                                 )
                             ]
                         )

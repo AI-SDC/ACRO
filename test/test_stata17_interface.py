@@ -131,9 +131,9 @@ def test_stata_acro_init():
         options="",
         stata_version="17",
     )
-    assert (
-        ret == "acro analysis session created\n"
-    ), f"wrong string for acro init: {ret}\n"
+    assert ret == "acro analysis session created\n", (
+        f"wrong string for acro init: {ret}\n"
+    )
     errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
     assert isinstance(stata_config.stata_acro, ACRO), errmsg
 
@@ -808,9 +808,9 @@ def test_table_stata17_2(data):
         options="nototals",
         stata_version="17",
     )
-    assert (
-        ret.split() == ret_1.split() == correct.split()
-    ), f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == ret_1.split() == correct.split(), (
+        f"got\n{ret}\n expected\n{correct}"
+    )
 
 
 def test_table_stata17_3(data):

@@ -122,9 +122,7 @@ acro.suppress = False
 # Mean() in this case
 # Then how Max and Min are not allowed by the code
 
-print(
-    "\nIllustration of crosstab using an aggregation function " "- mean in this case."
-)
+print("\nIllustration of crosstab using an aggregation function - mean in this case.")
 safe_table = acro.crosstab(df.recommend, df.parents, values=df.children, aggfunc="mean")
 print("\nand this is the researchers output")
 print(safe_table)

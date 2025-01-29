@@ -1163,7 +1163,7 @@ def apply_suppression(
     else:
         for name, mask in masks.items():
             try:
-                safe_df[mask.values] = np.NaN
+                safe_df[mask.values] = np.nan
                 tmp_df = DataFrame().reindex_like(outcome_df)
                 tmp_df.fillna("", inplace=True)
                 tmp_df[mask.values] = name + "; "

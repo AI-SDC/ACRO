@@ -30,6 +30,10 @@ authors:
     given-names: Simon
     affiliation: University of Oxford
     orcid: https://orcid.org/0000-0001-9890-3619
+  - family-names: Migenda
+    given-names: Jost
+    affiliation: King’s College London
+    orcid: https://orcid.org/0000-0002-5350-8049
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7273903

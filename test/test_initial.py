@@ -453,7 +453,7 @@ def test_custom_output(acro):
 def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with negative values."""
     acro_tables.CHECK_MISSING_VALUES = True
-    data.loc[0:10, "inc_grants"] = np.NaN
+    data.loc[0:10, "inc_grants"] = np.nan
     _ = acro.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
     )
@@ -476,7 +476,7 @@ def test_missing(data, acro, monkeypatch):
 def test_suppression_error(caplog):
     """Apply suppression type error test."""
     table_data = {"col1": [1, 2], "col2": [3, 4]}
-    mask_data = {"col1": [np.NaN, True], "col2": [True, True]}
+    mask_data = {"col1": [np.nan, True], "col2": [True, True]}
     table = pd.DataFrame(data=table_data)
     masks = {"test": pd.DataFrame(data=mask_data)}
     acro_tables.apply_suppression(table, masks)

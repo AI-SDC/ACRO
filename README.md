@@ -33,12 +33,6 @@ If installed in this way, the example [notebooks](notebooks) and the [data](data
 $ pip install acro
 ```
 
-#### Notes for Python 3.13
-
-ACRO currently depends on numpy version 1.x.x for which no pre-compiled wheels are available within pip for Python 3.13. Therefore, in this scenario, numpy must be built from source. This requires the installation of a C++ compiler before pip installing acro.
-
-For Windows, the [Microsoft Visual Studio C++ build tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) will likely need to be installed first.
-
 ### Examples
 
 See the example notebooks for:

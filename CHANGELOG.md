@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.8 (Jan 29, 2025)
+
+*   Add support for Numpy version 2 ([#247](https://github.com/AI-SDC/ACRO/pull/247))
+
 ## Version 0.4.7 (Oct 22, 2024)
 
 Changes:

@@ -620,9 +620,9 @@ def test_surv_func(acro):
     _ = acro.surv_func(data.futime, data.death, output="table")
     output = acro.results.get_index(0)
     correct_summary: str = "fail; threshold: 3864 cells suppressed; "
-    assert (
-        output.summary == correct_summary
-    ), f"\n{output.summary}\n should be \n{correct_summary}\n"
+    assert output.summary == correct_summary, (
+        f"\n{output.summary}\n should be \n{correct_summary}\n"
+    )
 
     filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
     _ = acro.surv_func(data.futime, data.death, output="plot")
@@ -876,9 +876,9 @@ def test_crosstab_multiple_aggregate_function(data, acro):
         " p-ratio: 4 cells may need suppressing; "
         "nk-rule: 2 cells may need suppressing; "
     )
-    assert (
-        output.summary == correct_summary
-    ), f"\n{output.summary}\n should be \n{correct_summary}\n"
+    assert output.summary == correct_summary, (
+        f"\n{output.summary}\n should be \n{correct_summary}\n"
+    )
     print(f"{output.output[0]['mean']['R/G'].sum()}")
     correctval = 97383496.0
     errmsg = f"{output.output[0]['mean']['R/G'].sum()} should be {correctval}"

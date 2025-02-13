@@ -25,12 +25,18 @@ Additional programming languages used by researchers are supported by providing 
 
 ### Installation
 
-ACRO can be installed via [PyPI](https://pypi.org/project/acro/).
+ACRO is available through [PyPI](https://pypi.org/project/acro/) and [Conda](https://github.com/conda-forge/acro-feedstock).
 
-If installed in this way, the example [notebooks](notebooks) and the [data](data) files used therein will need to be copied from the repository.
+If installed in this way, the [examples](notebooks) and [data](data) files used therein will need to be copied from the repository.
 
+PyPI:
 ```
 $ pip install acro
+```
+
+Conda:
+```
+$ conda install acro
 ```
 
 ### Examples

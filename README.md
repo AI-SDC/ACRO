@@ -51,6 +51,7 @@ See the example notebooks for:
 ### Documentation
 
 The github-pages contains pre-built [documentation](https://ai-sdc.github.io/ACRO/).
+Additionally, see our [paper describing the SACRO framework](https://arxiv.org/abs/2212.02935) to learn about its principle-based SDC methodology and usage.
 
 ### Training Materials
 

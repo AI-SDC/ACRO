@@ -6,6 +6,8 @@ What is ACRO?
 
 A collection of tools for the automatic checking of research outputs.
 
+See our `paper describing the SACRO framework <https://arxiv.org/abs/2212.02935>`__ to learn about its principle-based SDC methodology and usage.
+
 Examples
 --------
 

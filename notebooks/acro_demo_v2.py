@@ -1,9 +1,8 @@
-#!/usr/bin/env python
+"""ACRO Demonstration."""
 
 # # ACRO Demonstration
 
 # In[1]:
-
 
 import os
 
@@ -130,7 +129,7 @@ acro.crosstab(
     columns=[df.recommend],
     values=df.children,
     aggfunc="mean",
-    margins="total",
+    margins=True,
 )
 
 

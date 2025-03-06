@@ -1,5 +1,10 @@
 # Changelog
 
+## Development
+
+Changes:
+*   Update notebooks for Numpy version 2 compatibility ([#258](https://github.com/AI-SDC/ACRO/pull/258))
+
 ## Version 0.4.8 (Jan 29, 2025)
 
 Changes:

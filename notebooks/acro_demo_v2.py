@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 # # ACRO Demonstration
 
@@ -7,24 +6,16 @@
 
 
 import os
-import sys
-import pandas as pd
-import numpy as np
 
+import numpy as np
+import pandas as pd
 
 # In[2]:
-
-
 # uncomment this line if acro is not installed
 # ie you are in development mode
 # sys.path.insert(0, os.path.abspath(".."))
-
-
 # In[3]:
-
-
-from acro import ACRO, add_constant, add_to_acro
-
+from acro import ACRO, add_constant
 
 # ### Instantiate ACRO
 
@@ -35,12 +26,12 @@ acro = ACRO(suppress=False)
 
 
 # ### Load test data
-# The dataset used in this notebook is the nursery dataset from OpenML.  
-# - In this version, the data can be read directly from the local machine after it has been downloaded. 
+# The dataset used in this notebook is the nursery dataset from OpenML.
+# - In this version, the data can be read directly from the local machine after it has been downloaded.
 # - The code below reads the data from a folder called "data" which we assume is at the same level as the folder where you are working.
 # - The path might need to be changed if the data has been downloaded and stored elsewhere.
-#  - for example use:  
-#     path = os.path.join("data", "nursery.arff")  
+#  - for example use:
+#     path = os.path.join("data", "nursery.arff")
 #     if the data is in a sub-folder of your work folder
 
 # In[5]:
@@ -58,16 +49,16 @@ df.head()
 
 
 # # Examples of producing tabular output
-# We rely on the industry-standard package **pandas** for tabulating data.  
+# We rely on the industry-standard package **pandas** for tabulating data.
 # In the next few examples we show:
 # - first, how a researcher would normally make a call in pandas, saving the results in a variable that they can view on screen (or save to file?)
 # - then how the call is identical in SACRO, except that:
 #   - "pd" is replaced by "acro"
 #   - the researcher immediately sees a copy of what the TRE output checker will see.
-#   
+#
 
 # ### Pandas crosstab
-# This is an example of crosstab using pandas.  
+# This is an example of crosstab using pandas.
 # We first make the call, then the second line print the outputs to screen.
 
 # In[6]:
@@ -78,7 +69,7 @@ print(table)
 
 
 # ### ACRO crosstab
-# - This is an example of crosstab using ACRO.  
+# - This is an example of crosstab using ACRO.
 # - The INFO lines show the researcher what will be reported to the output checkers.
 # - Then the (suppressed as necessary) table is shown via the print command as before.
 
@@ -93,7 +84,7 @@ print(safe_table)
 
 # ### ACRO crosstab with suppression
 # - This is an example of crosstab with suppressing the cells that violate the disclosure tests.
-# - Note that you need to change the value of the suppress variable in the acro object to True. Then run the crosstab command.  
+# - Note that you need to change the value of the suppress variable in the acro object to True. Then run the crosstab command.
 # - If you wish to continue the research while suppressing the outputs, leave the suppress variable as it is, otherwise turn it off.
 
 # In[8]:
@@ -146,16 +137,13 @@ acro.crosstab(
 # In[ ]:
 
 
-
-
-
 # # Regression examples using ACRO
-# 
+#
 # Again there is an industry-standard package in python, this time called **statsmodels**.
 # - The examples below illustrate the use of the ACRO wrapper standard statsmodel functions
 # - Note that statsmodels can be called using an 'R-like' format (using an 'r' suffix on the command names)
-# - most statsmodels functiobns return a "results object" which has a "summary" function that produces printable/saveable outputs 
-# 
+# - most statsmodels functiobns return a "results object" which has a "summary" function that produces printable/saveable outputs
+#
 # ### Start by manipulating the nursery data to get two numeric variables
 # - The 'recommend' column is converted to an integer scale
 
@@ -178,12 +166,12 @@ new_df = df[["recommend", "children"]]
 new_df = new_df.dropna()
 
 
-# ### ACRO OLS 
-# This is an example of ordinary least square regression using ACRO.  
-# - Above recommend column was converted form categorical to numeric. 
-# - Now we perform a the linear regression between recommend and children. 
+# ### ACRO OLS
+# This is an example of ordinary least square regression using ACRO.
+# - Above recommend column was converted form categorical to numeric.
+# - Now we perform a the linear regression between recommend and children.
 # - This version includes a constant (intercept)
-# - This is just to show how the regression is done using ACRO.  
+# - This is just to show how the regression is done using ACRO.
 # - **No correlation is expected to be seen by using these variables**
 
 # In[18]:
@@ -204,7 +192,7 @@ results.summary()
 # - survival analysis (Kaplan-Meier)
 # - Histograms
 # - various other ways of making tables
-# - 
+# -
 
 # ### 5: Add an unsupported output to the list of outputs
 # This is an example to add an unsupported outputs (such as images) to the list of outputs
@@ -220,11 +208,8 @@ acro.custom_output(
 # In[ ]:
 
 
-
-
-
 # # ACRO functionality to let users manage their outputs
-# 
+#
 # ### 1: List current ACRO outputs
 # This is an example of using the print_output function to list all the outputs created so far
 
@@ -234,10 +219,10 @@ acro.custom_output(
 _ = acro.print_outputs()
 
 
-# ### 2: Remove some ACRO outputs before finalising 
-# This is an example of deleting some of the ACRO outputs.  
-# The name of the output that needs to be removed should be passed to the function remove_output.  
-# - The output name can be taken from the outputs listed by the print_outputs function, 
+# ### 2: Remove some ACRO outputs before finalising
+# This is an example of deleting some of the ACRO outputs.
+# The name of the output that needs to be removed should be passed to the function remove_output.
+# - The output name can be taken from the outputs listed by the print_outputs function,
 # - or by listing the results and choosing the specific output that needs to be removed
 
 # In[12]:
@@ -256,7 +241,7 @@ acro.rename_output("output_1", "cross_tabulation")
 
 
 # ### 4: Add a comment to output
-# This is an example to add a comment to outputs.  
+# This is an example to add a comment to outputs.
 # It can be used to provide a description or to pass additional information to the output checkers.
 
 # In[14]:
@@ -277,11 +262,11 @@ acro.add_exception("output_2", "This is evidence of systematic bias?")
 
 
 # ## 5: (the big one) Finalise ACRO
-# This is an example of the function _finalise()_ which the users must call at the end of each session.  
-# - It takes each output and saves it to a CSV file.    
-# - It also saves the SDC analysis for each output to a json file or Excel file  
+# This is an example of the function _finalise()_ which the users must call at the end of each session.
+# - It takes each output and saves it to a CSV file.
+# - It also saves the SDC analysis for each output to a json file or Excel file
 #   (depending on the extension of the name of the file provided as an input to the function)
-# - If an output is flagged as potentially disclosive then the  
+# - If an output is flagged as potentially disclosive then the
 #   researcher is prompted to provide a reason for release if they have not already done so.
 
 # In[16]:
@@ -291,7 +276,3 @@ output = acro.finalise("Examples", "json")
 
 
 # In[ ]:
-
-
-
-

@@ -4,8 +4,11 @@ Users can use *acro* thanks to libraries provided by Stata which manage the comm
 
 All you need is
 
-1. For Stata and python to know how communicate with each other: which is managed by Stata's ```sfi``` package.
-2. A simple **.ado** file that converts stata commands prefixed by the word *acro* into calls to the underlying python *acro* package
+1. For Stata and python to know how communicate with each other.
+   - This is managed by Stata's ```sfi``` package.
+2. A simple **.ado** file that converts:
+   -  stata commands prefixed by the word *acro*
+   -  into calls to the underlying python *acro* package
 
 ## Installation and testing
 
@@ -15,18 +18,19 @@ You may need to check for updates as reported in
 [this thread on the Stata forums](https://www.statalist.org/forums/forum/general-stata-discussion/general/1731732-bug-in-python-indentation)
 if:
 
-- you installed Stata before 20th December 2023, and
-- you are using python3.12 or above
+1. you installed Stata before 20th December 2023, **and**
+2. you are using python3.12 or above
 
 [Here is how to do it](https://www.stata.com/support/updates/stata18.html#:~:text=If%20you%20are%20using%20Stata,from%20within%20Stata%2C%20see%20below.)
 
 
 ### Step 2: Setting up Stata to use Python
+
 [This blog from Stata](https://blog.stata.com/2020/08/18/stata-python-integration-part-1-setting-up-stata-to-use-python/)
 describes the basic process of:
 
-1. checking whether Stata can already find a version of python installed on your system
-2. installing it if need be
+1. checking whether Stata can find a version of python on your system
+2. installing python if needed
 3. setting up Stata to use python
 
 We recommend that you install the latest version of Python compatible with acro (3.13 at the time of writing)
@@ -36,9 +40,10 @@ We recommend that you install the latest version of Python compatible with acro 
 
 The next step is to install the python *acro* package.
 
-1. From the Stata prompt type ```python query``` and then copy the full path to the python installation.
-2. Open a terminal (mac, linux) or command prompt (windows)
-3. Type ```<path you just copied>/python -m pip install acro``` to install *acro*
+1. From the Stata prompt type ```python query```
+2. Then copy the full path to the python installation.
+3. Open a terminal (mac, linux) or command prompt (windows)
+4. Type ```<path you just copied>/python -m pip install acro``` to install *acro*
 
 ### Step 4. Including the file *acro.ado* where your Stata system can find it
 

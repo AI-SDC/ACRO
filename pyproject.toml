@@ -1,6 +1,86 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "acro"
+dynamic = ["version"]
+description = "ACRO: Tools for the Semi-Automatic Checking of Research Outputs"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+maintainers = [
+    {name = "Jim Smith", email = "james.smith@uwe.ac.uk"}
+]
+keywords = [
+    "data-privacy",
+    "data-protection",
+    "privacy",
+    "privacy-tools",
+    "statistical-disclosure-control",
+    "statistical-software",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "lxml",
+    "matplotlib",
+    "numpy",
+    "openpyxl",
+    "pandas>=1.5.0,<2.3",
+    "PyYAML",
+    "statsmodels",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "acro.version.__version__"}
+
+[project.urls]
+"Homepage" = "https://github.com/AI-SDC/ACRO"
+"Changelog" = "https://github.com/AI-SDC/ACRO/CHANGELOG.md"
+"Documentation" = "https://ai-sdc.github.io/ACRO/"
+"Bug Tracker" = "https://github.com/AI-SDC/ACRO/issues"
+"Discussions" = "https://github.com/AI-SDC/ACRO/discussions"
+
+[project.optional-dependencies]
+doc = [
+    "matplotlib==3.7.2",
+    "numpy==1.23.1",
+    "numpydoc==1.4.0",
+    "pandas==1.5.0",
+    "pytest==7.1.2",
+    "PyYAML==6.0",
+    "sphinx-autopackagesummary==1.3",
+    "sphinx-gallery==0.10.1",
+    "sphinx-issues==3.0.1",
+    "sphinx-prompt==1.5.0",
+    "sphinx-rtd-theme==1.0.0",
+    "statsmodels==0.13.2",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+packages = {find = {exclude = ["data*", "docs*", "notebooks*", "test*"]}}
+
+[tool.setuptools.package-data]
+"acro" = ["default.yaml"]
 
 [tool.ruff]
 indent-width = 4

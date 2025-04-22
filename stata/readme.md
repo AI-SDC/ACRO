@@ -7,12 +7,12 @@ All you need is
 1. For Stata and python to know how communicate with each other.
    - This is managed by Stata's ```sfi``` package.
 2. A simple **.ado** file that converts:
-   -  stata commands prefixed by the word *acro*
-   -  into calls to the underlying python *acro* package
+   - stata commands prefixed by the word *acro*
+   - into calls to the underlying python *acro* package
 
 ## Installation and testing
 
-### Step 1: Checking for Stata upgrades.
+### Step 1: Checking for Stata upgrades
 
 You may need to check for updates as reported in
 [this thread on the Stata forums](https://www.statalist.org/forums/forum/general-stata-discussion/general/1731732-bug-in-python-indentation)
@@ -23,7 +23,6 @@ if:
 
 [Here is how to do it](https://www.stata.com/support/updates/stata18.html#:~:text=If%20you%20are%20using%20Stata,from%20within%20Stata%2C%20see%20below.)
 
-
 ### Step 2: Setting up Stata to use Python
 
 [This blog from Stata](https://blog.stata.com/2020/08/18/stata-python-integration-part-1-setting-up-stata-to-use-python/)
@@ -33,7 +32,8 @@ describes the basic process of:
 2. installing python if needed
 3. setting up Stata to use python
 
-We recommend that you install the latest version of Python compatible with acro (3.13 at the time of writing)
+We recommend that you install the latest version of Python compatible with acro.
+This was 3.13 at the time of writing.
 
 
 ### Step 3: Installing acro for the preferred version of python
@@ -80,7 +80,7 @@ You may need to also copy the data file from [here](https://github.com/AI-SDC/AC
 
 **Step 4.4:** Once you are satisfied with your testing
 
-You might want to put the file somewhere where system users can access it, but not change it.
+Put the file file somewhere with site-wide, read-only access.
 
 Stata has a folder system for storing common **.ado** files.
 The location will depend  on your operating system as described [here](https://www.stata.com/manuals13/u17.pdf)

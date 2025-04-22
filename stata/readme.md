@@ -1,13 +1,14 @@
 # This folder contains materials for getting acro working within Stata
 
-Users can use *acro* thanks to libraries provided by Stata which manage the communications between Stata commands and acro's python 'engine'.
+Users can use *acro* thanks to libraries provided by Stata.
+These manage the communications between Stata commands and acro's python 'engine'.
 
 All you need is
 
 1. For Stata and python to know how communicate with each other.
    - This is managed by Stata's ```sfi``` package.
 2. A simple **.ado** file that converts:
-   - stata commands prefixed by the word *acro*
+   - Stata commands prefixed by the word *acro*
    - into calls to the underlying python *acro* package
 
 ## Installation and testing
@@ -18,8 +19,8 @@ You may need to check for updates as reported in
 [this thread on the Stata forums](https://www.statalist.org/forums/forum/general-stata-discussion/general/1731732-bug-in-python-indentation)
 if:
 
-1. you installed Stata before 20th December 2023, **and**
-2. you are using python3.12 or above
+1. You installed Stata before 20th December 2023, **and**
+2. You are using python3.12 or above
 
 [Here is how to do it](https://www.stata.com/support/updates/stata18.html#:~:text=If%20you%20are%20using%20Stata,from%20within%20Stata%2C%20see%20below.)
 
@@ -28,8 +29,8 @@ if:
 [This blog from Stata](https://blog.stata.com/2020/08/18/stata-python-integration-part-1-setting-up-stata-to-use-python/)
 describes the basic process of:
 
-1. checking whether Stata can find a version of python on your system
-2. installing python if needed
+1. Checking whether Stata can find a version of python on your system
+2. Installing python if needed
 3. setting up Stata to use python
 
 We recommend that you install the latest version of Python compatible with acro.

@@ -1,6 +1,6 @@
 ## ACRO: Tools for the Semi-Automatic Checking of Research Outputs
 
-[![DOI](https://zenodo.org/badge/534172863.svg)](https://zenodo.org/badge/latestdoi/534172863)
+[![IEEE Xplore](https://img.shields.io/badge/IEEE%20Xplore-10.1109/TP.2025.3566052-blue)](https://doi.org/10.1109/TP.2025.3566052)
 [![PyPI package](https://img.shields.io/pypi/v/acro.svg)](https://pypi.org/project/acro)
 [![Conda](https://img.shields.io/conda/vn/conda-forge/acro.svg)](https://github.com/conda-forge/acro-feedstock)
 [![Python versions](https://img.shields.io/pypi/pyversions/acro.svg)](https://pypi.org/project/acro)
@@ -51,7 +51,8 @@ See the example notebooks for:
 ### Documentation
 
 The github-pages contains pre-built [documentation](https://ai-sdc.github.io/ACRO/).
-Additionally, see our [paper describing the SACRO framework](https://arxiv.org/abs/2212.02935) to learn about its principle-based SDC methodology and usage.
+
+Additionally, see our [paper describing the SACRO framework](https://doi.org/10.1109/TP.2025.3566052) to learn about its principles-based SDC methodology and usage.
 
 ### Training Materials
 

@@ -1,9 +1,10 @@
 # Changelog
 
-## Development
+## Version 0.4.9 (Jul 02, 2025)
 
 Changes:
 *   Update notebooks for Numpy version 2 compatibility ([#258](https://github.com/AI-SDC/ACRO/pull/258))
+*   Cap `scipy<1.16.0` ([#266](https://github.com/AI-SDC/ACRO/pull/266))
 
 ## Version 0.4.8 (Jan 29, 2025)
 

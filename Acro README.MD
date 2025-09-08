@@ -72,4 +72,19 @@ ACRO provides three types of feedback:
 - ⚠️ REVIEW - Manual review required (e.g., missing values)
 
 Example output:
+```
+Summary:
+  Status: review
+  Output: crosstab
 
+Disclosivity:
+  Rows: 2
+  Columns: 3
+  Cells: 6
+  Non-disclosive cells: 4
+  Disclosive cells: 2
+  
+Details:
+  Cell (0,1): threshold; count 5 < 10
+  Cell (1,2): threshold; count 7 < 10
+```

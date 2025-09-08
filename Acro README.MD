@@ -100,6 +100,7 @@ Details:
 ## Documentation
 - [API Documentation](https://ai-sdc.github.io/ACRO/)- The github-pages contains pre-built.
 - [Examples](https://github.com/AI-SDC/ACRO#examples) - Jupyter notebooks with real examples
+- [Training Videos](https://drive.google.com/drive/folders/1z5zKuZdiNth0c7CLBt3vDEyhGwSIocw_) - Jupyter notebooks with real examples
 - [FAQ](https://github.com/AI-SDC/ACRO#faq)  
 
 ## Support

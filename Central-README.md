@@ -9,10 +9,11 @@ Researchers retain full control over decision-making, while the AI-SDC tools imp
 ## 📖 SACRO Central Guide
 
 ### Table of Contents
-- 🏁 Getting Started  
-- 🔄 Complete Workflow
-- 🐳 One-Click Environment Setup  
-- 🔗 Cross-Repository Integration  
+- 🏁 Repository Overview
+- 🔄 [Complete Workflow](https://github.com/AI-SDC/ACRO#get-complete-workflow)
+- 🐳 [One-Click Environment Setup](https://github.com/AI-SDC/ACRO#one-click-environment-setup)
+- 🔗 [Cross-Repository Integration](https://github.com/AI-SDC/ACRO#cross-repository-integration)
+
 
 ---
 

@@ -12,7 +12,7 @@ It runs privacy checks in real-time during analysis, flags risky results, and ge
 
 ## Table of Contents
 
-- [Overview](#overview)  
+- [Overview](https://github.com/AI-SDC/ACRO/blob/270-documentation-update-structure-for-readmemd/Acro%20README.MD#overview)  
 - [Quick Start](#quick-start)  
 - [Installation](#installation)  
 - [Understanding ACRO Output](#understanding-acro-output)  
@@ -49,3 +49,9 @@ ACRO acts as a drop-in replacement for common analysis commands, adding privacy-
 - Stata 16+ (for Stata users)  
 
 ### Python Example
+pip install acro
+python -c "
+import acro
+session = acro.ACRO()
+print('✅ ACRO is ready!')
+"

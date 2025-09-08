@@ -47,7 +47,7 @@ A graphical user interface ([SACRO-Viewer](https://github.com/AI-SDC/SACRO-Viewe
 ## Quick Start
 ---
 
-##Installation
+## Installation
 
 ### Prerequisites
 

@@ -4,7 +4,9 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/AI-SDC/ACRO)](https://github.com/AI-SDC/ACRO/issues)
 
-ACRO is a lightweight, open-source tool that helps researchers automatically check tables, regressions, and plots for privacy disclosure risks in secure data environments. It runs privacy checks in real-time during analysis, flags risky results, and generates auditable trails to support output checkers effectively.
+ACRO is a lightweight, open-source tool that helps researchers automatically check tables, regressions, and plots for privacy disclosure risks in secure data environments. 
+
+It runs privacy checks in real-time during analysis, flags risky results, and generates auditable trails to support output checkers effectively.
 
 ---
 

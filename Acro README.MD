@@ -18,7 +18,7 @@ It runs privacy checks in real-time during analysis, flags risky results, and ge
 - [Understanding ACRO Output](#understanding-acro-output)  
 - [Configuration](#configuration)  
 - [Examples](#examples)  
-- [API Reference](#api-reference)  
+- [Documentation](#documentation)  
 - [Support](#support)  
 - [Contributing](#contributing)  
 - [License](#license)  
@@ -89,19 +89,14 @@ Details:
   Cell (1,2): threshold; count 7 < 10
 ```
 
-### API Documentation
-
----
-
 ### Documentation
-
-- [Examples - Jupyter notebooks with real examples](https://github.com/AI-SDC/ACRO#examples)  
-- [Configuration - Customizing disclosure rules](https://github.com/AI-SDC/ACRO#configuration)  
+- [API Documentation](https://ai-sdc.github.io/ACRO/)- The github-pages contains pre-built.
+- [Examples](https://github.com/AI-SDC/ACRO#examples) - Jupyter notebooks with real examples
 - [FAQ](https://github.com/AI-SDC/ACRO#faq)  
 
 ### Support
 
-- [Issues - Bug reports and feature requests](https://github.com/AI-SDC/ACRO/issues)  
-- [Discussions - Questions and community help](https://github.com/AI-SDC/ACRO/discussions)  
-- [Contributing - How to contribute](https://github.com/AI-SDC/ACRO/blob/main/CONTRIBUTING.md)
+- [Issues](https://github.com/AI-SDC/ACRO/issues)- Bug reports and feature requests
+- [Discussions](https://github.com/AI-SDC/ACRO/discussions)- Questions and community help
+- [Contributing](https://github.com/AI-SDC/ACRO/blob/main/CONTRIBUTING.md)- How to contribute
 

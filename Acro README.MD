@@ -88,3 +88,20 @@ Details:
   Cell (0,1): threshold; count 5 < 10
   Cell (1,2): threshold; count 7 < 10
 ```
+
+### API Documentation
+
+---
+
+### Documentation
+
+- [Examples - Jupyter notebooks with real examples](https://github.com/AI-SDC/ACRO#examples)  
+- [Configuration - Customizing disclosure rules](https://github.com/AI-SDC/ACRO#configuration)  
+- [FAQ](https://github.com/AI-SDC/ACRO#faq)  
+
+### Support
+
+- [Issues - Bug reports and feature requests](https://github.com/AI-SDC/ACRO/issues)  
+- [Discussions - Questions and community help](https://github.com/AI-SDC/ACRO/discussions)  
+- [Contributing - How to contribute](https://github.com/AI-SDC/ACRO/blob/main/CONTRIBUTING.md)
+

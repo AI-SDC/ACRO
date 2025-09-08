@@ -26,3 +26,26 @@ It runs privacy checks in real-time during analysis, flags risky results, and ge
 - [Acknowledgments](#acknowledgments)  
 
 ---
+## Overview
+
+ACRO acts as a drop-in replacement for common analysis commands, adding privacy-preserving statistical disclosure control checks on the fly. It transforms standard workflows by running analysis and privacy checks simultaneously across Python, R, and Stata.
+
+### Key Features
+
+- Intercepts commands like crosstabs, regressions, and plots  
+- Applies real-time statistical disclosure control checks  
+- Flags potentially disclosive outputs  
+- Generates audit trails for output checkers  
+- Familiar syntax across Python, R, and Stata  
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.9+  
+- R 4.0+ (for R users)  
+- Stata 16+ (for Stata users)  
+
+### Python Example

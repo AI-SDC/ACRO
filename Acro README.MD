@@ -49,9 +49,11 @@ ACRO acts as a drop-in replacement for common analysis commands, adding privacy-
 - Stata 16+ (for Stata users)  
 
 ### Python Example
+```
 pip install acro
 python -c "
 import acro
 session = acro.ACRO()
 print('✅ ACRO is ready!')
 "
+```

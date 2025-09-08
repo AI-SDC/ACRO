@@ -30,6 +30,12 @@ It runs privacy checks in real-time during analysis, flags risky results, and ge
 
 ACRO acts as a drop-in replacement for common analysis commands, adding privacy-preserving statistical disclosure control checks on the fly. It transforms standard workflows by running analysis and privacy checks simultaneously across Python, R, and Stata.
 
+A graphical user interface ([SACRO-Viewer](https://github.com/AI-SDC/SACRO-Viewer)) supports human checkers by displaying the requested output and results of the checks in an immediately accessible format, highlighting identified issues, potential mitigation options, and tracking decisions made.
+
+Additional programming languages used by researchers are supported by providing front-end packages that interface with the core ACRO Python back-end; for example, see the R wrapper package: [ACRO-R](https://github.com/AI-SDC/ACRO-R).
+
+![ACRO workflow and architecture schematic](docs/schematic.png)
+
 ### Key Features
 
 - Intercepts commands like crosstabs, regressions, and plots  

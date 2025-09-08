@@ -64,7 +64,7 @@ session = acro.ACRO()
 print('✅ ACRO is ready!')
 "
 ```
-### Understanding Output
+## Understanding Output
 ACRO provides three types of feedback:
 
 - ✅ PASS - Safe to release
@@ -89,6 +89,14 @@ Details:
   Cell (1,2): threshold; count 7 < 10
 ```
 
+
+## Configuration
+
+---
+
+## Example
+---
+
 ## Documentation
 - [API Documentation](https://ai-sdc.github.io/ACRO/)- The github-pages contains pre-built.
 - [Examples](https://github.com/AI-SDC/ACRO#examples) - Jupyter notebooks with real examples
@@ -100,7 +108,7 @@ Details:
 - [Discussions](https://github.com/AI-SDC/ACRO/discussions)- Questions and community help
 - [Contributing](https://github.com/AI-SDC/ACRO/blob/main/CONTRIBUTING.md)- How to contribute
 
-### Acknowledgement
+## Acknowledgement
 
 This work was funded by UK Research and Innovation under Grant Number MC_PC_23006 as part of Phase 1 of the [DARE UK](https://dareuk.org.uk) (Data and Analytics Research Environments UK) programme, delivered in partnership with Health Data Research UK (HDR UK) and Administrative Data Research UK (ADR UK). The specific project was Semi-Automatic Checking of Research Outputs (SACRO).
 

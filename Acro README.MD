@@ -89,12 +89,12 @@ Details:
   Cell (1,2): threshold; count 7 < 10
 ```
 
-### Documentation
+## Documentation
 - [API Documentation](https://ai-sdc.github.io/ACRO/)- The github-pages contains pre-built.
 - [Examples](https://github.com/AI-SDC/ACRO#examples) - Jupyter notebooks with real examples
 - [FAQ](https://github.com/AI-SDC/ACRO#faq)  
 
-### Support
+## Support
 
 - [Issues](https://github.com/AI-SDC/ACRO/issues)- Bug reports and feature requests
 - [Discussions](https://github.com/AI-SDC/ACRO/discussions)- Questions and community help

@@ -67,9 +67,9 @@ print('✅ ACRO is ready!')
 ### Understanding Output
 ACRO provides three types of feedback:
 
-✅ PASS - Safe to release
-❌ FAIL - Needs justification (e.g., small cell counts)
-⚠️ REVIEW - Manual review required (e.g., missing values)
+- ✅ PASS - Safe to release
+- ❌ FAIL - Needs justification (e.g., small cell counts)
+- ⚠️ REVIEW - Manual review required (e.g., missing values)
 
 Example output:
 

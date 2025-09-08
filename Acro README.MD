@@ -12,8 +12,7 @@ It runs privacy checks in real-time during analysis, flags risky results, and ge
 
 ## Table of Contents
 
-- [Overview](https://github.com/AI-SDC/ACRO/blob/270-documentation-update-structure-for-readmemd/Acro%20README.MD#overview)  
-- [Quick Start](#quick-start)  
+- [Overview](https://github.com/AI-SDC/ACRO/blob/270-documentation-update-structure-for-readmemd/Acro%20README.MD#overview) 
 - [Installation](#installation)  
 - [Understanding ACRO Output](#understanding-acro-output)  
 - [Configuration](#configuration)  

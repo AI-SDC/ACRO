@@ -12,9 +12,9 @@ Researchers retain full control over decision-making, while the AI-SDC tools imp
 - 🏁 Repository Overview
 - 🔄 [Complete Workflow](https://github.com/AI-SDC/ACRO#get-complete-workflow)
 - 🐳 One-Click Environment Setup
-  - Acro
-  - AcroML
-  - SACRO-VIEWER
+  - [Acro](https://github.com/AI-SDC/ACRO#get-complete-workflow)
+  - [AcroML](https://github.com/AI-SDC/ACRO#get-complete-workflow)
+  - [SACRO-VIEWER](https://github.com/AI-SDC/ACRO#get-complete-workflow)
 - 🔗 [Cross-Repository Integration](https://github.com/AI-SDC/ACRO#cross-repository-integration)
 
 

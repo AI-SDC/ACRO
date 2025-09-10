@@ -1,20 +1,24 @@
-.. ACRO documentation master file
+===============================
+ACRO 
+===============================
 
-Welcome to the ACRO documentation!
-====================================
+Welcome to ACRO 
+==============================
 
-API Reference
-#############
-
-This is the class and function reference for ACRO.
+ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started:
 
    introduction
-   acro
-   record
+   getting_started
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference:
+
+   api_reference
 
 Indices and tables
 ==================

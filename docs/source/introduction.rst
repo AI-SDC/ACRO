@@ -1,16 +1,148 @@
-Introduction
-============
+Welcome to ACRO 
+==============================
+
+ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. This package acts as a lightweight Python tool that sits over well-known analysis tools to provide statistical disclosure control.
+
 
 What is ACRO?
--------------
+=============
 
-A collection of tools for the automatic checking of research outputs.
+ACRO implements a principles-based statistical disclosure control (SDC) methodology that:
 
-See our `paper describing the SACRO framework <https://arxiv.org/abs/2212.02935>`__ to learn about its principle-based SDC methodology and usage.
+* Automatically identifies potentially disclosive outputs
+* Applies optional disclosure mitigation strategies
+* Reports reasons for applying SDC
+* Produces summary documents for output checkers
 
-Examples
---------
+Example
+=============
 
-Example usage can be found in this Python `notebook <https://github.com/AI-SDC/ACRO/blob/main/notebooks/test.ipynb>`__
+.. code-block:: python
 
-Additionally, examples from the R wrapper can be found `here <_static/test.nb.html>`__
+   import acro
+
+
+   acro = acro.ACRO(suppress=True)
+
+ 
+   safe_table = acro.crosstab(
+       df.column1, 
+       df.column2, 
+       show_suppressed=True
+   )
+
+
+   acro.finalise(output_folder="outputs")
+
+Core Features
+=============
+
+Automated Disclosure Checking
+-----------------------------
+
+ACRO automatically runs disclosure tests on your outputs, checking for:
+
+* Small cell counts in tables
+* Threshold disclosure in statistical models
+* Identity disclosure risks
+
+Integration with Popular Libraries
+----------------------------------
+
+Works seamlessly with:
+
+* **Pandas** - for data manipulation and table creation
+* **Statsmodels** - for statistical modeling
+* **R and Stata** - through wrapper packages
+
+API Overview
+============
+
+.. py:class:: ACRO(suppress=True, config=None)
+
+   The main ACRO class provides the interface for all disclosure checking functionality.
+
+   :param suppress: Whether to suppress potentially disclosive outputs
+   :type suppress: bool
+   :param config: Configuration options for disclosure checking
+   :type config: dict, optional
+
+Parameters
+----------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 20 60
+
+   * - Parameter
+     - Type
+     - Description
+   * - suppress
+     - bool
+     - Whether to suppress potentially disclosive outputs
+   * - config
+     - dict, optional
+     - Configuration options for disclosure checking
+
+Key Methods
+-----------
+
+* :py:meth:`~ACRO.crosstab` - Create cross-tabulations with disclosure checking
+* :py:meth:`~ACRO.pivot_table` - Create pivot tables with disclosure checking
+* :py:meth:`~ACRO.ols` - Ordinary least squares regression with disclosure checking
+* :py:meth:`~ACRO.finalise` - Prepare outputs for review by data controllers
+
+Installation
+============
+
+Install ACRO using pip:
+
+.. code-block:: bash
+
+   pip install acro
+
+Quick Start
+===========
+
+1. Import ACRO and initialize
+2. Load your data
+3. Run analysis with automatic disclosure checking
+4. Finalize outputs for review
+
+Basic Concepts
+==============
+
+Understanding the core principles of statistical disclosure control and how ACRO implements them.
+
+Configuration
+=============
+
+Learn how to configure ACRO for your specific needs and environment.
+
+Working with Tables
+===================
+
+Creating cross-tabulations and pivot tables with built-in disclosure checking.
+
+Statistical Models
+==================
+
+Running regression models and other statistical analyses safely.
+
+Output Management
+=================
+
+Managing and reviewing outputs before final release.
+
+Best Practices
+==============
+
+Guidelines for effective use of ACRO in secure research environments.
+
+Next Steps
+==========
+
+* Install ACRO and set up your environment
+* Follow the Quick Start Guide for your first analysis
+* Explore the Example Notebooks for common use cases
+* Check the API Reference for detailed documentation

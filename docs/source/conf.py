@@ -1,6 +1,6 @@
 """Configuration file for the Sphinx documentation builder."""
 
-# -- Path setup --------------------------------------------------------------
+
 
 import os
 import sys
@@ -9,14 +9,14 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 from acro.version import __version__
 
-# -- Project information -----------------------------------------------------
+
 
 project = "ACRO"
 copyright = "2024, ACRO Project Team"
 author = "ACRO Project Team"
 release = __version__
 
-# -- General configuration ---------------------------------------------------
+
 
 extensions = [
     "numpydoc",
@@ -33,13 +33,27 @@ extensions = [
 
 exclude_patterns = []
 
+
+
 html_static_path = ["_static"]
 
-# -- Options for HTML output -------------------------------------------------
+
 
 html_theme = "sphinx_rtd_theme"
-html_theme_options = {"navigation_depth": 2}
 
-# -- -------------------------------------------------------------------------
+html_theme_options = {
+    "navigation_depth": 4,      
+    "collapse_navigation": False,
+    "sticky_navigation": True,    
+    "includehidden": True,   
+    "titles_only": False,         
+    "prev_next_buttons_location": "bottom",
+}
+
+
+html_css_files = [
+    'css/custom.css',
+]
+
 
 numpydoc_class_members_toctree = False

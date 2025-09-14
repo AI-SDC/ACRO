@@ -1,59 +1,92 @@
-===============================
+========================================
 Welcome to the AI-SDC family of tools
-===============================
+========================================
 
 This organisation holds the code repositories for the **SACRO** family of tools:
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Documentation
+
+   introduction
+   installation
+   user_guide
+   examples
+   api
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: SACRO Tools
+
+   acro
+   sacro_ml
+   acro_r
+   sacro_viewer
 
 .. grid:: 2
 
     .. grid-item-card:: ACRO (Python)
-        :img-top: ./images/user_guide.png
-        :link: getting_started
+        :link: introduction
+        :link-type: doc
         :shadow: md
+        :class-header: bg-primary text-white
 
-        Tools for the Semi-Automatic Checking of Research Outputs. These are tools for researchers to use as drop-in replacements for common analysis commands.
+        **Statistical Disclosure Control for Python**
+        
+        Tools for the Semi-Automatic Checking of Research Outputs. Drop-in replacements for common analysis commands with built-in privacy protection.
         
         +++
         
-        :bdg-primary:`Current Documentation Focus`
+        :bdg-primary:`Current Documentation Focus` :doc:`Get Started → <introduction>`
 
     .. grid-item-card:: SACRO-ML
-        :img-top: ./images/user_guide.png
-        :link: getting_started
+        :link: sacro_ml
+        :link-type: doc
         :shadow: md
+        :class-header: bg-info text-white
 
+        **Machine Learning Privacy Tools**
+        
         Collection of tools and resources for managing the statistical disclosure control of trained machine learning models.
 
         +++
         
-        :bdg-info:`See API documentation`
+        :bdg-info:`ML Privacy` :doc:`Learn More → <sacro_ml>`
 
 .. grid:: 2
 
     .. grid-item-card:: ACRO-R
-        :img-top: ./images/examples.png
-        :link: examples
+        :link: acro_r
+        :link-type: doc
         :shadow: md
+        :class-header: bg-success text-white
 
+        **R Package Integration**
+        
         ACRO R Package: Tools for the Semi-Automatic Checking of Research Outputs for R users and workflows.
 
         +++
         
-        :bdg-info:`See API documentation`
+        :bdg-success:`R Integration` :doc:`Explore → <acro_r>`
 
     .. grid-item-card:: SACRO-Viewer
-        :img-top: ./images/api.png
-        :link: api
+        :link: sacro_viewer
+        :link-type: doc
         :shadow: md
+        :class-header: bg-warning text-dark
 
+        **Output Checking Interface**
+        
         A tool for fast, secure and effective output checking, which can work in any TRE (Trusted Research Environment).
 
         +++
         
-        :bdg-info:`See API documentation`
+        :bdg-warning:`GUI Tool` :doc:`View Docs → <sacro_viewer>`
 
-Welcome to ACRO 
-================
+ACRO: Statistical Disclosure Control
+====================================
 
 ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. This package acts as a lightweight Python tool that sits over well-known analysis tools to provide statistical disclosure control.
 
@@ -70,7 +103,7 @@ ACRO implements a principles-based statistical disclosure control (SDC) methodol
 * Reports reasons for applying SDC
 * Produces summary documents for output checkers
 
-Example
+Quick Example
 =============
 
 .. code-block:: python
@@ -78,17 +111,17 @@ Example
    import acro
 
    # Initialize ACRO
-   acro = acro.ACRO(suppress=True)
+   session = acro.ACRO(suppress=True)
 
    # Create a cross-tabulation with automatic disclosure checking
-   safe_table = acro.crosstab(
+   safe_table = session.crosstab(
        df.column1, 
        df.column2, 
        show_suppressed=True
    )
 
    # Finalize outputs for review
-   acro.finalise(output_folder="outputs")
+   session.finalise(output_folder="outputs")
 
 Core Features
 =============
@@ -111,62 +144,62 @@ Works seamlessly with:
 * **Statsmodels** - for statistical modeling
 * **R and Stata** - through wrapper packages
 
-API Overview
-============
+Getting Started
+===============
 
-.. py:class:: ACRO(suppress=True, config=None)
+.. grid:: 3
 
-   The main ACRO class provides the interface for all disclosure checking functionality.
+    .. grid-item-card:: Install
+        :link: installation
+        :link-type: doc
+        :class-header: bg-light
 
-   :param suppress: Whether to suppress potentially disclosive outputs
-   :type suppress: bool
-   :param config: Configuration options for disclosure checking
-   :type config: dict, optional
+        Get ACRO installed and configured in your environment
 
-Parameters
-----------
+    .. grid-item-card:: Learn
+        :link: examples
+        :link-type: doc
+        :class-header: bg-light
 
-.. list-table::
-   :header-rows: 1
-   :widths: 20 20 60
+        Explore tutorials and examples for common use cases
 
-   * - Parameter
-     - Type
-     - Description
-   * - suppress
-     - bool
-     - Whether to suppress potentially disclosive outputs
-   * - config
-     - dict, optional
-     - Configuration options for disclosure checking
+    .. grid-item-card:: Reference
+        :link: api
+        :link-type: doc
+        :class-header: bg-light
+
+        Complete API documentation and function reference
 
 Key Methods
 -----------
 
-* ``crosstab()`` - Create cross-tabulations with disclosure checking
-* ``pivot_table()`` - Create pivot tables with disclosure checking
-* ``ols()`` - Ordinary least squares regression with disclosure checking
-* ``finalise()`` - Prepare outputs for review by data controllers
+* :py:meth:`~acro.ACRO.crosstab` - Create cross-tabulations with disclosure checking
+* :py:meth:`~acro.ACRO.pivot_table` - Create pivot tables with disclosure checking  
+* :py:meth:`~acro.ACRO.ols` - Ordinary least squares regression with disclosure checking
+* :py:meth:`~acro.ACRO.finalise` - Prepare outputs for review by data controllers
 
-Examples
-========
+Community and Support
+=====================
 
-* Jupyter Notebooks
-* R Integration
-* Stata Integration
+.. grid:: 2
 
-Resources
-=========
+    .. grid-item-card:: Get Help
+        :class-header: bg-light
 
-* FAQ
-* Troubleshooting
-* Contributing
-* Changelog
+        * `GitHub Issues <https://github.com/AI-SDC/ACRO/issues>`_
+        * `Discussion Forum <https://github.com/AI-SDC/ACRO/discussions>`_
+        * Email: acro-support@ai-sdc.org
 
-Next Steps
-==========
+    .. grid-item-card:: Contribute
+        :class-header: bg-light
 
-* Install ACRO and set up your environment
-* Follow the Quick Start Guide for your first analysis
-* Explore the Example Notebooks for common use cases
-* Check the API Reference for detailed documentation
+        * `Contributing Guide <https://github.com/AI-SDC/ACRO/blob/main/CONTRIBUTING.md>`_
+        * `Source Code <https://github.com/AI-SDC/ACRO>`_
+        * `Report Issues <https://github.com/AI-SDC/ACRO/issues/new>`_
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

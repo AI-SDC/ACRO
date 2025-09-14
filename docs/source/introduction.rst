@@ -60,17 +60,10 @@ Works seamlessly with:
 API Overview
 ============
 
-.. py:class:: ACRO(suppress=True, config=None)
+The main ACRO class provides the interface for all disclosure checking functionality. See the :doc:`api` documentation for complete details.
 
-   The main ACRO class provides the interface for all disclosure checking functionality.
-
-   :param suppress: Whether to suppress potentially disclosive outputs
-   :type suppress: bool
-   :param config: Configuration options for disclosure checking
-   :type config: dict, optional
-
-Parameters
-----------
+Key Parameters
+--------------
 
 .. list-table::
    :header-rows: 1
@@ -111,40 +104,10 @@ Quick Start
 3. Run analysis with automatic disclosure checking
 4. Finalize outputs for review
 
-Basic Concepts
-==============
-
-Understanding the core principles of statistical disclosure control and how ACRO implements them.
-
-Configuration
-=============
-
-Learn how to configure ACRO for your specific needs and environment.
-
-Working with Tables
-===================
-
-Creating cross-tabulations and pivot tables with built-in disclosure checking.
-
-Statistical Models
-==================
-
-Running regression models and other statistical analyses safely.
-
-Output Management
-=================
-
-Managing and reviewing outputs before final release.
-
-Best Practices
-==============
-
-Guidelines for effective use of ACRO in secure research environments.
-
 Next Steps
 ==========
 
-* Install ACRO and set up your environment
-* Follow the Quick Start Guide for your first analysis
-* Explore the Example Notebooks for common use cases
-* Check the API Reference for detailed documentation
+* :doc:`installation` - Install ACRO and set up your environment
+* :doc:`user_guide` - Follow the comprehensive user guide
+* :doc:`examples` - Explore example notebooks and tutorials
+* :doc:`api` - Check the complete API reference

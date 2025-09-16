@@ -10,6 +10,7 @@ This organisation holds the code repositories for the **SACRO** family of tools:
    :caption: Documentation
 
    introduction
+   support
    installation
    user_guide
    examples

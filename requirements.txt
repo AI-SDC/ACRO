@@ -1,8 +1,1 @@
-lxml
-matplotlib
-numpy
-openpyxl
-pandas>=1.5.0,<2.3
-PyYAML
-scipy<1.16.0
-statsmodels
+-e .

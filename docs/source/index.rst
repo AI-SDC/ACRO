@@ -103,25 +103,6 @@ ACRO implements a principles-based statistical disclosure control (SDC) methodol
 * Reports reasons for applying SDC
 * Produces summary documents for output checkers
 
-Quick Example
-=============
-
-.. code-block:: python
-
-   import acro
-
-   # Initialize ACRO
-   session = acro.ACRO(suppress=True)
-
-   # Create a cross-tabulation with automatic disclosure checking
-   safe_table = session.crosstab(
-       df.column1, 
-       df.column2, 
-       show_suppressed=True
-   )
-
-   # Finalize outputs for review
-   session.finalise(output_folder="outputs")
 
 Core Features
 =============

@@ -1,0 +1,10 @@
+sphinx>=4.0.0
+numpydoc
+sphinx-autopackagesummary
+sphinx-issues
+sphinx-prompt
+pydata-sphinx-theme
+sphinx-design
+nbsphinx>=0.8.0
+ipykernel
+jupyter

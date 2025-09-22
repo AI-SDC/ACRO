@@ -9,13 +9,6 @@ This section provides detailed documentation for all ACRO classes, functions, an
 Core Classes
 ============
 
-.. toctree::
-   :maxdepth: 2
-   :caption: ACRO Classes
-
-   api/acro_class
-   api/records_class
-
 ACRO Class
 ----------
 
@@ -24,6 +17,8 @@ ACRO Class
    :inherited-members:
    :show-inheritance:
    :no-index:
+
+
 
 Record Management
 =================

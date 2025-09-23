@@ -4,6 +4,9 @@ Installation
 
 ACRO can be installed through multiple package managers and methods.
 
+.. note::
+   **Permissions:** You may need administrative rights to perform the installation on your system, depending on your operating system and whether you are working within an organization.
+
 Requirements
 ============
 

@@ -9,49 +9,8 @@ This section provides comprehensive examples and tutorials for using the ACRO fa
    :caption: Getting Started
 
    examples/quickstart
-   examples/basic_workflow
    examples/configuration
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Data Analysis Examples
-
-   examples/cross_tabulation
-   examples/statistical_modeling
-   examples/data_visualization
-   examples/summary_statistics
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Advanced Usage
-
-   examples/custom_disclosure_checks
-   examples/batch_processing
-   examples/integration_workflows
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Language-Specific Examples
-
-   examples/python_notebooks
-   examples/r_workflows
-   examples/stata_integration
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Machine Learning
-
-   examples/ml_privacy_assessment
-   examples/safe_model_export
-   examples/differential_privacy_training
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Output Checking
-
-   examples/sacro_viewer_tutorial
-   examples/reviewer_workflows
-   examples/tre_integration
+   notebook_examples
 
 
 

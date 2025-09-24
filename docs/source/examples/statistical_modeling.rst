@@ -43,7 +43,11 @@ Array-based Linear Regression
    X = pd.get_dummies(data[['x1', 'x2', 'category']], drop_first=True)
    X = acro.add_constant(X)  # Add intercept
    y = data['y']
-   
+
+   # Ensure numeric numpy arrays
+   X = np.asarray(X, dtype=float)
+   y = np.asarray(y, dtype=float)
+      
    # Array-based linear regression
    model_array = session.ols(y, X)
    print(model_array.summary())

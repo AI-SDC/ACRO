@@ -1,0 +1,22 @@
+
+.sd-card {
+    transition: transform 0.2s ease-in-out;
+    border-radius: 0.5rem;
+}
+
+.sd-card:hover {
+    transform: translateY(-5px);
+}
+
+.sd-card-title {
+    color: #fff;
+    font-weight: 600;
+}
+
+.sd-card-footer {
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding-top: 0.5rem;
+}
+
+
+

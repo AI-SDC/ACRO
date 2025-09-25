@@ -4,9 +4,6 @@ Installation
 
 ACRO can be installed through multiple package managers and methods.
 
-.. note::
-   **Permissions:** You may need administrative rights to perform the installation on your system, depending on your operating system and whether you are working within an organization.
-
 Requirements
 ============
 
@@ -37,13 +34,13 @@ Virtual Environment Setup
 
    # Create virtual environment
    python -m venv acro-env
-   
+
    # Activate (Windows)
    acro-env\Scripts\activate
-   
+
    # Activate (Linux/macOS)
    source acro-env/bin/activate
-   
+
    # Install ACRO
    pip install acro
 
@@ -55,7 +52,7 @@ Verification
    import acro
    from acro.version import __version__
    print(f"ACRO version: {__version__}")
-   
+
    # Test basic functionality
    session = acro.ACRO()
    print("ACRO initialized successfully!")

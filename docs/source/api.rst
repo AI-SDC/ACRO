@@ -120,7 +120,7 @@ Most ACRO functions return specialized output objects that contain:
 
    # Example return object structure
    result = acro.crosstab(df.col1, df.col2)
-   
+
    # Access components
    print(result.output)          # Safe output for display
    print(result.disclosure_checks)  # Applied safety checks
@@ -137,16 +137,16 @@ ACRO functions return results that are automatically checked for disclosure risk
 .. code-block:: python
 
    import acro
-   
+
    # Initialize ACRO
    session = acro.ACRO(suppress=True)
-   
+
    # Results are automatically checked
    result = session.crosstab(df.col1, df.col2)
-   
+
    # View outputs
    session.print_outputs()
-   
+
    # Finalize for review
    session.finalise("outputs/")
 
@@ -202,7 +202,7 @@ ACRO uses YAML configuration files to set safety parameters:
 
    # Initialize with default config
    session = acro.ACRO(config="default", suppress=True)
-   
+
    # Configuration is loaded from default.yaml
    print(session.config)
 

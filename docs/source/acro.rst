@@ -1,7 +1,7 @@
-ACRO Module
-===========
+:orphan:
 
-.. automodule:: acro.acro
-   :members:
-   :inherited-members:
-   :no-index:
+====
+ACRO
+====
+
+This page contains ACRO-specific documentation.

@@ -74,10 +74,10 @@ All example code is available in the `ACRO Examples Repository <https://github.c
    # Clone examples repository
    git clone https://github.com/AI-SDC/ACRO-Examples.git
    cd ACRO-Examples
-   
+
    # Install requirements
    pip install -r requirements.txt
-   
+
    # Run Jupyter notebooks
    jupyter notebook
 
@@ -88,19 +88,19 @@ Research Workflow Examples
 --------------------------
 
 1. **Exploratory Data Analysis**
-   
+
    * Safe data exploration and summarization
    * Identifying patterns while protecting privacy
    * Generating publication-ready tables
 
 2. **Statistical Modeling**
-   
+
    * Regression analysis with disclosure control
    * Model comparison and selection
    * Coefficient interpretation and reporting
 
 3. **Machine Learning Projects**
-   
+
    * Privacy-preserving model training
    * Safe model evaluation and comparison
    * Secure model deployment
@@ -109,13 +109,13 @@ TRE Integration Examples
 ------------------------
 
 1. **Airlock Integration**
-   
+
    * Automated output submission
    * Integration with approval workflows
    * Secure file transfer protocols
 
 2. **Multi-user Environments**
-   
+
    * Shared configuration management
    * Collaborative analysis workflows
    * Output tracking and versioning
@@ -124,13 +124,13 @@ Best Practices Examples
 -----------------------
 
 1. **Configuration Management**
-   
+
    * Environment-specific settings
    * Threshold customization
    * Policy compliance
 
 2. **Quality Assurance**
-   
+
    * Reproducible analysis workflows
    * Version control integration
    * Documentation standards
@@ -162,20 +162,20 @@ Example Template
 
    """
    Example Title: Brief Description
-   
+
    This example demonstrates [specific functionality].
-   
+
    Requirements:
    - acro >= 0.4.8
    - pandas >= 1.5.0
-   
+
    Dataset: [dataset name and source]
    Difficulty: [Beginner/Intermediate/Advanced]
    """
-   
+
    import acro
    import pandas as pd
-   
+
    # Example code here...
 
 See Also

@@ -42,7 +42,7 @@ Run regression analyses with automated checks on model outputs and residual degr
 **What ACRO Supports:**
 
 * **ols()** - Ordinary Least Squares linear regression
-* **logit()** - Logistic regression for binary outcomes  
+* **logit()** - Logistic regression for binary outcomes
 * **probit()** - Probit regression for binary outcomes
 
 **Technical Details:**
@@ -80,7 +80,7 @@ Additional programming languages such as this R package are supported by providi
 
 **Integration Features:**
 - Native R syntax and workflows
-- R Markdown and Shiny application support  
+- R Markdown and Shiny application support
 - Tidyverse compatibility
 - CRAN package availability
 

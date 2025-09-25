@@ -1,6 +1,6 @@
-============
+=============
 Configuration
-============
+=============
 
 Comprehensive guide to configuring ACRO for your research environment and organizational policies.
 

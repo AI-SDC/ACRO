@@ -16,15 +16,6 @@ This organisation holds the code repositories for the **SACRO** family of tools:
    examples
    api
 
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: SACRO Tools
-
-   acro
-   sacro_ml
-   acro_r
-   sacro_viewer
 
 .. grid:: 2
 
@@ -32,28 +23,28 @@ This organisation holds the code repositories for the **SACRO** family of tools:
         :link: introduction
         :link-type: doc
         :shadow: md
-        :class-header: bg-primary text-white
+        :class-header: bg-primary
 
         **Statistical Disclosure Control for Python**
-        
+
         Tools for the Semi-Automatic Checking of Research Outputs. Drop-in replacements for common analysis commands with built-in privacy protection.
-        
+
         +++
-        
+
         :bdg-primary:`Current Documentation Focus` :doc:`Get Started → <introduction>`
 
     .. grid-item-card:: SACRO-ML
         :link: sacro_ml
         :link-type: doc
         :shadow: md
-        :class-header: bg-info text-white
+        :class-header: bg-info
 
         **Machine Learning Privacy Tools**
-        
+
         Collection of tools and resources for managing the statistical disclosure control of trained machine learning models.
 
         +++
-        
+
         :bdg-info:`ML Privacy` :doc:`Learn More → <sacro_ml>`
 
 .. grid:: 2
@@ -62,28 +53,28 @@ This organisation holds the code repositories for the **SACRO** family of tools:
         :link: acro_r
         :link-type: doc
         :shadow: md
-        :class-header: bg-success text-white
+        :class-header: bg-success
 
         **R Package Integration**
-        
+
         ACRO R Package: Tools for the Semi-Automatic Checking of Research Outputs for R users and workflows.
 
         +++
-        
+
         :bdg-success:`R Integration` :doc:`Explore → <acro_r>`
 
     .. grid-item-card:: SACRO-Viewer
         :link: sacro_viewer
         :link-type: doc
         :shadow: md
-        :class-header: bg-warning text-dark
+        :class-header: bg-warning
 
         **Output Checking Interface**
-        
+
         A tool for fast, secure and effective output checking, which can work in any TRE (Trusted Research Environment).
 
         +++
-        
+
         :bdg-warning:`GUI Tool` :doc:`View Docs → <sacro_viewer>`
 
 ACRO: Statistical Disclosure Control
@@ -156,7 +147,7 @@ Key Methods
 -----------
 
 * :py:meth:`~acro.ACRO.crosstab` - Create cross-tabulations with disclosure checking
-* :py:meth:`~acro.ACRO.pivot_table` - Create pivot tables with disclosure checking  
+* :py:meth:`~acro.ACRO.pivot_table` - Create pivot tables with disclosure checking
 * :py:meth:`~acro.ACRO.ols` - Ordinary least squares regression with disclosure checking
 * :py:meth:`~acro.ACRO.finalise` - Prepare outputs for review by data controllers
 

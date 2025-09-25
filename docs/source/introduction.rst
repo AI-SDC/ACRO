@@ -28,8 +28,8 @@ Example
 
    # Create a cross-tabulation with automatic disclosure checking
    safe_table = acro.crosstab(
-       df.column1, 
-       df.column2, 
+       df.column1,
+       df.column2,
        show_suppressed=True
    )
 

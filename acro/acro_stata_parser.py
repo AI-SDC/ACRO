@@ -155,12 +155,12 @@ def parse_table_details(
                     if word not in details["rowvars"]:
                         details["rowvars"].insert(0, word)
 
-    elif stata_version == "17":
+    elif stata_version >= "17":
         details["rowvars"] = varlist.pop(0).split()
         details["colvars"] = varlist.pop(0).split()
         if len(details["rowvars"]) == 0 or len(details["colvars"]) == 0:
             details["errmsg"] = (
-                "acro does not currently support one dimensioanl tables. "
+                "acro does not currently support one dimensional tables. "
                 "To calculate cross tabulation, you need to provide at "
                 "least one row and one column."
             )
@@ -232,7 +232,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments
         outcome = run_output_command(command, varlist)
     elif command == "table" and stata_version == "16":
         outcome = run_table_command(mydata, varlist, weights, options, stata_version)
-    elif command == "table" and stata_version == "17":
+    elif command == "table" and stata_version >= "17":
         varlist = extract_strings(varlist_as_str)
         outcome = run_table_command(mydata, varlist, weights, options, stata_version)
 

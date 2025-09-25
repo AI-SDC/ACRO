@@ -41,6 +41,8 @@ from acro import acro_stata_parser
 
 debug = False
 def acrohandler(command, varlist,exclusion,exp,weights,options, stata_version):
+    exclusion=exclusion.replace("if","")
+
     if debug:
         outline = 'in python acrohandler function: '
         outline +=    f'command = {command} '

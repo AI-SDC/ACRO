@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.abspath("../../"))
 from acro.version import __version__
 
 project = "ACRO"
-copyright = "2024, ACRO Project Team"
-author = "ACRO Project Team"
+copyright = "2025, SACRO Project Team"
+author = "SACRO Project Team"
 release = __version__
 
 

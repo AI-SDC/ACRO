@@ -7,7 +7,7 @@ ACRO can be installed through multiple package managers and methods.
 Requirements
 ============
 
-* **Python**: 3.9 or higher
+* **Python**: 3.10 or higher
 * **Operating System**: Windows, macOS, or Linux
 
 Quick Installation

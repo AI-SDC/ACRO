@@ -2,7 +2,8 @@
 Welcome to the AI-SDC family of tools
 ========================================
 
-This organisation holds the code repositories for the **SACRO** family of tools:
+Our tools are designed to help researchers assess the privacy disclosure risks of their outputs, including tables, plots, statistical models, and trained machine learning models
+
 
 .. toctree::
    :maxdepth: 2
@@ -57,7 +58,7 @@ This organisation holds the code repositories for the **SACRO** family of tools:
 
         **R Package Integration**
 
-        ACRO R Package: Tools for the Semi-Automatic Checking of Research Outputs for R users and workflows.
+        R-language interface for the Python ACRO library, providing familiar R syntax for statistical disclosure control.
 
         +++
 
@@ -69,9 +70,9 @@ This organisation holds the code repositories for the **SACRO** family of tools:
         :shadow: md
         :class-header: bg-warning
 
-        **Output Checking Interface**
+        **Graphical User Interface**
 
-        A tool for fast, secure and effective output checking, which can work in any TRE (Trusted Research Environment).
+        A graphical user interface for fast, secure and effective output checking, which can work in any TRE (Trusted Research Environment).
 
         +++
 
@@ -80,7 +81,7 @@ This organisation holds the code repositories for the **SACRO** family of tools:
 ACRO: Statistical Disclosure Control
 ====================================
 
-ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. This package acts as a lightweight Python tool that sits over well-known analysis tools to provide statistical disclosure control.
+ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. SACRO is a framework that applies best-practice principles-based statistical disclosure control (SDC) techniques on-the-fly as researchers conduct their analysis. SACRO is designed to assist human checkers rather than seeking to replace them as with current automated rules-based approaches.
 
 .. note::
    **New in v0.4.8:** Enhanced support for complex statistical models and improved R integration.
@@ -99,23 +100,26 @@ ACRO implements a principles-based statistical disclosure control (SDC) methodol
 Core Features
 =============
 
-Automated Disclosure Checking
------------------------------
-
-ACRO automatically runs disclosure tests on your outputs, checking for:
-
-* Small cell counts in tables
-* Threshold disclosure in statistical models
-* Identity disclosure risks
-
-Integration with Popular Libraries
+Semi-Automated Disclosure Checking
 ----------------------------------
 
-Works seamlessly with:
+* **Drop-in replacements** for common Python analysis commands (pandas, statsmodels, etc.) with configurable disclosure checks
+* **Automated sensitivity tests**: frequency thresholds, dominance (p%, NK rules, etc.), residual degrees-of-freedom checks
+* **Optional mitigations**: suppression, rounding, and more to come
+* **Session management**: track, rename, comment, remove, add exceptions, and finalise reports
+* **Configurable risk parameters** via YAML files
+* **Generates auditable reports** in JSON or Excel
 
-* **Pandas** - for data manipulation and table creation
-* **Statsmodels** - for statistical modeling
-* **R and Stata** - through wrapper packages
+Design Principles
+-----------------
+
+* **Free and open source** under MIT (ACRO) / GPLv3 (SACRO Viewer)
+* **Easy to install** via PyPI, CRAN, or GitHub; cross-platform (Linux, macOS, Windows)
+* **Familiar APIs** - same function signatures as native commands: acro.crosstab mirrors pandas.crosstab, etc.
+* **Comprehensive coverage** - tables, regressions, histograms, survival plots, etc.
+* **Transparent & auditable** - clear reports, stored queries, designed for human-checkers
+* **Configurable & extensible** - organisation-defined disclosure rules, multi-language support
+* **Scalable** - lightweight, session-based, local execution
 
 Getting Started
 ===============

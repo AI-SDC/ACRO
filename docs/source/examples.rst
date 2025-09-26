@@ -22,8 +22,8 @@ Interactive Notebooks
 Python Jupyter Notebooks
 -------------------------
 
-* `Basic ACRO Tutorial <_static/test.nb.html>`_ - Introduction to ACRO with the charities dataset
-* `Advanced Analysis <_static/test-nursery.nb.html>`_ - Complex analysis with the nursery dataset
+* :doc:`../notebooks/test` - Introduction to ACRO with the charities dataset
+* :doc:`../notebooks/test-nursery` - Complex analysis with the nursery dataset
 
 R Notebooks
 -----------
@@ -62,7 +62,7 @@ A classification dataset for nursery school applications, featuring:
 * Categorical variables (parents, has_nurs, form, children, housing, finance, social, health)
 * Target variable (spec_prior, priority, not_recom)
 
-**Usage**: Perfect for machine learning and classification examples
+**Usage**: Perfect for statistical modeling and regression examples
 
 Sample Code Repository
 ======================
@@ -99,26 +99,21 @@ Research Workflow Examples
    * Model comparison and selection
    * Coefficient interpretation and reporting
 
-3. **Machine Learning Projects**
+3. **Advanced Statistical Analysis**
 
-   * Privacy-preserving model training
-   * Safe model evaluation and comparison
-   * Secure model deployment
+   * Complex regression modeling
+   * Survival analysis with disclosure control
+   * Custom statistical procedures
 
-TRE Integration Examples
-------------------------
+TRE Integration
+---------------
 
-1. **Airlock Integration**
+ACRO integrates with Trusted Research Environments (TREs) to provide:
 
-   * Automated output submission
-   * Integration with approval workflows
-   * Secure file transfer protocols
-
-2. **Multi-user Environments**
-
-   * Shared configuration management
-   * Collaborative analysis workflows
-   * Output tracking and versioning
+* **Automated output submission** to approval workflows
+* **Integration with existing TRE systems** and security protocols
+* **Multi-user support** with shared configuration management
+* **Audit trails** for compliance and tracking
 
 Best Practices Examples
 -----------------------

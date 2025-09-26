@@ -21,7 +21,7 @@ jobs:
       - name: Install Pandoc
         uses: pandoc/actions/setup@v1
         with:
-          version: '3.1.2' 
+          version: '3.1.2'
 
       - name: Copy notebooks to source directory
         run: cp -r notebooks docs/source

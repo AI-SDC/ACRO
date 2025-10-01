@@ -16,6 +16,8 @@ Quick Installation
 PyPI Installation (Recommended)
 --------------------------------
 
+You may need admin privileges to install this way.
+
 .. code-block:: bash
 
    pip install acro
@@ -23,12 +25,16 @@ PyPI Installation (Recommended)
 Conda Installation
 ------------------
 
+You may need admin privileges to install this way.
+
 .. code-block:: bash
 
    conda install -c conda-forge acro
 
-Virtual Environment Setup
-==========================
+Installing within a Virtual Environment
+========================================
+
+This isolates ACRO from changes in the rest of your system, and may be necessary if you don't have admin privileges on your machine.
 
 .. code-block:: bash
 
@@ -60,6 +66,6 @@ Verification
 Next Steps
 ==========
 
-* :doc:`introduction` - Getting started guide
+* :doc:`introduction` - Welcome to ACRO
 * :doc:`examples` - Usage examples and tutorials
 * :doc:`api` - Complete API reference

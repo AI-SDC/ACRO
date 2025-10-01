@@ -20,7 +20,7 @@ Create frequency tables and cross-tabulations with automatic cell suppression fo
 
 * **crosstab()** - Cross-tabulation of two or more variables with frequency counting
 * **pivot_table()** - Spreadsheet-style pivot tables with aggregation functions
-* **table()** - Simple frequency tables for categorical data
+* **table()** - Simple frequency tables for categorical data (R interface only)
 
 **Technical Details:**
 - ACRO suppresses, and reports the reason why, the value of an aggregation statistic (mean, median, variance, etc.) for any cell is deemed to be sensitive

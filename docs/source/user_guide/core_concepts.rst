@@ -36,16 +36,25 @@ Disclosure Control Methods
 Cell Suppression
 -----------------
 
-Primary method for protecting small counts:
+Current implementation:
 
 * **Primary suppression** - Hide risky cells
+
+.. note::
+   **Roadmap Feature**: Secondary and complementary suppression are planned for future releases.
+
+Planned suppression methods:
+
 * **Secondary suppression** - Protect against inference
 * **Complementary suppression** - Additional protection
 
 Statistical Perturbation
 ------------------------
 
-Adding controlled noise to outputs:
+.. note::
+   **Roadmap Feature**: Statistical perturbation methods are planned for future releases.
+
+Planned perturbation methods:
 
 * **Cell-level perturbation** - Modify individual values
 * **Table-level perturbation** - Systematic adjustments
@@ -118,7 +127,10 @@ ACRO includes comprehensive validation:
 Performance Monitoring
 ----------------------
 
-Built-in performance tracking:
+.. note::
+   **Roadmap Feature**: Performance monitoring capabilities are planned for future releases.
+
+Planned performance tracking features:
 
 * **Execution timing** - Analysis performance metrics
 * **Memory usage** - Resource consumption monitoring

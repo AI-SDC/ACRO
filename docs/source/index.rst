@@ -150,10 +150,10 @@ Getting Started
 Key Methods
 -----------
 
-* :py:meth:`~acro.ACRO.crosstab` - Create cross-tabulations with disclosure checking
-* :py:meth:`~acro.ACRO.pivot_table` - Create pivot tables with disclosure checking
-* :py:meth:`~acro.ACRO.ols` - Ordinary least squares regression with disclosure checking
-* :py:meth:`~acro.ACRO.finalise` - Prepare outputs for review by data controllers
+* **Making tables** - e.g. :py:meth:`~acro.ACRO.crosstab`
+* **Regression analysis** - e.g. :py:meth:`~acro.ACRO.ols`
+* **Making plots** - e.g. :py:meth:`~acro.ACRO.hist`
+* **Managing a research session** - e.g. :py:meth:`~acro.ACRO.finalise`
 
 Community and Support
 =====================
@@ -165,7 +165,7 @@ Community and Support
 
         * `GitHub Issues <https://github.com/AI-SDC/ACRO/issues>`_
         * `Discussion Forum <https://github.com/AI-SDC/ACRO/discussions>`_
-        * Email: acro-support@ai-sdc.org
+        * Email: sacro.contact@uwe.ac.uk
 
     .. grid-item-card:: Contribute
         :class-header: bg-light

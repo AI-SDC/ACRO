@@ -33,7 +33,6 @@ extensions = [
 
 exclude_patterns = []
 
-html_static_path = ["_static"]
 
 
 html_theme = "pydata_sphinx_theme"

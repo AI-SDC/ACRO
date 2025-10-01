@@ -67,6 +67,9 @@ TRE Risk Appetite Settings
 **survival_safe_threshold** (default: 10)
    Minimum observations for survival analysis outputs
 
+**zeros_are_disclosive** (default: true)
+   Whether zero values are considered disclosive. TREs can set this to false for datasets where class disclosure is not relevant
+
 Behavioral Settings
 -------------------
 

@@ -6,10 +6,6 @@ ACRO is a free and open source tool that supports the semi-automated checking of
 .. note::
    **New in v0.4.8:** Enhanced support for complex statistical models and improved R integration.
 
-How does ACRO work?
-=============
-Schematic illustration of SACRO. Disclosure checks are automated. Mitigation strategies optionally applied by researchers and approved by
-TRE staff.
 .. image:: ../schematic.png
    :alt: ACRO workflow and architecture schematic
    :align: center

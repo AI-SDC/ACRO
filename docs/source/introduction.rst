@@ -6,12 +6,6 @@ ACRO is a free and open source tool that supports the semi-automated checking of
 .. note::
    **New in v0.4.8:** Enhanced support for complex statistical models and improved R integration.
 
-.. image:: ../schematic.png
-   :alt: ACRO workflow and architecture schematic
-   :align: center
-   :width: 600px
-
-
 What is ACRO?
 =============
 
@@ -28,29 +22,19 @@ Example
 .. code-block:: python
 
    import acro
-   import pandas as pd
-   import numpy as np
-
-   # Create synthetic data
-   np.random.seed(42)
-   df = pd.DataFrame({
-       'region': np.random.choice(['North', 'South', 'East', 'West'], 1000),
-       'income': np.random.choice(['Low', 'Medium', 'High'], 1000),
-       'age_group': np.random.choice(['18-30', '31-50', '51+'], 1000)
-   })
 
    # Initialize ACRO
-   session = acro.ACRO(suppress=True)
+   acro = acro.ACRO(suppress=True)
 
    # Create a cross-tabulation with automatic disclosure checking
-   safe_table = session.crosstab(
-       df.region,
-       df.income,
+   safe_table = acro.crosstab(
+       df.column1, 
+       df.column2, 
        show_suppressed=True
    )
 
    # Finalize outputs for review
-   session.finalise(output_folder="outputs")
+   acro.finalise(output_folder="outputs")
 
 Core Features
 =============

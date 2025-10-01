@@ -9,8 +9,49 @@ This section provides comprehensive examples and tutorials for using the ACRO fa
    :caption: Getting Started
 
    examples/quickstart
+   examples/basic_workflow
    examples/configuration
-   notebook_examples
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Data Analysis Examples
+
+   examples/cross_tabulation
+   examples/statistical_modeling
+   examples/data_visualization
+   examples/summary_statistics
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced Usage
+
+   examples/custom_disclosure_checks
+   examples/batch_processing
+   examples/integration_workflows
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Language-Specific Examples
+
+   examples/python_notebooks
+   examples/r_workflows
+   examples/stata_integration
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Machine Learning
+
+   examples/ml_privacy_assessment
+   examples/safe_model_export
+   examples/differential_privacy_training
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Output Checking
+
+   examples/sacro_viewer_tutorial
+   examples/reviewer_workflows
+   examples/tre_integration
 
 
 
@@ -22,8 +63,8 @@ Interactive Notebooks
 Python Jupyter Notebooks
 -------------------------
 
-* :doc:`../notebooks/test` - Introduction to ACRO with the charities dataset
-* :doc:`../notebooks/test-nursery` - Complex analysis with the nursery dataset
+* `Basic ACRO Tutorial <_static/test.nb.html>`_ - Introduction to ACRO with the charities dataset
+* `Advanced Analysis <_static/test-nursery.nb.html>`_ - Complex analysis with the nursery dataset
 
 R Notebooks
 -----------
@@ -62,7 +103,7 @@ A classification dataset for nursery school applications, featuring:
 * Categorical variables (parents, has_nurs, form, children, housing, finance, social, health)
 * Target variable (spec_prior, priority, not_recom)
 
-**Usage**: Perfect for statistical modeling and regression examples
+**Usage**: Perfect for machine learning and classification examples
 
 Sample Code Repository
 ======================
@@ -74,10 +115,10 @@ All example code is available in the `ACRO Examples Repository <https://github.c
    # Clone examples repository
    git clone https://github.com/AI-SDC/ACRO-Examples.git
    cd ACRO-Examples
-
+   
    # Install requirements
    pip install -r requirements.txt
-
+   
    # Run Jupyter notebooks
    jupyter notebook
 
@@ -88,44 +129,49 @@ Research Workflow Examples
 --------------------------
 
 1. **Exploratory Data Analysis**
-
+   
    * Safe data exploration and summarization
    * Identifying patterns while protecting privacy
    * Generating publication-ready tables
 
 2. **Statistical Modeling**
-
+   
    * Regression analysis with disclosure control
    * Model comparison and selection
    * Coefficient interpretation and reporting
 
-3. **Advanced Statistical Analysis**
+3. **Machine Learning Projects**
+   
+   * Privacy-preserving model training
+   * Safe model evaluation and comparison
+   * Secure model deployment
 
-   * Complex regression modeling
-   * Survival analysis with disclosure control
-   * Custom statistical procedures
+TRE Integration Examples
+------------------------
 
-TRE Integration
----------------
+1. **Airlock Integration**
+   
+   * Automated output submission
+   * Integration with approval workflows
+   * Secure file transfer protocols
 
-ACRO integrates with Trusted Research Environments (TREs) to provide:
-
-* **Automated output submission** to approval workflows
-* **Integration with existing TRE systems** and security protocols
-* **Multi-user support** with shared configuration management
-* **Audit trails** for compliance and tracking
+2. **Multi-user Environments**
+   
+   * Shared configuration management
+   * Collaborative analysis workflows
+   * Output tracking and versioning
 
 Best Practices Examples
 -----------------------
 
 1. **Configuration Management**
-
+   
    * Environment-specific settings
    * Threshold customization
    * Policy compliance
 
 2. **Quality Assurance**
-
+   
    * Reproducible analysis workflows
    * Version control integration
    * Documentation standards
@@ -157,20 +203,20 @@ Example Template
 
    """
    Example Title: Brief Description
-
+   
    This example demonstrates [specific functionality].
-
+   
    Requirements:
    - acro >= 0.4.8
    - pandas >= 1.5.0
-
+   
    Dataset: [dataset name and source]
    Difficulty: [Beginner/Intermediate/Advanced]
    """
-
+   
    import acro
    import pandas as pd
-
+   
    # Example code here...
 
 See Also

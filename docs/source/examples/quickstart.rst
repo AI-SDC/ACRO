@@ -52,6 +52,6 @@ Quick Workflow
 Next Steps
 ==========
 
-* :doc:`configuration` - Learn configuration options
+* :doc:`basic_workflow` - Learn the complete analysis workflow
 * :doc:`../api` - Explore the full API reference
-* :doc:`../notebook_examples` - Interactive Jupyter notebook examples
+* :doc:`cross_tabulation` - Deep dive into cross-tabulation features

@@ -2,8 +2,7 @@
 Welcome to the AI-SDC family of tools
 ========================================
 
-Our tools are designed to help researchers assess the privacy disclosure risks of their outputs, including tables, plots, statistical models, and trained machine learning models
-
+This organisation holds the code repositories for the **SACRO** family of tools:
 
 .. toctree::
    :maxdepth: 2
@@ -17,6 +16,15 @@ Our tools are designed to help researchers assess the privacy disclosure risks o
    examples
    api
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: SACRO Tools
+
+   acro
+   sacro_ml
+   acro_r
+   sacro_viewer
 
 .. grid:: 2
 
@@ -24,28 +32,28 @@ Our tools are designed to help researchers assess the privacy disclosure risks o
         :link: introduction
         :link-type: doc
         :shadow: md
-        :class-header: bg-primary
+        :class-header: bg-primary text-white
 
         **Statistical Disclosure Control for Python**
-
+        
         Tools for the Semi-Automatic Checking of Research Outputs. Drop-in replacements for common analysis commands with built-in privacy protection.
-
+        
         +++
-
+        
         :bdg-primary:`Current Documentation Focus` :doc:`Get Started → <introduction>`
 
     .. grid-item-card:: SACRO-ML
         :link: sacro_ml
         :link-type: doc
         :shadow: md
-        :class-header: bg-info
+        :class-header: bg-info text-white
 
         **Machine Learning Privacy Tools**
-
+        
         Collection of tools and resources for managing the statistical disclosure control of trained machine learning models.
 
         +++
-
+        
         :bdg-info:`ML Privacy` :doc:`Learn More → <sacro_ml>`
 
 .. grid:: 2
@@ -54,34 +62,34 @@ Our tools are designed to help researchers assess the privacy disclosure risks o
         :link: acro_r
         :link-type: doc
         :shadow: md
-        :class-header: bg-success
+        :class-header: bg-success text-white
 
         **R Package Integration**
-
-        R-language interface for the Python ACRO library, providing familiar R syntax for statistical disclosure control.
+        
+        ACRO R Package: Tools for the Semi-Automatic Checking of Research Outputs for R users and workflows.
 
         +++
-
+        
         :bdg-success:`R Integration` :doc:`Explore → <acro_r>`
 
     .. grid-item-card:: SACRO-Viewer
         :link: sacro_viewer
         :link-type: doc
         :shadow: md
-        :class-header: bg-warning
+        :class-header: bg-warning text-dark
 
-        **Graphical User Interface**
-
-        A graphical user interface for fast, secure and effective output checking, which can work in any TRE (Trusted Research Environment).
+        **Output Checking Interface**
+        
+        A tool for fast, secure and effective output checking, which can work in any TRE (Trusted Research Environment).
 
         +++
-
+        
         :bdg-warning:`GUI Tool` :doc:`View Docs → <sacro_viewer>`
 
 ACRO: Statistical Disclosure Control
 ====================================
 
-ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. SACRO is a framework that applies best-practice principles-based statistical disclosure control (SDC) techniques on-the-fly as researchers conduct their analysis. SACRO is designed to assist human checkers rather than seeking to replace them as with current automated rules-based approaches.
+ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. This package acts as a lightweight Python tool that sits over well-known analysis tools to provide statistical disclosure control.
 
 .. note::
    **New in v0.4.8:** Enhanced support for complex statistical models and improved R integration.
@@ -96,30 +104,46 @@ ACRO implements a principles-based statistical disclosure control (SDC) methodol
 * Reports reasons for applying SDC
 * Produces summary documents for output checkers
 
+Quick Example
+=============
+
+.. code-block:: python
+
+   import acro
+
+   # Initialize ACRO
+   session = acro.ACRO(suppress=True)
+
+   # Create a cross-tabulation with automatic disclosure checking
+   safe_table = session.crosstab(
+       df.column1, 
+       df.column2, 
+       show_suppressed=True
+   )
+
+   # Finalize outputs for review
+   session.finalise(output_folder="outputs")
 
 Core Features
 =============
 
-Semi-Automated Disclosure Checking
+Automated Disclosure Checking
+-----------------------------
+
+ACRO automatically runs disclosure tests on your outputs, checking for:
+
+* Small cell counts in tables
+* Threshold disclosure in statistical models
+* Identity disclosure risks
+
+Integration with Popular Libraries
 ----------------------------------
 
-* **Drop-in replacements** for common Python analysis commands (pandas, statsmodels, etc.) with configurable disclosure checks
-* **Automated sensitivity tests**: frequency thresholds, dominance (p%, NK rules, etc.), residual degrees-of-freedom checks
-* **Optional mitigations**: suppression, rounding, and more to come
-* **Session management**: track, rename, comment, remove, add exceptions, and finalise reports
-* **Configurable risk parameters** via YAML files
-* **Generates auditable reports** in JSON or Excel
+Works seamlessly with:
 
-Design Principles
------------------
-
-* **Free and open source** under MIT (ACRO) / GPLv3 (SACRO Viewer)
-* **Easy to install** via PyPI, CRAN, or GitHub; cross-platform (Linux, macOS, Windows)
-* **Familiar APIs** - same function signatures as native commands: acro.crosstab mirrors pandas.crosstab, etc.
-* **Comprehensive coverage** - tables, regressions, histograms, survival plots, etc.
-* **Transparent & auditable** - clear reports, stored queries, designed for human-checkers
-* **Configurable & extensible** - organisation-defined disclosure rules, multi-language support
-* **Scalable** - lightweight, session-based, local execution
+* **Pandas** - for data manipulation and table creation
+* **Statsmodels** - for statistical modeling
+* **R and Stata** - through wrapper packages
 
 Getting Started
 ===============
@@ -151,7 +175,7 @@ Key Methods
 -----------
 
 * :py:meth:`~acro.ACRO.crosstab` - Create cross-tabulations with disclosure checking
-* :py:meth:`~acro.ACRO.pivot_table` - Create pivot tables with disclosure checking
+* :py:meth:`~acro.ACRO.pivot_table` - Create pivot tables with disclosure checking  
 * :py:meth:`~acro.ACRO.ols` - Ordinary least squares regression with disclosure checking
 * :py:meth:`~acro.ACRO.finalise` - Prepare outputs for review by data controllers
 

@@ -25,10 +25,6 @@ Create frequency tables and cross-tabulations with automatic cell suppression fo
 **Technical Details:**
 - ACRO suppresses, and reports the reason why, the value of an aggregation statistic (mean, median, variance, etc.) for any cell is deemed to be sensitive
 - The current version of ACRO supports the three most common tests for sensitivity: ensuring the number of contributors is above a frequency threshold, and testing for dominance via N-K rules
-- **N-K Rule**: A dominance test where if the top N contributors account for more than K% of the total, the cell is considered disclosive
-- **Frequency Threshold**: Cells with fewer than a specified number of contributors are suppressed
-- All thresholds are configurable via YAML configuration files
-- For detailed methodology, see our `research paper <https://doi.org/10.1109/TP.2025.3566052>`_
 - Automatic flagging of negative or missing values for human review
 
 **Example Use Cases:**
@@ -46,7 +42,7 @@ Run regression analyses with automated checks on model outputs and residual degr
 **What ACRO Supports:**
 
 * **ols()** - Ordinary Least Squares linear regression
-* **logit()** - Logistic regression for binary outcomes
+* **logit()** - Logistic regression for binary outcomes  
 * **probit()** - Probit regression for binary outcomes
 
 **Technical Details:**
@@ -84,7 +80,7 @@ Additional programming languages such as this R package are supported by providi
 
 **Integration Features:**
 - Native R syntax and workflows
-- R Markdown and Shiny application support
+- R Markdown and Shiny application support  
 - Tidyverse compatibility
 - CRAN package availability
 
@@ -153,8 +149,11 @@ Research Environments
 - Government statistical offices
 - Healthcare research environments
 
-**Installation:**
-See :doc:`installation` for complete installation instructions and system requirements.
+**Installation Methods:**
+- PyPI (Python Package Index): ``pip install acro``
+- Conda package manager
+- CRAN (for R users): ``install.packages('acro')``
+- Direct GitHub installation for development versions
 
 Integration Capabilities
 ========================

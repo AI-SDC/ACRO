@@ -9,32 +9,14 @@
 }
 
 .sd-card-title {
+    color: #fff;
     font-weight: 600;
-}
-
-
-[data-theme="light"] .sd-card-title {
-    color: #212529 !important;
-}
-
-[data-theme="dark"] .sd-card-title {
-    color: #fff !important;
-}
-
-
-@media (prefers-color-scheme: light) {
-    .sd-card-title {
-        color: #212529 !important;
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    .sd-card-title {
-        color: #fff !important;
-    }
 }
 
 .sd-card-footer {
     border-top: 1px solid rgba(0,0,0,0.1);
     padding-top: 0.5rem;
 }
+
+
+

@@ -18,7 +18,8 @@ def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     """Parse an if statement from stata format then use it to subset a dataframe by contents."""
     if len(raw) == 0:
         return all_data
-
+    #lose any stray 'if' keywords that have got across
+    raw=raw.replace("if","")
     # add braces around each clause- keeping any in the original
     raw = "( " + raw + ")"
     raw = raw.replace("&", ") & (")
@@ -124,7 +125,7 @@ def extract_aggfun_values_from_options(details, contents_found, content, varname
 
 
 def parse_table_details(
-    varlist: list, varnames: list, options: str, stata_version: str
+    varlist: list, varnames: list, options: str, stata_version: float
 ) -> dict:
     """Parse stata-16 style table calls.
 
@@ -135,7 +136,7 @@ def parse_table_details(
     details: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
     contents_found, content = False, []
 
-    if stata_version == "16":
+    if stata_version == 16:
         details["rowvars"] = [varlist.pop(0)]
         details["colvars"] = list(reversed(varlist))
 
@@ -155,9 +156,15 @@ def parse_table_details(
                     if word not in details["rowvars"]:
                         details["rowvars"].insert(0, word)
 
-    elif stata_version >= "17":
-        details["rowvars"] = varlist.pop(0).split()
-        details["colvars"] = varlist.pop(0).split()
+    elif stata_version >= 17:
+        def stata_details_to_list(mydetails)->str:
+            if isinstance(mydetails,str):
+             return mydetails.split() 
+            else:
+             return list(mydetails)
+                
+        details["rowvars"] = stata_details_to_list(varlist.pop(0))
+        details["colvars"] = stata_details_to_list(varlist.pop(0))
         if len(details["rowvars"]) == 0 or len(details["colvars"]) == 0:
             details["errmsg"] = (
                 "acro does not currently support one dimensional tables. "
@@ -212,6 +219,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     # Sometime_TODO de-abbreviate according to
     # https://www.stata.com/manuals13/u11.pdf#u11.1.3ifexp
 
+    stata_version=float(stata_version)
     varlist: list = varlist_as_str.split()
     # print(varlist)
 
@@ -230,9 +238,9 @@ def parse_and_run(  # pylint: disable=too-many-arguments
         outcome = run_session_command(command, varlist)
     elif command in ["remove_output", "rename_output", "add_comments", "add_exception"]:
         outcome = run_output_command(command, varlist)
-    elif command == "table" and stata_version == "16":
+    elif command == "table" and stata_version == 16:
         outcome = run_table_command(mydata, varlist, weights, options, stata_version)
-    elif command == "table" and stata_version >= "17":
+    elif command == "table" and stata_version >= 17:
         varlist = extract_strings(varlist_as_str)
         outcome = run_table_command(mydata, varlist, weights, options, stata_version)
 

@@ -79,7 +79,7 @@ def test_parse_table_details(data):
     varlist = ["survivor", "grant_type", "year"]
     varnames = data.columns
     options = "statistic(mean inc_activity) suppress  nototals"
-    details = parse_table_details(varlist, varnames, options, stata_version="17")
+    details = parse_table_details(varlist, varnames, options, stata_version=17)
 
     errstring = f" rows {details['rowvars']} should be ['survivor', 'grant_type']"
     assert details["rowvars"] == ["survivor"], errstring
@@ -958,7 +958,7 @@ def test_table_stata17_4(data):
 def test_one_dimensional_table(data):
     """Check that one dimensional table is not supported at the moment."""
     correct = (
-        "acro does not currently support one dimensioanl tables. "
+        "acro does not currently support one dimensional tables. "
         "To calculate cross tabulation, you need to provide at "
         "least one row and one column."
     )

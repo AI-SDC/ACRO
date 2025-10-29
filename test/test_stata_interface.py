@@ -161,7 +161,7 @@ def test_parse_table_details(data):
     varlist = ["survivor", "grant_type", "year"]
     varnames = data.columns
     options = "by(grant_type) contents(mean sd inc_activity) suppress  nototals"
-    details = parse_table_details(varlist, varnames, options, stata_version="16")
+    details = parse_table_details(varlist, varnames, options, stata_version=16)
 
     errstring = f" rows {details['rowvars']} should be ['grant_type','survivor']"
     assert details["rowvars"] == ["grant_type", "survivor"], errstring
@@ -180,9 +180,9 @@ def test_parse_table_details(data):
 
     # invalid var in by list
     options = "by(football) contents(mean ) "
-    details = parse_table_details(varlist, varnames, options, stata_version="16")
-    correct = "Error: word football in by-list is not a variables name"
-    errstring = f" rows {details['errmsg']} should be {correct}"
+    details = parse_table_details(varlist, varnames, options, stata_version=16)
+    correct = "Error: invalid names in table specifier: ['football']"
+    errstring = f" {details['errmsg']} should be {correct}"
     assert details["errmsg"] == correct, errstring
 
 
@@ -602,7 +602,7 @@ def test_table_aggcfn(data):
 
 def test_table_invalidvar(data):
     """Check table details are valid."""
-    correct = "Error: word foo in by-list is not a variables name"
+    correct = "Error: invalid names in table specifier: ['foo']"
     ret = dummy_acrohandler(
         data,
         "table",
@@ -613,7 +613,7 @@ def test_table_invalidvar(data):
         options="by(foo) ",
         stata_version="16",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == correct.split(), f"got: {ret}, expected: {correct}"
 
 
 def test_stata_probit(data):

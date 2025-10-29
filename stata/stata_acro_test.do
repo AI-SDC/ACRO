@@ -44,7 +44,7 @@ noisily acro table year survivor grant_type, contents(count inc_grants sd inc_gr
 noisily display `""'
 noisily display `""'
 **** tabulation with contents
-* acro table year survivor if year>2013, contents(freq mean inc_activity sd inc_activity)
+ acro table year survivor if year>2013, contents(freq mean inc_activity sd inc_activity)
 
 noisily display `""'
 noisily display `""'
@@ -76,7 +76,7 @@ tsset index year
 *acro xtreg inc_activity inc_grants inc_donations total_costs , re
 
 *display `"now calling: acro table survivor grant_type if year>2013"'
-*acro table survivor grant_type if year>2013
+acro table survivor grant_type if year>2013
 
 
 

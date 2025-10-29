@@ -18,8 +18,8 @@ def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     """Parse an if statement from stata format then use it to subset a dataframe by contents."""
     if len(raw) == 0:
         return all_data
-    #lose any stray 'if' keywords that have got across
-    raw=raw.replace("if","")
+    # lose any stray 'if' keywords that have got across
+    raw = raw.replace("if", "")
     # add braces around each clause- keeping any in the original
     raw = "( " + raw + ")"
     raw = raw.replace("&", ") & (")
@@ -107,81 +107,90 @@ def find_brace_word(word: str, raw: str):
     return True, result
 
 
-def extract_aggfun_values_from_options(details, contents_found, content, varnames):
-    """Extract the aggfunc and the values from the content."""
+def extract_aggfun_values_from_options(contents_found, content, varnames) -> dict:
+    """
+    Extract the variables to aggregate, and the aggregation function.
+
+    Parameters
+    ----------
+        contents_found:bool
+            did the user specify what other put in cells?
+        content: list(str)
+            what did they ask for?
+
+    Returns
+    -------
+     cell contents: (dictionary)
+    """
     # contents can be variable names or aggregation functions
-    details["aggfuncs"], details["values"] = list([]), list([])
+    cell_content: dict = {"aggfuncs": list([]), "values": list([])}
     if contents_found and len(content) > 0:
         for element in content:
             contents = element.split()
             for word in contents:
                 if word in varnames:
-                    if word not in details["values"]:
-                        details["values"].append(word)
+                    if word not in cell_content["values"]:
+                        cell_content["values"].append(word)
                 else:
-                    if word not in details["aggfuncs"]:
-                        details["aggfuncs"].append(word)
-    return details
+                    if word not in cell_content["aggfuncs"]:
+                        cell_content["aggfuncs"].append(word)
+    return cell_content
 
 
 def parse_table_details(
     varlist: list, varnames: list, options: str, stata_version: float
 ) -> dict:
-    """Parse stata-16 style table calls.
-
-    Note this is not for latest version of stata, syntax here:
-    https://www.stata.com/manuals16/rtable.pdf
-    >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
-    details: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
-    contents_found, content = False, []
+    Parse table details from Stata and return as dictionary.
 
-    if stata_version == 16:
-        details["rowvars"] = [varlist.pop(0)]
-        details["colvars"] = list(reversed(varlist))
+    Calls version relevant to stata version.
 
+    Parameters
+    ----------
+    varlist : list
+        list of variable names the researcher wants to form rows/cols in their table
+    varnames : list
+        list of variable names present in the data
+        i.e. columns in the dataframe
+    options : str
+        string contains 'options' as parsed by Stata
+        (everything after the comma)
+        to be interpreted in table design
+    stata_version : float
+        defines how things should be interpreted
+        because Stata changed syntax of the table commandfor version 17 onwards
+    """
+    details: dict = {"errmsg": ""}
+
+    # get the two lists of what is wanted in the rows and columns
+    if stata_version < 17:
+        details.update(get_rows_cols_v16(varlist, options))
         contents_found, content = find_brace_word("contents", options)
 
-        # by() contents are super-rows
-        by_found, superrows = find_brace_word("by", options)
-        if by_found and len(superrows) > 0:
-            for row in superrows:
-                extras = row.split()
-                for word in extras:
-                    if word not in varnames:
-                        details["errmsg"] = (
-                            f"Error: word {word} in by-list is not a variables name"
-                        )
-                        return details
-                    if word not in details["rowvars"]:
-                        details["rowvars"].insert(0, word)
-
-    elif stata_version >= 17:
-        def stata_details_to_list(mydetails)->str:
-            if isinstance(mydetails,str):
-             return mydetails.split() 
-            else:
-             return list(mydetails)
-                
-        details["rowvars"] = stata_details_to_list(varlist.pop(0))
-        details["colvars"] = stata_details_to_list(varlist.pop(0))
-        if len(details["rowvars"]) == 0 or len(details["colvars"]) == 0:
-            details["errmsg"] = (
-                "acro does not currently support one dimensional tables. "
-                "To calculate cross tabulation, you need to provide at "
-                "least one row and one column."
-            )
-            return details
-        # print(details["rowvars"])
-        # print(details["colvars"])
-        if varlist:
-            details["tables"] = varlist.pop(0).split()
-            # print(f"table is {details['tables']}")
-
+    else:
+        details.update(get_rows_cols_v17on(varlist))
         contents_found, content = find_brace_word("statistic", options)
 
-    details = extract_aggfun_values_from_options(
-        details, contents_found, content, varnames
+    # check that these make sense
+    if len(details["rowvars"]) == 0 or len(details["colvars"]) == 0:
+        details["errmsg"] = (
+            "acro does not currently support one dimensional tables. "
+            "To calculate cross tabulation, you need to provide at "
+            "least one row and one column."
+        )
+        return details
+
+    allvars = details["rowvars"] + details["colvars"]
+    unrecognised_vars = list(set(allvars) - set(varnames))
+    if len(unrecognised_vars) > 0:
+        details["errmsg"] += (
+            f"Error: invalid names in table specifier: {unrecognised_vars}"
+        )
+        return details
+
+    # get what the user wants displaying in the cells
+    details.update(
+        extract_aggfun_values_from_options(contents_found, content, varnames)
     )
 
     # default values
@@ -191,6 +200,55 @@ def parse_table_details(
     details["suppress"] = "nosuppress" not in options
 
     return details
+
+
+def get_rows_cols_v16(varlist: list, options: str) -> dict:
+    """Parse stata-16 style table calls.
+
+    Note this is not for latest version of stata, syntax here:
+    https://www.stata.com/manuals16/rtable.pdf
+    >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
+    """
+    rows_cols: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
+
+    rows_cols["rowvars"] = [varlist.pop(0)]
+    rows_cols["colvars"] = list(reversed(varlist))
+
+    # by() contents are super-rows
+    by_found, superrows = find_brace_word("by", options)
+    if by_found and len(superrows) > 0:
+        for row in superrows:
+            extras = row.split()
+            for word in extras:
+                if word not in rows_cols["rowvars"]:
+                    rows_cols["rowvars"].insert(0, word)
+    return rows_cols
+
+
+def stata_details_to_list(mydetails) -> list:
+    """Split details which can have different formats."""
+    if isinstance(mydetails, str):
+        return mydetails.split()
+    else:
+        return list(mydetails)
+
+
+def get_rows_cols_v17on(varlist: list) -> dict:
+    """
+    Get table details for the syntax used by stata_version >= 17.
+
+    https://www.stata.com/manuals/tablesintro.pdf
+    syntax: table (rowspec) (colspec) [ (tabspec) ] [ if ] [ in ] [ weight ] [, options ].
+    """
+    rows_cols: dict = {}
+    rows_cols["rowvars"] = stata_details_to_list(varlist.pop(0))
+    rows_cols["colvars"] = stata_details_to_list(varlist.pop(0))
+
+    if varlist:
+        rows_cols["tables"] = varlist.pop(0).split()
+        # print(f"table is {details['tables']}")
+
+    return rows_cols
 
 
 def parse_and_run(  # pylint: disable=too-many-arguments
@@ -219,7 +277,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     # Sometime_TODO de-abbreviate according to
     # https://www.stata.com/manuals13/u11.pdf#u11.1.3ifexp
 
-    stata_version=float(stata_version)
+    fstata_version = float(stata_version)
     varlist: list = varlist_as_str.split()
     # print(varlist)
 
@@ -238,11 +296,11 @@ def parse_and_run(  # pylint: disable=too-many-arguments
         outcome = run_session_command(command, varlist)
     elif command in ["remove_output", "rename_output", "add_comments", "add_exception"]:
         outcome = run_output_command(command, varlist)
-    elif command == "table" and stata_version == 16:
-        outcome = run_table_command(mydata, varlist, weights, options, stata_version)
-    elif command == "table" and stata_version >= 17:
+    elif command == "table" and fstata_version == 16:
+        outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
+    elif command == "table" and fstata_version >= 17:
         varlist = extract_strings(varlist_as_str)
-        outcome = run_table_command(mydata, varlist, weights, options, stata_version)
+        outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
 
     elif command in ["regress", "probit", "logit"]:
         outcome = run_regression(command, mydata, varlist)
@@ -451,7 +509,7 @@ def run_table_command(  # pylint: disable=too-many-locals
     varlist: list,
     weights: str,
     options: str,
-    stata_version: str,
+    stata_version: float,
 ) -> str:
     """Convert a stata table command into an acro.crosstab and return a prettified dataframe."""
     weights_empty = len(weights) == 0

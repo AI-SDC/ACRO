@@ -1,6 +1,6 @@
 quietly{
 adopath +"."
-*** version 17
+*** version 19
 use "../data/nursery_dataset", clear
 
 
@@ -22,7 +22,7 @@ noisily acro table finance parents
 noisily display `""'
 
 **** complex tabulation
-noisily display `"************ Tables with hierarchical rows     ************"'
+noisily display `"************ Tables with hierarchical rows -both ways of specifying    ************"'
 noisily display `"calling table finance housing parents"'
 noisily table finance housing parents
 noisily display `""'
@@ -32,8 +32,17 @@ noisily acro table finance housing parents
 noisily display `""'
 noisily display `""'
 
+noisily display `"calling table (finance housing) parents"'
+noisily table (finance housing) parents
+noisily display `""'
+noisily display `"now calling: acro table finance housing parents"'
+noisily acro table (finance housing) parents
+
+noisily display `""'
+noisily display `""'
+
 **** complex tabulation
-noisily display `"************ Tables with hierarchical columns     ************"'
+noisily display `"************ Tables with hierarchical columns - both ways of specifying    ************"'
 noisily display `"calling table finance housing parents, statistic(mean children) statistic(sd children)"'
 noisily table finance housing parents, statistic(mean children) statistic(sd children)
 noisily display `""'
@@ -43,20 +52,49 @@ noisily acro table finance housing parents, statistic(mean children) statistic(s
 noisily display `""'
 noisily display `""'
 
-**** tabulation with contents
-* acro table year survivor if year>2013, contents(freq mean inc_activity sd inc_activity)
+noisily display `"calling table finance (housing parents), statistic(mean children) statistic(sd children)"'
+noisily table finance (housing parents), statistic(mean children) statistic(sd children)
+noisily display `""'
+noisily display `"now calling: acro table finance (housing parents), statistic(mean children) statistic(sd children)"'
+noisily acro table finance (housing parents), statistic(mean children) statistic(sd children)
+
+noisily display `""'
+noisily display `""'
+
+
+quit
+
+
+noisily display `"***********  table  with if statements *************
+noisily display `"calling  table housing finance without exclusion"'
+noisily table housing finance
+noisily display `"calling  table housing finance if (children == 4)"'
+noisily table housing finance if (children==4)
+noisily display `""'
+noisily acro table housing finance if (children==4)
+
+
+
+
+
+
+
+
 
 noisily display `""'
 noisily display `""'
 noisily display `"***********   Regressions  *******************************"'
+noisily display `" create integer version of recommend via : encode recommend, gen(recommend_n)"'
+
+encode recommend, gen(recommend_n)
 ** linear
 noisily display `""'
-noisily display `" ***** stata:  recommend children"'
-noisily regress recommend children
+noisily display `" ***** stata:  regress recommend_n children"'
+noisily regress recommend_n children
 
 noisily display `""'
-noisily display `"acro : recommend children"'
-noisily acro regress recommend children
+noisily display `"acro : regress recommend_n children"'
+noisily acro regress recommend_n children
 
 noisily display `""'
 noisily display `""'

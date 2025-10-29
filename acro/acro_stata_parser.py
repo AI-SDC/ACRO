@@ -229,8 +229,7 @@ def stata_details_to_list(mydetails) -> list:
     """Split details which can have different formats."""
     if isinstance(mydetails, str):
         return mydetails.split()
-    else:
-        return list(mydetails)
+    return list(mydetails)
 
 
 def get_rows_cols_v17on(varlist: list) -> dict:

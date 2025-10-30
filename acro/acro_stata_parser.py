@@ -290,19 +290,33 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     # print(f'after both {mydata.shape}')
 
     # now look at the commands
+    session_commands = [
+        "init",
+        "finalise",
+        "enable_suppression",
+        "disable_suppression",
+        "print_outputs",
+    ]
+    output_commands = [
+        "remove_output",
+        "rename_output",
+        "add_comments",
+        "add_exception",
+    ]
+    regression_commands = ["regress", "probit", "logit"]
     outcome = ""
-    if command in ["init", "finalise", "print_outputs"]:
+    if command in session_commands:
         outcome = run_session_command(command, varlist)
-    elif command in ["remove_output", "rename_output", "add_comments", "add_exception"]:
+    elif command in output_commands:
         outcome = run_output_command(command, varlist)
+    elif command in regression_commands:
+        outcome = run_regression(command, mydata, varlist)
     elif command == "table" and fstata_version == 16:
         outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
     elif command == "table" and fstata_version >= 17:
         varlist = extract_strings(varlist_as_str)
         outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
 
-    elif command in ["regress", "probit", "logit"]:
-        outcome = run_regression(command, mydata, varlist)
     else:
         outcome = f"acro command not recognised: {command}"
     return outcome
@@ -313,18 +327,15 @@ def run_session_command(command: str, varlist: list) -> str:
     outcome = ""
 
     if command == "init":
-        # pattern = r'\bsuppress\b'
-
-        # Search for the pattern in the input string
-        # match = re.search(pattern, options)
-        # suppress = bool(match)
-        # initialise the acro object
-        # stata_config.stata_acro = ACRO(suppress=suppress)
-
         stata_config.stata_acro = ACRO()
-
         outcome = "acro analysis session created\n"
 
+    elif command == "enable_suppression":
+        stata_config.stata_acro.suppress = True
+        outcome = "suppression toggled on for subsequent commands"
+    elif command == "disable_suppression":
+        stata_config.stata_acro.suppress = False
+        outcome = "suppression toggled off for subsequent commands"
     elif command == "finalise":
         suffix = "json"
         out_dir = "stata_outputs"

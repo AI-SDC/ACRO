@@ -224,6 +224,44 @@ def test_stata_acro_init():
     assert isinstance(stata_config.stata_acro, ACRO), errmsg
 
 
+def test_stata_acro_enable_suppression():
+    """Test that the enable_suppression command in stata works."""
+    errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
+    assert isinstance(stata_config.stata_acro, ACRO), errmsg
+    errmsg2 = "suppress should be initialised false"
+    assert not stata_config.stata_acro.suppress, errmsg2
+
+    ret = dummy_acrohandler(
+        data,
+        "enable_suppression",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+
+    assert stata_config.stata_acro.suppress, "suppression was not toggled on"
+    assert ret == "suppression toggled on for subsequent commands"
+
+
+def test_stata_acro_disable_suppression():
+    """Test that the disable_suppression command in stata works."""
+    ret = dummy_acrohandler(
+        data,
+        "disable_suppression",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    assert not stata_config.stata_acro.suppress, "suppression was not toggled on"
+    assert ret == "suppression toggled off for subsequent commands"
+
+
 def test_stata_print_outputs(data):
     """Check print_outputs gets called."""
     ret = dummy_acrohandler(

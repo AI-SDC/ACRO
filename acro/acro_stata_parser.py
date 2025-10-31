@@ -298,6 +298,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments
         "print_outputs",
     ]
     output_commands = [
+        "custom_output",
         "remove_output",
         "rename_output",
         "add_comments",
@@ -343,16 +344,13 @@ def run_session_command(command: str, varlist: list) -> str:
             out_dir = varlist[0]
         if len(varlist) == 2:
             out_dir = varlist[0]
-            preference = varlist[1]
-            if preference == "xlsx":
-                suffix = "xlsx"
+            suffix = varlist[1]
         stata_config.stata_acro.finalise(out_dir, suffix)
         outcome = "outputs and stata_outputs.json written\n"
 
     elif command == "print_outputs":
         stata_config.stata_acro.print_outputs()
-    else:  # pragma: no cover
-        outcome = f"unrecognised session management command {command}\n"
+
     return outcome
 
 
@@ -367,8 +365,14 @@ def run_output_command(command: str, varlist: list) -> str:
         return "syntax error: please pass the name of the output to be changed"
 
     the_output = varlist.pop(0)
-    # safety
-    if (  # pylint:disable=consider-iterating-dictionary
+
+    if command == "custom_output":
+        comment_str = " ".join(varlist)
+        stata_config.stata_acro.custom_output(the_output, comment_str)
+        outcome = f"file {the_output} with comment {comment_str} added to session."
+
+    # safety- rest of commands need an existing output to work on
+    elif (  # pylint:disable=consider-iterating-dictionary
         the_output not in stata_config.stata_acro.results.results.keys()
     ):
         return f"no output with name  {the_output} in current acro session.\n"
@@ -390,8 +394,6 @@ def run_output_command(command: str, varlist: list) -> str:
         elif command == "add_exception":
             stata_config.stata_acro.add_exception(the_output, the_str)
             outcome = f"Exception request added to output {the_output}.\n"
-    else:  # pragma: no cover
-        outcome = f"unrecognised outcome management command {command}\n"
 
     return outcome
 

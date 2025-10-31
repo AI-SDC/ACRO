@@ -465,6 +465,28 @@ def test_stata_remove_output():
     assert not stata_config.stata_acro.results.results, errmsg
 
 
+def test_stata_custom_output():
+    """
+    Test custim outputrs cab be correctly added from stata.
+
+    Assumes acro session by earlier tests.
+    """
+    arguments = "custom_output.pdf some description"
+    ret = dummy_acrohandler(
+        data,
+        "custom_output",
+        arguments,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+        stata_version="16",
+    )
+    correct = "file custom_output.pdf with comment some description added to session."
+    assert ret == correct, f" we got : {ret}\nexpected:{correct}"
+    assert stata_config.stata_acro.results, "should have added a record back in"
+
+
 def test_stata_exclusion_in_context(data):
     """Test that the subsetting code gets called properly from table handler."""
     # if condition

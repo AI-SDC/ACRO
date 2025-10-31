@@ -39,12 +39,12 @@ noisily display `"calling table year survivor grant_type, contents(count inc_gra
 noisily table year survivor grant_type, contents(count inc_grants sd inc_grants)
 noisily display `""'
 noisily display `"now calling: acro table year survivor grant_type, contents(count inc_grants sd inc_grants)"'
-noisily acro table year survivor grant_type, contents(count inc_grants sd inc_grants)
+noisily acro table year survivor grant_type, contents(count inc_grants std inc_grants)
 
 noisily display `""'
 noisily display `""'
 **** tabulation with contents
- acro table year survivor if year>2013, contents(freq mean inc_activity sd inc_activity)
+ acro table year survivor if year>2013, contents(count mean inc_activity std inc_activity)
 
 noisily display `""'
 noisily display `""'
@@ -79,7 +79,7 @@ tsset index year
 acro table survivor grant_type if year>2013
 
 
-
+noisily acro custom_output readme.md `"a markdown file"'
 noisily display `""'
 noisily display `""'
 noisily display `" *********list the session contents using :acro print_outputs *****"'

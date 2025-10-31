@@ -12,9 +12,9 @@ program acro, rclass
 
   syntax anything [if] [in] [fweight  aweight  pweight  iweight] [, *]
   local stata_version = c(version)
-  *display "`stata_version'"
-  *display `"here"'
-  *display `" anything is `anything'"'
+  display "`stata_version'"
+  display `"here"'
+  display `" anything is `anything'"'
   tokenize `anything'
   local command `1'
   macro shift
@@ -41,6 +41,8 @@ from acro import acro_stata_parser
 
 debug = False
 def acrohandler(command, varlist,exclusion,exp,weights,options, stata_version):
+    exclusion=exclusion.replace("if","")
+
     if debug:
         outline = 'in python acrohandler function: '
         outline +=    f'command = {command} '

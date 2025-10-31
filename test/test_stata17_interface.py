@@ -79,7 +79,7 @@ def test_parse_table_details(data):
     varlist = ["survivor", "grant_type", "year"]
     varnames = data.columns
     options = "statistic(mean inc_activity) suppress  nototals"
-    details = parse_table_details(varlist, varnames, options, stata_version="17")
+    details = parse_table_details(varlist, varnames, options, stata_version=17)
 
     errstring = f" rows {details['rowvars']} should be ['survivor', 'grant_type']"
     assert details["rowvars"] == ["survivor"], errstring
@@ -136,6 +136,46 @@ def test_stata_acro_init():
     )
     errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
     assert isinstance(stata_config.stata_acro, ACRO), errmsg
+    errmsg2 = "suppress should be initialised false"
+    assert not stata_config.stata_acro.suppress, errmsg2
+
+
+def test_stata_acro_enable_suppression():
+    """Test that the enable_suppression command in stata works."""
+    errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
+    assert isinstance(stata_config.stata_acro, ACRO), errmsg
+    errmsg2 = "suppress should be initialised false"
+    assert not stata_config.stata_acro.suppress, errmsg2
+
+    ret = dummy_acrohandler(
+        data,
+        "enable_suppression",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+
+    assert stata_config.stata_acro.suppress, "suppression was not toggled on"
+    assert ret == "suppression toggled on for subsequent commands"
+
+
+def test_stata_acro_disable_suppression():
+    """Test that the disable_suppression command in stata works."""
+    ret = dummy_acrohandler(
+        data,
+        "disable_suppression",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    assert not stata_config.stata_acro.suppress, "suppression was not toggled on"
+    assert ret == "suppression toggled off for subsequent commands"
 
 
 def test_stata_print_outputs(data):
@@ -339,6 +379,31 @@ def test_stata_remove_output():
         f"{stata_config.stata_acro.results.__dict__}\n"
     )
     assert not stata_config.stata_acro.results.results, errmsg
+
+
+def test_stata_custom_output():
+    """
+    Test custom outputs can be correctly added from stata.
+
+    Assumes acro session by earlier tests.
+    """
+    arguments = "custom_output.pdf some description"
+    ret = dummy_acrohandler(
+        data,
+        "custom_output",
+        arguments,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+        stata_version="17",
+    )
+    correct = "file custom_output.pdf with comment some description added to session."
+    assert ret == correct, f" we got : {ret}\nexpected:{correct}"
+    errstr = "results holds {stata_config.stata_acro.results.__dict__}"
+    assert stata_config.stata_acro.results, (
+        errstr + " should have added a record back in"
+    )
 
 
 def test_stata_exclusion_in_context(data):
@@ -958,7 +1023,7 @@ def test_table_stata17_4(data):
 def test_one_dimensional_table(data):
     """Check that one dimensional table is not supported at the moment."""
     correct = (
-        "acro does not currently support one dimensioanl tables. "
+        "acro does not currently support one dimensional tables. "
         "To calculate cross tabulation, you need to provide at "
         "least one row and one column."
     )

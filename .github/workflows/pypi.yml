@@ -21,7 +21,7 @@ jobs:
 
   upload:
     runs-on: ubuntu-latest
-    # if: github.event_name == 'release' && github.event.action == 'published'
+    if: github.event_name == 'release' && github.event.action == 'published'
 
     needs: [build]
 

@@ -48,6 +48,10 @@ See the example notebooks for:
 * [R charities dataset](https://ai-sdc.github.io/ACRO/_static/test.nb.html)
 * [R nursery dataset](https://ai-sdc.github.io/ACRO/_static/test-nursery.nb.html)
 
+### Try Online with MyBinder
+
+Try an example notebook online on [MyBinder.org](https://mybinder.org/v2/gh/AI-SDC/ACRO/main?filepath=notebooks/test-nursery.ipynb).
+
 ### Documentation
 
 The github-pages contains pre-built [documentation](https://ai-sdc.github.io/ACRO/).

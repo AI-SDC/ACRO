@@ -1,7 +1,11 @@
 ---
 name: PyPI Publish
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  release:
+    types:
+    - published
 
 jobs:
   build:

@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 title: ACRO
-version: 0.4.9
-doi: 10.5281/zenodo.15793559
-date-released: 2025-07-02
+version: 0.4.10
+doi:
+date-released: 2025-11-03
 license: MIT
 repository-code: https://github.com/AI-SDC/ACRO
 languages:

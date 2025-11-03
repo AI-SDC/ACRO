@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.4.10 (Nov 03, 2025)
+
+Changes:
+*   fix: various fixes and improvements for stata ([#278](https://github.com/AI-SDC/ACRO/pull/278))
+*   chore: drop Python 3.9 and support Python 3.14 ([#280](https://github.com/AI-SDC/ACRO/pull/280))
+
 ## Version 0.4.9 (Jul 02, 2025)
 
 Changes:

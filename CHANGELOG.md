@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.11 (Nov 03, 2025)
+
+*   chore: increase max pandas to <=2.3.3 to avoid building from source for Python 3.14 ([#282](https://github.com/AI-SDC/ACRO/pull/282))
+
 ## Version 0.4.10 (Nov 03, 2025)
 
 Changes:

@@ -39,7 +39,7 @@ dependencies = [
     "matplotlib",
     "numpy",
     "openpyxl",
-    "pandas<=2.33",
+    "pandas<=2.3.3",
     "PyYAML",
     "statsmodels",
 ]

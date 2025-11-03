@@ -161,7 +161,7 @@ def test_parse_table_details(data):
     varlist = ["survivor", "grant_type", "year"]
     varnames = data.columns
     options = "by(grant_type) contents(mean sd inc_activity) suppress  nototals"
-    details = parse_table_details(varlist, varnames, options, stata_version="16")
+    details = parse_table_details(varlist, varnames, options, stata_version=16)
 
     errstring = f" rows {details['rowvars']} should be ['grant_type','survivor']"
     assert details["rowvars"] == ["grant_type", "survivor"], errstring
@@ -180,9 +180,9 @@ def test_parse_table_details(data):
 
     # invalid var in by list
     options = "by(football) contents(mean ) "
-    details = parse_table_details(varlist, varnames, options, stata_version="16")
-    correct = "Error: word football in by-list is not a variables name"
-    errstring = f" rows {details['errmsg']} should be {correct}"
+    details = parse_table_details(varlist, varnames, options, stata_version=16)
+    correct = "Error: invalid names in table specifier: ['football']"
+    errstring = f" {details['errmsg']} should be {correct}"
     assert details["errmsg"] == correct, errstring
 
 
@@ -222,6 +222,44 @@ def test_stata_acro_init():
     )
     errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
     assert isinstance(stata_config.stata_acro, ACRO), errmsg
+
+
+def test_stata_acro_enable_suppression():
+    """Test that the enable_suppression command in stata works."""
+    errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
+    assert isinstance(stata_config.stata_acro, ACRO), errmsg
+    errmsg2 = "suppress should be initialised false"
+    assert not stata_config.stata_acro.suppress, errmsg2
+
+    ret = dummy_acrohandler(
+        data,
+        "enable_suppression",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+
+    assert stata_config.stata_acro.suppress, "suppression was not toggled on"
+    assert ret == "suppression toggled on for subsequent commands"
+
+
+def test_stata_acro_disable_suppression():
+    """Test that the disable_suppression command in stata works."""
+    ret = dummy_acrohandler(
+        data,
+        "disable_suppression",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    assert not stata_config.stata_acro.suppress, "suppression was not toggled on"
+    assert ret == "suppression toggled off for subsequent commands"
 
 
 def test_stata_print_outputs(data):
@@ -427,6 +465,28 @@ def test_stata_remove_output():
     assert not stata_config.stata_acro.results.results, errmsg
 
 
+def test_stata_custom_output():
+    """
+    Test custim outputrs cab be correctly added from stata.
+
+    Assumes acro session by earlier tests.
+    """
+    arguments = "custom_output.pdf some description"
+    ret = dummy_acrohandler(
+        data,
+        "custom_output",
+        arguments,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+        stata_version="16",
+    )
+    correct = "file custom_output.pdf with comment some description added to session."
+    assert ret == correct, f" we got : {ret}\nexpected:{correct}"
+    assert stata_config.stata_acro.results, "should have added a record back in"
+
+
 def test_stata_exclusion_in_context(data):
     """Test that the subsetting code gets called properly from table handler."""
     # if condition
@@ -602,7 +662,7 @@ def test_table_aggcfn(data):
 
 def test_table_invalidvar(data):
     """Check table details are valid."""
-    correct = "Error: word foo in by-list is not a variables name"
+    correct = "Error: invalid names in table specifier: ['foo']"
     ret = dummy_acrohandler(
         data,
         "table",
@@ -613,7 +673,7 @@ def test_table_invalidvar(data):
         options="by(foo) ",
         stata_version="16",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == correct.split(), f"got: {ret}, expected: {correct}"
 
 
 def test_stata_probit(data):

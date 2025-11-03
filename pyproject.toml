@@ -41,7 +41,6 @@ dependencies = [
     "pandas>=1.5.0,<2.3",
     "PyYAML",
     "statsmodels",
-    "scipy<1.16.0",
 ]
 
 [tool.setuptools.dynamic]

@@ -7,7 +7,7 @@ name = "acro"
 dynamic = ["version"]
 description = "ACRO: Tools for the Semi-Automatic Checking of Research Outputs"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "MIT"
 maintainers = [
     {name = "Jim Smith", email = "james.smith@uwe.ac.uk"}
@@ -25,7 +25,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -81,7 +80,7 @@ packages = {find = {exclude = ["data*", "docs*", "notebooks*", "test*"]}}
 [tool.ruff]
 indent-width = 4
 line-length = 88
-target-version = "py39"
+target-version = "py310"
 
 lint.select = [
 #  "ANN", # flake8-annotations
@@ -140,7 +139,7 @@ docstring-code-format = true
 docstring-code-line-length = 20
 
 [tool.pylint]
-master.py-version = "3.9"
+master.py-version = "3.10"
 reports.output-format = "colorized"
 
 [tool.pylint.messages_control]
@@ -168,7 +167,7 @@ max-line-length = 100  # Maximum number of characters on a single line.
 max-module-lines = 1000  # Maximum number of lines in a module.
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 #exclude = "docs/source/conf.py"
 #strict = false
 #warn_unreachable = true

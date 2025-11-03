@@ -1299,7 +1299,9 @@ def get_queries(masks, aggfunc) -> list[str]:
                                     if isinstance(val, (int, float))
                                     else f'({level} == "{val}")'
                                 )
-                                for level, val in zip(index_level_names, row_label)
+                                for level, val in zip(
+                                    index_level_names, row_label, strict=False
+                                )
                             ]
                         )
                     else:
@@ -1320,7 +1322,9 @@ def get_queries(masks, aggfunc) -> list[str]:
                                     if isinstance(val, (int, float))
                                     else f'({level} == "{val}")'
                                 )
-                                for level, val in zip(column_level_names, col_label)
+                                for level, val in zip(
+                                    column_level_names, col_label, strict=False
+                                )
                             ]
                         )
                     else:

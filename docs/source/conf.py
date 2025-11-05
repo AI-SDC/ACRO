@@ -34,7 +34,6 @@ extensions = [
 exclude_patterns = []
 
 
-
 html_theme = "pydata_sphinx_theme"
 
 
@@ -59,7 +58,6 @@ autodoc_member_order = "bysource"
 
 
 html_theme_options = {"navigation_depth": 2}
-
 
 
 nbsphinx_execute = "never"

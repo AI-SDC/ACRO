@@ -79,8 +79,7 @@ ACRO performs multiple safety checks:
 
 1. **Threshold checks** - Minimum observation counts
 2. **Dominance checks** - Concentration of values
-3. **Differencing attacks** - Protection against inference
-4. **Model disclosure** - Regression coefficient safety
+3. **Model disclosure** - Regression coefficient safety
 
 Configuration System
 --------------------
@@ -88,8 +87,10 @@ Configuration System
 Flexible configuration through:
 
 * **YAML configuration files** - Environment-specific settings
-* **Runtime parameters** - Method-specific overrides
 * **Policy templates** - Organizational standards
+
+.. note::
+   **Roadmap Feature**: Method-specific runtime parameter overrides are planned for future releases.
 
 Integration Points
 ==================

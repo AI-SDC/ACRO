@@ -124,7 +124,7 @@ semi-automated Sensitivity Testing
 - Parameter significance testing
 
 **For Non-Technical Users:**
-ACRO automatically identifies when research outputs might reveal sensitive information about individuals or organizations, applying industry-standard privacy protection rules without requiring manual review of every result.
+ACRO automatically identifies when research outputs might reveal sensitive information about individuals or organizations, applying industry-standard privacy protection rules. It must be used by trained researchers and checked by skilled checkers.
 
 Output Management
 -----------------
@@ -186,8 +186,6 @@ Output Formats
 - Standard CSV files for tables
 - JSON metadata files for automation
 - Excel workbooks for human reviewers
-- PDF reports for output checkers
-- HTML summaries for researchers
 
 **Review Process Support:**
 Compatible with SACRO-Viewer for interactive output review by data controllers and compliance officers.

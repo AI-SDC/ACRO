@@ -63,6 +63,15 @@ doc = [
     "sphinx-issues",
     "sphinx-prompt",
     "sphinx-rtd-theme",
+    "sphinx>=4.0.0",
+    "numpydoc",
+    "sphinx-issues",
+    "sphinx-prompt",
+    "pydata-sphinx-theme",
+    "sphinx-design",
+    "nbsphinx>=0.8.0",
+    "ipykernel",
+    "jupyter",
 ]
 test = [
     "pytest",

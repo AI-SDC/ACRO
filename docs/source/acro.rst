@@ -1,6 +1,7 @@
-ACRO Class
-==========
+:orphan:
 
-.. automodule:: acro.acro
-   :members:
-   :inherited-members:
+====
+ACRO
+====
+
+This page contains ACRO-specific documentation.

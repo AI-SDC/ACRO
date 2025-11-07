@@ -1,6 +1,8 @@
-"""Configuration file for the Sphinx documentation builder."""
+"""Sphinx configuration file for ACRO documentation.
 
-# -- Path setup --------------------------------------------------------------
+This module configures the Sphinx documentation builder for the ACRO project,
+including theme settings, extensions, and build parameters.
+"""
 
 import os
 import sys
@@ -9,37 +11,61 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 from acro.version import __version__
 
-# -- Project information -----------------------------------------------------
-
 project = "ACRO"
-copyright = "2024, ACRO Project Team"
-author = "ACRO Project Team"
+copyright = "2025, SACRO Project Team"
+author = "SACRO Project Team"
 release = __version__
 
-# -- General configuration ---------------------------------------------------
 
 extensions = [
-    "numpydoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
-    "sphinx.ext.imgconverter",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "numpydoc",
+    "nbsphinx",
     "sphinx_autopackagesummary",
     "sphinx_issues",
     "sphinx_prompt",
-    "sphinx_rtd_theme",
+    "pydata_sphinx_theme",
+    "sphinx_design",
 ]
 
 exclude_patterns = []
 
+
+html_theme = "pydata_sphinx_theme"
+
+
 html_static_path = ["_static"]
+html_css_files = [
+    "css/custom.css",
+]
 
-# -- Options for HTML output -------------------------------------------------
-
-html_theme = "sphinx_rtd_theme"
-html_theme_options = {"navigation_depth": 2}
-
-# -- -------------------------------------------------------------------------
 
 numpydoc_class_members_toctree = False
+autodoc_default_options = {
+    "members": True,
+    "member-order": "bysource",
+    "special-members": "__init__",
+    "undoc-members": True,
+    "exclude-members": "__weakref__",
+}
+
+
+autodoc_typehints = "description"
+autodoc_member_order = "bysource"
+
+
+html_theme_options = {"navigation_depth": 2}
+
+
+nbsphinx_execute = "never"
+nbsphinx_allow_errors = True
+
+
+source_suffix = {
+    ".rst": None,
+}
+
+suppress_warnings = ["autosummary"]

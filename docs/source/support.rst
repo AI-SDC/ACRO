@@ -2,7 +2,7 @@
 What ACRO Supports
 ==================
 
-This page provides a comprehensive overview of ACRO's capabilities for researchers, developers, and non-technical stakeholders. ACRO supports a wide range of statistical analysis functions with automated disclosure control.
+This page provides a comprehensive overview of ACRO's capabilities for researchers, developers, and non-technical stakeholders. ACRO supports a wide range of statistical analysis functions with semi-automated disclosure control.
 
 .. note::
    **Drop-in Replacements:** ACRO functions are designed as direct replacements for standard analysis commands. Simply prefix your existing commands with ``acro.`` to enable automatic disclosure checking.
@@ -41,7 +41,7 @@ Statistical Modeling
 ---------------------
 
 **For Researchers:**
-Run regression analyses with automated checks on model outputs and residual degrees of freedom.
+Run regression analyses with semi-automated checks on model outputs and residual degrees of freedom.
 
 **What ACRO Supports:**
 
@@ -108,7 +108,7 @@ ACRO is designed to let you use familiar commands in R, Stata and Python
 Disclosure Control Features
 ===========================
 
-Automated Sensitivity Testing
+semi-automated Sensitivity Testing
 ------------------------------
 
 **What ACRO Checks:**

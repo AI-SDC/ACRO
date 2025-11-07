@@ -41,7 +41,7 @@ Our tools are designed to help researchers assess the privacy disclosure risks o
         :bdg-primary:`Current Documentation Focus` :doc:`Get Started → <introduction>`
 
     .. grid-item-card:: SACRO-ML
-        :link: https://jessuwe.github.io/SACRO-ML/introduction.html
+        :link: https://sacro-tools.org/SACRO-ML/introduction.html
         :link-type: url
         :shadow: md
         :class-header: bg-info

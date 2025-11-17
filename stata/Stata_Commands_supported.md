@@ -45,6 +45,12 @@ At present most  acro-assessed outputs are saved and egressed as csv files or im
 
 ```acro init```: _starts an acro session_
 
+```acro custom_output```: _adds a custom output i.e. code, or a paper version, or images of plots or results from analyses we can't auto-check (yet)_
+
+```acro enable_suppression```: _turns on automatic suppression for subsequent outputs_
+
+```acro disable_suppression```: _turns off automatic suppression for subsequent outputs._
+
 ```acro print_outputs```: _prints list to screen of outputs in current session and their status_
 
 ```acro remove_output output_id```:  _removes a named output from an acro session_

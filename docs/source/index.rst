@@ -42,7 +42,7 @@ Our tools are designed to help researchers assess the privacy disclosure risks o
 
     .. grid-item-card:: SACRO-ML
         :link: sacro-ml.sacro-tools.org
-        :link-type: ACRO-R.sacro-tools.org
+        :link-type: doc
         :shadow: md
         :class-header: bg-info
 
@@ -57,7 +57,7 @@ Our tools are designed to help researchers assess the privacy disclosure risks o
 .. grid:: 2
 
     .. grid-item-card:: ACRO-R
-        :link: acro_r
+        :link: acro-r.sacro-tools.org
         :link-type: doc
         :shadow: md
         :class-header: bg-success
@@ -71,7 +71,7 @@ Our tools are designed to help researchers assess the privacy disclosure risks o
         :bdg-success:`R Integration` :doc:`Explore → <acro_r>`
 
     .. grid-item-card:: SACRO-Viewer
-        :link: SACRO-Viewer.sacro-tools.org
+        :link: sacro-viewer.sacro-tools.org
         :link-type: url
         :shadow: md
         :class-header: bg-info

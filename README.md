@@ -68,6 +68,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### Acknowledgement
 
-This work was funded by UK Research and Innovation under Grant Number MC_PC_23006 as part of Phase 1 of the [DARE UK](https://dareuk.org.uk) (Data and Analytics Research Environments UK) programme, delivered in partnership with Health Data Research UK (HDR UK) and Administrative Data Research UK (ADR UK). The specific project was Semi-Automatic Checking of Research Outputs (SACRO).
+This work was funded by UK Research and Innovation under  as part  of the [DARE UK](https://dareuk.org.uk) (Data and Analytics Research Environments UK) programme, delivered in partnership with Health Data Research UK (HDR UK) and Administrative Data Research UK (ADR UK). The specific projects were:
+- Semi-Automatic Checking of Research Outputs (SACRO) [Grant Number MC_PC_23006] - a phase 1 Driver project
+- TREvolution [Grant Number MC_PC_24038] - phase 2:Transformative Components.
 
 <img src="docs/source/images/UK_Research_and_Innovation_logo.svg" width="20%" height="20%" padding=20/> <img src="docs/source/images/health-data-research-uk-hdr-uk-logo-vector.png" width="10%" height="10%" padding=20/> <img src="docs/source/images/logo_print.png" width="15%" height="15%" padding=20/>

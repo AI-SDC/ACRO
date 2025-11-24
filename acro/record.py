@@ -27,6 +27,10 @@ def load_outcome(outcome: dict) -> DataFrame:
     outcome : dict
         The outcome to load as a DataFrame.
     """
+    if "data" in outcome and "columns" in outcome and "index" in outcome:
+        return pd.DataFrame(
+            data=outcome["data"], columns=outcome["columns"], index=outcome["index"]
+        )
     return pd.DataFrame.from_dict(outcome)
 
 
@@ -52,7 +56,7 @@ def load_output(path: str, output: list[str]) -> list[str] | list[DataFrame]:
         _, ext = os.path.splitext(filename)
         if ext == ".csv":
             filename = os.path.normpath(f"{path}/{filename}")
-            loaded.append(pd.read_csv(filename))
+            loaded.append(pd.read_csv(filename, index_col=0))
     if len(loaded) < 1:  # output is path(s) to custom file(s)
         return output
     return loaded
@@ -470,7 +474,7 @@ class Records:
                 "type": val.output_type,
                 "properties": val.properties,
                 "files": [],
-                "outcome": json.loads(val.outcome.to_json()),
+                "outcome": json.loads(val.outcome.to_json(orient="split")),
                 "command": val.command,
                 "summary": val.summary,
                 "timestamp": val.timestamp,

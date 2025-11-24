@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import pathlib
+import shutil
 import warnings
 
 import yaml
@@ -13,7 +14,7 @@ import yaml
 from . import acro_tables
 from .acro_regression import Regression
 from .acro_tables import Tables
-from .record import Records
+from .record import Records, load_records
 from .version import __version__
 
 logging.basicConfig(level=logging.INFO)
@@ -180,6 +181,54 @@ class ACRO(Tables, Regression):
             The comment.
         """
         self.results.add_exception(output, reason)
+
+    def save(self, path: str) -> None:
+        """Save current ACRO session to specified directory."""
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+        os.makedirs(path, exist_ok=True)
+
+        self.results.finalise_json(path)
+
+        config_filename: str = os.path.normpath(f"{path}/config.json")
+        with open(config_filename, "w", encoding="utf-8") as file:
+            json.dump(self.config, file, indent=4, sort_keys=False)
+
+        logger.info("Session saved to: %s", path)
+
+    def load(self, path: str) -> None:
+        """Load previously saved ACRO session.
+
+        Parameters
+        ----------
+        path : str
+            Directory path containing the saved session.
+        """
+        self.results = load_records(path)
+        config_path = os.path.normpath(f"{path}/config.json")
+        if os.path.exists(config_path):
+            with open(config_path, encoding="utf-8") as file:
+                self.config = json.load(file)
+        logger.info("Session loaded from: %s", path)
+
+    @classmethod
+    def load_session(cls, path: str) -> ACRO:
+        """Load previously saved ACRO session as new instance.
+
+        Parameters
+        ----------
+        path : str
+            Directory path containing the saved session.
+
+        Returns
+        -------
+        ACRO
+            New ACRO instance with loaded session.
+        """
+        acro = cls()
+        acro.load(path)
+        return acro
 
 
 def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:

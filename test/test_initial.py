@@ -1006,3 +1006,50 @@ def test_finalise_with_existing_path(data, acro, caplog):
         "already exists. Please choose a different directory name." in caplog.text
     )
     shutil.rmtree(PATH)
+
+
+def test_save_method(data, acro):
+    """Test save method."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Test save")
+
+    session_path = "test_save_session"
+    acro.save(session_path)
+
+    assert os.path.exists(f"{session_path}/results.json")
+    assert os.path.exists(f"{session_path}/config.json")
+
+    shutil.rmtree(session_path)
+
+
+def test_load_method(data, acro):
+    """Test load method."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Test load")
+
+    session_path = "test_load_session"
+    acro.save(session_path)
+
+    new_acro = ACRO()
+    new_acro.load(session_path)
+
+    assert "output_0" in new_acro.results.get_keys()
+    assert new_acro.results.get("output_0").exception == "Test load"
+
+    shutil.rmtree(session_path)
+
+
+def test_load_session_method(data, acro):
+    """Test load_session class method."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Test load_session")
+
+    session_path = "test_load_session_class"
+    acro.save(session_path)
+
+    loaded_acro = ACRO.load_session(session_path)
+
+    assert "output_0" in loaded_acro.results.get_keys()
+    assert loaded_acro.results.get("output_0").exception == "Test load_session"
+
+    shutil.rmtree(session_path)

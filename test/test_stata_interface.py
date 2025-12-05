@@ -466,6 +466,34 @@ def test_stata_remove_output():
     assert not stata_config.stata_acro.results.results, errmsg
 
 
+def test_stata_custom_output_nofile():
+    """
+    Check file is provided for custom_output command  from stata.
+
+    Assumes acro session by earlier tests.
+    """
+    previous = copy.deepcopy(stata_config.stata_acro.results.__dict__)
+
+    arguments = ""
+    ret = dummy_acrohandler(
+        data,
+        "custom_output",
+        arguments,
+        exclusion="",
+        exp="",
+        weights="",
+        options="nototals",
+        stata_version="17",
+    )
+    correct = "syntax error: please pass the name of the output to be added"
+
+    assert ret == correct, f" we got : {ret}\nexpected:{correct}"
+    newres = stata_config.stata_acro.results.__dict__
+    assert newres == previous, (
+        "acro results should not change after attempt to add invalid file."
+    )
+
+
 def test_stata_custom_output_invalid():
     """
     Test invalid types of file cannot be added as custom outputs  from stata.

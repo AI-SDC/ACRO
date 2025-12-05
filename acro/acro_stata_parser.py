@@ -364,7 +364,7 @@ def add_custom_output(varlist: list) -> str:
         return "syntax error: please pass the name of the output to be added"
 
     # .gph extension contain data
-    filename, file_extension = os.path.splitext(the_output)
+    _, file_extension = os.path.splitext(the_output)
     if file_extension == ".gph":
         return "Warning: .gph files may not be exported as they contain data."
     comment_str = " ".join(varlist)

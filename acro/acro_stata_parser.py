@@ -5,6 +5,7 @@ Jim Smith 2023 @james.smith@uwe.ac.uk
 MIT licenses apply.
 """
 
+import os
 import re
 
 import pandas as pd
@@ -298,7 +299,6 @@ def parse_and_run(  # pylint: disable=too-many-arguments
         "print_outputs",
     ]
     output_commands = [
-        "custom_output",
         "remove_output",
         "rename_output",
         "add_comments",
@@ -308,6 +308,8 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     outcome = ""
     if command in session_commands:
         outcome = run_session_command(command, varlist)
+    elif command == "custom_output":
+        outcome = add_custom_output(varlist)
     elif command in output_commands:
         outcome = run_output_command(command, varlist)
     elif command in regression_commands:
@@ -354,25 +356,36 @@ def run_session_command(command: str, varlist: list) -> str:
     return outcome
 
 
+def add_custom_output(varlist: list) -> str:
+    """Add a custom output."""
+    try:
+        the_output = varlist.pop(0)
+    except IndexError:
+        return "syntax error: please pass the name of the output to be added"
+
+    # .gph extension contain data
+    _, file_extension = os.path.splitext(the_output)
+    if file_extension == ".gph":
+        return "Warning: .gph files may not be exported as they contain data."
+    comment_str = " ".join(varlist)
+    stata_config.stata_acro.custom_output(the_output, comment_str)
+    outcome = f"file {the_output} with comment {comment_str} added to session."
+    return outcome
+
+
 def run_output_command(command: str, varlist: list) -> str:
     """Run outcome-level commands.
 
     First element of varlist is output affected
     rest (if relevant) is string passed to command.
     """
-    outcome = ""
-    if len(varlist) == 0:
+    try:
+        the_output = varlist.pop(0)
+    except IndexError:
         return "syntax error: please pass the name of the output to be changed"
 
-    the_output = varlist.pop(0)
-
-    if command == "custom_output":
-        comment_str = " ".join(varlist)
-        stata_config.stata_acro.custom_output(the_output, comment_str)
-        outcome = f"file {the_output} with comment {comment_str} added to session."
-
     # safety- rest of commands need an existing output to work on
-    elif (  # pylint:disable=consider-iterating-dictionary
+    if (  # pylint:disable=consider-iterating-dictionary
         the_output not in stata_config.stata_acro.results.results.keys()
     ):
         return f"no output with name  {the_output} in current acro session.\n"
@@ -380,21 +393,21 @@ def run_output_command(command: str, varlist: list) -> str:
     if command == "remove_output":
         stata_config.stata_acro.remove_output(the_output)
         outcome = f"output {the_output} removed.\n"
-    elif command in ["rename_output", "add_comments", "add_exception"]:
-        # more arguments needed
-        the_str = " ".join(varlist)
-        if len(the_str) == 0:
-            return f"not enough arguments provided for command {command}.\n"
-        if command == "rename_output":
-            stata_config.stata_acro.rename_output(the_output, the_str)
-            outcome = f"output {the_output} renamed to {the_str}.\n"
-        elif command == "add_comments":
-            stata_config.stata_acro.add_comments(the_output, the_str)
-            outcome = f"Comments added to output {the_output}.\n"
-        elif command == "add_exception":
-            stata_config.stata_acro.add_exception(the_output, the_str)
-            outcome = f"Exception request added to output {the_output}.\n"
+        return outcome
 
+    # rest of commands need more arguments
+    the_str = " ".join(varlist)
+    if len(the_str) == 0:
+        return f"not enough arguments provided for command {command}.\n"
+    if command == "rename_output":
+        stata_config.stata_acro.rename_output(the_output, the_str)
+        outcome = f"output {the_output} renamed to {the_str}.\n"
+    elif command == "add_comments":
+        stata_config.stata_acro.add_comments(the_output, the_str)
+        outcome = f"Comments added to output {the_output}.\n"
+    elif command == "add_exception":
+        stata_config.stata_acro.add_exception(the_output, the_str)
+        outcome = f"Exception request added to output {the_output}.\n"
     return outcome
 
 

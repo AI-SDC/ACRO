@@ -18,7 +18,7 @@ Primary method for persistent configuration:
    safe_threshold: 10
    safe_dof_threshold: 10
    safe_nk_n: 2
-   safe_nk_k: 0.85
+   safe_nk_k: 0.9
    safe_p_percent: 0.1
    check_missing_values: true
    survival_safe_threshold: 10
@@ -55,7 +55,7 @@ TRE Risk Appetite Settings
 **safe_nk_n** (default: 2)
    Number of largest contributors for NK dominance rule
 
-**safe_nk_k** (default: 0.85)
+**safe_nk_k** (default: 0.9)
    Percentage threshold for NK dominance rule
 
 **safe_p_percent** (default: 0.1)

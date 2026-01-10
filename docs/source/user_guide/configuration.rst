@@ -38,6 +38,10 @@ You can specify the configuration file and whether to suppress unsafe outputs at
        suppress=True                 # Suppress unsafe outputs
    )
 
+.. note::
+   The `config` parameter in `acro.ACRO()` expects the *name of a YAML file* (e.g., 'my_config.yaml'), not a Python dictionary directly. If you wish to use a custom configuration, please save your parameters in a YAML file and provide its name.
+
+
 Safety Parameters
 =================
 

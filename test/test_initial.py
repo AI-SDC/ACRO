@@ -667,13 +667,13 @@ def test_surv_func(acro):
         assert "fail" in output.summary
         assert "cells suppressed" in output.summary
 
-    #plot
+    # plot
     filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
     _ = acro.surv_func(data.futime, data.death, output="plot")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "I need this")
     acro.add_exception("output_1", "Let me have it")
-    
+
     # neither table nor plot
     foo = acro.surv_func(data.futime, data.death, output="something_else")
     assert foo is None, "expected None returned when asking for unrecognised option"

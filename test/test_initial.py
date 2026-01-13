@@ -1070,7 +1070,7 @@ def test_finalise_non_interactive(data):
 
     path = "outputs"
 
-    result: Records = acro.finalise(path, "json", interactive=False)
+    result = acro.finalise(path, "json", interactive=False)
     # load JSON
     loaded: Records = load_records(path)
     orig0 = result.get_index(0)
@@ -1116,7 +1116,7 @@ def test_finalise_interactive(data):
     mypath = "outputs"
 
     with patch("builtins.input", return_value="Oh, please..."):
-        result: Records = acro.finalise(mypath, "json", interactive=True)
+        result = acro.finalise(mypath, "json", interactive=True)
     # load JSON
     loaded: Records = load_records(mypath)
     orig0 = result.get_index(0)

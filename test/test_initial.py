@@ -658,7 +658,6 @@ def test_surv_func(acro):
     )
 
     if not skip_exact_assertion:
-        correct_summary: str = "fail; threshold: 3864 cells suppressed; "
         assert output.summary == correct_summary, (
             f"\n{output.summary}\n should be \n{correct_summary}\n"
         )

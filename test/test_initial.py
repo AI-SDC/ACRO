@@ -3,6 +3,7 @@
 import json
 import os
 import shutil
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -303,6 +304,12 @@ def test_finalise_excel(data, acro):
     """Finalise excel test."""
     _ = acro.crosstab(data.year, data.grant_type)
     acro.add_exception("output_0", "Let me have it")
+    with open("foo.txt", "w") as file:
+        file.write("Your text goes here")
+    acro.custom_output("foo.txt")
+    # last_output = acro.results.get_index(-1).split()[1]
+    # print(f'last_output is {last_output}')
+    # acro.add_exception(last_output, "Let me have it")
     results: Records = acro.finalise(PATH, "xlsx")
     output_0 = results.get_index(0)
     filename = os.path.normpath(f"{PATH}/results.xlsx")
@@ -340,9 +347,13 @@ def test_output_removal(data, acro, monkeypatch):
 
 
 def test_load_output():
-    """Empty array when loading output."""
+    """Empty or invalid array when loading output."""
     with pytest.raises(ValueError, match="error loading output"):
         record.load_output(PATH, [])
+    val = record.load_output(PATH, ["nosuchfile.xxx"])
+    assert val == ["nosuchfile.xxx"], (
+        f"loading outputs that don't exist: expected ['nosuchfile.xxx'] got {val}"
+    )
 
 
 def test_finalise_invalid(data, acro):
@@ -453,6 +464,7 @@ def test_custom_output(acro):
 def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with negative values."""
     acro_tables.CHECK_MISSING_VALUES = True
+    acro.suppress = False
     data.loc[0:10, "inc_grants"] = np.nan
     _ = acro.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
@@ -462,13 +474,15 @@ def test_missing(data, acro, monkeypatch):
     )
     exceptions = ["I want it", "Let me have it"]
     monkeypatch.setattr("builtins.input", lambda _: exceptions.pop(0))
-    results: Records = acro.finalise(PATH)
+    results: Records = acro.finalise(PATH, interactive=True)
     correct_summary: str = "review; missing values found"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
     assert output_0.summary == correct_summary
     assert output_1.summary == correct_summary
-    assert output_0.exception == "I want it"
+    assert output_0.exception == "I want it", (
+        f'expected"i want it" got {output_0.exception}'
+    )
     assert output_1.exception == "Let me have it"
     shutil.rmtree(PATH)
 
@@ -617,18 +631,23 @@ def test_surv_func(acro):
     """Test survival tables and plots."""
     data = sm.datasets.get_rdataset("flchain", "survival").data
     data = data.loc[data.sex == "F", :]
+    # table
     _ = acro.surv_func(data.futime, data.death, output="table")
     output = acro.results.get_index(0)
     correct_summary: str = "fail; threshold: 3864 cells suppressed; "
     assert output.summary == correct_summary, (
         f"\n{output.summary}\n should be \n{correct_summary}\n"
     )
-
+    # plot
     filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
     _ = acro.surv_func(data.futime, data.death, output="plot")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "I need this")
     acro.add_exception("output_1", "Let me have it")
+    # neither table nor plot
+    foo = acro.surv_func(data.futime, data.death, output="something_else")
+    assert foo is None, "expected None returned when asking for unrecognised option"
+
     results: Records = acro.finalise(path=PATH)
     output_1 = results.get_index(1)
     assert output_1.output == [filename]
@@ -964,7 +983,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
     )
 
 
-def test_histogram_discolsive(data, acro, caplog):
+def test_histogram_disclosive(data, acro, caplog):
     """Test a discolsive histogram."""
     filename = os.path.normpath("acro_artifacts/histogram_0.png")
     _ = acro.hist(data, "inc_grants")
@@ -982,7 +1001,7 @@ def test_histogram_discolsive(data, acro, caplog):
 
 
 def test_histogram_non_disclosive(data, acro):
-    """Test a non discolsive histogram."""
+    """Test a non disclosive histogram."""
     filename = os.path.normpath("acro_artifacts/histogram_0.png")
     _ = acro.hist(data, "inc_grants", bins=1)
     assert os.path.exists(filename)
@@ -1006,3 +1025,137 @@ def test_finalise_with_existing_path(data, acro, caplog):
         "already exists. Please choose a different directory name." in caplog.text
     )
     shutil.rmtree(PATH)
+
+
+def test_finalise_non_interactive(data):
+    """Test finalise_non_interactive.
+
+    Test that non-interactive version of finalising acro
+    leaves exceptions as they were for disclosive table.
+    """
+    acro = ACRO(suppress=False)
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.suppress = True
+    _ = acro.crosstab(data.year, data.grant_type)
+    # write JSON
+
+    path = "outputs"
+
+    result: Records = acro.finalise(path, "json", interactive=False)
+    # load JSON
+    loaded: Records = load_records(path)
+    orig0 = result.get_index(0)
+    read0 = loaded.get_index(0)
+    orig1 = result.get_index(1)
+    read1 = loaded.get_index(1)
+    # check equal
+    assert orig0.exception is None or len(orig0.exception) == 0, (
+        f"orig exception: expected None, got _{orig0.exception}_"
+    )
+    assert read0.exception is None or len(read0.exception) == 0, (
+        f"read exception: expected None, got _{read0.exception}_"
+    )
+    assert orig1.exception == "Suppression automatically applied where needed", (
+        "Error:expected exception message about automatic suppresssion"
+    )
+    assert read1.exception == "Suppression automatically applied where needed", (
+        "Error:expected exception message about automatic suppresssion"
+    )
+
+    # check SDC outcome DataFrame
+    orig_df = orig0.output[0].reset_index()
+    read_df = read0.output[0]
+    pd.testing.assert_frame_equal(
+        orig_df, read_df, check_names=False, check_dtype=False
+    )
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+
+
+def test_finalise_interactive(data):
+    """Test finalise_interactive.
+
+    Test that interactive version of finalising acro
+    leaves exceptions as they should be disclosive table.
+    """
+    acro = ACRO(suppress=False)
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.suppress = True
+    _ = acro.crosstab(data.year, data.grant_type)
+    # write JSON
+
+    mypath = "outputs"
+
+    with patch("builtins.input", return_value="Oh, please..."):
+        result: Records = acro.finalise(mypath, "json", interactive=True)
+    # load JSON
+    loaded: Records = load_records(mypath)
+    orig0 = result.get_index(0)
+    read0 = loaded.get_index(0)
+    orig1 = result.get_index(1)
+    read1 = loaded.get_index(1)
+    # check equal
+    assert orig0.exception == "Oh, please...", (
+        f"error:expected Oh, please... got {orig0.exception}"
+    )
+    assert read0.exception == "Oh, please...", (
+        f"error:expected Oh, please... got {read0.exception}"
+    )
+    assert orig1.exception == "Suppression automatically applied where needed", (
+        "Error:expected exception message about automatic suppresssion"
+    )
+    assert read1.exception == "Suppression automatically applied where needed", (
+        "Error:expected exception message about automatic suppresssion"
+    )
+    print(orig0.exception)
+    # check SDC outcome DataFrame
+    orig_df = orig0.output[0].reset_index()
+    read_df = read0.output[0]
+    pd.testing.assert_frame_equal(
+        orig_df, read_df, check_names=False, check_dtype=False
+    )
+    if os.path.isdir(mypath):
+        shutil.rmtree(mypath)
+
+
+def test_create_dataframe(data):
+    """Test correct functionality of code to create data frame."""
+    # correct
+    rows = [data.year, data.grant_type]
+    cols = [data.survivor, data.status]
+    mydataframe = acro_tables.create_dataframe(rows, cols)
+    assert mydataframe.shape == (918, 4), (
+        f"type and shape of mydataframe is {type(mydataframe)} ,{mydataframe.columns}"
+    )
+
+    # no rows
+    mydataframe2 = acro_tables.create_dataframe(None, cols)
+    assert list(mydataframe2.columns.values) == ["survivor", "status"]
+
+    # invalid rows
+    mydataframe2a = acro_tables.create_dataframe(["year", "grant_type"], cols)
+    assert list(mydataframe2a.columns.values) == ["survivor", "status"]
+
+    # no cols
+    mydataframe3 = acro_tables.create_dataframe(rows, None)
+    assert list(mydataframe3.columns.values) == ["year", "grant_type"]
+
+    # invalid cols
+    mydataframe3a = acro_tables.create_dataframe(rows, ["survivor", "status"])
+    assert list(mydataframe3a.columns.values) == ["year", "grant_type"]
+
+    # neither
+    mydataframe4 = acro_tables.create_dataframe(None, None)
+    assert mydataframe4.empty, (
+        "dataframe created with no rows or cols should be empty "
+        f"but got shape{mydataframe4.shape}"
+    )
+
+    # both invalid
+    mydataframe4a = acro_tables.create_dataframe(
+        ["year", "grant_type"], ["survivor", "status"]
+    )
+    assert mydataframe4a.empty, (
+        "dataframe created with invalid rows  and columns should be empty"
+        f"but got shape{mydataframe4a.shape}"
+    )

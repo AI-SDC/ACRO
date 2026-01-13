@@ -1101,3 +1101,6 @@ def test_cleanup():
     names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]
     for name in names:
         clean_up(name)
+    with open("foo.txt", "w") as file:
+        file.write("Your text goes here")
+    clean_up("foo.txt")

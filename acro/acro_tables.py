@@ -214,6 +214,7 @@ class Tables:
                     )
 
         # record output
+
         self.results.add(
             status=status,
             output_type="table",
@@ -225,6 +226,11 @@ class Tables:
             output=[table],
             comments=comments,
         )
+        if self.suppress:
+            justadded = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                justadded, "Suppression automatically applied where needed"
+            )
         return table
 
     def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
@@ -398,6 +404,11 @@ class Tables:
             output=[table],
             comments=comments,
         )
+        if self.suppress:
+            justadded = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                justadded, "Suppression automatically applied where needed"
+            )
         return table
 
     def surv_func(  # pylint: disable=too-many-arguments,too-many-locals
@@ -1367,7 +1378,7 @@ def create_dataframe(index, columns) -> DataFrame:
             index_df = pd.concat(index, axis=1)
         elif isinstance(index, pd.Series):
             index_df = pd.DataFrame({index.name: index})
-    except ValueError:
+    except (ValueError, TypeError):
         index_df = empty_dataframe
 
     columns_df = empty_dataframe
@@ -1376,12 +1387,12 @@ def create_dataframe(index, columns) -> DataFrame:
             columns_df = pd.concat(columns, axis=1)
         elif isinstance(columns, pd.Series):
             columns_df = pd.DataFrame({columns.name: columns})
-    except ValueError:
+    except (ValueError, TypeError):
         columns_df = empty_dataframe
 
     try:
         data = pd.concat([index_df, columns_df], axis=1)
-    except ValueError:
+    except (ValueError, TypeError):
         data = empty_dataframe
 
     return data

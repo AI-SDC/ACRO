@@ -904,3 +904,7 @@ def test_cleanup():
     names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]
     for name in names:
         clean_up(name)
+    # next piece of code is there to achieve 100% code coverage of tests
+    with open("foo.txt", "w") as file:
+        file.write("Your text goes here")
+    clean_up("foo.txt")

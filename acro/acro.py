@@ -79,7 +79,7 @@ class ACRO(Tables, Regression):
         acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
 
     def finalise(
-        self, path: str = "outputs", ext="json", interactive=False
+        self, path: str = "outputs", ext: str = "json", interactive: bool = False
     ) -> Records | None:
         """Create a results file for checking.
 

@@ -430,7 +430,7 @@ class Records:
                 )
                 record.exception = input("")
 
-    def finalise(self, path: str, ext: str, interactive=False) -> None:
+    def finalise(self, path: str, ext: str, interactive: bool = False) -> None:
         """Create a results file for checking.
 
         Parameters

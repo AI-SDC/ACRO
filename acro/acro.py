@@ -89,7 +89,7 @@ class ACRO(Tables, Regression):
             Name of a folder to save outputs.
         ext : str
             Extension of the results file. Valid extensions: {json, xlsx}.
-        interactive : Bool
+        interactive : bool
             Whether to prompt the user to request exceptions for failing outputs.
 
         Returns

@@ -1,0 +1,737 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>What ACRO Supports &#8212; ACRO 0.4.11 documentation</title>
+
+
+
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=17306193" />
+
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=475c965b"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'support';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="Welcome to ACRO" href="introduction.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+
+
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+
+
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  <div id="pst-scroll-pixel-helper"></div>
+
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+
+  <dialog id="pst-search-dialog">
+
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+
+
+  <div class="col-lg-3 navbar-header-items__start">
+
+      <div class="navbar-item">
+
+
+
+
+
+<a class="navbar-brand logo" href="index.html">
+
+
+
+
+
+
+    <p class="title logo__title">ACRO 0.4.11 documentation</p>
+
+</a></div>
+
+  </div>
+
+  <div class="col-lg-9 navbar-header-items">
+
+    <div class="me-auto navbar-header-items__center">
+
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+
+  </ul>
+</nav></div>
+
+    </div>
+
+
+    <div class="navbar-header-items__end">
+
+        <div class="navbar-item navbar-persistent--container">
+
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+
+
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+    </div>
+
+  </div>
+
+
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+
+
+
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+
+</div>
+
+    </header>
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+
+
+
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+
+
+
+  <div class="sidebar-header-items sidebar-primary__section">
+
+
+      <div class="sidebar-header-items__center">
+
+
+
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+
+
+      </div>
+
+
+
+      <div class="sidebar-header-items__end">
+
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+      </div>
+
+  </div>
+
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+
+
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+
+      <main id="main-content" class="bd-main" role="main">
+
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+
+    <div class="header-article-items__start">
+
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">What ACRO Supports</span></li>
+  </ul>
+</nav>
+</div>
+
+    </div>
+
+
+</div>
+</div>
+
+
+
+
+<div id="searchbox"></div>
+                <article class="bd-article">
+
+  <section id="what-acro-supports">
+<h1>What ACRO Supports<a class="headerlink" href="#what-acro-supports" title="Link to this heading">#</a></h1>
+<p>This page provides a comprehensive overview of ACRO’s capabilities for researchers, developers, and non-technical stakeholders. ACRO supports a wide range of statistical analysis functions with semi-automated disclosure control.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Drop-in Replacements:</strong> ACRO functions are designed as direct replacements for standard analysis commands. Simply prefix your existing commands with <code class="docutils literal notranslate"><span class="pre">acro.</span></code> to enable automatic disclosure checking.</p>
+</div>
+<section id="supported-data-analysis-functions">
+<h2>Supported Data Analysis Functions<a class="headerlink" href="#supported-data-analysis-functions" title="Link to this heading">#</a></h2>
+<section id="table-creation-cross-tabulation">
+<h3>Table Creation &amp; Cross-tabulation<a class="headerlink" href="#table-creation-cross-tabulation" title="Link to this heading">#</a></h3>
+<p><strong>For Researchers:</strong>
+Create frequency tables and cross-tabulations with automatic cell suppression for small counts.</p>
+<p><strong>What ACRO Supports:</strong></p>
+<ul class="simple">
+<li><p><strong>crosstab()</strong> - Cross-tabulation of two or more variables with frequency counting</p></li>
+<li><p><strong>pivot_table()</strong> - Spreadsheet-style pivot tables with aggregation functions</p></li>
+<li><p><strong>table()</strong> - Simple frequency tables for categorical data (R interface only)</p></li>
+</ul>
+<p><strong>Technical Details:</strong>
+- ACRO suppresses, and reports the reason why, the value of an aggregation statistic (mean, median, variance, etc.) for any cell is deemed to be sensitive
+- The current version of ACRO supports the three most common tests for sensitivity: ensuring the number of contributors is above a frequency threshold, and testing for dominance via N-K rules
+- <strong>N-K Rule</strong>: A dominance test where if the top N contributors account for more than K% of the total, the cell is considered disclosive
+- <strong>Frequency Threshold</strong>: Cells with fewer than a specified number of contributors are suppressed
+- All thresholds are configurable via YAML configuration files
+- For detailed methodology, see our <a class="reference external" href="https://doi.org/10.1109/TP.2025.3566052">research paper</a>
+- Automatic flagging of negative or missing values for human review</p>
+<p><strong>Example Use Cases:</strong>
+- Survey response analysis by demographics
+- Clinical trial outcome tables
+- Market research cross-tabulations
+- Educational assessment reporting</p>
+</section>
+<section id="statistical-modeling">
+<h3>Statistical Modeling<a class="headerlink" href="#statistical-modeling" title="Link to this heading">#</a></h3>
+<p><strong>For Researchers:</strong>
+Run regression analyses with semi-automated checks on model outputs and residual degrees of freedom.</p>
+<p><strong>What ACRO Supports:</strong></p>
+<ul class="simple">
+<li><p><strong>ols()</strong> - Ordinary Least Squares linear regression</p></li>
+<li><p><strong>logit()</strong> - Logistic regression for binary outcomes</p></li>
+<li><p><strong>probit()</strong> - Probit regression for binary outcomes</p></li>
+</ul>
+<p><strong>Technical Details:</strong>
+- For regressions such as linear, probit, and logit, the tests verify that the number of residual degrees of freedom exceeds a threshold
+- Within the ACRO Python package, the functionality of the ‘ACRO’ class is split into a number of separate classes for maintainability and extensibility. A ‘Tables’ class contains the code necessary to perform disclosure checks on tabular data, such as crosstab. A separate ‘Regression’ class contains the code for checking regressions such as logit and probit</p>
+<p><strong>Example Use Cases:</strong>
+- Economic modeling and policy analysis
+- Medical research and clinical studies
+- Social science research
+- Business analytics and forecasting</p>
+</section>
+</section>
+<section id="programming-language-support">
+<h2>Programming Language Support<a class="headerlink" href="#programming-language-support" title="Link to this heading">#</a></h2>
+<section id="python-primary">
+<h3>Python (Primary)<a class="headerlink" href="#python-primary" title="Link to this heading">#</a></h3>
+<p><strong>For Developers:</strong>
+The ACRO package is a lightweight Python tool that sits over well-known analysis tools that produce outputs such as tables, plots, and statistical models</p>
+<p><strong>Supported Libraries:</strong>
+- <strong>Pandas</strong> - For data manipulation and table creation
+- <strong>Statsmodels</strong> - For statistical modeling and regression analysis
+- <strong>NumPy</strong> - For numerical computations</p>
+<p><strong>Python Version Support:</strong>
+- Python 3.10, 3.11, 3.12, 3.13</p>
+</section>
+<section id="r-language">
+<h3>R Language<a class="headerlink" href="#r-language" title="Link to this heading">#</a></h3>
+<p><strong>For R Users:</strong>
+Additional programming languages such as this R package are supported by providing front-end packages that interface with the core ACRO Python back-end</p>
+<p><strong>Integration Features:</strong>
+- Native R syntax and workflows
+- R Markdown and Shiny application support
+- Tidyverse compatibility
+- CRAN package availability</p>
+<p><strong>Getting Started in R:</strong>
+<code class="docutils literal notranslate"><span class="pre">`r</span>
+<span class="pre">library(&quot;acro&quot;)</span>
+<span class="pre">acro_init(suppress</span> <span class="pre">=</span> <span class="pre">TRUE)</span>
+<span class="pre">`</span></code></p>
+</section>
+<section id="stata-integration">
+<h3>Stata Integration<a class="headerlink" href="#stata-integration" title="Link to this heading">#</a></h3>
+<p><strong>For Stata Users:</strong>
+ACRO is designed to let you use familiar commands in R, Stata and Python</p>
+<p><strong>Features:</strong>
+- Drop-in replacement for standard Stata commands
+- Familiar Stata syntax and workflows
+- Integration with existing Stata scripts</p>
+</section>
+</section>
+<section id="disclosure-control-features">
+<h2>Disclosure Control Features<a class="headerlink" href="#disclosure-control-features" title="Link to this heading">#</a></h2>
+<section id="semi-automated-sensitivity-testing">
+<h3>semi-automated Sensitivity Testing<a class="headerlink" href="#semi-automated-sensitivity-testing" title="Link to this heading">#</a></h3>
+<p><strong>What ACRO Checks:</strong></p>
+<p><strong>For Tables:</strong>
+- Minimum cell counts (frequency thresholds)
+- Dominance rules (N-K rules for concentration)
+- Presence of negative or missing values</p>
+<p><strong>For Statistical Models:</strong>
+- Residual degrees of freedom thresholds
+- Model fit diagnostics
+- Parameter significance testing</p>
+<p><strong>For Non-Technical Users:</strong>
+ACRO automatically identifies when research outputs might reveal sensitive information about individuals or organizations, applying industry-standard privacy protection rules. It must be used by trained researchers and checked by skilled checkers.</p>
+</section>
+<section id="output-management">
+<h3>Output Management<a class="headerlink" href="#output-management" title="Link to this heading">#</a></h3>
+<p><strong>What ACRO Provides:</strong></p>
+<ul class="simple">
+<li><p><strong>Suppression Masks</strong> - Clear indication of which results are hidden and why</p></li>
+<li><p><strong>Summary Reports</strong> - Detailed explanation of all disclosure checks performed</p></li>
+<li><p><strong>Audit Trails</strong> - Complete record of all analysis steps and decisions</p></li>
+<li><p><strong>Exception Handling</strong> - Process for requesting release of flagged outputs</p></li>
+</ul>
+<p><strong>Workflow Integration:</strong>
+The finalise function will: Check that each output with “fail” or “review” status has an exception, if not you will be asked to enter one. Write the outputs to a directory. This directory contains everything that the output checkers need to make a decision</p>
+</section>
+</section>
+<section id="supported-environments">
+<h2>Supported Environments<a class="headerlink" href="#supported-environments" title="Link to this heading">#</a></h2>
+<section id="research-environments">
+<h3>Research Environments<a class="headerlink" href="#research-environments" title="Link to this heading">#</a></h3>
+<p><strong>Where ACRO Works:</strong>
+- Trusted Research Environments (TREs)
+- Data safe havens
+- Secure data centers
+- Academic research computing facilities
+- Government statistical offices
+- Healthcare research environments</p>
+<p><strong>Installation:</strong>
+See <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a> for complete installation instructions and system requirements.</p>
+</section>
+</section>
+<section id="integration-capabilities">
+<h2>Integration Capabilities<a class="headerlink" href="#integration-capabilities" title="Link to this heading">#</a></h2>
+<section id="analysis-workflows">
+<h3>Analysis Workflows<a class="headerlink" href="#analysis-workflows" title="Link to this heading">#</a></h3>
+<p><strong>For Research Teams:</strong>
+ACRO integrates seamlessly into existing data analysis workflows, requiring minimal changes to current practices while adding comprehensive privacy protection.</p>
+<p><strong>Supported Workflows:</strong>
+- Jupyter notebook analysis
+- R Markdown documents
+- Stata do-files and scripts
+- Batch processing and automation
+- Interactive analysis sessions</p>
+<p><strong>Data Sources:</strong>
+- CSV and Excel files
+- Database connections
+- Survey data platforms
+- Administrative datasets
+- Clinical trial databases</p>
+</section>
+<section id="output-formats">
+<h3>Output Formats<a class="headerlink" href="#output-formats" title="Link to this heading">#</a></h3>
+<p><strong>What ACRO Produces:</strong>
+- Standard CSV files for tables
+- JSON metadata files for automation
+- Excel workbooks for human reviewers</p>
+<p><strong>Review Process Support:</strong>
+Compatible with SACRO-Viewer for interactive output review by data controllers and compliance officers.</p>
+</section>
+</section>
+<section id="technical-architecture">
+<h2>Technical Architecture<a class="headerlink" href="#technical-architecture" title="Link to this heading">#</a></h2>
+<p><strong>For System Administrators:</strong></p>
+<p><strong>Core Technology:</strong>
+Lightweight translation scripts intercept your commands and pass them through to a python ‘engine’, based on industry-standard packages that run your commands and perform statistical disclosure checks on them</p>
+<p><strong>System Requirements:</strong>
+- Python 3.10+ runtime environment
+- Standard scientific computing libraries (pandas, numpy, statsmodels)
+- Minimal computational overhead
+- No external network dependencies during analysis</p>
+<p><strong>Security Features:</strong>
+- Local processing only (no cloud dependencies)
+- Audit logging and tracking
+- Configurable disclosure thresholds
+- Role-based access controls (through integration with TRE systems)</p>
+<p><strong>Documentation and Support:</strong>
+Standard Python coding and naming practices have been used throughout. GitHub continuous integration (CI) runners automatically generate and publish API documentation using the Python docstrings written in numpydoc format</p>
+</section>
+<section id="what-acro-does-not-support">
+<h2>What ACRO Does NOT Support<a class="headerlink" href="#what-acro-does-not-support" title="Link to this heading">#</a></h2>
+<p><strong>Current Limitations:</strong>
+- Complex visualizations and plots (coming in future versions)
+- Time series analysis (specialized disclosure rules needed)
+- Machine learning models (use SACRO-ML for AI/ML workflows)
+- Real-time data streams
+- Distributed computing frameworks</p>
+<p><strong>Alternative Solutions:</strong>
+- <strong>SACRO-ML</strong> - For machine learning and AI model disclosure control
+- <strong>SACRO-Viewer</strong> - For interactive output review and approval
+- <strong>Traditional SDC tools</strong> - For specialized use cases not covered by ACRO</p>
+</section>
+<section id="getting-help">
+<h2>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading">#</a></h2>
+<p><strong>For All Users:</strong>
+- Comprehensive online documentation at GitHub Pages
+- Built-in help system: <code class="docutils literal notranslate"><span class="pre">help(acro.function_name)</span></code>
+- Example notebooks and tutorials in the GitHub repository
+- Active community support and issue tracking</p>
+<p><strong>For Researchers:</strong>
+- Step-by-step tutorials for common analysis patterns
+- Best practices guides for different research domains
+- Integration examples for popular data science workflows</p>
+<p><strong>For Developers:</strong>
+- Complete API documentation with examples
+- Contributing guidelines and development setup
+- Continuous integration and testing frameworks
+- Open source development model with community contributions</p>
+</section>
+</section>
+
+
+                </article>
+
+
+
+
+
+                <footer class="prev-next-footer d-print-none">
+
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="introduction.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Welcome to ACRO</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="installation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Installation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+
+            </div>
+
+
+
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-data-analysis-functions">Supported Data Analysis Functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#table-creation-cross-tabulation">Table Creation &amp; Cross-tabulation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-modeling">Statistical Modeling</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#programming-language-support">Programming Language Support</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-primary">Python (Primary)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#r-language">R Language</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stata-integration">Stata Integration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#disclosure-control-features">Disclosure Control Features</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#semi-automated-sensitivity-testing">semi-automated Sensitivity Testing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#output-management">Output Management</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-environments">Supported Environments</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#research-environments">Research Environments</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#integration-capabilities">Integration Capabilities</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-workflows">Analysis Workflows</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#output-formats">Output Formats</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#technical-architecture">Technical Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-acro-does-not-support">What ACRO Does NOT Support</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-help">Getting Help</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/support.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+
+
+          </div>
+          <footer class="bd-footer-content">
+
+          </footer>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+
+    <div class="footer-items__start">
+
+        <div class="footer-item">
+
+  <p class="copyright">
+
+      © Copyright 2025, SACRO Project Team.
+      <br/>
+
+  </p>
+</div>
+
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+
+    </div>
+
+
+
+    <div class="footer-items__end">
+
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+
+    </div>
+
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -430,7 +430,7 @@ class Records:
                 )
                 record.exception = input("")
 
-    def finalise(self, path: str, ext: str, interactive: bool = False) -> None:
+    def finalise(self, path: str, ext: str) -> None:
         """Create a results file for checking.
 
         Parameters
@@ -439,12 +439,9 @@ class Records:
             Name of a folder to save outputs.
         ext : str
             Extension of the results file. Valid extensions: {json, xlsx}.
-        interactive : Bool
-            Whether to prompt the user to request exceptions for failing outputs.
         """
         logger.debug("finalise()")
-        if interactive:
-            self.validate_outputs()
+        self.validate_outputs()
         if ext == "json":
             self.finalise_json(path)
         elif ext == "xlsx":

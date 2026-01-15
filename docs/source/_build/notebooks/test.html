@@ -1,0 +1,4137 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ACRO Tests &#8212; ACRO 0.4.11 documentation</title>
+
+
+
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=17306193" />
+
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=475c965b"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/test';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ACRO Demonstration" href="test-nursery.html" />
+    <link rel="prev" title="ACRO Demonstration" href="acro_demo.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+
+
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+
+
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  <div id="pst-scroll-pixel-helper"></div>
+
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+
+  <dialog id="pst-search-dialog">
+
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+
+
+  <div class="col-lg-3 navbar-header-items__start">
+
+      <div class="navbar-item">
+
+
+
+
+
+<a class="navbar-brand logo" href="../index.html">
+
+
+
+
+
+
+    <p class="title logo__title">ACRO 0.4.11 documentation</p>
+
+</a></div>
+
+  </div>
+
+  <div class="col-lg-9 navbar-header-items">
+
+    <div class="me-auto navbar-header-items__center">
+
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+
+  </ul>
+</nav></div>
+
+    </div>
+
+
+    <div class="navbar-header-items__end">
+
+        <div class="navbar-item navbar-persistent--container">
+
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+
+
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+    </div>
+
+  </div>
+
+
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+
+
+
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+
+</div>
+
+    </header>
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+
+
+
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+
+
+
+  <div class="sidebar-header-items sidebar-primary__section">
+
+
+      <div class="sidebar-header-items__center">
+
+
+
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+
+
+      </div>
+
+
+
+      <div class="sidebar-header-items__end">
+
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+      </div>
+
+  </div>
+
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/configuration.html">Configuration</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../notebook_examples.html">Notebook Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="acro_demo.html">ACRO Demonstration</a></li>
+
+
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">ACRO Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="test-nursery.html">ACRO Demonstration</a></li>
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+
+
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+
+      <main id="main-content" class="bd-main" role="main">
+
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+
+    <div class="header-article-items__start">
+
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+
+    <li class="breadcrumb-item"><a href="../examples.html" class="nav-link">Examples</a></li>
+
+
+    <li class="breadcrumb-item"><a href="../notebook_examples.html" class="nav-link">Notebook Examples</a></li>
+
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ACRO Tests</span></li>
+  </ul>
+</nav>
+</div>
+
+    </div>
+
+
+</div>
+</div>
+
+
+
+
+<div id="searchbox"></div>
+                <article class="bd-article">
+
+  <section id="ACRO-Tests">
+<h1>ACRO Tests<a class="headerlink" href="#ACRO-Tests" title="Link to this heading">#</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># uncomment this line if acro is not installed</span>
+<span class="c1"># ie you are in development mode</span>
+<span class="c1"># sys.path.insert(0, os.path.abspath(&quot;..&quot;))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">acro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACRO</span><span class="p">,</span> <span class="n">add_constant</span><span class="p">,</span> <span class="n">utils</span>
+</pre></div>
+</div>
+</div>
+<section id="Instantiate-ACRO">
+<h2>Instantiate ACRO<a class="headerlink" href="#Instantiate-ACRO" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span> <span class="o">=</span> <span class="n">ACRO</span><span class="p">(</span><span class="n">suppress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:version: 0.4.8
+INFO:acro:config: {&#39;safe_threshold&#39;: 10, &#39;safe_dof_threshold&#39;: 10, &#39;safe_nk_n&#39;: 2, &#39;safe_nk_k&#39;: 0.9, &#39;safe_pratio_p&#39;: 0.1, &#39;check_missing_values&#39;: False, &#39;survival_safe_threshold&#39;: 10, &#39;zeros_are_disclosive&#39;: True}
+INFO:acro:automatic suppression: False
+</pre></div></div>
+</div>
+</section>
+<section id="Load-test-data">
+<h2>Load test data<a class="headerlink" href="#Load-test-data" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;../data&quot;</span><span class="p">,</span> <span class="s2">&quot;test_data.dta&quot;</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_stata</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>charity</th>
+      <th>grant_type</th>
+      <th>index</th>
+      <th>year</th>
+      <th>inc_activity</th>
+      <th>inc_grants</th>
+      <th>inc_donations</th>
+      <th>inc_other</th>
+      <th>inc_total</th>
+      <th>total_costs</th>
+      <th>...</th>
+      <th>sh_staff_grants_given</th>
+      <th>sh_assets_grants_given</th>
+      <th>sh_income_balance</th>
+      <th>sh_staff_balance</th>
+      <th>sh_assets_balance</th>
+      <th>sh_income_assets</th>
+      <th>sh_staff_assets</th>
+      <th>sh_income_staff_costs</th>
+      <th>sh_assets_staff_costs</th>
+      <th>wgt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>4Children</td>
+      <td>R</td>
+      <td>1.0</td>
+      <td>2011</td>
+      <td>2880902.0</td>
+      <td>9603182.0</td>
+      <td>91404.0</td>
+      <td>310947.0</td>
+      <td>12886435.0</td>
+      <td>12127472.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.072636</td>
+      <td>0.135971</td>
+      <td>0.767809</td>
+      <td>0.094602</td>
+      <td>0.177090</td>
+      <td>0.534203</td>
+      <td>5.646843</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>4Children</td>
+      <td>R</td>
+      <td>1.0</td>
+      <td>2014</td>
+      <td>6810520.0</td>
+      <td>18768904.0</td>
+      <td>58002.0</td>
+      <td>401879.0</td>
+      <td>26039304.0</td>
+      <td>25493796.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.057641</td>
+      <td>0.089150</td>
+      <td>1.001396</td>
+      <td>0.057560</td>
+      <td>0.089026</td>
+      <td>0.646561</td>
+      <td>11.232729</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4Children</td>
+      <td>R</td>
+      <td>1.0</td>
+      <td>2015</td>
+      <td>7199403.0</td>
+      <td>21638036.0</td>
+      <td>132191.0</td>
+      <td>512654.0</td>
+      <td>29482284.0</td>
+      <td>32290108.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-0.049619</td>
+      <td>-0.079828</td>
+      <td>-0.620210</td>
+      <td>0.080004</td>
+      <td>0.128711</td>
+      <td>0.621583</td>
+      <td>7.769365</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4Children</td>
+      <td>R</td>
+      <td>1.0</td>
+      <td>2013</td>
+      <td>5573013.0</td>
+      <td>15194731.0</td>
+      <td>228844.0</td>
+      <td>267156.0</td>
+      <td>21263744.0</td>
+      <td>20989048.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.045740</td>
+      <td>0.068251</td>
+      <td>1.008259</td>
+      <td>0.045365</td>
+      <td>0.067692</td>
+      <td>0.670166</td>
+      <td>14.772749</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4Children</td>
+      <td>R</td>
+      <td>1.0</td>
+      <td>2010</td>
+      <td>2056816.0</td>
+      <td>7335103.0</td>
+      <td>110256.0</td>
+      <td>424628.0</td>
+      <td>9926803.0</td>
+      <td>9769816.0</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.057696</td>
+      <td>0.122532</td>
+      <td>0.567539</td>
+      <td>0.101660</td>
+      <td>0.215901</td>
+      <td>0.470862</td>
+      <td>4.631749</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 44 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Pandas-crosstab">
+<h2>Pandas crosstab<a class="headerlink" href="#Pandas-crosstab" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">survivor</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">grant_type</span><span class="p">])</span>
+<span class="n">table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th>survivor</th>
+      <th colspan="2" halign="left">Dead in 2015</th>
+      <th colspan="4" halign="left">Alive in 2015</th>
+    </tr>
+    <tr>
+      <th>grant_type</th>
+      <th>G</th>
+      <th>R</th>
+      <th>G</th>
+      <th>N</th>
+      <th>R</th>
+      <th>R/G</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2012</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2013</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2014</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2015</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="ACRO-crosstab">
+<h2>ACRO crosstab<a class="headerlink" href="#ACRO-crosstab" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">survivor</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">grant_type</span><span class="p">])</span>
+<span class="n">safe_table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 12 cells may need suppressing;
+INFO:acro:outcome_df:
+----------------------------------------------------------------|
+survivor   |Dead_in_2015     |Alive_in_2015                     |
+grant_type |G            R   |G             N   R   R/G         |
+year       |                 |                                  |
+----------------------------------------------------------------|
+2010       | threshold;   ok | ok            ok  ok  threshold; |
+2011       | threshold;   ok | ok            ok  ok  threshold; |
+2012       | threshold;   ok | ok            ok  ok  threshold; |
+2013       | threshold;   ok | ok            ok  ok  threshold; |
+2014       | threshold;   ok | ok            ok  ok  threshold; |
+2015       | threshold;   ok | ok            ok  ok  threshold; |
+----------------------------------------------------------------|
+
+INFO:acro:records:add(): output_0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th>survivor</th>
+      <th colspan="2" halign="left">Dead in 2015</th>
+      <th colspan="4" halign="left">Alive in 2015</th>
+    </tr>
+    <tr>
+      <th>grant_type</th>
+      <th>G</th>
+      <th>R</th>
+      <th>G</th>
+      <th>N</th>
+      <th>R</th>
+      <th>R/G</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2012</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2013</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2014</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2015</th>
+      <td>3</td>
+      <td>47</td>
+      <td>12</td>
+      <td>59</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="same-table-with-column-hierarchy-reversed-to-make-sure-spaces-in-variable-name.-dealt-with-properly">
+<h2>same table with column hierarchy reversed to make sure spaces in variable name. dealt with properly<a class="headerlink" href="#same-table-with-column-hierarchy-reversed-to-make-sure-spaces-in-variable-name.-dealt-with-properly" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">grant_type</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">survivor</span><span class="p">])</span>
+<span class="n">safe_table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 12 cells may need suppressing;
+INFO:acro:outcome_df:
+------------------------------------------------------------------------------------------------|
+grant_type |G                          |N             |R                          |R/G          |
+survivor   |Dead_in_2015 Alive_in_2015 |Alive_in_2015 |Dead_in_2015 Alive_in_2015 |Alive_in_2015|
+year       |                           |              |                           |             |
+------------------------------------------------------------------------------------------------|
+2010       | threshold;   ok           | ok           | ok           ok           | threshold;  |
+2011       | threshold;   ok           | ok           | ok           ok           | threshold;  |
+2012       | threshold;   ok           | ok           | ok           ok           | threshold;  |
+2013       | threshold;   ok           | ok           | ok           ok           | threshold;  |
+2014       | threshold;   ok           | ok           | ok           ok           | threshold;  |
+2015       | threshold;   ok           | ok           | ok           ok           | threshold;  |
+------------------------------------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_1
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th>grant_type</th>
+      <th colspan="2" halign="left">G</th>
+      <th>N</th>
+      <th colspan="2" halign="left">R</th>
+      <th>R/G</th>
+    </tr>
+    <tr>
+      <th>survivor</th>
+      <th>Dead in 2015</th>
+      <th>Alive in 2015</th>
+      <th>Alive in 2015</th>
+      <th>Dead in 2015</th>
+      <th>Alive in 2015</th>
+      <th>Alive in 2015</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>3</td>
+      <td>12</td>
+      <td>59</td>
+      <td>47</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>3</td>
+      <td>12</td>
+      <td>59</td>
+      <td>47</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2012</th>
+      <td>3</td>
+      <td>12</td>
+      <td>59</td>
+      <td>47</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2013</th>
+      <td>3</td>
+      <td>12</td>
+      <td>59</td>
+      <td>47</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2014</th>
+      <td>3</td>
+      <td>12</td>
+      <td>59</td>
+      <td>47</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>2015</th>
+      <td>3</td>
+      <td>12</td>
+      <td>59</td>
+      <td>47</td>
+      <td>24</td>
+      <td>8</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="checking-for-testing-purposes">
+<h2>checking for testing purposes<a class="headerlink" href="#checking-for-testing-purposes" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mydata</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;charity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;W&quot;</span><span class="p">)]</span>
+<span class="n">mydata</span> <span class="o">=</span> <span class="n">mydata</span><span class="p">[</span><span class="n">mydata</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2012</span><span class="p">]</span>
+<span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">mydata</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">mydata</span><span class="o">.</span><span class="n">survivor</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 4 cells may need suppressing;
+INFO:acro:outcome_df:
+-------------------------------------|
+survivor |Dead_in_2015 |Alive_in_2015|
+year     |             |             |
+-------------------------------------|
+2010     | threshold;  | threshold;  |
+2011     | threshold;  | threshold;  |
+-------------------------------------|
+
+INFO:acro:records:add(): output_2
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>survivor</th>
+      <th>Dead in 2015</th>
+      <th>Alive in 2015</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-suppression">
+<h2>ACRO crosstab with suppression<a class="headerlink" href="#ACRO-crosstab-with-suppression" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">grant_type</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">inc_grants</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="n">safe_table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 7 cells suppressed; p-ratio: 2 cells suppressed; nk-rule: 1 cells suppressed;
+INFO:acro:outcome_df:
+---------------------------------------------------------------------------|
+grant_type |G   |N                     |R   |R/G                           |
+year       |    |                      |    |                              |
+---------------------------------------------------------------------------|
+2010       | ok | threshold; p-ratio;  | ok | threshold; p-ratio; nk-rule; |
+2011       | ok |                   ok | ok |                   threshold; |
+2012       | ok |                   ok | ok |                   threshold; |
+2013       | ok |                   ok | ok |                   threshold; |
+2014       | ok |                   ok | ok |                   threshold; |
+2015       | ok |                   ok | ok |                   threshold; |
+---------------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_3
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>grant_type</th>
+      <th>G</th>
+      <th>N</th>
+      <th>R</th>
+      <th>R/G</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>9921906.0</td>
+      <td>NaN</td>
+      <td>8402284.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>8502246.0</td>
+      <td>124013.859375</td>
+      <td>7716880.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2012</th>
+      <td>11458580.0</td>
+      <td>131859.062500</td>
+      <td>6958050.5</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2013</th>
+      <td>13557147.0</td>
+      <td>147937.796875</td>
+      <td>7202273.5</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2014</th>
+      <td>13748147.0</td>
+      <td>133198.250000</td>
+      <td>8277525.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2015</th>
+      <td>11133433.0</td>
+      <td>146572.187500</td>
+      <td>10812888.0</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-suppression-and-totals">
+<h2>ACRO crosstab with suppression and totals<a class="headerlink" href="#ACRO-crosstab-with-suppression-and-totals" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">grant_type</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">survivor</span><span class="p">],</span>
+    <span class="n">values</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">inc_grants</span><span class="p">,</span>
+    <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span>
+    <span class="n">margins</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:Empty columns: (&#39;N&#39;, &#39;Dead in 2015&#39;), (&#39;R/G&#39;, &#39;Dead in 2015&#39;) were deleted.
+INFO:acro:get_summary(): fail; threshold: 14 cells may need suppressing; p-ratio: 8 cells may need suppressing; nk-rule: 7 cells may need suppressing;
+INFO:acro:outcome_df:
+------------------------------------------------------------------------------------------------------------------------------------------------|
+grant_type |G                                            |N                     |R                          |R/G                            |All|
+survivor   |Dead_in_2015                   Alive_in_2015 |Alive_in_2015         |Dead_in_2015 Alive_in_2015 |Alive_in_2015                  |   |
+year       |                                             |                      |                           |                               |   |
+------------------------------------------------------------------------------------------------------------------------------------------------|
+2010       | threshold; p-ratio; nk-rule;            ok  | threshold; p-ratio;  | ok           ok           | threshold; p-ratio; nk-rule;  | ok|
+2011       | threshold; p-ratio; nk-rule;            ok  |                   ok | ok           ok           |                   threshold;  | ok|
+2012       | threshold; p-ratio; nk-rule;            ok  |                   ok | ok           ok           |                   threshold;  | ok|
+2013       | threshold; p-ratio; nk-rule;            ok  |                   ok | ok           ok           |                   threshold;  | ok|
+2014       | threshold; p-ratio; nk-rule;            ok  |                   ok | ok           ok           |                   threshold;  | ok|
+2015       | threshold; p-ratio; nk-rule;   threshold;   |                   ok | ok           ok           |                   threshold;  | ok|
+All        |                            ok           ok  |                   ok | ok           ok           |                            ok | ok|
+------------------------------------------------------------------------------------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_4
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+grant_type            G                           N            R  \
+survivor   Dead in 2015 Alive in 2015 Alive in 2015 Dead in 2015
+year
+2010                  2            12             5           40
+2011                  3            12            58           45
+2012                  3            12            59           45
+2013                  3            12            59           47
+2014                  3            12            59           43
+2015                  3             9            58           28
+All                  17            69           298          248
+
+grant_type                         R/G  All
+survivor   Alive in 2015 Alive in 2015
+year
+2010                  20             4   83
+2011                  24             8  150
+2012                  24             8  151
+2013                  24             8  153
+2014                  24             8  149
+2015                  23             8  129
+All                  139            44  815
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-aggregation-function">
+<h2>ACRO crosstab with aggregation function<a class="headerlink" href="#ACRO-crosstab-with-aggregation-function" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">survivor</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">inc_grants</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="n">safe_table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): pass
+INFO:acro:outcome_df:
+-------------------------------------|
+survivor |Dead_in_2015 |Alive_in_2015|
+year     |             |             |
+-------------------------------------|
+2010     | ok          | ok          |
+2011     | ok          | ok          |
+2012     | ok          | ok          |
+2013     | ok          | ok          |
+2014     | ok          | ok          |
+2015     | ok          | ok          |
+-------------------------------------|
+
+INFO:acro:records:add(): output_5
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>survivor</th>
+      <th>Dead in 2015</th>
+      <th>Alive in 2015</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>1320337.750</td>
+      <td>15466672.0</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>1295468.000</td>
+      <td>7190086.5</td>
+    </tr>
+    <tr>
+      <th>2012</th>
+      <td>1270522.125</td>
+      <td>7119017.5</td>
+    </tr>
+    <tr>
+      <th>2013</th>
+      <td>1325315.500</td>
+      <td>7682584.0</td>
+    </tr>
+    <tr>
+      <th>2014</th>
+      <td>1282249.625</td>
+      <td>8276287.5</td>
+    </tr>
+    <tr>
+      <th>2015</th>
+      <td>1608412.250</td>
+      <td>8060488.5</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-multiple-aggregation-functions-and-totals">
+<h2>ACRO crosstab with multiple aggregation functions and totals<a class="headerlink" href="#ACRO-crosstab-with-multiple-aggregation-functions-and-totals" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">grant_type</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">inc_grants</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">],</span> <span class="n">margins</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">safe_table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 14 cells may need suppressing; p-ratio: 4 cells may need suppressing; nk-rule: 2 cells may need suppressing;
+INFO:acro:outcome_df:
+----------------------------------------------------------------------------------------------------------------------------------------------|
+           mean                                                              |std                                                             |
+grant_type G    N                     R   R/G                            All |G   N                     R   R/G                            All|
+year                                                                         |                                                                |
+----------------------------------------------------------------------------------------------------------------------------------------------|
+2010        ok   threshold; p-ratio;   ok  threshold; p-ratio; nk-rule;   ok | ok  threshold; p-ratio;   ok  threshold; p-ratio; nk-rule;   ok|
+2011        ok                     ok  ok                    threshold;   ok | ok                    ok  ok                    threshold;   ok|
+2012        ok                     ok  ok                    threshold;   ok | ok                    ok  ok                    threshold;   ok|
+2013        ok                     ok  ok                    threshold;   ok | ok                    ok  ok                    threshold;   ok|
+2014        ok                     ok  ok                    threshold;   ok | ok                    ok  ok                    threshold;   ok|
+2015        ok                     ok  ok                    threshold;   ok | ok                    ok  ok                    threshold;   ok|
+All         ok                     ok  ok                             ok  ok | ok                    ok  ok                             ok  ok|
+----------------------------------------------------------------------------------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_6
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="5" halign="left">mean</th>
+      <th colspan="5" halign="left">std</th>
+    </tr>
+    <tr>
+      <th>grant_type</th>
+      <th>G</th>
+      <th>N</th>
+      <th>R</th>
+      <th>R/G</th>
+      <th>All</th>
+      <th>G</th>
+      <th>N</th>
+      <th>R</th>
+      <th>R/G</th>
+      <th>All</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>9921906.0</td>
+      <td>0.000000</td>
+      <td>8402284.0</td>
+      <td>11636000.0</td>
+      <td>8308286.5</td>
+      <td>1.855055e+07</td>
+      <td>0.000000</td>
+      <td>3.059557e+07</td>
+      <td>1.701088e+07</td>
+      <td>2.727398e+07</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>8502246.0</td>
+      <td>124013.859375</td>
+      <td>7716880.0</td>
+      <td>16047500.0</td>
+      <td>5303808.5</td>
+      <td>1.688595e+07</td>
+      <td>205959.492903</td>
+      <td>2.954322e+07</td>
+      <td>1.561638e+07</td>
+      <td>2.137658e+07</td>
+    </tr>
+    <tr>
+      <th>2012</th>
+      <td>11458580.0</td>
+      <td>131859.062500</td>
+      <td>6958050.5</td>
+      <td>16810000.0</td>
+      <td>5259893.5</td>
+      <td>2.061090e+07</td>
+      <td>210476.539175</td>
+      <td>2.721184e+07</td>
+      <td>1.646449e+07</td>
+      <td>2.026400e+07</td>
+    </tr>
+    <tr>
+      <th>2013</th>
+      <td>13557147.0</td>
+      <td>147937.796875</td>
+      <td>7202273.5</td>
+      <td>16765625.0</td>
+      <td>5605045.5</td>
+      <td>2.486844e+07</td>
+      <td>203747.417017</td>
+      <td>2.989833e+07</td>
+      <td>1.671112e+07</td>
+      <td>2.251787e+07</td>
+    </tr>
+    <tr>
+      <th>2014</th>
+      <td>13748147.0</td>
+      <td>133198.250000</td>
+      <td>8277525.0</td>
+      <td>17845750.0</td>
+      <td>6117054.5</td>
+      <td>3.134559e+07</td>
+      <td>181865.925580</td>
+      <td>3.546348e+07</td>
+      <td>1.741251e+07</td>
+      <td>2.641722e+07</td>
+    </tr>
+    <tr>
+      <th>2015</th>
+      <td>11133433.0</td>
+      <td>146572.187500</td>
+      <td>10812888.0</td>
+      <td>18278624.0</td>
+      <td>6509989.5</td>
+      <td>2.553919e+07</td>
+      <td>201602.800832</td>
+      <td>4.130935e+07</td>
+      <td>1.730471e+07</td>
+      <td>2.784636e+07</td>
+    </tr>
+    <tr>
+      <th>All</th>
+      <td>11412787.0</td>
+      <td>134431.890625</td>
+      <td>8098502.0</td>
+      <td>16648273.0</td>
+      <td>5997796.5</td>
+      <td>2.283220e+07</td>
+      <td>198873.726656</td>
+      <td>3.204495e+07</td>
+      <td>1.583532e+07</td>
+      <td>2.405324e+07</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-missing-values">
+<h2>ACRO crosstab with missing values<a class="headerlink" href="#ACRO-crosstab-with-missing-values" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>This is an example of a crosstab where there are missing values that have not been filled or dealt with in the data.</p></li>
+<li><p>Note that you need to change the value of the CHECK_MISSING_VALUES variable in the acro object to True. Then run the crosstab command.</p></li>
+<li><p>In this example, ten values in the column inc_grants were set to nan to represent missing data.</p></li>
+<li><p>In this version of acro checking the disclosiveness of an output with missing values is not supported.</p></li>
+<li><p>The status of the command will be “review” to indicate that the output needs to be checked by the output checker to review if the output is disclosive or not.</p></li>
+<li><p>In the outcome_df each cell with missing value/values will be shown as missing.</p></li>
+<li><p>The output hist will not be suppressed even if the suppress=True.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">utils</span><span class="o">.</span><span class="n">CHECK_MISSING_VALUES</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">missing</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">inc_grants</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">missing</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+<span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">grant_type</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">safe_table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 7 cells may need suppressing; p-ratio: 2 cells may need suppressing; nk-rule: 1 cells may need suppressing;
+INFO:acro:outcome_df:
+--------------------------------------------------------------------------------|
+grant_type |G   |N                     |R   |R/G                            |All|
+year       |    |                      |    |                               |   |
+--------------------------------------------------------------------------------|
+2010       | ok | threshold; p-ratio;  | ok | threshold; p-ratio; nk-rule;  | ok|
+2011       | ok |                   ok | ok |                   threshold;  | ok|
+2012       | ok |                   ok | ok |                   threshold;  | ok|
+2013       | ok |                   ok | ok |                   threshold;  | ok|
+2014       | ok |                   ok | ok |                   threshold;  | ok|
+2015       | ok |                   ok | ok |                   threshold;  | ok|
+All        | ok |                   ok | ok |                            ok | ok|
+--------------------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_7
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>grant_type</th>
+      <th>G</th>
+      <th>N</th>
+      <th>R</th>
+      <th>R/G</th>
+      <th>All</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>9921906.0</td>
+      <td>0.000000</td>
+      <td>8420373.0</td>
+      <td>11636000.0</td>
+      <td>8320154.5</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>8502246.0</td>
+      <td>125663.226562</td>
+      <td>7689140.0</td>
+      <td>16047500.0</td>
+      <td>5310392.0</td>
+    </tr>
+    <tr>
+      <th>2012</th>
+      <td>11458580.0</td>
+      <td>131859.062500</td>
+      <td>6896304.0</td>
+      <td>16810000.0</td>
+      <td>5220580.5</td>
+    </tr>
+    <tr>
+      <th>2013</th>
+      <td>13557147.0</td>
+      <td>150488.453125</td>
+      <td>7088095.5</td>
+      <td>16765625.0</td>
+      <td>5578657.0</td>
+    </tr>
+    <tr>
+      <th>2014</th>
+      <td>13748147.0</td>
+      <td>135494.781250</td>
+      <td>8118565.5</td>
+      <td>17845750.0</td>
+      <td>6072600.0</td>
+    </tr>
+    <tr>
+      <th>2015</th>
+      <td>11133433.0</td>
+      <td>149143.625000</td>
+      <td>10596385.0</td>
+      <td>18278624.0</td>
+      <td>6442131.0</td>
+    </tr>
+    <tr>
+      <th>All</th>
+      <td>11412787.0</td>
+      <td>136158.859375</td>
+      <td>8006361.0</td>
+      <td>16648273.0</td>
+      <td>5968295.5</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">utils</span><span class="o">.</span><span class="n">CHECK_MISSING_VALUES</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-negative-values">
+<h2>ACRO crosstab with negative values<a class="headerlink" href="#ACRO-crosstab-with-negative-values" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">negative</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">inc_grants</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">negative</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+
+<span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">grant_type</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">negative</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="n">safe_table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): review; negative values found
+INFO:acro:outcome_df:
+----------------------------------------|
+grant_type |G |N         |R         |R/G|
+year       |  |          |          |   |
+----------------------------------------|
+2010       |  |          | negative |   |
+2011       |  | negative | negative |   |
+2012       |  |          | negative |   |
+2013       |  | negative | negative |   |
+2014       |  | negative | negative |   |
+2015       |  | negative | negative |   |
+----------------------------------------|
+
+INFO:acro:records:add(): output_8
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>grant_type</th>
+      <th>G</th>
+      <th>N</th>
+      <th>R</th>
+      <th>R/G</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2010</th>
+      <td>9921906.0</td>
+      <td>0.000000</td>
+      <td>8280032.5</td>
+      <td>11636000.0</td>
+    </tr>
+    <tr>
+      <th>2011</th>
+      <td>8502246.0</td>
+      <td>123496.445312</td>
+      <td>7577703.5</td>
+      <td>16047500.0</td>
+    </tr>
+    <tr>
+      <th>2012</th>
+      <td>11458580.0</td>
+      <td>131859.062500</td>
+      <td>6796357.5</td>
+      <td>16810000.0</td>
+    </tr>
+    <tr>
+      <th>2013</th>
+      <td>13557147.0</td>
+      <td>147937.625000</td>
+      <td>6988263.0</td>
+      <td>16765625.0</td>
+    </tr>
+    <tr>
+      <th>2014</th>
+      <td>13748147.0</td>
+      <td>133198.078125</td>
+      <td>7997392.0</td>
+      <td>17845750.0</td>
+    </tr>
+    <tr>
+      <th>2015</th>
+      <td>11133433.0</td>
+      <td>146572.015625</td>
+      <td>10388612.0</td>
+      <td>18278624.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="ACRO-pivot_table">
+<h2>ACRO pivot_table<a class="headerlink" href="#ACRO-pivot_table" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span>
+    <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;grant_type&quot;</span><span class="p">],</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">],</span>
+    <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;inc_grants&quot;</span><span class="p">],</span>
+    <span class="n">margins</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 7 cells may need suppressing; p-ratio: 2 cells may need suppressing; nk-rule: 1 cells may need suppressing;
+INFO:acro:outcome_df:
+--------------------------------------------------------------------------------------------------------------|
+           inc_grants                                                                                         |
+year       2010                           2011         2012         2013         2014         2015         All|
+grant_type                                                                                                    |
+--------------------------------------------------------------------------------------------------------------|
+G                                      ok           ok           ok           ok           ok           ok  ok|
+N                    threshold; p-ratio;            ok           ok           ok           ok           ok  ok|
+R                                      ok           ok           ok           ok           ok           ok  ok|
+R/G         threshold; p-ratio; nk-rule;   threshold;   threshold;   threshold;   threshold;   threshold;   ok|
+All                                    ok           ok           ok           ok           ok           ok  ok|
+--------------------------------------------------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_9
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="7" halign="left">inc_grants</th>
+    </tr>
+    <tr>
+      <th>year</th>
+      <th>2010</th>
+      <th>2011</th>
+      <th>2012</th>
+      <th>2013</th>
+      <th>2014</th>
+      <th>2015</th>
+      <th>All</th>
+    </tr>
+    <tr>
+      <th>grant_type</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>G</th>
+      <td>138906688.0</td>
+      <td>127533696.0</td>
+      <td>171878704.0</td>
+      <td>203357200.0</td>
+      <td>206222208.0</td>
+      <td>133601200.0</td>
+      <td>9.814997e+08</td>
+    </tr>
+    <tr>
+      <th>N</th>
+      <td>0.0</td>
+      <td>7192804.0</td>
+      <td>7779685.0</td>
+      <td>8728330.0</td>
+      <td>7858697.0</td>
+      <td>8501187.0</td>
+      <td>4.006070e+07</td>
+    </tr>
+    <tr>
+      <th>R</th>
+      <td>504137056.0</td>
+      <td>532464704.0</td>
+      <td>480105472.0</td>
+      <td>511361408.0</td>
+      <td>554594176.0</td>
+      <td>551457280.0</td>
+      <td>3.134120e+09</td>
+    </tr>
+    <tr>
+      <th>R/G</th>
+      <td>46544000.0</td>
+      <td>128380000.0</td>
+      <td>134480000.0</td>
+      <td>134125000.0</td>
+      <td>142766000.0</td>
+      <td>146228992.0</td>
+      <td>7.325240e+08</td>
+    </tr>
+    <tr>
+      <th>All</th>
+      <td>689587776.0</td>
+      <td>795571264.0</td>
+      <td>794243904.0</td>
+      <td>857571968.0</td>
+      <td>911441088.0</td>
+      <td>839788672.0</td>
+      <td>4.888204e+09</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;grant_type&quot;</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;inc_grants&quot;</span><span class="p">],</span> <span class="n">aggfunc</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): pass
+INFO:acro:outcome_df:
+---------------------------------|
+           mean       |std       |
+           inc_grants |inc_grants|
+grant_type            |          |
+---------------------------------|
+G           ok        | ok       |
+N           ok        | ok       |
+R           ok        | ok       |
+R/G         ok        | ok       |
+---------------------------------|
+
+INFO:acro:records:add(): output_10
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>mean</th>
+      <th>std</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>inc_grants</th>
+      <th>inc_grants</th>
+    </tr>
+    <tr>
+      <th>grant_type</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>G</th>
+      <td>1.141279e+07</td>
+      <td>2.283220e+07</td>
+    </tr>
+    <tr>
+      <th>N</th>
+      <td>1.344319e+05</td>
+      <td>1.988737e+05</td>
+    </tr>
+    <tr>
+      <th>R</th>
+      <td>8.098502e+06</td>
+      <td>3.204495e+07</td>
+    </tr>
+    <tr>
+      <th>R/G</th>
+      <td>1.664827e+07</td>
+      <td>1.583532e+07</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="ACRO-pivot_table-with-missing-values">
+<h2>ACRO pivot_table with missing values<a class="headerlink" href="#ACRO-pivot_table-with-missing-values" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">utils</span><span class="o">.</span><span class="n">CHECK_MISSING_VALUES</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;inc_grants&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;grant_type&quot;</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;inc_grants&quot;</span><span class="p">],</span> <span class="n">aggfunc</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): pass
+INFO:acro:outcome_df:
+---------------------------------|
+           mean       |std       |
+           inc_grants |inc_grants|
+grant_type            |          |
+---------------------------------|
+G           ok        | ok       |
+N           ok        | ok       |
+R           ok        | ok       |
+R/G         ok        | ok       |
+---------------------------------|
+
+INFO:acro:records:add(): output_11
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>mean</th>
+      <th>std</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>inc_grants</th>
+      <th>inc_grants</th>
+    </tr>
+    <tr>
+      <th>grant_type</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>G</th>
+      <td>1.141279e+07</td>
+      <td>2.283220e+07</td>
+    </tr>
+    <tr>
+      <th>N</th>
+      <td>1.364700e+05</td>
+      <td>1.999335e+05</td>
+    </tr>
+    <tr>
+      <th>R</th>
+      <td>8.006361e+06</td>
+      <td>3.228216e+07</td>
+    </tr>
+    <tr>
+      <th>R/G</th>
+      <td>1.664827e+07</td>
+      <td>1.583532e+07</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">utils</span><span class="o">.</span><span class="n">CHECK_MISSING_VALUES</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="ACRO-pivot_table-with-negative-values">
+<h2>ACRO pivot_table with negative values<a class="headerlink" href="#ACRO-pivot_table-with-negative-values" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;inc_grants&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;grant_type&quot;</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;inc_grants&quot;</span><span class="p">],</span> <span class="n">aggfunc</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): review; negative values found
+INFO:acro:outcome_df:
+---------------------------------|
+           mean       |std       |
+           inc_grants |inc_grants|
+grant_type            |          |
+---------------------------------|
+G                     |          |
+N           negative  | negative |
+R           negative  | negative |
+R/G                   |          |
+---------------------------------|
+
+INFO:acro:records:add(): output_12
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>mean</th>
+      <th>std</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>inc_grants</th>
+      <th>inc_grants</th>
+    </tr>
+    <tr>
+      <th>grant_type</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>G</th>
+      <td>1.141279e+07</td>
+      <td>2.283220e+07</td>
+    </tr>
+    <tr>
+      <th>N</th>
+      <td>1.341800e+05</td>
+      <td>1.990196e+05</td>
+    </tr>
+    <tr>
+      <th>R</th>
+      <td>7.882230e+06</td>
+      <td>3.204558e+07</td>
+    </tr>
+    <tr>
+      <th>R/G</th>
+      <td>1.664827e+07</td>
+      <td>1.583532e+07</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="ACRO-OLS">
+<h2>ACRO OLS<a class="headerlink" href="#ACRO-OLS" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;inc_activity&quot;</span><span class="p">,</span> <span class="s2">&quot;inc_grants&quot;</span><span class="p">,</span> <span class="s2">&quot;inc_donations&quot;</span><span class="p">,</span> <span class="s2">&quot;total_costs&quot;</span><span class="p">]]</span>
+<span class="n">new_df</span> <span class="o">=</span> <span class="n">new_df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">new_df</span><span class="p">[</span><span class="s2">&quot;inc_activity&quot;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">new_df</span><span class="p">[[</span><span class="s2">&quot;inc_grants&quot;</span><span class="p">,</span> <span class="s2">&quot;inc_donations&quot;</span><span class="p">,</span> <span class="s2">&quot;total_costs&quot;</span><span class="p">]]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">add_constant</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:ols() outcome: pass; dof=807.0 &gt;= 10
+INFO:acro:records:add(): output_13
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>      <td>inc_activity</td>   <th>  R-squared:         </th> <td>   0.894</td>
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.893</td>
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   2261.</td>
+</tr>
+<tr>
+  <th>Date:</th>             <td>Thu, 06 Mar 2025</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>
+</tr>
+<tr>
+  <th>Time:</th>                 <td>19:43:34</td>     <th>  Log-Likelihood:    </th> <td> -14495.</td>
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td>   811</td>      <th>  AIC:               </th> <td>2.900e+04</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td>   807</td>      <th>  BIC:               </th> <td>2.902e+04</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>     3</td>      <th>                     </th>     <td> </td>
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+        <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>
+</tr>
+<tr>
+  <th>const</th>         <td>  3.01e+05</td> <td> 5.33e+05</td> <td>    0.565</td> <td> 0.572</td> <td>-7.45e+05</td> <td> 1.35e+06</td>
+</tr>
+<tr>
+  <th>inc_grants</th>    <td>   -0.8846</td> <td>    0.025</td> <td>  -35.956</td> <td> 0.000</td> <td>   -0.933</td> <td>   -0.836</td>
+</tr>
+<tr>
+  <th>inc_donations</th> <td>   -0.6647</td> <td>    0.016</td> <td>  -40.721</td> <td> 0.000</td> <td>   -0.697</td> <td>   -0.633</td>
+</tr>
+<tr>
+  <th>total_costs</th>   <td>    0.8313</td> <td>    0.011</td> <td>   78.674</td> <td> 0.000</td> <td>    0.811</td> <td>    0.852</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>1339.956</td> <th>  Durbin-Watson:     </th>  <td>   1.414</td>
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th>  <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>1253317.706</td>
+</tr>
+<tr>
+  <th>Skew:</th>           <td> 9.899</td>  <th>  Prob(JB):          </th>  <td>    0.00</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>       <td>194.566</td> <th>  Cond. No.          </th>  <td>1.05e+08</td>
+</tr>
+</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.<br/>[2] The condition number is large, 1.05e+08. This might indicate that there are<br/>strong multicollinearity or other numerical problems.</div>
+</div>
+</section>
+<section id="ACRO-OLSR">
+<h2>ACRO OLSR<a class="headerlink" href="#ACRO-OLSR" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">olsr</span><span class="p">(</span>
+    <span class="n">formula</span><span class="o">=</span><span class="s2">&quot;inc_activity ~ inc_grants + inc_donations + total_costs&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">new_df</span>
+<span class="p">)</span>
+<span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:olsr() outcome: pass; dof=807.0 &gt;= 10
+INFO:acro:records:add(): output_14
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>      <td>inc_activity</td>   <th>  R-squared:         </th> <td>   0.894</td>
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.893</td>
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   2261.</td>
+</tr>
+<tr>
+  <th>Date:</th>             <td>Thu, 06 Mar 2025</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>
+</tr>
+<tr>
+  <th>Time:</th>                 <td>19:43:34</td>     <th>  Log-Likelihood:    </th> <td> -14495.</td>
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td>   811</td>      <th>  AIC:               </th> <td>2.900e+04</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td>   807</td>      <th>  BIC:               </th> <td>2.902e+04</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>     3</td>      <th>                     </th>     <td> </td>
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+        <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>
+</tr>
+<tr>
+  <th>Intercept</th>     <td>  3.01e+05</td> <td> 5.33e+05</td> <td>    0.565</td> <td> 0.572</td> <td>-7.45e+05</td> <td> 1.35e+06</td>
+</tr>
+<tr>
+  <th>inc_grants</th>    <td>   -0.8846</td> <td>    0.025</td> <td>  -35.956</td> <td> 0.000</td> <td>   -0.933</td> <td>   -0.836</td>
+</tr>
+<tr>
+  <th>inc_donations</th> <td>   -0.6647</td> <td>    0.016</td> <td>  -40.721</td> <td> 0.000</td> <td>   -0.697</td> <td>   -0.633</td>
+</tr>
+<tr>
+  <th>total_costs</th>   <td>    0.8313</td> <td>    0.011</td> <td>   78.674</td> <td> 0.000</td> <td>    0.811</td> <td>    0.852</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>1339.956</td> <th>  Durbin-Watson:     </th>  <td>   1.414</td>
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th>  <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>1253317.706</td>
+</tr>
+<tr>
+  <th>Skew:</th>           <td> 9.899</td>  <th>  Prob(JB):          </th>  <td>    0.00</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>       <td>194.566</td> <th>  Cond. No.          </th>  <td>1.05e+08</td>
+</tr>
+</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.<br/>[2] The condition number is large, 1.05e+08. This might indicate that there are<br/>strong multicollinearity or other numerical problems.</div>
+</div>
+</section>
+<section id="ACRO-Probit">
+<h2>ACRO Probit<a class="headerlink" href="#ACRO-Probit" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;survivor&quot;</span><span class="p">,</span> <span class="s2">&quot;inc_activity&quot;</span><span class="p">,</span> <span class="s2">&quot;inc_grants&quot;</span><span class="p">,</span> <span class="s2">&quot;inc_donations&quot;</span><span class="p">,</span> <span class="s2">&quot;total_costs&quot;</span><span class="p">]]</span>
+<span class="n">new_df</span> <span class="o">=</span> <span class="n">new_df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">new_df</span><span class="p">[</span><span class="s2">&quot;survivor&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">codes</span>  <span class="c1"># numeric</span>
+<span class="n">y</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;survivor&quot;</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">new_df</span><span class="p">[[</span><span class="s2">&quot;inc_activity&quot;</span><span class="p">,</span> <span class="s2">&quot;inc_grants&quot;</span><span class="p">,</span> <span class="s2">&quot;inc_donations&quot;</span><span class="p">,</span> <span class="s2">&quot;total_costs&quot;</span><span class="p">]]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">add_constant</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">probit</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:probit() outcome: pass; dof=806.0 &gt;= 10
+INFO:acro:records:add(): output_15
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Optimization terminated successfully.
+         Current function value: 0.493791
+         Iterations 10
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table class="simpletable">
+<caption>Probit Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>       <td>survivor</td>     <th>  No. Observations:  </th>  <td>   811</td>
+</tr>
+<tr>
+  <th>Model:</th>                <td>Probit</td>      <th>  Df Residuals:      </th>  <td>   806</td>
+</tr>
+<tr>
+  <th>Method:</th>                 <td>MLE</td>       <th>  Df Model:          </th>  <td>     4</td>
+</tr>
+<tr>
+  <th>Date:</th>            <td>Thu, 06 Mar 2025</td> <th>  Pseudo R-squ.:     </th>  <td>0.2140</td>
+</tr>
+<tr>
+  <th>Time:</th>                <td>19:43:34</td>     <th>  Log-Likelihood:    </th> <td> -400.46</td>
+</tr>
+<tr>
+  <th>converged:</th>             <td>True</td>       <th>  LL-Null:           </th> <td> -509.50</td>
+</tr>
+<tr>
+  <th>Covariance Type:</th>     <td>nonrobust</td>    <th>  LLR p-value:       </th> <td>4.875e-46</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+        <td></td>           <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>
+</tr>
+<tr>
+  <th>const</th>         <td>    0.0474</td> <td>    0.057</td> <td>    0.838</td> <td> 0.402</td> <td>   -0.063</td> <td>    0.158</td>
+</tr>
+<tr>
+  <th>inc_activity</th>  <td> 1.836e-07</td> <td> 5.16e-08</td> <td>    3.559</td> <td> 0.000</td> <td> 8.25e-08</td> <td> 2.85e-07</td>
+</tr>
+<tr>
+  <th>inc_grants</th>    <td> 8.576e-08</td> <td>  3.9e-08</td> <td>    2.197</td> <td> 0.028</td> <td> 9.25e-09</td> <td> 1.62e-07</td>
+</tr>
+<tr>
+  <th>inc_donations</th> <td> 2.406e-07</td> <td> 4.54e-08</td> <td>    5.297</td> <td> 0.000</td> <td> 1.52e-07</td> <td>  3.3e-07</td>
+</tr>
+<tr>
+  <th>total_costs</th>   <td>-8.644e-08</td> <td> 3.68e-08</td> <td>   -2.351</td> <td> 0.019</td> <td>-1.59e-07</td> <td>-1.44e-08</td>
+</tr>
+</table><br/><br/>Possibly complete quasi-separation: A fraction 0.18 of observations can be<br/>perfectly predicted. This might indicate that there is complete<br/>quasi-separation. In this case some parameters will not be identified.</div>
+</div>
+</section>
+<section id="ACRO-Logit">
+<h2>ACRO Logit<a class="headerlink" href="#ACRO-Logit" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">logit</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:logit() outcome: pass; dof=806.0 &gt;= 10
+INFO:acro:records:add(): output_16
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Optimization terminated successfully.
+         Current function value: 0.490836
+         Iterations 12
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table class="simpletable">
+<caption>Logit Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>       <td>survivor</td>     <th>  No. Observations:  </th>  <td>   811</td>
+</tr>
+<tr>
+  <th>Model:</th>                 <td>Logit</td>      <th>  Df Residuals:      </th>  <td>   806</td>
+</tr>
+<tr>
+  <th>Method:</th>                 <td>MLE</td>       <th>  Df Model:          </th>  <td>     4</td>
+</tr>
+<tr>
+  <th>Date:</th>            <td>Thu, 06 Mar 2025</td> <th>  Pseudo R-squ.:     </th>  <td>0.2187</td>
+</tr>
+<tr>
+  <th>Time:</th>                <td>19:43:35</td>     <th>  Log-Likelihood:    </th> <td> -398.07</td>
+</tr>
+<tr>
+  <th>converged:</th>             <td>True</td>       <th>  LL-Null:           </th> <td> -509.50</td>
+</tr>
+<tr>
+  <th>Covariance Type:</th>     <td>nonrobust</td>    <th>  LLR p-value:       </th> <td>4.532e-47</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+        <td></td>           <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>
+</tr>
+<tr>
+  <th>const</th>         <td>    0.0512</td> <td>    0.091</td> <td>    0.561</td> <td> 0.575</td> <td>   -0.128</td> <td>    0.230</td>
+</tr>
+<tr>
+  <th>inc_activity</th>  <td> 2.981e-07</td> <td> 8.95e-08</td> <td>    3.330</td> <td> 0.001</td> <td> 1.23e-07</td> <td> 4.74e-07</td>
+</tr>
+<tr>
+  <th>inc_grants</th>    <td> 1.351e-07</td> <td> 6.67e-08</td> <td>    2.026</td> <td> 0.043</td> <td> 4.39e-09</td> <td> 2.66e-07</td>
+</tr>
+<tr>
+  <th>inc_donations</th> <td> 5.123e-07</td> <td> 1.04e-07</td> <td>    4.927</td> <td> 0.000</td> <td> 3.08e-07</td> <td> 7.16e-07</td>
+</tr>
+<tr>
+  <th>total_costs</th>   <td>-1.442e-07</td> <td> 6.26e-08</td> <td>   -2.304</td> <td> 0.021</td> <td>-2.67e-07</td> <td>-2.15e-08</td>
+</tr>
+</table><br/><br/>Possibly complete quasi-separation: A fraction 0.18 of observations can be<br/>perfectly predicted. This might indicate that there is complete<br/>quasi-separation. In this case some parameters will not be identified.</div>
+</div>
+</section>
+<section id="ACRO-Histogram-without-suppression">
+<h2>ACRO Histogram without suppression<a class="headerlink" href="#ACRO-Histogram-without-suppression" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hist</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;inc_grants&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">hist</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:status: fail
+INFO:acro:records:add(): output_17
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+acro_artifacts/histogram_0.png
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_test_47_2.png" src="../_images/notebooks_test_47_2.png" />
+</div>
+</div>
+</section>
+<section id="ACRO-Histogram-with-suppression">
+<h2>ACRO Histogram with suppression<a class="headerlink" href="#ACRO-Histogram-with-suppression" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">hist</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;inc_grants&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:acro:Histogram will not be shown as the inc_grants column is disclosive.
+INFO:acro:status: fail
+INFO:acro:records:add(): output_18
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;Figure size 640x480 with 0 Axes&gt;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="List-current-ACRO-outputs">
+<h2>List current ACRO outputs<a class="headerlink" href="#List-current-ACRO-outputs" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results_str</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">print_outputs</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+uid: output_0
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 12, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 0], [0, 5], [1, 0], [1, 5], [2, 0], [2, 5], [3, 0], [3, 5], [4, 0], [4, 5], [5, 0], [5, 5]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.year, [df.survivor, df.grant_type])
+summary: fail; threshold: 12 cells may need suppressing;
+outcome: survivor   Dead_in_2015     Alive_in_2015
+grant_type            G   R             G   N   R          R/G
+year
+2010        threshold;   ok            ok  ok  ok  threshold;
+2011        threshold;   ok            ok  ok  ok  threshold;
+2012        threshold;   ok            ok  ok  ok  threshold;
+2013        threshold;   ok            ok  ok  ok  threshold;
+2014        threshold;   ok            ok  ok  ok  threshold;
+2015        threshold;   ok            ok  ok  ok  threshold;
+output: [survivor   Dead in 2015     Alive in 2015
+grant_type            G   R             G   N   R R/G
+year
+2010                  3  47            12  59  24   8
+2011                  3  47            12  59  24   8
+2012                  3  47            12  59  24   8
+2013                  3  47            12  59  24   8
+2014                  3  47            12  59  24   8
+2015                  3  47            12  59  24   8]
+timestamp: 2025-03-06T19:43:34.383332
+comments: []
+exception:
+
+uid: output_1
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 12, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 0], [0, 5], [1, 0], [1, 5], [2, 0], [2, 5], [3, 0], [3, 5], [4, 0], [4, 5], [5, 0], [5, 5]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.year, [df.grant_type, df.survivor])
+summary: fail; threshold: 12 cells may need suppressing;
+outcome: grant_type            G                           N            R  \
+survivor   Dead_in_2015 Alive_in_2015 Alive_in_2015 Dead_in_2015
+year
+2010        threshold;             ok            ok           ok
+2011        threshold;             ok            ok           ok
+2012        threshold;             ok            ok           ok
+2013        threshold;             ok            ok           ok
+2014        threshold;             ok            ok           ok
+2015        threshold;             ok            ok           ok
+
+grant_type                         R/G
+survivor   Alive_in_2015 Alive_in_2015
+year
+2010                  ok   threshold;
+2011                  ok   threshold;
+2012                  ok   threshold;
+2013                  ok   threshold;
+2014                  ok   threshold;
+2015                  ok   threshold;
+output: [grant_type            G                           N            R  \
+survivor   Dead in 2015 Alive in 2015 Alive in 2015 Dead in 2015
+year
+2010                  3            12            59           47
+2011                  3            12            59           47
+2012                  3            12            59           47
+2013                  3            12            59           47
+2014                  3            12            59           47
+2015                  3            12            59           47
+
+grant_type                         R/G
+survivor   Alive in 2015 Alive in 2015
+year
+2010                  24             8
+2011                  24             8
+2012                  24             8
+2013                  24             8
+2014                  24             8
+2015                  24             8  ]
+timestamp: 2025-03-06T19:43:34.405157
+comments: []
+exception:
+
+uid: output_2
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 0], [0, 1], [1, 0], [1, 1]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: acro.crosstab(mydata.year, mydata.survivor)
+summary: fail; threshold: 4 cells may need suppressing;
+outcome: survivor Dead_in_2015 Alive_in_2015
+year
+2010      threshold;    threshold;
+2011      threshold;    threshold;
+output: [survivor  Dead in 2015  Alive in 2015
+year
+2010                 2              2
+2011                 2              2]
+timestamp: 2025-03-06T19:43:34.423743
+comments: []
+exception:
+
+uid: output_3
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 7, &#39;p-ratio&#39;: 2, &#39;nk-rule&#39;: 1, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 1], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3]], &#39;p-ratio&#39;: [[0, 1], [0, 3]], &#39;nk-rule&#39;: [[0, 3]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.year, df.grant_type, values=df.inc_grants, aggfunc=&#34;mean&#34;)
+summary: fail; threshold: 7 cells suppressed; p-ratio: 2 cells suppressed; nk-rule: 1 cells suppressed;
+outcome: grant_type   G                     N   R                            R/G
+year
+2010        ok  threshold; p-ratio;   ok  threshold; p-ratio; nk-rule;
+2011        ok                    ok  ok                    threshold;
+2012        ok                    ok  ok                    threshold;
+2013        ok                    ok  ok                    threshold;
+2014        ok                    ok  ok                    threshold;
+2015        ok                    ok  ok                    threshold;
+output: [grant_type           G              N           R  R/G
+year
+2010         9921906.0            NaN   8402284.0  NaN
+2011         8502246.0  124013.859375   7716880.0  NaN
+2012        11458580.0  131859.062500   6958050.5  NaN
+2013        13557147.0  147937.796875   7202273.5  NaN
+2014        13748147.0  133198.250000   8277525.0  NaN
+2015        11133433.0  146572.187500  10812888.0  NaN]
+timestamp: 2025-03-06T19:43:34.454789
+comments: []
+exception:
+
+uid: output_4
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 14, &#39;p-ratio&#39;: 8, &#39;nk-rule&#39;: 7, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 0], [0, 2], [0, 5], [1, 0], [1, 5], [2, 0], [2, 5], [3, 0], [3, 5], [4, 0], [4, 5], [5, 0], [5, 1], [5, 5]], &#39;p-ratio&#39;: [[0, 0], [0, 2], [0, 5], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]], &#39;nk-rule&#39;: [[0, 0], [0, 5], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]], &#39;all-values-are-same&#39;: []}}
+command: table = acro.crosstab(
+summary: fail; threshold: 14 cells may need suppressing; p-ratio: 8 cells may need suppressing; nk-rule: 7 cells may need suppressing;
+outcome: grant_type                              G                                   N  \
+survivor                     Dead_in_2015 Alive_in_2015         Alive_in_2015
+year
+2010        threshold; p-ratio; nk-rule;             ok  threshold; p-ratio;
+2011        threshold; p-ratio; nk-rule;             ok                    ok
+2012        threshold; p-ratio; nk-rule;             ok                    ok
+2013        threshold; p-ratio; nk-rule;             ok                    ok
+2014        threshold; p-ratio; nk-rule;             ok                    ok
+2015        threshold; p-ratio; nk-rule;    threshold;                     ok
+All                                    ok            ok                    ok
+
+grant_type            R                                          R/G All
+survivor   Dead_in_2015 Alive_in_2015                  Alive_in_2015
+year
+2010                 ok            ok  threshold; p-ratio; nk-rule;   ok
+2011                 ok            ok                    threshold;   ok
+2012                 ok            ok                    threshold;   ok
+2013                 ok            ok                    threshold;   ok
+2014                 ok            ok                    threshold;   ok
+2015                 ok            ok                    threshold;   ok
+All                  ok            ok                             ok  ok
+output: [grant_type            G                           N            R  \
+survivor   Dead in 2015 Alive in 2015 Alive in 2015 Dead in 2015
+year
+2010                  2            12             5           40
+2011                  3            12            58           45
+2012                  3            12            59           45
+2013                  3            12            59           47
+2014                  3            12            59           43
+2015                  3             9            58           28
+All                  17            69           298          248
+
+grant_type                         R/G  All
+survivor   Alive in 2015 Alive in 2015
+year
+2010                  20             4   83
+2011                  24             8  150
+2012                  24             8  151
+2013                  24             8  153
+2014                  24             8  149
+2015                  23             8  129
+All                  139            44  815  ]
+timestamp: 2025-03-06T19:43:34.523720
+comments: [&#34;Empty columns: (&#39;N&#39;, &#39;Dead in 2015&#39;), (&#39;R/G&#39;, &#39;Dead in 2015&#39;) were deleted.&#34;]
+exception:
+
+uid: output_5
+status: pass
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 0, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.year, df.survivor, values=df.inc_grants, aggfunc=&#34;mean&#34;)
+summary: pass
+outcome: survivor Dead_in_2015 Alive_in_2015
+year
+2010               ok            ok
+2011               ok            ok
+2012               ok            ok
+2013               ok            ok
+2014               ok            ok
+2015               ok            ok
+output: [survivor  Dead in 2015  Alive in 2015
+year
+2010       1320337.750     15466672.0
+2011       1295468.000      7190086.5
+2012       1270522.125      7119017.5
+2013       1325315.500      7682584.0
+2014       1282249.625      8276287.5
+2015       1608412.250      8060488.5]
+timestamp: 2025-03-06T19:43:34.555960
+comments: []
+exception:
+
+uid: output_6
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 14, &#39;p-ratio&#39;: 4, &#39;nk-rule&#39;: 2, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 1], [0, 3], [0, 6], [0, 8], [1, 3], [1, 8], [2, 3], [2, 8], [3, 3], [3, 8], [4, 3], [4, 8], [5, 3], [5, 8]], &#39;p-ratio&#39;: [[0, 1], [0, 3], [0, 6], [0, 8]], &#39;nk-rule&#39;: [[0, 3], [0, 8]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 14 cells may need suppressing; p-ratio: 4 cells may need suppressing; nk-rule: 2 cells may need suppressing;
+outcome:            mean                                                               \
+grant_type    G                     N   R                            R/G All
+year
+2010         ok  threshold; p-ratio;   ok  threshold; p-ratio; nk-rule;   ok
+2011         ok                    ok  ok                    threshold;   ok
+2012         ok                    ok  ok                    threshold;   ok
+2013         ok                    ok  ok                    threshold;   ok
+2014         ok                    ok  ok                    threshold;   ok
+2015         ok                    ok  ok                    threshold;   ok
+All          ok                    ok  ok                             ok  ok
+
+           std
+grant_type   G                     N   R                            R/G All
+year
+2010        ok  threshold; p-ratio;   ok  threshold; p-ratio; nk-rule;   ok
+2011        ok                    ok  ok                    threshold;   ok
+2012        ok                    ok  ok                    threshold;   ok
+2013        ok                    ok  ok                    threshold;   ok
+2014        ok                    ok  ok                    threshold;   ok
+2015        ok                    ok  ok                    threshold;   ok
+All         ok                    ok  ok                             ok  ok
+output: [                  mean                                                    \
+grant_type           G              N           R         R/G        All
+year
+2010         9921906.0       0.000000   8402284.0  11636000.0  8308286.5
+2011         8502246.0  124013.859375   7716880.0  16047500.0  5303808.5
+2012        11458580.0  131859.062500   6958050.5  16810000.0  5259893.5
+2013        13557147.0  147937.796875   7202273.5  16765625.0  5605045.5
+2014        13748147.0  133198.250000   8277525.0  17845750.0  6117054.5
+2015        11133433.0  146572.187500  10812888.0  18278624.0  6509989.5
+All         11412787.0  134431.890625   8098502.0  16648273.0  5997796.5
+
+                     std                                             \
+grant_type             G              N             R           R/G
+year
+2010        1.855055e+07       0.000000  3.059557e+07  1.701088e+07
+2011        1.688595e+07  205959.492903  2.954322e+07  1.561638e+07
+2012        2.061090e+07  210476.539175  2.721184e+07  1.646449e+07
+2013        2.486844e+07  203747.417017  2.989833e+07  1.671112e+07
+2014        3.134559e+07  181865.925580  3.546348e+07  1.741251e+07
+2015        2.553919e+07  201602.800832  4.130935e+07  1.730471e+07
+All         2.283220e+07  198873.726656  3.204495e+07  1.583532e+07
+
+
+grant_type           All
+year
+2010        2.727398e+07
+2011        2.137658e+07
+2012        2.026400e+07
+2013        2.251787e+07
+2014        2.641722e+07
+2015        2.784636e+07
+All         2.405324e+07  ]
+timestamp: 2025-03-06T19:43:34.639249
+comments: []
+exception:
+
+uid: output_7
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 7, &#39;p-ratio&#39;: 2, &#39;nk-rule&#39;: 1, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 1], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3]], &#39;p-ratio&#39;: [[0, 1], [0, 3]], &#39;nk-rule&#39;: [[0, 3]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 7 cells may need suppressing; p-ratio: 2 cells may need suppressing; nk-rule: 1 cells may need suppressing;
+outcome: grant_type   G                     N   R                            R/G All
+year
+2010        ok  threshold; p-ratio;   ok  threshold; p-ratio; nk-rule;   ok
+2011        ok                    ok  ok                    threshold;   ok
+2012        ok                    ok  ok                    threshold;   ok
+2013        ok                    ok  ok                    threshold;   ok
+2014        ok                    ok  ok                    threshold;   ok
+2015        ok                    ok  ok                    threshold;   ok
+All         ok                    ok  ok                             ok  ok
+output: [grant_type           G              N           R         R/G        All
+year
+2010         9921906.0       0.000000   8420373.0  11636000.0  8320154.5
+2011         8502246.0  125663.226562   7689140.0  16047500.0  5310392.0
+2012        11458580.0  131859.062500   6896304.0  16810000.0  5220580.5
+2013        13557147.0  150488.453125   7088095.5  16765625.0  5578657.0
+2014        13748147.0  135494.781250   8118565.5  17845750.0  6072600.0
+2015        11133433.0  149143.625000  10596385.0  18278624.0  6442131.0
+All         11412787.0  136158.859375   8006361.0  16648273.0  5968295.5]
+timestamp: 2025-03-06T19:43:34.695759
+comments: []
+exception:
+
+uid: output_8
+status: review
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 10, &#39;missing&#39;: 0, &#39;threshold&#39;: 7, &#39;p-ratio&#39;: 2, &#39;nk-rule&#39;: 1, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [[0, 2], [1, 1], [1, 2], [2, 2], [3, 1], [3, 2], [4, 1], [4, 2], [5, 1], [5, 2]], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 1], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3]], &#39;p-ratio&#39;: [[0, 1], [0, 3]], &#39;nk-rule&#39;: [[0, 3]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.year, df.grant_type, values=negative, aggfunc=&#34;mean&#34;)
+summary: review; negative values found
+outcome: grant_type G         N         R R/G
+year
+2010                    negative
+2011          negative  negative
+2012                    negative
+2013          negative  negative
+2014          negative  negative
+2015          negative  negative
+output: [grant_type           G              N           R         R/G
+year
+2010         9921906.0       0.000000   8280032.5  11636000.0
+2011         8502246.0  123496.445312   7577703.5  16047500.0
+2012        11458580.0  131859.062500   6796357.5  16810000.0
+2013        13557147.0  147937.625000   6988263.0  16765625.0
+2014        13748147.0  133198.078125   7997392.0  17845750.0
+2015        11133433.0  146572.015625  10388612.0  18278624.0]
+timestamp: 2025-03-06T19:43:34.727227
+comments: []
+exception:
+
+uid: output_9
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 7, &#39;p-ratio&#39;: 2, &#39;nk-rule&#39;: 1, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[1, 0], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5]], &#39;p-ratio&#39;: [[1, 0], [3, 0]], &#39;nk-rule&#39;: [[3, 0]], &#39;all-values-are-same&#39;: []}}
+command: table = acro.pivot_table(
+summary: fail; threshold: 7 cells may need suppressing; p-ratio: 2 cells may need suppressing; nk-rule: 1 cells may need suppressing;
+outcome:                                inc_grants                            \
+year                                 2010         2011         2012
+grant_type
+G                                      ok           ok           ok
+N                    threshold; p-ratio;            ok           ok
+R                                      ok           ok           ok
+R/G         threshold; p-ratio; nk-rule;   threshold;   threshold;
+All                                    ok           ok           ok
+
+
+year               2013         2014         2015 All
+grant_type
+G                    ok           ok           ok  ok
+N                    ok           ok           ok  ok
+R                    ok           ok           ok  ok
+R/G         threshold;   threshold;   threshold;   ok
+All                  ok           ok           ok  ok
+output: [             inc_grants                                                      \
+year               2010         2011         2012         2013         2014
+grant_type
+G           138906688.0  127533696.0  171878704.0  203357200.0  206222208.0
+N                   0.0    7192804.0    7779685.0    8728330.0    7858697.0
+R           504137056.0  532464704.0  480105472.0  511361408.0  554594176.0
+R/G          46544000.0  128380000.0  134480000.0  134125000.0  142766000.0
+All         689587776.0  795571264.0  794243904.0  857571968.0  911441088.0
+
+
+year               2015           All
+grant_type
+G           133601200.0  9.814997e+08
+N             8501187.0  4.006070e+07
+R           551457280.0  3.134120e+09
+R/G         146228992.0  7.325240e+08
+All         839788672.0  4.888204e+09  ]
+timestamp: 2025-03-06T19:43:34.782873
+comments: []
+exception:
+
+uid: output_10
+status: pass
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 0, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: table = acro.pivot_table(
+summary: pass
+outcome:                  mean        std
+           inc_grants inc_grants
+grant_type
+G                  ok         ok
+N                  ok         ok
+R                  ok         ok
+R/G                ok         ok
+output: [                    mean           std
+              inc_grants    inc_grants
+grant_type
+G           1.141279e+07  2.283220e+07
+N           1.344319e+05  1.988737e+05
+R           8.098502e+06  3.204495e+07
+R/G         1.664827e+07  1.583532e+07]
+timestamp: 2025-03-06T19:43:34.814054
+comments: []
+exception:
+
+uid: output_11
+status: pass
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 0, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: table = acro.pivot_table(
+summary: pass
+outcome:                  mean        std
+           inc_grants inc_grants
+grant_type
+G                  ok         ok
+N                  ok         ok
+R                  ok         ok
+R/G                ok         ok
+output: [                    mean           std
+              inc_grants    inc_grants
+grant_type
+G           1.141279e+07  2.283220e+07
+N           1.364700e+05  1.999335e+05
+R           8.006361e+06  3.228216e+07
+R/G         1.664827e+07  1.583532e+07]
+timestamp: 2025-03-06T19:43:34.844023
+comments: []
+exception:
+
+uid: output_12
+status: review
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 4, &#39;missing&#39;: 0, &#39;threshold&#39;: 0, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [[1, 0], [1, 1], [2, 0], [2, 1]], &#39;missing&#39;: [], &#39;threshold&#39;: [], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: table = acro.pivot_table(
+summary: review; negative values found
+outcome:                  mean        std
+           inc_grants inc_grants
+grant_type
+G
+N            negative   negative
+R            negative   negative
+R/G
+output: [                    mean           std
+              inc_grants    inc_grants
+grant_type
+G           1.141279e+07  2.283220e+07
+N           1.341800e+05  1.990196e+05
+R           7.882230e+06  3.204558e+07
+R/G         1.664827e+07  1.583532e+07]
+timestamp: 2025-03-06T19:43:34.872024
+comments: []
+exception:
+
+uid: output_13
+status: pass
+type: regression
+properties: {&#39;method&#39;: &#39;ols&#39;, &#39;dof&#39;: 807.0}
+sdc: {}
+command: results = acro.ols(y, x)
+summary: pass; dof=807.0 &gt;= 10
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [                       inc_activity           R-squared:      0.894
+Dep. Variable:
+Model:                          OLS      Adj. R-squared:      0.893
+Method:               Least Squares         F-statistic:   2261.000
+Date:              Thu, 06 Mar 2025  Prob (F-statistic):      0.000
+Time:                      19:43:34      Log-Likelihood: -14495.000
+No. Observations:               811                 AIC:  29000.000
+Df Residuals:                   807                 BIC:  29020.000
+Df Model:                         3                  NaN        NaN
+Covariance Type:          nonrobust                  NaN        NaN,                       coef     std err       t  P&gt;|t|      [0.025       0.975]
+const          301000.0000  533000.000   0.565  0.572 -745000.000  1350000.000
+inc_grants         -0.8846       0.025 -35.956  0.000      -0.933       -0.836
+inc_donations      -0.6647       0.016 -40.721  0.000      -0.697       -0.633
+total_costs         0.8313       0.011  78.674  0.000       0.811        0.852,                 1339.956     Durbin-Watson:         1.414
+Omnibus:
+Prob(Omnibus):     0.000  Jarque-Bera (JB):  1.253318e+06
+Skew:              9.899          Prob(JB):  0.000000e+00
+Kurtosis:        194.566          Cond. No.  1.050000e+08]
+timestamp: 2025-03-06T19:43:34.926753
+comments: []
+exception:
+
+uid: output_14
+status: pass
+type: regression
+properties: {&#39;method&#39;: &#39;olsr&#39;, &#39;dof&#39;: 807.0}
+sdc: {}
+command: results = acro.olsr(
+summary: pass; dof=807.0 &gt;= 10
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [                       inc_activity           R-squared:      0.894
+Dep. Variable:
+Model:                          OLS      Adj. R-squared:      0.893
+Method:               Least Squares         F-statistic:   2261.000
+Date:              Thu, 06 Mar 2025  Prob (F-statistic):      0.000
+Time:                      19:43:34      Log-Likelihood: -14495.000
+No. Observations:               811                 AIC:  29000.000
+Df Residuals:                   807                 BIC:  29020.000
+Df Model:                         3                  NaN        NaN
+Covariance Type:          nonrobust                  NaN        NaN,                       coef     std err       t  P&gt;|t|      [0.025       0.975]
+Intercept      301000.0000  533000.000   0.565  0.572 -745000.000  1350000.000
+inc_grants         -0.8846       0.025 -35.956  0.000      -0.933       -0.836
+inc_donations      -0.6647       0.016 -40.721  0.000      -0.697       -0.633
+total_costs         0.8313       0.011  78.674  0.000       0.811        0.852,                 1339.956     Durbin-Watson:         1.414
+Omnibus:
+Prob(Omnibus):     0.000  Jarque-Bera (JB):  1.253318e+06
+Skew:              9.899          Prob(JB):  0.000000e+00
+Kurtosis:        194.566          Cond. No.  1.050000e+08]
+timestamp: 2025-03-06T19:43:34.954407
+comments: []
+exception:
+
+uid: output_15
+status: pass
+type: regression
+properties: {&#39;method&#39;: &#39;probit&#39;, &#39;dof&#39;: 806.0}
+sdc: {}
+command: results = acro.probit(y, x)
+summary: pass; dof=806.0 &gt;= 10
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [                          survivor No. Observations:           811
+Dep. Variable:
+Model:                      Probit     Df Residuals:  8.060000e+02
+Method:                        MLE         Df Model:  4.000000e+00
+Date:             Thu, 06 Mar 2025    Pseudo R-squ.:  2.140000e-01
+Time:                     19:43:34   Log-Likelihood: -4.004600e+02
+converged:                    True          LL-Null: -5.095000e+02
+Covariance Type:         nonrobust      LLR p-value:  4.875000e-46,                        coef       std err      z  P&gt;|z|        [0.025  \
+const          4.740000e-02  5.700000e-02  0.838  0.402 -6.300000e-02
+inc_activity   1.836000e-07  5.160000e-08  3.559  0.000  8.250000e-08
+inc_grants     8.576000e-08  3.900000e-08  2.197  0.028  9.250000e-09
+inc_donations  2.406000e-07  4.540000e-08  5.297  0.000  1.520000e-07
+total_costs   -8.644000e-08  3.680000e-08 -2.351  0.019 -1.590000e-07
+
+                     0.975]
+const          1.580000e-01
+inc_activity   2.850000e-07
+inc_grants     1.620000e-07
+inc_donations  3.300000e-07
+total_costs   -1.440000e-08  ]
+timestamp: 2025-03-06T19:43:34.982272
+comments: []
+exception:
+
+uid: output_16
+status: pass
+type: regression
+properties: {&#39;method&#39;: &#39;logit&#39;, &#39;dof&#39;: 806.0}
+sdc: {}
+command: results = acro.logit(y, x)
+summary: pass; dof=806.0 &gt;= 10
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [                          survivor No. Observations:           811
+Dep. Variable:
+Model:                       Logit     Df Residuals:  8.060000e+02
+Method:                        MLE         Df Model:  4.000000e+00
+Date:             Thu, 06 Mar 2025    Pseudo R-squ.:  2.187000e-01
+Time:                     19:43:35   Log-Likelihood: -3.980700e+02
+converged:                    True          LL-Null: -5.095000e+02
+Covariance Type:         nonrobust      LLR p-value:  4.532000e-47,                        coef       std err      z  P&gt;|z|        [0.025  \
+const          5.120000e-02  9.100000e-02  0.561  0.575 -1.280000e-01
+inc_activity   2.981000e-07  8.950000e-08  3.330  0.001  1.230000e-07
+inc_grants     1.351000e-07  6.670000e-08  2.026  0.043  4.390000e-09
+inc_donations  5.123000e-07  1.040000e-07  4.927  0.000  3.080000e-07
+total_costs   -1.442000e-07  6.260000e-08 -2.304  0.021 -2.670000e-07
+
+                     0.975]
+const          2.300000e-01
+inc_activity   4.740000e-07
+inc_grants     2.660000e-07
+inc_donations  7.160000e-07
+total_costs   -2.150000e-08  ]
+timestamp: 2025-03-06T19:43:35.004433
+comments: []
+exception:
+
+uid: output_17
+status: fail
+type: histogram
+properties: {&#39;method&#39;: &#39;histogram&#39;}
+sdc: {}
+command: hist = acro.hist(df, &#34;inc_grants&#34;)
+summary: Please check the minimum and the maximum values. The minimum value of the inc_grants column is: -10.0. The maximum value of the inc_grants column is: 249327008.0
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;acro_artifacts/histogram_0.png&#39;]
+timestamp: 2025-03-06T19:43:35.149884
+comments: []
+exception:
+
+uid: output_18
+status: fail
+type: histogram
+properties: {&#39;method&#39;: &#39;histogram&#39;}
+sdc: {}
+command: hist = acro.hist(df, &#34;inc_grants&#34;)
+summary: Please check the minimum and the maximum values. The minimum value of the inc_grants column is: -10.0. The maximum value of the inc_grants column is: 249327008.0
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;acro_artifacts/histogram_1.png&#39;]
+timestamp: 2025-03-06T19:43:35.204307
+comments: []
+exception:
+
+
+</pre></div></div>
+</div>
+</section>
+<section id="Remove-some-ACRO-outputs-before-finalising">
+<h2>Remove some ACRO outputs before finalising<a class="headerlink" href="#Remove-some-ACRO-outputs-before-finalising" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">remove_output</span><span class="p">(</span><span class="s2">&quot;output_1&quot;</span><span class="p">)</span>
+<span class="n">acro</span><span class="o">.</span><span class="n">remove_output</span><span class="p">(</span><span class="s2">&quot;output_4&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:remove(): output_1 removed
+INFO:acro:records:remove(): output_4 removed
+</pre></div></div>
+</div>
+</section>
+<section id="Rename-ACRO-outputs-before-finalising">
+<h2>Rename ACRO outputs before finalising<a class="headerlink" href="#Rename-ACRO-outputs-before-finalising" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">rename_output</span><span class="p">(</span><span class="s2">&quot;output_2&quot;</span><span class="p">,</span> <span class="s2">&quot;pivot_table&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:rename_output(): output_2 renamed to pivot_table
+</pre></div></div>
+</div>
+</section>
+<section id="Add-a-comment-to-output">
+<h2>Add a comment to output<a class="headerlink" href="#Add-a-comment-to-output" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">add_comments</span><span class="p">(</span><span class="s2">&quot;output_0&quot;</span><span class="p">,</span> <span class="s2">&quot;This is a cross table between year and grant_type&quot;</span><span class="p">)</span>
+<span class="n">acro</span><span class="o">.</span><span class="n">add_comments</span><span class="p">(</span><span class="s2">&quot;output_0&quot;</span><span class="p">,</span> <span class="s2">&quot;6 cells were suppressed in this table&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:a comment was added to output_0
+INFO:acro:records:a comment was added to output_0
+</pre></div></div>
+</div>
+</section>
+<section id="Add-an-unsupported-output-to-the-list-of-outputs">
+<h2>Add an unsupported output to the list of outputs<a class="headerlink" href="#Add-an-unsupported-output-to-the-list-of-outputs" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">custom_output</span><span class="p">(</span>
+    <span class="s2">&quot;XandY.jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;This output is an image showing the relationship between X and Y&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:add_custom(): output_19
+</pre></div></div>
+</div>
+</section>
+<section id="Request-an-exception-for-some-of-the-outputs">
+<h2>Request an exception for some of the outputs<a class="headerlink" href="#Request-an-exception-for-some-of-the-outputs" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">add_exception</span><span class="p">(</span><span class="s2">&quot;output_0&quot;</span><span class="p">,</span> <span class="s2">&quot;I really need this.&quot;</span><span class="p">)</span>
+<span class="n">acro</span><span class="o">.</span><span class="n">add_exception</span><span class="p">(</span><span class="s2">&quot;output_3&quot;</span><span class="p">,</span> <span class="s2">&quot;This one is safe. Trust me, I&#39;m a professor.&quot;</span><span class="p">)</span>
+<span class="n">acro</span><span class="o">.</span><span class="n">add_exception</span><span class="p">(</span><span class="s2">&quot;output_5&quot;</span><span class="p">,</span> <span class="s2">&quot;It&#39;s not disclosive, I promise.&quot;</span><span class="p">)</span>
+<span class="n">acro</span><span class="o">.</span><span class="n">add_exception</span><span class="p">(</span><span class="s2">&quot;output_6&quot;</span><span class="p">,</span> <span class="s2">&quot;I need this one too&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:exception request was added to output_0
+INFO:acro:records:exception request was added to output_3
+INFO:acro:records:exception request was added to output_5
+INFO:acro:records:exception request was added to output_6
+</pre></div></div>
+</div>
+</section>
+<section id="Finalise-ACRO">
+<h2>Finalise ACRO<a class="headerlink" href="#Finalise-ACRO" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SAVE_PATH</span> <span class="o">=</span> <span class="s2">&quot;ACRO_RES&quot;</span>
+
+<span class="c1"># output = acro.finalise(SAVE_PATH, &quot;xlsx&quot;)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span><span class="n">SAVE_PATH</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_7
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 7, &#39;p-ratio&#39;: 2, &#39;nk-rule&#39;: 1, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 1], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3]], &#39;p-ratio&#39;: [[0, 1], [0, 3]], &#39;nk-rule&#39;: [[0, 3]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 7 cells may need suppressing; p-ratio: 2 cells may need suppressing; nk-rule: 1 cells may need suppressing;
+outcome: grant_type   G                     N   R                            R/G All
+year
+2010        ok  threshold; p-ratio;   ok  threshold; p-ratio; nk-rule;   ok
+2011        ok                    ok  ok                    threshold;   ok
+2012        ok                    ok  ok                    threshold;   ok
+2013        ok                    ok  ok                    threshold;   ok
+2014        ok                    ok  ok                    threshold;   ok
+2015        ok                    ok  ok                    threshold;   ok
+All         ok                    ok  ok                             ok  ok
+output: [grant_type           G              N           R         R/G        All
+year
+2010         9921906.0       0.000000   8420373.0  11636000.0  8320154.5
+2011         8502246.0  125663.226562   7689140.0  16047500.0  5310392.0
+2012        11458580.0  131859.062500   6896304.0  16810000.0  5220580.5
+2013        13557147.0  150488.453125   7088095.5  16765625.0  5578657.0
+2014        13748147.0  135494.781250   8118565.5  17845750.0  6072600.0
+2015        11133433.0  149143.625000  10596385.0  18278624.0  6442131.0
+All         11412787.0  136158.859375   8006361.0  16648273.0  5968295.5]
+timestamp: 2025-03-06T19:43:34.695759
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ a reason should be provided
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_8
+status: review
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 10, &#39;missing&#39;: 0, &#39;threshold&#39;: 7, &#39;p-ratio&#39;: 2, &#39;nk-rule&#39;: 1, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [[0, 2], [1, 1], [1, 2], [2, 2], [3, 1], [3, 2], [4, 1], [4, 2], [5, 1], [5, 2]], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 1], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3]], &#39;p-ratio&#39;: [[0, 1], [0, 3]], &#39;nk-rule&#39;: [[0, 3]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.year, df.grant_type, values=negative, aggfunc=&#34;mean&#34;)
+summary: review; negative values found
+outcome: grant_type G         N         R R/G
+year
+2010                    negative
+2011          negative  negative
+2012                    negative
+2013          negative  negative
+2014          negative  negative
+2015          negative  negative
+output: [grant_type           G              N           R         R/G
+year
+2010         9921906.0       0.000000   8280032.5  11636000.0
+2011         8502246.0  123496.445312   7577703.5  16047500.0
+2012        11458580.0  131859.062500   6796357.5  16810000.0
+2013        13557147.0  147937.625000   6988263.0  16765625.0
+2014        13748147.0  133198.078125   7997392.0  17845750.0
+2015        11133433.0  146572.015625  10388612.0  18278624.0]
+timestamp: 2025-03-06T19:43:34.727227
+comments: []
+exception:
+
+The status of the record above is: review.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ negative values are valid financial losses
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_9
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 7, &#39;p-ratio&#39;: 2, &#39;nk-rule&#39;: 1, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[1, 0], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5]], &#39;p-ratio&#39;: [[1, 0], [3, 0]], &#39;nk-rule&#39;: [[3, 0]], &#39;all-values-are-same&#39;: []}}
+command: table = acro.pivot_table(
+summary: fail; threshold: 7 cells may need suppressing; p-ratio: 2 cells may need suppressing; nk-rule: 1 cells may need suppressing;
+outcome:                                inc_grants                            \
+year                                 2010         2011         2012
+grant_type
+G                                      ok           ok           ok
+N                    threshold; p-ratio;            ok           ok
+R                                      ok           ok           ok
+R/G         threshold; p-ratio; nk-rule;   threshold;   threshold;
+All                                    ok           ok           ok
+
+
+year               2013         2014         2015 All
+grant_type
+G                    ok           ok           ok  ok
+N                    ok           ok           ok  ok
+R                    ok           ok           ok  ok
+R/G         threshold;   threshold;   threshold;   ok
+All                  ok           ok           ok  ok
+output: [             inc_grants                                                      \
+year               2010         2011         2012         2013         2014
+grant_type
+G           138906688.0  127533696.0  171878704.0  203357200.0  206222208.0
+N                   0.0    7192804.0    7779685.0    8728330.0    7858697.0
+R           504137056.0  532464704.0  480105472.0  511361408.0  554594176.0
+R/G          46544000.0  128380000.0  134480000.0  134125000.0  142766000.0
+All         689587776.0  795571264.0  794243904.0  857571968.0  911441088.0
+
+
+year               2015           All
+grant_type
+G           133601200.0  9.814997e+08
+N             8501187.0  4.006070e+07
+R           551457280.0  3.134120e+09
+R/G         146228992.0  7.325240e+08
+All         839788672.0  4.888204e+09  ]
+timestamp: 2025-03-06T19:43:34.782873
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ a reason should be provided
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_12
+status: review
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 4, &#39;missing&#39;: 0, &#39;threshold&#39;: 0, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [[1, 0], [1, 1], [2, 0], [2, 1]], &#39;missing&#39;: [], &#39;threshold&#39;: [], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: table = acro.pivot_table(
+summary: review; negative values found
+outcome:                  mean        std
+           inc_grants inc_grants
+grant_type
+G
+N            negative   negative
+R            negative   negative
+R/G
+output: [                    mean           std
+              inc_grants    inc_grants
+grant_type
+G           1.141279e+07  2.283220e+07
+N           1.341800e+05  1.990196e+05
+R           7.882230e+06  3.204558e+07
+R/G         1.664827e+07  1.583532e+07]
+timestamp: 2025-03-06T19:43:34.872024
+comments: []
+exception:
+
+The status of the record above is: review.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ negative values are valid financial losses
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_17
+status: fail
+type: histogram
+properties: {&#39;method&#39;: &#39;histogram&#39;}
+sdc: {}
+command: hist = acro.hist(df, &#34;inc_grants&#34;)
+summary: Please check the minimum and the maximum values. The minimum value of the inc_grants column is: -10.0. The maximum value of the inc_grants column is: 249327008.0
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;acro_artifacts/histogram_0.png&#39;]
+timestamp: 2025-03-06T19:43:35.149884
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ to be fair this is probably disclosive ...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_18
+status: fail
+type: histogram
+properties: {&#39;method&#39;: &#39;histogram&#39;}
+sdc: {}
+command: hist = acro.hist(df, &#34;inc_grants&#34;)
+summary: Please check the minimum and the maximum values. The minimum value of the inc_grants column is: -10.0. The maximum value of the inc_grants column is: 249327008.0
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;acro_artifacts/histogram_1.png&#39;]
+timestamp: 2025-03-06T19:43:35.204307
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ to be fair this is probably disclosive ...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: pivot_table
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 0], [0, 1], [1, 0], [1, 1]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: acro.crosstab(mydata.year, mydata.survivor)
+summary: fail; threshold: 4 cells may need suppressing;
+outcome: survivor Dead_in_2015 Alive_in_2015
+year
+2010      threshold;    threshold;
+2011      threshold;    threshold;
+output: [survivor  Dead in 2015  Alive in 2015
+year
+2010                 2              2
+2011                 2              2]
+timestamp: 2025-03-06T19:43:34.423743
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ to be fair this is probably disclosive ...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_19
+status: review
+type: custom
+properties: {}
+sdc: {}
+command: custom
+summary: review
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;XandY.jpeg&#39;]
+timestamp: 2025-03-06T19:43:35.258648
+comments: [&#39;This output is an image showing the relationship between X and Y&#39;]
+exception:
+
+The status of the record above is: review.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ please review- this image is not disclosive
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:outputs written to: ACRO_RES
+</pre></div></div>
+</div>
+</section>
+<section id="List-files-generated">
+<h2>List files generated<a class="headerlink" href="#List-files-generated" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SAVE_PATH</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_PATH</span><span class="p">,</span> <span class="n">name</span><span class="p">)):</span>
+        <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="n">files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+XandY.jpeg
+config.json
+histogram_0.png
+histogram_1.png
+output_0_0.csv
+output_10_0.csv
+output_11_0.csv
+output_12_0.csv
+output_13_0.csv
+output_13_1.csv
+output_13_2.csv
+output_14_0.csv
+output_14_1.csv
+output_14_2.csv
+output_15_0.csv
+output_15_1.csv
+output_16_0.csv
+output_16_1.csv
+output_3_0.csv
+output_5_0.csv
+output_6_0.csv
+output_7_0.csv
+output_8_0.csv
+output_9_0.csv
+pivot_table_0.csv
+results.json
+</pre></div></div>
+</div>
+</section>
+<section id="Checksums">
+<h2>Checksums<a class="headerlink" href="#Checksums" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">checksum_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_PATH</span><span class="p">,</span> <span class="s2">&quot;checksums&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">checksum_dir</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checksum_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">)):</span>
+        <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="n">files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+XandY.jpeg.txt
+histogram_0.png.txt
+histogram_1.png.txt
+output_0_0.csv.txt
+output_10_0.csv.txt
+output_11_0.csv.txt
+output_12_0.csv.txt
+output_13_0.csv.txt
+output_13_1.csv.txt
+output_13_2.csv.txt
+output_14_0.csv.txt
+output_14_1.csv.txt
+output_14_2.csv.txt
+output_15_0.csv.txt
+output_15_1.csv.txt
+output_16_0.csv.txt
+output_16_1.csv.txt
+output_3_0.csv.txt
+output_5_0.csv.txt
+output_6_0.csv.txt
+output_7_0.csv.txt
+output_8_0.csv.txt
+output_9_0.csv.txt
+pivot_table_0.csv.txt
+results.json.txt
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+                </article>
+
+
+
+
+
+                <footer class="prev-next-footer d-print-none">
+
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="acro_demo.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">ACRO Demonstration</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="test-nursery.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">ACRO Demonstration</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+
+            </div>
+
+
+
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Instantiate-ACRO">Instantiate ACRO</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Load-test-data">Load test data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Pandas-crosstab">Pandas crosstab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab">ACRO crosstab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#same-table-with-column-hierarchy-reversed-to-make-sure-spaces-in-variable-name.-dealt-with-properly">same table with column hierarchy reversed to make sure spaces in variable name. dealt with properly</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-for-testing-purposes">checking for testing purposes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-suppression">ACRO crosstab with suppression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-suppression-and-totals">ACRO crosstab with suppression and totals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-aggregation-function">ACRO crosstab with aggregation function</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-multiple-aggregation-functions-and-totals">ACRO crosstab with multiple aggregation functions and totals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-missing-values">ACRO crosstab with missing values</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-negative-values">ACRO crosstab with negative values</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-pivot_table">ACRO pivot_table</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-pivot_table-with-missing-values">ACRO pivot_table with missing values</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-pivot_table-with-negative-values">ACRO pivot_table with negative values</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-OLS">ACRO OLS</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-OLSR">ACRO OLSR</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-Probit">ACRO Probit</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-Logit">ACRO Logit</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-Histogram-without-suppression">ACRO Histogram without suppression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-Histogram-with-suppression">ACRO Histogram with suppression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#List-current-ACRO-outputs">List current ACRO outputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Remove-some-ACRO-outputs-before-finalising">Remove some ACRO outputs before finalising</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Rename-ACRO-outputs-before-finalising">Rename ACRO outputs before finalising</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Add-a-comment-to-output">Add a comment to output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Add-an-unsupported-output-to-the-list-of-outputs">Add an unsupported output to the list of outputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Request-an-exception-for-some-of-the-outputs">Request an exception for some of the outputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Finalise-ACRO">Finalise ACRO</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#List-files-generated">List files generated</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Checksums">Checksums</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notebooks/test.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+
+
+          </div>
+          <footer class="bd-footer-content">
+
+          </footer>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+
+    <div class="footer-items__start">
+
+        <div class="footer-item">
+
+  <p class="copyright">
+
+      © Copyright 2025, SACRO Project Team.
+      <br/>
+
+  </p>
+</div>
+
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+
+    </div>
+
+
+
+    <div class="footer-items__end">
+
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+
+    </div>
+
+</div>
+
+  </footer>
+  </body>
+</html>

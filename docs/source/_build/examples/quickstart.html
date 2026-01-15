@@ -1,0 +1,1004 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Quick Start &#8212; ACRO 0.4.11 documentation</title>
+
+
+
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=17306193" />
+
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=475c965b"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/quickstart';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="Examples" href="../examples.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+
+
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+
+
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  <div id="pst-scroll-pixel-helper"></div>
+
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+
+  <dialog id="pst-search-dialog">
+
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+
+
+  <div class="col-lg-3 navbar-header-items__start">
+
+      <div class="navbar-item">
+
+
+
+
+
+<a class="navbar-brand logo" href="../index.html">
+
+
+
+
+
+
+    <p class="title logo__title">ACRO 0.4.11 documentation</p>
+
+</a></div>
+
+  </div>
+
+  <div class="col-lg-9 navbar-header-items">
+
+    <div class="me-auto navbar-header-items__center">
+
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+
+  </ul>
+</nav></div>
+
+    </div>
+
+
+    <div class="navbar-header-items__end">
+
+        <div class="navbar-item navbar-persistent--container">
+
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+
+
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+    </div>
+
+  </div>
+
+
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+
+
+
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+
+</div>
+
+    </header>
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+
+
+
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+
+
+
+  <div class="sidebar-header-items sidebar-primary__section">
+
+
+      <div class="sidebar-header-items__center">
+
+
+
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+
+
+      </div>
+
+
+
+      <div class="sidebar-header-items__end">
+
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+      </div>
+
+  </div>
+
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebook_examples.html">Notebook Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/acro_demo.html">ACRO Demonstration</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/test.html">ACRO Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/test-nursery.html">ACRO Demonstration</a></li>
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+
+
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+
+      <main id="main-content" class="bd-main" role="main">
+
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+
+    <div class="header-article-items__start">
+
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+
+    <li class="breadcrumb-item"><a href="../examples.html" class="nav-link">Examples</a></li>
+
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Quick Start</span></li>
+  </ul>
+</nav>
+</div>
+
+    </div>
+
+
+</div>
+</div>
+
+
+
+
+<div id="searchbox"></div>
+                <article class="bd-article">
+
+  <section id="quick-start">
+<h1>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h1>
+<p>This guide will get you up and running with ACRO in just a few minutes.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>acro
+</pre></div>
+</div>
+</section>
+<section id="core-acro-class">
+<h2>Core ACRO Class<a class="headerlink" href="#core-acro-class" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">acro.</span></span><span class="sig-name descname"><span class="pre">ACRO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>ACRO: Automatic Checking of Research Outputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>config</strong><span class="classifier">dict</span></dt><dd><p>Safe parameters and their values.</p>
+</dd>
+<dt><strong>results</strong><span class="classifier">Records</span></dt><dd><p>The current outputs including the results of checks.</p>
+</dd>
+<dt><strong>suppress</strong><span class="classifier">bool</span></dt><dd><p>Whether to automatically apply suppression</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>config</strong> (<em>str</em>)</p></li>
+<li><p><strong>suppress</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.add_comments" title="acro.ACRO.add_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_comments</span></code></a>(output, comment)</p></td>
+<td><p>Add a comment to an output.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.add_exception" title="acro.ACRO.add_exception"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_exception</span></code></a>(output, reason)</p></td>
+<td><p>Add an exception request to an output.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.crosstab" title="acro.ACRO.crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crosstab</span></code></a>(index, columns[, values, rownames, ...])</p></td>
+<td><p>Compute a simple cross tabulation of two (or more) factors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.custom_output" title="acro.ACRO.custom_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">custom_output</span></code></a>(filename[, comment])</p></td>
+<td><p>Add an unsupported output to the results dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.finalise" title="acro.ACRO.finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalise</span></code></a>([path, ext])</p></td>
+<td><p>Create a results file for checking.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.hist" title="acro.ACRO.hist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hist</span></code></a>(data, column[, by_val, grid, ...])</p></td>
+<td><p>Create a histogram from a single column.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.logit" title="acro.ACRO.logit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
+<td><p>Fits Logit model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.logitr" title="acro.ACRO.logitr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logitr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
+<td><p>Fits Logit model from a formula and dataframe.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.ols" title="acro.ACRO.ols"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ols</span></code></a>(endog[, exog, missing, hasconst])</p></td>
+<td><p>Fits Ordinary Least Squares Regression.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.olsr" title="acro.ACRO.olsr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">olsr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
+<td><p>Fits Ordinary Least Squares Regression from a formula and dataframe.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.pivot_table" title="acro.ACRO.pivot_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pivot_table</span></code></a>(data[, values, index, columns, ...])</p></td>
+<td><p>Create a spreadsheet-style pivot table as a DataFrame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.print_outputs" title="acro.ACRO.print_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_outputs</span></code></a>()</p></td>
+<td><p>Print the current results dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.probit" title="acro.ACRO.probit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probit</span></code></a>(endog, exog[, missing, check_rank])</p></td>
+<td><p>Fits Probit model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.probitr" title="acro.ACRO.probitr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">probitr</span></code></a>(formula, data[, subset, drop_cols])</p></td>
+<td><p>Fits Probit model from a formula and dataframe.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.remove_output" title="acro.ACRO.remove_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_output</span></code></a>(key)</p></td>
+<td><p>Remove an output from the results.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.rename_output" title="acro.ACRO.rename_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rename_output</span></code></a>(old, new)</p></td>
+<td><p>Rename an output.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.surv_func" title="acro.ACRO.surv_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">surv_func</span></code></a>(time, status, output[, entry, ...])</p></td>
+<td><p>Estimate the survival function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.survival_plot" title="acro.ACRO.survival_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">survival_plot</span></code></a>(survival_table, survival_func, ...)</p></td>
+<td><p>Create the survival plot according to the status of suppressing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/acro_class.html#acro.ACRO.survival_table" title="acro.ACRO.survival_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">survival_table</span></code></a>(survival_table, safe_table, ...)</p></td>
+<td><p>Create the survival table according to the status of suppressing.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">acro</span> <span class="o">=</span> <span class="n">ACRO</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">acro</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;MYFOLDER&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;json&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Construct a new ACRO object and reads parameters from config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>config</strong><span class="classifier">str</span></dt><dd><p>Name of a yaml configuration file with safe parameters.</p>
+</dd>
+<dt><strong>suppress</strong><span class="classifier">bool, default False</span></dt><dd><p>Whether to automatically apply suppression.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>config</strong> (<em>str</em>)</p></li>
+<li><p><strong>suppress</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">finalise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'outputs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Create a results file for checking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of a folder to save outputs.</p>
+</dd>
+<dt><strong>ext</strong><span class="classifier">str</span></dt><dd><p>Extension of the results file. Valid extensions: {json, xlsx}.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Records</dt><dd><p>Object storing the outputs.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Records</em> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">remove_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.remove_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Remove an output from the results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>Key specifying which output to remove, e.g., ‘output_0’.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>key</strong> (<em>str</em>)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">print_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.print_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Print the current results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>str</dt><dd><p>String representation of all outputs.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">custom_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.custom_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add an unsupported output to the results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The name of the file that will be added to the list of the outputs.</p>
+</dd>
+<dt><strong>comment</strong><span class="classifier">str</span></dt><dd><p>An optional comment.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>)</p></li>
+<li><p><strong>comment</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">rename_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.rename_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Rename an output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>old</strong><span class="classifier">str</span></dt><dd><p>The old name of the output.</p>
+</dd>
+<dt><strong>new</strong><span class="classifier">str</span></dt><dd><p>The new name of the output.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>old</strong> (<em>str</em>)</p></li>
+<li><p><strong>new</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_comments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.add_comments"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add a comment to an output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>output</strong><span class="classifier">str</span></dt><dd><p>The name of the output.</p>
+</dd>
+<dt><strong>comment</strong><span class="classifier">str</span></dt><dd><p>The comment.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>output</strong> (<em>str</em>)</p></li>
+<li><p><strong>comment</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.add_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add an exception request to an output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>output</strong><span class="classifier">str</span></dt><dd><p>The name of the output.</p>
+</dd>
+<dt><strong>reason</strong><span class="classifier">str</span></dt><dd><p>The comment.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>output</strong> (<em>str</em>)</p></li>
+<li><p><strong>reason</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="essential-methods">
+<h2>Essential Methods<a class="headerlink" href="#essential-methods" title="Link to this heading">#</a></h2>
+<section id="data-analysis">
+<h3>Data Analysis<a class="headerlink" href="#data-analysis" title="Link to this heading">#</a></h3>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">ACRO.</span></span><span class="sig-name descname"><span class="pre">crosstab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rownames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggfunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margins_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'All'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_suppressed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Compute a simple cross tabulation of two (or more) factors.</p>
+<p>By default, computes a frequency table of the factors unless an array of
+values and an aggregation function are passed.</p>
+<p>To provide consistent behaviour with different aggregation functions,
+‘empty’ rows or columns -i.e. that  are all NaN or 0 (count,sum) are removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>index</strong><span class="classifier">array-like, Series, or list of arrays/Series</span></dt><dd><p>Values to group by in the rows.</p>
+</dd>
+<dt><strong>columns</strong><span class="classifier">array-like, Series, or list of arrays/Series</span></dt><dd><p>Values to group by in the columns.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">array-like, optional</span></dt><dd><p>Array of values to aggregate according to the factors.
+Requires <cite>aggfunc</cite> be specified.</p>
+</dd>
+<dt><strong>rownames</strong><span class="classifier">sequence, default None</span></dt><dd><p>If passed, must match number of row arrays passed.</p>
+</dd>
+<dt><strong>colnames</strong><span class="classifier">sequence, default None</span></dt><dd><p>If passed, must match number of column arrays passed.</p>
+</dd>
+<dt><strong>aggfunc</strong><span class="classifier">str, optional</span></dt><dd><p>If specified, requires <cite>values</cite> be specified as well.</p>
+</dd>
+<dt><strong>margins</strong><span class="classifier">bool, default False</span></dt><dd><p>Add row/column margins (subtotals).</p>
+</dd>
+<dt><strong>margins_name</strong><span class="classifier">str, default ‘All’</span></dt><dd><p>Name of the row/column that will contain the totals
+when margins is True.</p>
+</dd>
+<dt><strong>dropna</strong><span class="classifier">bool, default True</span></dt><dd><p>Do not include columns whose entries are all NaN.</p>
+</dd>
+<dt><strong>normalize</strong><span class="classifier">bool, {‘all’, ‘index’, ‘columns’}, or {0,1}, default False</span></dt><dd><p>Normalize by dividing all values by the sum of values.
+- If passed ‘all’ or <cite>True</cite>, will normalize over all values.
+- If passed ‘index’ will normalize over each row.
+- If passed ‘columns’ will normalize over each column.
+- If margins is <cite>True</cite>, will also normalize margin values.</p>
+</dd>
+<dt><strong>show_suppressed</strong><span class="classifier">bool. default False</span></dt><dd><p>how the totals are being calculated when the suppression is true</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>DataFrame</dt><dd><p>Cross tabulation of the data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>margins</strong> (<em>bool</em>)</p></li>
+<li><p><strong>margins_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>dropna</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>DataFrame</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">ACRO.</span></span><span class="sig-name descname"><span class="pre">olsr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Fits Ordinary Least Squares Regression from a formula and dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>formula</strong><span class="classifier">str or generic Formula object</span></dt><dd><p>The formula specifying the model.</p>
+</dd>
+<dt><strong>data</strong><span class="classifier">array_like</span></dt><dd><p>The data for the model. See Notes.</p>
+</dd>
+<dt><strong>subset</strong><span class="classifier">array_like</span></dt><dd><p>An array-like object of booleans, integers, or index values that
+indicate the subset of df to use in the model. Assumes df is a
+<cite>pandas.DataFrame</cite>.</p>
+</dd>
+<dt><strong>drop_cols</strong><span class="classifier">array_like</span></dt><dd><p>Columns to drop from the design matrix.  Cannot be used to
+drop terms involving categoricals.</p>
+</dd>
+<dt><strong>*args</strong></dt><dd><p>Additional positional argument that are passed to the model.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>These are passed to the model with one exception. The
+<code class="docutils literal notranslate"><span class="pre">eval_env</span></code> keyword is passed to patsy. It can be either a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">patsy:patsy.EvalEnvironment</span></code> object or an integer
+indicating the depth of the namespace to use. For example, the
+default <code class="docutils literal notranslate"><span class="pre">eval_env=0</span></code> uses the calling namespace. If you wish
+to use a “clean” environment set <code class="docutils literal notranslate"><span class="pre">eval_env=-1</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>RegressionResultsWrapper</dt><dd><p>Results.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>RegressionResultsWrapper</em></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>data must define __getitem__ with the keys in the formula terms
+args and kwargs are passed on to the model instantiation. E.g.,
+a numpy structured or rec array, a dictionary, or a pandas DataFrame.
+Arguments are passed in the same order as statsmodels.</p>
+</dd></dl>
+
+</section>
+<section id="output-management">
+<h3>Output Management<a class="headerlink" href="#output-management" title="Link to this heading">#</a></h3>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">ACRO.</span></span><span class="sig-name descname"><span class="pre">finalise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'outputs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Create a results file for checking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Name of a folder to save outputs.</p>
+</dd>
+<dt><strong>ext</strong><span class="classifier">str</span></dt><dd><p>Extension of the results file. Valid extensions: {json, xlsx}.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Records</dt><dd><p>Object storing the outputs.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Records</em> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">ACRO.</span></span><span class="sig-name descname"><span class="pre">print_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/acro/acro.html#ACRO.print_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Print the current results dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>str</dt><dd><p>String representation of all outputs.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="quick-workflow">
+<h2>Quick Workflow<a class="headerlink" href="#quick-workflow" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Install</strong>: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">acro</span></code></p></li>
+<li><p><strong>Initialize</strong>: Create ACRO session with <code class="docutils literal notranslate"><span class="pre">suppress=True</span></code></p></li>
+<li><p><strong>Analyze</strong>: Use ACRO methods for statistical analysis</p></li>
+<li><p><strong>Review</strong>: Check outputs with <code class="docutils literal notranslate"><span class="pre">print_outputs()</span></code></p></li>
+<li><p><strong>Finalize</strong>: Export results with <code class="docutils literal notranslate"><span class="pre">finalise()</span></code></p></li>
+</ol>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="configuration.html"><span class="doc">Configuration</span></a> - Learn configuration options</p></li>
+<li><p><a class="reference internal" href="../api.html"><span class="doc">API Reference</span></a> - Explore the full API reference</p></li>
+<li><p><a class="reference internal" href="../notebook_examples.html"><span class="doc">Notebook Examples</span></a> - Interactive Jupyter notebook examples</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+
+
+
+
+
+                <footer class="prev-next-footer d-print-none">
+
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../examples.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Examples</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="configuration.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Configuration</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+
+            </div>
+
+
+
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-acro-class">Core ACRO Class</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#essential-methods">Essential Methods</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-analysis">Data Analysis</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#output-management">Output Management</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-workflow">Quick Workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/examples/quickstart.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+
+
+          </div>
+          <footer class="bd-footer-content">
+
+          </footer>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+
+    <div class="footer-items__start">
+
+        <div class="footer-item">
+
+  <p class="copyright">
+
+      © Copyright 2025, SACRO Project Team.
+      <br/>
+
+  </p>
+</div>
+
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+
+    </div>
+
+
+
+    <div class="footer-items__end">
+
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+
+    </div>
+
+</div>
+
+  </footer>
+  </body>
+</html>

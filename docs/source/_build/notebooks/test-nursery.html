@@ -1,0 +1,2827 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ACRO Demonstration &#8212; ACRO 0.4.11 documentation</title>
+
+
+
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=17306193" />
+
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=475c965b"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/test-nursery';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="ACRO Tests" href="test.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+
+
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+
+
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  <div id="pst-scroll-pixel-helper"></div>
+
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+
+  <dialog id="pst-search-dialog">
+
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+
+
+  <div class="col-lg-3 navbar-header-items__start">
+
+      <div class="navbar-item">
+
+
+
+
+
+<a class="navbar-brand logo" href="../index.html">
+
+
+
+
+
+
+    <p class="title logo__title">ACRO 0.4.11 documentation</p>
+
+</a></div>
+
+  </div>
+
+  <div class="col-lg-9 navbar-header-items">
+
+    <div class="me-auto navbar-header-items__center">
+
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+
+  </ul>
+</nav></div>
+
+    </div>
+
+
+    <div class="navbar-header-items__end">
+
+        <div class="navbar-item navbar-persistent--container">
+
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+
+
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+    </div>
+
+  </div>
+
+
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+
+
+
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+
+</div>
+
+    </header>
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+
+
+
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+
+
+
+  <div class="sidebar-header-items sidebar-primary__section">
+
+
+      <div class="sidebar-header-items__center">
+
+
+
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+
+
+      </div>
+
+
+
+      <div class="sidebar-header-items__end">
+
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+      </div>
+
+  </div>
+
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/configuration.html">Configuration</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../notebook_examples.html">Notebook Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="acro_demo.html">ACRO Demonstration</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="test.html">ACRO Tests</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">ACRO Demonstration</a></li>
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+
+
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+
+      <main id="main-content" class="bd-main" role="main">
+
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+
+    <div class="header-article-items__start">
+
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+
+    <li class="breadcrumb-item"><a href="../examples.html" class="nav-link">Examples</a></li>
+
+
+    <li class="breadcrumb-item"><a href="../notebook_examples.html" class="nav-link">Notebook Examples</a></li>
+
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ACRO Demonstration</span></li>
+  </ul>
+</nav>
+</div>
+
+    </div>
+
+
+</div>
+</div>
+
+
+
+
+<div id="searchbox"></div>
+                <article class="bd-article">
+
+  <section id="ACRO-Demonstration">
+<h1>ACRO Demonstration<a class="headerlink" href="#ACRO-Demonstration" title="Link to this heading">#</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># uncomment this line if acro is not installed</span>
+<span class="c1"># ie you are in development mode</span>
+<span class="c1"># sys.path.insert(0, os.path.abspath(&quot;..&quot;))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">acro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACRO</span><span class="p">,</span> <span class="n">add_constant</span><span class="p">,</span> <span class="n">add_to_acro</span>
+</pre></div>
+</div>
+</div>
+<section id="Instantiate-ACRO">
+<h2>Instantiate ACRO<a class="headerlink" href="#Instantiate-ACRO" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span> <span class="o">=</span> <span class="n">ACRO</span><span class="p">(</span><span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:version: 0.4.8
+INFO:acro:config: {&#39;safe_threshold&#39;: 10, &#39;safe_dof_threshold&#39;: 10, &#39;safe_nk_n&#39;: 2, &#39;safe_nk_k&#39;: 0.9, &#39;safe_pratio_p&#39;: 0.1, &#39;check_missing_values&#39;: False, &#39;survival_safe_threshold&#39;: 10, &#39;zeros_are_disclosive&#39;: True}
+INFO:acro:automatic suppression: True
+</pre></div></div>
+</div>
+</section>
+<section id="Load-test-data">
+<h2>Load test data<a class="headerlink" href="#Load-test-data" title="Link to this heading">#</a></h2>
+<p>The dataset used in this notebook is the nursery dataset from OpenML.</p>
+<ul class="simple">
+<li><p>The dataset can be read directly from OpenML using the code commented in the next cell.</p></li>
+<li><p>In this version, it can be read directly from the local machine if it has been downloaded.</p></li>
+<li><p>The code below reads the data from a folder called “data” which we assume is at the same level as the folder where you are working.</p></li>
+<li><p>The path might need to be changed if the data has been downloaded and stored elsewhere.</p></li>
+<li><p>for example use:
+path = os.path.join(“data”, “nursery.arff”)
+if the data is in a sub-folder of your work folder</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.io.arff</span><span class="w"> </span><span class="kn">import</span> <span class="n">loadarff</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;../data&quot;</span><span class="p">,</span> <span class="s2">&quot;nursery.arff&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">loadarff</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">([</span><span class="nb">object</span><span class="p">])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;recommend&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parents</th>
+      <th>has_nurs</th>
+      <th>form</th>
+      <th>children</th>
+      <th>housing</th>
+      <th>finance</th>
+      <th>social</th>
+      <th>health</th>
+      <th>recommend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>nonprob</td>
+      <td>recommended</td>
+      <td>recommend</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>nonprob</td>
+      <td>priority</td>
+      <td>priority</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>nonprob</td>
+      <td>not_recom</td>
+      <td>not_recom</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>slightly_prob</td>
+      <td>recommended</td>
+      <td>recommend</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>slightly_prob</td>
+      <td>priority</td>
+      <td>priority</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Convert-'more-than-3'-children-to-random-between-4-and-10">
+<h2>Convert ‘more than 3’ children to random between 4 and 10<a class="headerlink" href="#Convert-'more-than-3'-children-to-random-between-4-and-10" title="Link to this heading">#</a></h2>
+<p>Change the children column from categorical to numeric in order to be able to test some of the ACRO functions that require a numeric feature</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; children column entries in raw file </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ children column entries in raw file [&#39;1&#39; &#39;2&#39; &#39;3&#39; &#39;more&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;more&quot;</span><span class="p">:</span> <span class="s2">&quot;4&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">])</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="p">(</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="p">),</span>
+    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Examples-of-producing-tabular-output">
+<h1>Examples of producing tabular output<a class="headerlink" href="#Examples-of-producing-tabular-output" title="Link to this heading">#</a></h1>
+<div class="line-block">
+<div class="line">We rely on the industry-standard package <strong>pandas</strong> for tabulating data.</div>
+<div class="line">In the next few examples we show:</div>
+</div>
+<ul class="simple">
+<li><p>first, how a researcher would normally make a call in pandas, saving the results in a variable that they can view on screen (or save to file?)</p></li>
+<li><p>then how the call is identical in SACRO, except that:</p>
+<ul>
+<li><p>“pd” is replaced by “acro”</p></li>
+<li><p>the researcher immediately sees a copy of what the TRE output checker will see.</p></li>
+</ul>
+</li>
+</ul>
+<section id="Pandas-crosstab">
+<h2>Pandas crosstab<a class="headerlink" href="#Pandas-crosstab" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of crosstab using pandas.</div>
+<div class="line">We first make the call, then the second line print the outputs to screen.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+parents     great_pret  pretentious  usual
+recommend
+not_recom         1440         1440   1440
+priority           858         1484   1924
+recommend            0            0      2
+spec_prior        2022         1264    758
+very_recom           0          132    196
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-crosstab">
+<h2>ACRO crosstab<a class="headerlink" href="#ACRO-crosstab" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of crosstab using ACRO.</div>
+<div class="line">The INFO lines show the researcher what will be reported to the output checkers. Then the (suppressed as necessary) table is shown via. the print command as before.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 4 cells suppressed;
+INFO:acro:outcome_df:
+----------------------------------------------------|
+parents    |great_pret   |pretentious  |usual       |
+recommend  |             |             |            |
+----------------------------------------------------|
+not_recom  |          ok |          ok |          ok|
+priority   |          ok |          ok |          ok|
+recommend  | threshold;  | threshold;  | threshold; |
+spec_prior |          ok |          ok |          ok|
+very_recom | threshold;  |          ok |          ok|
+----------------------------------------------------|
+
+INFO:acro:records:add(): output_0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+parents     great_pret  pretentious   usual
+recommend
+not_recom       1440.0       1440.0  1440.0
+priority         858.0       1484.0  1924.0
+recommend          NaN          NaN     NaN
+spec_prior      2022.0       1264.0   758.0
+very_recom         NaN        132.0   196.0
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-totals">
+<h2>ACRO crosstab with totals<a class="headerlink" href="#ACRO-crosstab-with-totals" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of crosstab with totals columns and suppression.</div>
+<div class="line">Note that when margins is true any row or column where all the cells are discolsive is deleted. If you wish to see such row or column set show_suppressed to True.</div>
+<div class="line">show_suppressed parameter does not work with herichical tables and when the aggregation function is the standard deviation.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 5 cells suppressed;
+INFO:acro:outcome_df:
+------------------------------------------------------------------|
+parents    |great_pret   |pretentious  |usual        |All         |
+recommend  |             |             |             |            |
+------------------------------------------------------------------|
+not_recom  |          ok |          ok |          ok |          ok|
+priority   |          ok |          ok |          ok |          ok|
+recommend  | threshold;  | threshold;  | threshold;  | threshold; |
+spec_prior |          ok |          ok |          ok |          ok|
+very_recom | threshold;  |          ok |          ok |          ok|
+All        |          ok |          ok |          ok |          ok|
+------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_1
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+parents     great_pret  pretentious  usual    All
+recommend
+not_recom       1440.0         1440   1440   4320
+priority         858.0         1484   1924   4266
+spec_prior      2022.0         1264    758   4044
+very_recom         NaN          132    196    328
+All             4320.0         4320   4318  12958
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-crosstab-without-suppression">
+<h2>ACRO crosstab without suppression<a class="headerlink" href="#ACRO-crosstab-without-suppression" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of crosstab without suppressing the cells that violate the disclosure tests.</div>
+<div class="line">Note that you need to change the value of the suppress variable in the acro object to False. Then run the crosstab command.</div>
+<div class="line">If you wish to continue the research while suppressing the outputs, turn on the suppress variable otherwise leave it as it is.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 4 cells may need suppressing;
+INFO:acro:outcome_df:
+----------------------------------------------------|
+parents    |great_pret   |pretentious  |usual       |
+recommend  |             |             |            |
+----------------------------------------------------|
+not_recom  |          ok |          ok |          ok|
+priority   |          ok |          ok |          ok|
+recommend  | threshold;  | threshold;  | threshold; |
+spec_prior |          ok |          ok |          ok|
+very_recom | threshold;  |          ok |          ok|
+----------------------------------------------------|
+
+INFO:acro:records:add(): output_2
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+parents     great_pret  pretentious  usual
+recommend
+not_recom         1440         1440   1440
+priority           858         1484   1924
+recommend            0            0      2
+spec_prior        2022         1264    758
+very_recom           0          132    196
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-aggregation-function">
+<h2>ACRO crosstab with aggregation function<a class="headerlink" href="#ACRO-crosstab-with-aggregation-function" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;count&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 1 cells suppressed; p-ratio: 4 cells suppressed; nk-rule: 4 cells suppressed;
+INFO:acro:outcome_df:
+------------------------------------------------------------------------------------|
+parents    |great_pret          |pretentious         |usual                         |
+recommend  |                    |                    |                              |
+------------------------------------------------------------------------------------|
+not_recom  |                 ok |                 ok |                            ok|
+priority   |                 ok |                 ok |                            ok|
+recommend  | p-ratio; nk-rule;  | p-ratio; nk-rule;  | threshold; p-ratio; nk-rule; |
+spec_prior |                 ok |                 ok |                            ok|
+very_recom | p-ratio; nk-rule;  |                 ok |                            ok|
+------------------------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_3
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+parents     great_pret  pretentious   usual
+recommend
+not_recom       1440.0       1440.0  1440.0
+priority         858.0       1484.0  1924.0
+recommend          NaN          NaN     NaN
+spec_prior      2022.0       1264.0   758.0
+very_recom         NaN        132.0   196.0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 2 cells suppressed; p-ratio: 8 cells suppressed; nk-rule: 8 cells suppressed;
+INFO:acro:outcome_df:
+---------------------------------------------------------------------------------------------------------------------------------------------------------|
+           mode_aggfunc                                                           |mean                                                                  |
+parents    great_pret          pretentious         usual                          |great_pret          pretentious         usual                         |
+recommend                                                                         |                                                                      |
+---------------------------------------------------------------------------------------------------------------------------------------------------------|
+not_recom                   ok                  ok                             ok |                 ok                  ok                             ok|
+priority                    ok                  ok                             ok |                 ok                  ok                             ok|
+recommend   p-ratio; nk-rule;   p-ratio; nk-rule;   threshold; p-ratio; nk-rule;  | p-ratio; nk-rule;   p-ratio; nk-rule;   threshold; p-ratio; nk-rule; |
+spec_prior                  ok                  ok                             ok |                 ok                  ok                             ok|
+very_recom  p-ratio; nk-rule;                   ok                             ok | p-ratio; nk-rule;                   ok                             ok|
+---------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+INFO:acro:records:add(): output_4
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+           mode_aggfunc                         mean
+parents      great_pret pretentious usual great_pret pretentious     usual
+recommend
+not_recom           2.0         1.0   1.0   3.125694    3.105556  3.074306
+priority            1.0         1.0   1.0   2.665501    3.030323  3.116944
+recommend           NaN         NaN   NaN        NaN         NaN       NaN
+spec_prior          3.0         3.0   3.0   3.353610    3.370253  3.393140
+very_recom          NaN         1.0   1.0        NaN    2.204545  2.244898
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-pivot_table">
+<h2>ACRO pivot_table<a class="headerlink" href="#ACRO-pivot_table" title="Link to this heading">#</a></h2>
+<p>This is an example of pivot table using ACRO.</p>
+<ul class="simple">
+<li><p>Some researchers may prefer this to using crosstab.</p></li>
+<li><p>Again the call syntax is identical to the pandas “pd.pivot_table”</p></li>
+<li><p>in this case the output is non-disclosive</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;parents&quot;</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">],</span> <span class="n">aggfunc</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): pass
+INFO:acro:outcome_df:
+------------------------------|
+            mean     |std     |
+            children |children|
+parents              |        |
+------------------------------|
+great_pret   ok      | ok     |
+pretentious  ok      | ok     |
+usual        ok      | ok     |
+------------------------------|
+
+INFO:acro:records:add(): output_5
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+                 mean       std
+             children  children
+parents
+great_pret   3.140972  2.270396
+pretentious  3.129630  2.250436
+usual        3.110648  2.213072
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-pivot_table-with-margins">
+<h2>ACRO pivot_table with margins<a class="headerlink" href="#ACRO-pivot_table-with-margins" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;recommend&quot;</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;parents&quot;</span><span class="p">],</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">],</span> <span class="n">margins</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 5 cells suppressed; p-ratio: 5 cells suppressed; nk-rule: 5 cells suppressed;
+INFO:acro:outcome_df:
+-----------------------------------------------------------------------------------------------------------|
+            children                                                                                       |
+recommend   not_recom priority recommend                      spec_prior very_recom                     All|
+parents                                                                                                    |
+-----------------------------------------------------------------------------------------------------------|
+great_pret   ok        ok       threshold; p-ratio; nk-rule;   ok         threshold; p-ratio; nk-rule;   ok|
+pretentious  ok        ok       threshold; p-ratio; nk-rule;   ok                                    ok  ok|
+usual        ok        ok       threshold; p-ratio; nk-rule;   ok                                    ok  ok|
+All          ok        ok       threshold; p-ratio; nk-rule;   ok                                    ok  ok|
+-----------------------------------------------------------------------------------------------------------|
+
+INFO:acro:Disclosive cells were deleted from the dataframe before calculating the pivot table
+INFO:acro:records:add(): output_6
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+             children
+recommend   not_recom  priority spec_prior very_recom       All
+parents
+great_pret   3.125694  2.665501   3.353610        NaN  3.140972
+pretentious  3.105556  3.030323   3.370253   2.204545  3.129630
+usual        3.074306  3.116944   3.393140   2.244898  3.111626
+All          3.101852  2.996015   3.366222   2.228659  3.127412
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Regression-examples-using-ACRO">
+<h1>Regression examples using ACRO<a class="headerlink" href="#Regression-examples-using-ACRO" title="Link to this heading">#</a></h1>
+<p>Again there is an industry-standard package in python, this time called <strong>statsmodels</strong>.</p>
+<ul class="simple">
+<li><p>The examples below illustrate the use of the ACRO wrapper standard statsmodel functions</p></li>
+<li><p>Note that statsmodels can be called using an ‘R-like’ format (using an ‘r’ suffix on the command names)</p></li>
+<li><p>most statsmodels functiobns return a “results object” which has a “summary” function that produces printable/saveable outputs</p></li>
+</ul>
+<section id="Start-by-manipulating-the-nursery-data-to-get-two-numeric-variables">
+<h2>Start by manipulating the nursery data to get two numeric variables<a class="headerlink" href="#Start-by-manipulating-the-nursery-data-to-get-two-numeric-variables" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>The ‘recommend’ column is converted to an integer scale</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;recommend&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+    <span class="n">to_replace</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;not_recom&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;recommend&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;very_recom&quot;</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="s2">&quot;3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;spec_prior&quot;</span><span class="p">:</span> <span class="s2">&quot;4&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;recommend&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;recommend&quot;</span><span class="p">])</span>
+
+<span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;recommend&quot;</span><span class="p">,</span> <span class="s2">&quot;children&quot;</span><span class="p">]]</span>
+<span class="n">new_df</span> <span class="o">=</span> <span class="n">new_df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="ACRO-OLS">
+<h2>ACRO OLS<a class="headerlink" href="#ACRO-OLS" title="Link to this heading">#</a></h2>
+<p>This is an example of ordinary least square regression using ACRO.</p>
+<ul class="simple">
+<li><p>Above recommend column was converted form categorical to numeric.</p></li>
+<li><p>Now we perform a the linear regression between recommend and children.</p></li>
+<li><p>This version includes a constant (intercept)</p></li>
+<li><p>This is just to show how the regression is done using ACRO.</p></li>
+<li><p><strong>No correlation is expected to be seen by using these variables</strong></p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">new_df</span><span class="p">[</span><span class="s2">&quot;recommend&quot;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">new_df</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">add_constant</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:ols() outcome: pass; dof=12958.0 &gt;= 10
+INFO:acro:records:add(): output_7
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>        <td>recommend</td>    <th>  R-squared:         </th> <td>   0.001</td>
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.001</td>
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   13.83</td>
+</tr>
+<tr>
+  <th>Date:</th>             <td>Thu, 06 Mar 2025</td> <th>  Prob (F-statistic):</th> <td>0.000201</td>
+</tr>
+<tr>
+  <th>Time:</th>                 <td>19:39:47</td>     <th>  Log-Likelihood:    </th> <td> -25121.</td>
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td> 12960</td>      <th>  AIC:               </th> <td>5.025e+04</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td> 12958</td>      <th>  BIC:               </th> <td>5.026e+04</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>     1</td>      <th>                     </th>     <td> </td>
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+      <td></td>        <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>
+</tr>
+<tr>
+  <th>const</th>    <td>    2.2099</td> <td>    0.025</td> <td>   87.263</td> <td> 0.000</td> <td>    2.160</td> <td>    2.260</td>
+</tr>
+<tr>
+  <th>children</th> <td>    0.0245</td> <td>    0.007</td> <td>    3.718</td> <td> 0.000</td> <td>    0.012</td> <td>    0.037</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>77090.215</td> <th>  Durbin-Watson:     </th> <td>   2.883</td>
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th>  <td> 0.000</td>   <th>  Jarque-Bera (JB):  </th> <td>1741.570</td>
+</tr>
+<tr>
+  <th>Skew:</th>           <td>-0.486</td>   <th>  Prob(JB):          </th> <td>    0.00</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>       <td> 1.489</td>   <th>  Cond. No.          </th> <td>    6.90</td>
+</tr>
+</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>        <td>recommend</td>    <th>  R-squared:         </th> <td>   0.000</td>
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.000</td>
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   6.417</td>
+</tr>
+<tr>
+  <th>Date:</th>             <td>Mon, 04 Mar 2024</td> <th>  Prob (F-statistic):</th>  <td>0.0113</td>
+</tr>
+<tr>
+  <th>Time:</th>                 <td>21:21:09</td>     <th>  Log-Likelihood:    </th> <td> -25124.</td>
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td> 12960</td>      <th>  AIC:               </th> <td>5.025e+04</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td> 12958</td>      <th>  BIC:               </th> <td>5.027e+04</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>     1</td>      <th>                     </th>     <td> </td>
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+      <td></td>        <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>
+</tr>
+<tr>
+  <th>const</th>    <td>    2.2341</td> <td>    0.025</td> <td>   87.965</td> <td> 0.000</td> <td>    2.184</td> <td>    2.284</td>
+</tr>
+<tr>
+  <th>children</th> <td>    0.0168</td> <td>    0.007</td> <td>    2.533</td> <td> 0.011</td> <td>    0.004</td> <td>    0.030</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>76735.931</td> <th>  Durbin-Watson:     </th> <td>   2.883</td>
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th>  <td> 0.000</td>   <th>  Jarque-Bera (JB):  </th> <td>1742.843</td>
+</tr>
+<tr>
+  <th>Skew:</th>           <td>-0.485</td>   <th>  Prob(JB):          </th> <td>    0.00</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>       <td> 1.487</td>   <th>  Cond. No.          </th> <td>    6.89</td>
+</tr>
+</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</div>
+</div>
+</section>
+<section id="ACRO-OLSR">
+<h2>ACRO OLSR<a class="headerlink" href="#ACRO-OLSR" title="Link to this heading">#</a></h2>
+<p>This is an example of ordinary least squares regression using the ‘R-like’ statsmodels api, i.e. from a formula and dataframe using ACRO</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">olsr</span><span class="p">(</span><span class="n">formula</span><span class="o">=</span><span class="s2">&quot;recommend ~ children&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">new_df</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:olsr() outcome: pass; dof=12958.0 &gt;= 10
+INFO:acro:records:add(): output_8
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+                            OLS Regression Results
+==============================================================================
+Dep. Variable:              recommend   R-squared:                       0.001
+Model:                            OLS   Adj. R-squared:                  0.001
+Method:                 Least Squares   F-statistic:                     13.83
+Date:                Thu, 06 Mar 2025   Prob (F-statistic):           0.000201
+Time:                        19:39:47   Log-Likelihood:                -25121.
+No. Observations:               12960   AIC:                         5.025e+04
+Df Residuals:                   12958   BIC:                         5.026e+04
+Df Model:                           1
+Covariance Type:            nonrobust
+==============================================================================
+                 coef    std err          t      P&gt;|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept      2.2099      0.025     87.263      0.000       2.160       2.260
+children       0.0245      0.007      3.718      0.000       0.012       0.037
+==============================================================================
+Omnibus:                    77090.215   Durbin-Watson:                   2.883
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             1741.570
+Skew:                          -0.486   Prob(JB):                         0.00
+Kurtosis:                       1.489   Cond. No.                         6.90
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+                            OLS Regression Results
+==============================================================================
+Dep. Variable:              recommend   R-squared:                       0.000
+Model:                            OLS   Adj. R-squared:                  0.000
+Method:                 Least Squares   F-statistic:                     6.417
+Date:                Mon, 04 Mar 2024   Prob (F-statistic):             0.0113
+Time:                        21:21:09   Log-Likelihood:                -25124.
+No. Observations:               12960   AIC:                         5.025e+04
+Df Residuals:                   12958   BIC:                         5.027e+04
+Df Model:                           1
+Covariance Type:            nonrobust
+==============================================================================
+                 coef    std err          t      P&gt;|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept      2.2341      0.025     87.965      0.000       2.184       2.284
+children       0.0168      0.007      2.533      0.011       0.004       0.030
+==============================================================================
+Omnibus:                    76735.931   Durbin-Watson:                   2.883
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             1742.843
+Skew:                          -0.485   Prob(JB):                         0.00
+Kurtosis:                       1.487   Cond. No.                         6.89
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-Probit">
+<h2>ACRO Probit<a class="headerlink" href="#ACRO-Probit" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of probit regression using ACRO</div>
+<div class="line">We use a different combination of variables from the original dataset.</div>
+</div>
+<p>Again, we support the use of R-like formulas - because we support R</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;finance&quot;</span><span class="p">,</span> <span class="s2">&quot;children&quot;</span><span class="p">]]</span>
+<span class="n">new_df</span> <span class="o">=</span> <span class="n">new_df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">new_df</span><span class="p">[</span><span class="s2">&quot;finance&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">codes</span>  <span class="c1"># numeric</span>
+<span class="n">y</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;finance&quot;</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">new_df</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">add_constant</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">probit</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:probit() outcome: pass; dof=12958.0 &gt;= 10
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Optimization terminated successfully.
+         Current function value: 0.693145
+         Iterations 2
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:add(): output_9
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+                          Probit Regression Results
+==============================================================================
+Dep. Variable:                finance   No. Observations:                12960
+Model:                         Probit   Df Residuals:                    12958
+Method:                           MLE   Df Model:                            1
+Date:                Thu, 06 Mar 2025   Pseudo R-squ.:               3.602e-06
+Time:                        19:39:47   Log-Likelihood:                -8983.2
+converged:                       True   LL-Null:                       -8983.2
+Covariance Type:            nonrobust   LLR p-value:                    0.7992
+==============================================================================
+                 coef    std err          z      P&gt;|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+const         -0.0039      0.019     -0.207      0.836      -0.041       0.033
+children       0.0012      0.005      0.254      0.799      -0.008       0.011
+==============================================================================
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-Logit">
+<h2>ACRO Logit<a class="headerlink" href="#ACRO-Logit" title="Link to this heading">#</a></h2>
+<p>This is an example of logistic regression using ACRO using the statmodels function</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">logit</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:logit() outcome: pass; dof=12958.0 &gt;= 10
+INFO:acro:records:add(): output_10
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Optimization terminated successfully.
+         Current function value: 0.693145
+         Iterations 3
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table class="simpletable">
+<caption>Logit Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>        <td>finance</td>     <th>  No. Observations:  </th>  <td> 12960</td>
+</tr>
+<tr>
+  <th>Model:</th>                 <td>Logit</td>      <th>  Df Residuals:      </th>  <td> 12958</td>
+</tr>
+<tr>
+  <th>Method:</th>                 <td>MLE</td>       <th>  Df Model:          </th>  <td>     1</td>
+</tr>
+<tr>
+  <th>Date:</th>            <td>Thu, 06 Mar 2025</td> <th>  Pseudo R-squ.:     </th> <td>3.602e-06</td>
+</tr>
+<tr>
+  <th>Time:</th>                <td>19:39:47</td>     <th>  Log-Likelihood:    </th> <td> -8983.2</td>
+</tr>
+<tr>
+  <th>converged:</th>             <td>True</td>       <th>  LL-Null:           </th> <td> -8983.2</td>
+</tr>
+<tr>
+  <th>Covariance Type:</th>     <td>nonrobust</td>    <th>  LLR p-value:       </th>  <td>0.7992</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+      <td></td>        <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>
+</tr>
+<tr>
+  <th>const</th>    <td>   -0.0062</td> <td>    0.030</td> <td>   -0.207</td> <td> 0.836</td> <td>   -0.065</td> <td>    0.053</td>
+</tr>
+<tr>
+  <th>children</th> <td>    0.0020</td> <td>    0.008</td> <td>    0.254</td> <td> 0.799</td> <td>   -0.013</td> <td>    0.017</td>
+</tr>
+</table></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table class="simpletable">
+<caption>Logit Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>        <td>finance</td>     <th>  No. Observations:  </th>  <td> 12960</td>
+</tr>
+<tr>
+  <th>Model:</th>                 <td>Logit</td>      <th>  Df Residuals:      </th>  <td> 12958</td>
+</tr>
+<tr>
+  <th>Method:</th>                 <td>MLE</td>       <th>  Df Model:          </th>  <td>     1</td>
+</tr>
+<tr>
+  <th>Date:</th>            <td>Mon, 04 Mar 2024</td> <th>  Pseudo R-squ.:     </th> <td>1.186e-06</td>
+</tr>
+<tr>
+  <th>Time:</th>                <td>21:21:09</td>     <th>  Log-Likelihood:    </th> <td> -8983.2</td>
+</tr>
+<tr>
+  <th>converged:</th>             <td>True</td>       <th>  LL-Null:           </th> <td> -8983.2</td>
+</tr>
+<tr>
+  <th>Covariance Type:</th>     <td>nonrobust</td>    <th>  LLR p-value:       </th>  <td>0.8839</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+      <td></td>        <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>
+</tr>
+<tr>
+  <th>const</th>    <td>   -0.0036</td> <td>    0.030</td> <td>   -0.119</td> <td> 0.905</td> <td>   -0.063</td> <td>    0.056</td>
+</tr>
+<tr>
+  <th>children</th> <td>    0.0012</td> <td>    0.008</td> <td>    0.146</td> <td> 0.884</td> <td>   -0.014</td> <td>    0.017</td>
+</tr>
+</table></div>
+</div>
+</section>
+<section id="ACRO-survival-analysis">
+<h2>ACRO survival analysis<a class="headerlink" href="#ACRO-survival-analysis" title="Link to this heading">#</a></h2>
+<p>This is an example of survival tables and plots using ACRO.</p>
+<ul class="simple">
+<li><p>A dataset from statsmodels is used for the survival analysis.</p></li>
+<li><p>A subset of tha dataset is used in this example to demostrate the survival analysis.</p></li>
+<li><p>The output parameter in the surv_func define the type of output (table or plot).</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sm</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_rdataset</span><span class="p">(</span><span class="s2">&quot;flchain&quot;</span><span class="p">,</span> <span class="s2">&quot;survival&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">sex</span> <span class="o">==</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="p">:]</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">20</span><span class="p">,</span> <span class="p">:]</span>
+<span class="c1"># data.head()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">surv_func</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">futime</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">death</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;table&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 76 cells suppressed;
+INFO:acro:outcome_df:
+-----------------------------------------------------------|
+     Surv_prob    |Surv_prob_SE |num_at_risk  |num_events  |
+Time              |             |             |            |
+-----------------------------------------------------------|
+51             ok |          ok |          ok |          ok|
+69    threshold;  | threshold;  | threshold;  | threshold; |
+85    threshold;  | threshold;  | threshold;  | threshold; |
+91    threshold;  | threshold;  | threshold;  | threshold; |
+115   threshold;  | threshold;  | threshold;  | threshold; |
+372   threshold;  | threshold;  | threshold;  | threshold; |
+667   threshold;  | threshold;  | threshold;  | threshold; |
+874   threshold;  | threshold;  | threshold;  | threshold; |
+1039  threshold;  | threshold;  | threshold;  | threshold; |
+1046  threshold;  | threshold;  | threshold;  | threshold; |
+1281  threshold;  | threshold;  | threshold;  | threshold; |
+1286  threshold;  | threshold;  | threshold;  | threshold; |
+1326  threshold;  | threshold;  | threshold;  | threshold; |
+1355  threshold;  | threshold;  | threshold;  | threshold; |
+1626  threshold;  | threshold;  | threshold;  | threshold; |
+1903  threshold;  | threshold;  | threshold;  | threshold; |
+1914  threshold;  | threshold;  | threshold;  | threshold; |
+2776  threshold;  | threshold;  | threshold;  | threshold; |
+2851  threshold;  | threshold;  | threshold;  | threshold; |
+3309  threshold;  | threshold;  | threshold;  | threshold; |
+-----------------------------------------------------------|
+
+INFO:acro:records:add(): output_11
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+      Surv prob  Surv prob SE  num at risk  num events
+Time
+51         0.95      0.048734         20.0         1.0
+69          NaN           NaN          NaN         NaN
+85          NaN           NaN          NaN         NaN
+91          NaN           NaN          NaN         NaN
+115         NaN           NaN          NaN         NaN
+372         NaN           NaN          NaN         NaN
+667         NaN           NaN          NaN         NaN
+874         NaN           NaN          NaN         NaN
+1039        NaN           NaN          NaN         NaN
+1046        NaN           NaN          NaN         NaN
+1281        NaN           NaN          NaN         NaN
+1286        NaN           NaN          NaN         NaN
+1326        NaN           NaN          NaN         NaN
+1355        NaN           NaN          NaN         NaN
+1626        NaN           NaN          NaN         NaN
+1903        NaN           NaN          NaN         NaN
+1914        NaN           NaN          NaN         NaN
+2776        NaN           NaN          NaN         NaN
+2851        NaN           NaN          NaN         NaN
+3309        NaN           NaN          NaN         NaN
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_plot</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">surv_func</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">futime</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">death</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;plot&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;kaplan-mier.png&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_plot</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 76 cells suppressed;
+INFO:acro:outcome_df:
+-----------------------------------------------------------|
+     Surv_prob    |Surv_prob_SE |num_at_risk  |num_events  |
+Time              |             |             |            |
+-----------------------------------------------------------|
+51             ok |          ok |          ok |          ok|
+69    threshold;  | threshold;  | threshold;  | threshold; |
+85    threshold;  | threshold;  | threshold;  | threshold; |
+91    threshold;  | threshold;  | threshold;  | threshold; |
+115   threshold;  | threshold;  | threshold;  | threshold; |
+372   threshold;  | threshold;  | threshold;  | threshold; |
+667   threshold;  | threshold;  | threshold;  | threshold; |
+874   threshold;  | threshold;  | threshold;  | threshold; |
+1039  threshold;  | threshold;  | threshold;  | threshold; |
+1046  threshold;  | threshold;  | threshold;  | threshold; |
+1281  threshold;  | threshold;  | threshold;  | threshold; |
+1286  threshold;  | threshold;  | threshold;  | threshold; |
+1326  threshold;  | threshold;  | threshold;  | threshold; |
+1355  threshold;  | threshold;  | threshold;  | threshold; |
+1626  threshold;  | threshold;  | threshold;  | threshold; |
+1903  threshold;  | threshold;  | threshold;  | threshold; |
+1914  threshold;  | threshold;  | threshold;  | threshold; |
+2776  threshold;  | threshold;  | threshold;  | threshold; |
+2851  threshold;  | threshold;  | threshold;  | threshold; |
+3309  threshold;  | threshold;  | threshold;  | threshold; |
+-----------------------------------------------------------|
+
+INFO:acro:records:add(): output_12
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&lt;Axes: xlabel=&#39;Time&#39;&gt;, &#39;acro_artifacts/kaplan-mier_0.png&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_test-nursery_41_2.png" src="../_images/notebooks_test-nursery_41_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_test-nursery_41_3.png" src="../_images/notebooks_test-nursery_41_3.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="ACRO-functionality-to-let-users-manage-their-outputs">
+<h1>ACRO functionality to let users manage their outputs<a class="headerlink" href="#ACRO-functionality-to-let-users-manage-their-outputs" title="Link to this heading">#</a></h1>
+<section id="1:-List-current-ACRO-outputs">
+<h2>1: List current ACRO outputs<a class="headerlink" href="#1:-List-current-ACRO-outputs" title="Link to this heading">#</a></h2>
+<p>This is an example of using the print_output function to list all the outputs created so far</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">print_outputs</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+uid: output_0
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 4 cells suppressed;
+outcome: parents      great_pret  pretentious        usual
+recommend
+not_recom            ok           ok           ok
+priority             ok           ok           ok
+recommend   threshold;   threshold;   threshold;
+spec_prior           ok           ok           ok
+very_recom  threshold;            ok           ok
+output: [parents     great_pret  pretentious   usual
+recommend
+not_recom       1440.0       1440.0  1440.0
+priority         858.0       1484.0  1924.0
+recommend          NaN          NaN     NaN
+spec_prior      2022.0       1264.0   758.0
+very_recom         NaN        132.0   196.0]
+timestamp: 2025-03-06T19:39:46.897407
+comments: []
+exception:
+
+uid: output_1
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 5, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.recommend, df.parents, margins=True)
+summary: fail; threshold: 5 cells suppressed;
+outcome: parents      great_pret  pretentious        usual          All
+recommend
+not_recom            ok           ok           ok           ok
+priority             ok           ok           ok           ok
+recommend   threshold;   threshold;   threshold;   threshold;
+spec_prior           ok           ok           ok           ok
+very_recom  threshold;            ok           ok           ok
+All                  ok           ok           ok           ok
+output: [parents     great_pret  pretentious  usual    All
+recommend
+not_recom       1440.0         1440   1440   4320
+priority         858.0         1484   1924   4266
+spec_prior      2022.0         1264    758   4044
+very_recom         NaN          132    196    328
+All             4320.0         4320   4318  12958]
+timestamp: 2025-03-06T19:39:46.961631
+comments: []
+exception:
+
+uid: output_2
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.recommend, df.parents)
+summary: fail; threshold: 4 cells may need suppressing;
+outcome: parents      great_pret  pretentious        usual
+recommend
+not_recom            ok           ok           ok
+priority             ok           ok           ok
+recommend   threshold;   threshold;   threshold;
+spec_prior           ok           ok           ok
+very_recom  threshold;            ok           ok
+output: [parents     great_pret  pretentious  usual
+recommend
+not_recom         1440         1440   1440
+priority           858         1484   1924
+recommend            0            0      2
+spec_prior        2022         1264    758
+very_recom           0          132    196]
+timestamp: 2025-03-06T19:39:46.980090
+comments: []
+exception:
+
+uid: output_3
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 1, &#39;p-ratio&#39;: 4, &#39;nk-rule&#39;: 4, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 2]], &#39;p-ratio&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;nk-rule&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 1 cells suppressed; p-ratio: 4 cells suppressed; nk-rule: 4 cells suppressed;
+outcome: parents             great_pret         pretentious  \
+recommend
+not_recom                   ok                  ok
+priority                    ok                  ok
+recommend   p-ratio; nk-rule;   p-ratio; nk-rule;
+spec_prior                  ok                  ok
+very_recom  p-ratio; nk-rule;                   ok
+
+parents                             usual
+recommend
+not_recom                              ok
+priority                               ok
+recommend   threshold; p-ratio; nk-rule;
+spec_prior                             ok
+very_recom                             ok
+output: [parents     great_pret  pretentious   usual
+recommend
+not_recom       1440.0       1440.0  1440.0
+priority         858.0       1484.0  1924.0
+recommend          NaN          NaN     NaN
+spec_prior      2022.0       1264.0   758.0
+very_recom         NaN        132.0   196.0]
+timestamp: 2025-03-06T19:39:47.019919
+comments: []
+exception:
+
+uid: output_4
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 2, &#39;p-ratio&#39;: 8, &#39;nk-rule&#39;: 8, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 2], [2, 5]], &#39;p-ratio&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [4, 0], [4, 3]], &#39;nk-rule&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [4, 0], [4, 3]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 2 cells suppressed; p-ratio: 8 cells suppressed; nk-rule: 8 cells suppressed;
+outcome:                   mode_aggfunc                      \
+parents             great_pret         pretentious
+recommend
+not_recom                   ok                  ok
+priority                    ok                  ok
+recommend   p-ratio; nk-rule;   p-ratio; nk-rule;
+spec_prior                  ok                  ok
+very_recom  p-ratio; nk-rule;                   ok
+
+                                                         mean  \
+parents                             usual          great_pret
+recommend
+not_recom                              ok                  ok
+priority                               ok                  ok
+recommend   threshold; p-ratio; nk-rule;   p-ratio; nk-rule;
+spec_prior                             ok                  ok
+very_recom                             ok  p-ratio; nk-rule;
+
+
+parents            pretentious                          usual
+recommend
+not_recom                   ok                             ok
+priority                    ok                             ok
+recommend   p-ratio; nk-rule;   threshold; p-ratio; nk-rule;
+spec_prior                  ok                             ok
+very_recom                  ok                             ok
+output: [           mode_aggfunc                         mean
+parents      great_pret pretentious usual great_pret pretentious     usual
+recommend
+not_recom           2.0         1.0   1.0   3.125694    3.105556  3.074306
+priority            1.0         1.0   1.0   2.665501    3.030323  3.116944
+recommend           NaN         NaN   NaN        NaN         NaN       NaN
+spec_prior          3.0         3.0   3.0   3.353610    3.370253  3.393140
+very_recom          NaN         1.0   1.0        NaN    2.204545  2.244898]
+timestamp: 2025-03-06T19:39:47.068066
+comments: []
+exception:
+
+uid: output_5
+status: pass
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 0, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: table = acro.pivot_table(
+summary: pass
+outcome:                 mean      std
+            children children
+parents
+great_pret        ok       ok
+pretentious       ok       ok
+usual             ok       ok
+output: [                 mean       std
+             children  children
+parents
+great_pret   3.140972  2.270396
+pretentious  3.129630  2.250436
+usual        3.110648  2.213072]
+timestamp: 2025-03-06T19:39:47.105651
+comments: []
+exception:
+
+uid: output_6
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 5, &#39;p-ratio&#39;: 5, &#39;nk-rule&#39;: 5, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], &#39;p-ratio&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], &#39;nk-rule&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.pivot_table(
+summary: fail; threshold: 5 cells suppressed; p-ratio: 5 cells suppressed; nk-rule: 5 cells suppressed;
+outcome:              children                                                     \
+recommend   not_recom priority                      recommend spec_prior
+parents
+great_pret         ok       ok  threshold; p-ratio; nk-rule;          ok
+pretentious        ok       ok  threshold; p-ratio; nk-rule;          ok
+usual              ok       ok  threshold; p-ratio; nk-rule;          ok
+All                ok       ok  threshold; p-ratio; nk-rule;          ok
+
+
+recommend                       very_recom All
+parents
+great_pret   threshold; p-ratio; nk-rule;   ok
+pretentious                             ok  ok
+usual                                   ok  ok
+All                                     ok  ok
+output: [             children
+recommend   not_recom  priority spec_prior very_recom       All
+parents
+great_pret   3.125694  2.665501   3.353610        NaN  3.140972
+pretentious  3.105556  3.030323   3.370253   2.204545  3.129630
+usual        3.074306  3.116944   3.393140   2.244898  3.111626
+All          3.101852  2.996015   3.366222   2.228659  3.127412]
+timestamp: 2025-03-06T19:39:47.231513
+comments: []
+exception:
+
+uid: output_7
+status: pass
+type: regression
+properties: {&#39;method&#39;: &#39;ols&#39;, &#39;dof&#39;: 12958.0}
+sdc: {}
+command: results = acro.ols(y, x)
+summary: pass; dof=12958.0 &gt;= 10
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [                          recommend           R-squared:         0.001
+Dep. Variable:
+Model:                          OLS      Adj. R-squared:      0.001000
+Method:               Least Squares         F-statistic:     13.830000
+Date:              Thu, 06 Mar 2025  Prob (F-statistic):      0.000201
+Time:                      19:39:47      Log-Likelihood: -25121.000000
+No. Observations:             12960                 AIC:  50250.000000
+Df Residuals:                 12958                 BIC:  50260.000000
+Df Model:                         1                  NaN           NaN
+Covariance Type:          nonrobust                  NaN           NaN,             coef  std err       t  P&gt;|t|  [0.025  0.975]
+const     2.2099    0.025  87.263    0.0   2.160   2.260
+children  0.0245    0.007   3.718    0.0   0.012   0.037,                 77090.215     Durbin-Watson:    2.883
+Omnibus:
+Prob(Omnibus):      0.000  Jarque-Bera (JB):  1741.57
+Skew:              -0.486          Prob(JB):     0.00
+Kurtosis:           1.489          Cond. No.     6.90]
+timestamp: 2025-03-06T19:39:47.388052
+comments: []
+exception:
+
+uid: output_8
+status: pass
+type: regression
+properties: {&#39;method&#39;: &#39;olsr&#39;, &#39;dof&#39;: 12958.0}
+sdc: {}
+command: results = acro.olsr(formula=&#34;recommend ~ children&#34;, data=new_df)
+summary: pass; dof=12958.0 &gt;= 10
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [                          recommend           R-squared:         0.001
+Dep. Variable:
+Model:                          OLS      Adj. R-squared:      0.001000
+Method:               Least Squares         F-statistic:     13.830000
+Date:              Thu, 06 Mar 2025  Prob (F-statistic):      0.000201
+Time:                      19:39:47      Log-Likelihood: -25121.000000
+No. Observations:             12960                 AIC:  50250.000000
+Df Residuals:                 12958                 BIC:  50260.000000
+Df Model:                         1                  NaN           NaN
+Covariance Type:          nonrobust                  NaN           NaN,              coef  std err       t  P&gt;|t|  [0.025  0.975]
+Intercept  2.2099    0.025  87.263    0.0   2.160   2.260
+children   0.0245    0.007   3.718    0.0   0.012   0.037,                 77090.215     Durbin-Watson:    2.883
+Omnibus:
+Prob(Omnibus):      0.000  Jarque-Bera (JB):  1741.57
+Skew:              -0.486          Prob(JB):     0.00
+Kurtosis:           1.489          Cond. No.     6.90]
+timestamp: 2025-03-06T19:39:47.414293
+comments: []
+exception:
+
+uid: output_9
+status: pass
+type: regression
+properties: {&#39;method&#39;: &#39;probit&#39;, &#39;dof&#39;: 12958.0}
+sdc: {}
+command: results = acro.probit(y, x)
+summary: pass; dof=12958.0 &gt;= 10
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [                           finance No. Observations:         12960
+Dep. Variable:
+Model:                      Probit     Df Residuals:  12958.000000
+Method:                        MLE         Df Model:      1.000000
+Date:             Thu, 06 Mar 2025    Pseudo R-squ.:      0.000004
+Time:                     19:39:47   Log-Likelihood:  -8983.200000
+converged:                    True          LL-Null:  -8983.200000
+Covariance Type:         nonrobust      LLR p-value:      0.799200,             coef  std err      z  P&gt;|z|  [0.025  0.975]
+const    -0.0039    0.019 -0.207  0.836  -0.041   0.033
+children  0.0012    0.005  0.254  0.799  -0.008   0.011]
+timestamp: 2025-03-06T19:39:47.439598
+comments: []
+exception:
+
+uid: output_10
+status: pass
+type: regression
+properties: {&#39;method&#39;: &#39;logit&#39;, &#39;dof&#39;: 12958.0}
+sdc: {}
+command: results = acro.logit(y, x)
+summary: pass; dof=12958.0 &gt;= 10
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [                           finance No. Observations:         12960
+Dep. Variable:
+Model:                       Logit     Df Residuals:  12958.000000
+Method:                        MLE         Df Model:      1.000000
+Date:             Thu, 06 Mar 2025    Pseudo R-squ.:      0.000004
+Time:                     19:39:47   Log-Likelihood:  -8983.200000
+converged:                    True          LL-Null:  -8983.200000
+Covariance Type:         nonrobust      LLR p-value:      0.799200,             coef  std err      z  P&gt;|z|  [0.025  0.975]
+const    -0.0062    0.030 -0.207  0.836  -0.065   0.053
+children  0.0020    0.008  0.254  0.799  -0.013   0.017]
+timestamp: 2025-03-06T19:39:47.457696
+comments: []
+exception:
+
+uid: output_11
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;surv_func&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 76, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[1, 0], [1, 1], [1, 2], [1, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3], [4, 0], [4, 1], [4, 2], [4, 3], [5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1], [6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3], [8, 0], [8, 1], [8, 2], [8, 3], [9, 0], [9, 1], [9, 2], [9, 3], [10, 0], [10, 1], [10, 2], [10, 3], [11, 0], [11, 1], [11, 2], [11, 3], [12, 0], [12, 1], [12, 2], [12, 3], [13, 0], [13, 1], [13, 2], [13, 3], [14, 0], [14, 1], [14, 2], [14, 3], [15, 0], [15, 1], [15, 2], [15, 3], [16, 0], [16, 1], [16, 2], [16, 3], [17, 0], [17, 1], [17, 2], [17, 3], [18, 0], [18, 1], [18, 2], [18, 3], [19, 0], [19, 1], [19, 2], [19, 3]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.surv_func(data.futime, data.death, output=&#34;table&#34;)
+summary: fail; threshold: 76 cells suppressed;
+outcome:         Surv_prob Surv_prob_SE  num_at_risk   num_events
+Time
+51             ok           ok           ok           ok
+69    threshold;   threshold;   threshold;   threshold;
+85    threshold;   threshold;   threshold;   threshold;
+91    threshold;   threshold;   threshold;   threshold;
+115   threshold;   threshold;   threshold;   threshold;
+372   threshold;   threshold;   threshold;   threshold;
+667   threshold;   threshold;   threshold;   threshold;
+874   threshold;   threshold;   threshold;   threshold;
+1039  threshold;   threshold;   threshold;   threshold;
+1046  threshold;   threshold;   threshold;   threshold;
+1281  threshold;   threshold;   threshold;   threshold;
+1286  threshold;   threshold;   threshold;   threshold;
+1326  threshold;   threshold;   threshold;   threshold;
+1355  threshold;   threshold;   threshold;   threshold;
+1626  threshold;   threshold;   threshold;   threshold;
+1903  threshold;   threshold;   threshold;   threshold;
+1914  threshold;   threshold;   threshold;   threshold;
+2776  threshold;   threshold;   threshold;   threshold;
+2851  threshold;   threshold;   threshold;   threshold;
+3309  threshold;   threshold;   threshold;   threshold;
+output: [      Surv prob  Surv prob SE  num at risk  num events
+Time
+51         0.95      0.048734         20.0         1.0
+69          NaN           NaN          NaN         NaN
+85          NaN           NaN          NaN         NaN
+91          NaN           NaN          NaN         NaN
+115         NaN           NaN          NaN         NaN
+372         NaN           NaN          NaN         NaN
+667         NaN           NaN          NaN         NaN
+874         NaN           NaN          NaN         NaN
+1039        NaN           NaN          NaN         NaN
+1046        NaN           NaN          NaN         NaN
+1281        NaN           NaN          NaN         NaN
+1286        NaN           NaN          NaN         NaN
+1326        NaN           NaN          NaN         NaN
+1355        NaN           NaN          NaN         NaN
+1626        NaN           NaN          NaN         NaN
+1903        NaN           NaN          NaN         NaN
+1914        NaN           NaN          NaN         NaN
+2776        NaN           NaN          NaN         NaN
+2851        NaN           NaN          NaN         NaN
+3309        NaN           NaN          NaN         NaN]
+timestamp: 2025-03-06T19:39:48.298262
+comments: []
+exception:
+
+uid: output_12
+status: fail
+type: survival plot
+properties: {&#39;method&#39;: &#39;surv_func&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 76, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[1, 0], [1, 1], [1, 2], [1, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3], [4, 0], [4, 1], [4, 2], [4, 3], [5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1], [6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3], [8, 0], [8, 1], [8, 2], [8, 3], [9, 0], [9, 1], [9, 2], [9, 3], [10, 0], [10, 1], [10, 2], [10, 3], [11, 0], [11, 1], [11, 2], [11, 3], [12, 0], [12, 1], [12, 2], [12, 3], [13, 0], [13, 1], [13, 2], [13, 3], [14, 0], [14, 1], [14, 2], [14, 3], [15, 0], [15, 1], [15, 2], [15, 3], [16, 0], [16, 1], [16, 2], [16, 3], [17, 0], [17, 1], [17, 2], [17, 3], [18, 0], [18, 1], [18, 2], [18, 3], [19, 0], [19, 1], [19, 2], [19, 3]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_plot = acro.surv_func(
+summary: fail; threshold: 76 cells suppressed;
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;acro_artifacts/kaplan-mier_0.png&#39;]
+timestamp: 2025-03-06T19:39:48.450221
+comments: []
+exception:
+
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#39;uid: output_0\nstatus: fail\ntype: table\nproperties: {\&#39;method\&#39;: \&#39;crosstab\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: True, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 4, \&#39;p-ratio\&#39;: 0, \&#39;nk-rule\&#39;: 0, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], \&#39;p-ratio\&#39;: [], \&#39;nk-rule\&#39;: [], \&#39;all-values-are-same\&#39;: []}}\ncommand: safe_table = acro.crosstab(\nsummary: fail; threshold: 4 cells suppressed; \noutcome: parents      great_pret  pretentious        usual\nrecommend                                        \nnot_recom            ok           ok           ok\npriority             ok           ok           ok\nrecommend   threshold;   threshold;   threshold; \nspec_prior           ok           ok           ok\nvery_recom  threshold;            ok           ok\noutput: [parents     great_pret  pretentious   usual\nrecommend                                  \nnot_recom       1440.0       1440.0  1440.0\npriority         858.0       1484.0  1924.0\nrecommend          NaN          NaN     NaN\nspec_prior      2022.0       1264.0   758.0\nvery_recom         NaN        132.0   196.0]\ntimestamp: 2025-03-06T19:39:46.897407\ncomments: []\nexception: \n\nuid: output_1\nstatus: fail\ntype: table\nproperties: {\&#39;method\&#39;: \&#39;crosstab\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: True, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 5, \&#39;p-ratio\&#39;: 0, \&#39;nk-rule\&#39;: 0, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [4, 0]], \&#39;p-ratio\&#39;: [], \&#39;nk-rule\&#39;: [], \&#39;all-values-are-same\&#39;: []}}\ncommand: safe_table = acro.crosstab(df.recommend, df.parents, margins=True)\nsummary: fail; threshold: 5 cells suppressed; \noutcome: parents      great_pret  pretentious        usual          All\nrecommend                                                     \nnot_recom            ok           ok           ok           ok\npriority             ok           ok           ok           ok\nrecommend   threshold;   threshold;   threshold;   threshold; \nspec_prior           ok           ok           ok           ok\nvery_recom  threshold;            ok           ok           ok\nAll                  ok           ok           ok           ok\noutput: [parents     great_pret  pretentious  usual    All\nrecommend                                        \nnot_recom       1440.0         1440   1440   4320\npriority         858.0         1484   1924   4266\nspec_prior      2022.0         1264    758   4044\nvery_recom         NaN          132    196    328\nAll             4320.0         4320   4318  12958]\ntimestamp: 2025-03-06T19:39:46.961631\ncomments: []\nexception: \n\nuid: output_2\nstatus: fail\ntype: table\nproperties: {\&#39;method\&#39;: \&#39;crosstab\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: False, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 4, \&#39;p-ratio\&#39;: 0, \&#39;nk-rule\&#39;: 0, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], \&#39;p-ratio\&#39;: [], \&#39;nk-rule\&#39;: [], \&#39;all-values-are-same\&#39;: []}}\ncommand: safe_table = acro.crosstab(df.recommend, df.parents)\nsummary: fail; threshold: 4 cells may need suppressing; \noutcome: parents      great_pret  pretentious        usual\nrecommend                                        \nnot_recom            ok           ok           ok\npriority             ok           ok           ok\nrecommend   threshold;   threshold;   threshold; \nspec_prior           ok           ok           ok\nvery_recom  threshold;            ok           ok\noutput: [parents     great_pret  pretentious  usual\nrecommend                                 \nnot_recom         1440         1440   1440\npriority           858         1484   1924\nrecommend            0            0      2\nspec_prior        2022         1264    758\nvery_recom           0          132    196]\ntimestamp: 2025-03-06T19:39:46.980090\ncomments: []\nexception: \n\nuid: output_3\nstatus: fail\ntype: table\nproperties: {\&#39;method\&#39;: \&#39;crosstab\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: True, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 1, \&#39;p-ratio\&#39;: 4, \&#39;nk-rule\&#39;: 4, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [[2, 2]], \&#39;p-ratio\&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], \&#39;nk-rule\&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], \&#39;all-values-are-same\&#39;: []}}\ncommand: safe_table = acro.crosstab(\nsummary: fail; threshold: 1 cells suppressed; p-ratio: 4 cells suppressed; nk-rule: 4 cells suppressed; \noutcome: parents             great_pret         pretentious  \\\nrecommend                                            \nnot_recom                   ok                  ok   \npriority                    ok                  ok   \nrecommend   p-ratio; nk-rule;   p-ratio; nk-rule;    \nspec_prior                  ok                  ok   \nvery_recom  p-ratio; nk-rule;                   ok   \n\nparents                             usual  \nrecommend                                  \nnot_recom                              ok  \npriority                               ok  \nrecommend   threshold; p-ratio; nk-rule;   \nspec_prior                             ok  \nvery_recom                             ok  \noutput: [parents     great_pret  pretentious   usual\nrecommend                                  \nnot_recom       1440.0       1440.0  1440.0\npriority         858.0       1484.0  1924.0\nrecommend          NaN          NaN     NaN\nspec_prior      2022.0       1264.0   758.0\nvery_recom         NaN        132.0   196.0]\ntimestamp: 2025-03-06T19:39:47.019919\ncomments: []\nexception: \n\nuid: output_4\nstatus: fail\ntype: table\nproperties: {\&#39;method\&#39;: \&#39;crosstab\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: True, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 2, \&#39;p-ratio\&#39;: 8, \&#39;nk-rule\&#39;: 8, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [[2, 2], [2, 5]], \&#39;p-ratio\&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [4, 0], [4, 3]], \&#39;nk-rule\&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [4, 0], [4, 3]], \&#39;all-values-are-same\&#39;: []}}\ncommand: safe_table = acro.crosstab(\nsummary: fail; threshold: 2 cells suppressed; p-ratio: 8 cells suppressed; nk-rule: 8 cells suppressed; \noutcome:                   mode_aggfunc                      \\\nparents             great_pret         pretentious   \nrecommend                                            \nnot_recom                   ok                  ok   \npriority                    ok                  ok   \nrecommend   p-ratio; nk-rule;   p-ratio; nk-rule;    \nspec_prior                  ok                  ok   \nvery_recom  p-ratio; nk-rule;                   ok   \n\n                                                         mean  \\\nparents                             usual          great_pret   \nrecommend                                                       \nnot_recom                              ok                  ok   \npriority                               ok                  ok   \nrecommend   threshold; p-ratio; nk-rule;   p-ratio; nk-rule;    \nspec_prior                             ok                  ok   \nvery_recom                             ok  p-ratio; nk-rule;    \n\n                                                               \nparents            pretentious                          usual  \nrecommend                                                      \nnot_recom                   ok                             ok  \npriority                    ok                             ok  \nrecommend   p-ratio; nk-rule;   threshold; p-ratio; nk-rule;   \nspec_prior                  ok                             ok  \nvery_recom                  ok                             ok  \noutput: [           mode_aggfunc                         mean                      \nparents      great_pret pretentious usual great_pret pretentious     usual\nrecommend                                                                 \nnot_recom           2.0         1.0   1.0   3.125694    3.105556  3.074306\npriority            1.0         1.0   1.0   2.665501    3.030323  3.116944\nrecommend           NaN         NaN   NaN        NaN         NaN       NaN\nspec_prior          3.0         3.0   3.0   3.353610    3.370253  3.393140\nvery_recom          NaN         1.0   1.0        NaN    2.204545  2.244898]\ntimestamp: 2025-03-06T19:39:47.068066\ncomments: []\nexception: \n\nuid: output_5\nstatus: pass\ntype: table\nproperties: {\&#39;method\&#39;: \&#39;pivot_table\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: True, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 0, \&#39;p-ratio\&#39;: 0, \&#39;nk-rule\&#39;: 0, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [], \&#39;p-ratio\&#39;: [], \&#39;nk-rule\&#39;: [], \&#39;all-values-are-same\&#39;: []}}\ncommand: table = acro.pivot_table(\nsummary: pass\noutcome:                 mean      std\n            children children\nparents                      \ngreat_pret        ok       ok\npretentious       ok       ok\nusual             ok       ok\noutput: [                 mean       std\n             children  children\nparents                        \ngreat_pret   3.140972  2.270396\npretentious  3.129630  2.250436\nusual        3.110648  2.213072]\ntimestamp: 2025-03-06T19:39:47.105651\ncomments: []\nexception: \n\nuid: output_6\nstatus: fail\ntype: table\nproperties: {\&#39;method\&#39;: \&#39;pivot_table\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: True, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 5, \&#39;p-ratio\&#39;: 5, \&#39;nk-rule\&#39;: 5, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], \&#39;p-ratio\&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], \&#39;nk-rule\&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], \&#39;all-values-are-same\&#39;: []}}\ncommand: safe_table = acro.pivot_table(\nsummary: fail; threshold: 5 cells suppressed; p-ratio: 5 cells suppressed; nk-rule: 5 cells suppressed; \noutcome:              children                                                     \\\nrecommend   not_recom priority                      recommend spec_prior   \nparents                                                                    \ngreat_pret         ok       ok  threshold; p-ratio; nk-rule;          ok   \npretentious        ok       ok  threshold; p-ratio; nk-rule;          ok   \nusual              ok       ok  threshold; p-ratio; nk-rule;          ok   \nAll                ok       ok  threshold; p-ratio; nk-rule;          ok   \n\n                                                \nrecommend                       very_recom All  \nparents                                         \ngreat_pret   threshold; p-ratio; nk-rule;   ok  \npretentious                             ok  ok  \nusual                                   ok  ok  \nAll                                     ok  ok  \noutput: [             children                                          \nrecommend   not_recom  priority spec_prior very_recom       All\nparents                                                        \ngreat_pret   3.125694  2.665501   3.353610        NaN  3.140972\npretentious  3.105556  3.030323   3.370253   2.204545  3.129630\nusual        3.074306  3.116944   3.393140   2.244898  3.111626\nAll          3.101852  2.996015   3.366222   2.228659  3.127412]\ntimestamp: 2025-03-06T19:39:47.231513\ncomments: []\nexception: \n\nuid: output_7\nstatus: pass\ntype: regression\nproperties: {\&#39;method\&#39;: \&#39;ols\&#39;, \&#39;dof\&#39;: 12958.0}\nsdc: {}\ncommand: results = acro.ols(y, x)\nsummary: pass; dof=12958.0 &gt;= 10\noutcome: Empty DataFrame\nColumns: []\nIndex: []\noutput: [                          recommend           R-squared:         0.001\nDep. Variable:                                                        \nModel:                          OLS      Adj. R-squared:      0.001000\nMethod:               Least Squares         F-statistic:     13.830000\nDate:              Thu, 06 Mar 2025  Prob (F-statistic):      0.000201\nTime:                      19:39:47      Log-Likelihood: -25121.000000\nNo. Observations:             12960                 AIC:  50250.000000\nDf Residuals:                 12958                 BIC:  50260.000000\nDf Model:                         1                  NaN           NaN\nCovariance Type:          nonrobust                  NaN           NaN,             coef  std err       t  P&gt;|t|  [0.025  0.975]\nconst     2.2099    0.025  87.263    0.0   2.160   2.260\nchildren  0.0245    0.007   3.718    0.0   0.012   0.037,                 77090.215     Durbin-Watson:    2.883\nOmnibus:                                             \nProb(Omnibus):      0.000  Jarque-Bera (JB):  1741.57\nSkew:              -0.486          Prob(JB):     0.00\nKurtosis:           1.489          Cond. No.     6.90]\ntimestamp: 2025-03-06T19:39:47.388052\ncomments: []\nexception: \n\nuid: output_8\nstatus: pass\ntype: regression\nproperties: {\&#39;method\&#39;: \&#39;olsr\&#39;, \&#39;dof\&#39;: 12958.0}\nsdc: {}\ncommand: results = acro.olsr(formula=&#34;recommend ~ children&#34;, data=new_df)\nsummary: pass; dof=12958.0 &gt;= 10\noutcome: Empty DataFrame\nColumns: []\nIndex: []\noutput: [                          recommend           R-squared:         0.001\nDep. Variable:                                                        \nModel:                          OLS      Adj. R-squared:      0.001000\nMethod:               Least Squares         F-statistic:     13.830000\nDate:              Thu, 06 Mar 2025  Prob (F-statistic):      0.000201\nTime:                      19:39:47      Log-Likelihood: -25121.000000\nNo. Observations:             12960                 AIC:  50250.000000\nDf Residuals:                 12958                 BIC:  50260.000000\nDf Model:                         1                  NaN           NaN\nCovariance Type:          nonrobust                  NaN           NaN,              coef  std err       t  P&gt;|t|  [0.025  0.975]\nIntercept  2.2099    0.025  87.263    0.0   2.160   2.260\nchildren   0.0245    0.007   3.718    0.0   0.012   0.037,                 77090.215     Durbin-Watson:    2.883\nOmnibus:                                             \nProb(Omnibus):      0.000  Jarque-Bera (JB):  1741.57\nSkew:              -0.486          Prob(JB):     0.00\nKurtosis:           1.489          Cond. No.     6.90]\ntimestamp: 2025-03-06T19:39:47.414293\ncomments: []\nexception: \n\nuid: output_9\nstatus: pass\ntype: regression\nproperties: {\&#39;method\&#39;: \&#39;probit\&#39;, \&#39;dof\&#39;: 12958.0}\nsdc: {}\ncommand: results = acro.probit(y, x)\nsummary: pass; dof=12958.0 &gt;= 10\noutcome: Empty DataFrame\nColumns: []\nIndex: []\noutput: [                           finance No. Observations:         12960\nDep. Variable:                                                    \nModel:                      Probit     Df Residuals:  12958.000000\nMethod:                        MLE         Df Model:      1.000000\nDate:             Thu, 06 Mar 2025    Pseudo R-squ.:      0.000004\nTime:                     19:39:47   Log-Likelihood:  -8983.200000\nconverged:                    True          LL-Null:  -8983.200000\nCovariance Type:         nonrobust      LLR p-value:      0.799200,             coef  std err      z  P&gt;|z|  [0.025  0.975]\nconst    -0.0039    0.019 -0.207  0.836  -0.041   0.033\nchildren  0.0012    0.005  0.254  0.799  -0.008   0.011]\ntimestamp: 2025-03-06T19:39:47.439598\ncomments: []\nexception: \n\nuid: output_10\nstatus: pass\ntype: regression\nproperties: {\&#39;method\&#39;: \&#39;logit\&#39;, \&#39;dof\&#39;: 12958.0}\nsdc: {}\ncommand: results = acro.logit(y, x)\nsummary: pass; dof=12958.0 &gt;= 10\noutcome: Empty DataFrame\nColumns: []\nIndex: []\noutput: [                           finance No. Observations:         12960\nDep. Variable:                                                    \nModel:                       Logit     Df Residuals:  12958.000000\nMethod:                        MLE         Df Model:      1.000000\nDate:             Thu, 06 Mar 2025    Pseudo R-squ.:      0.000004\nTime:                     19:39:47   Log-Likelihood:  -8983.200000\nconverged:                    True          LL-Null:  -8983.200000\nCovariance Type:         nonrobust      LLR p-value:      0.799200,             coef  std err      z  P&gt;|z|  [0.025  0.975]\nconst    -0.0062    0.030 -0.207  0.836  -0.065   0.053\nchildren  0.0020    0.008  0.254  0.799  -0.013   0.017]\ntimestamp: 2025-03-06T19:39:47.457696\ncomments: []\nexception: \n\nuid: output_11\nstatus: fail\ntype: table\nproperties: {\&#39;method\&#39;: \&#39;surv_func\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: True, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 76, \&#39;p-ratio\&#39;: 0, \&#39;nk-rule\&#39;: 0, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [[1, 0], [1, 1], [1, 2], [1, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3], [4, 0], [4, 1], [4, 2], [4, 3], [5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1], [6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3], [8, 0], [8, 1], [8, 2], [8, 3], [9, 0], [9, 1], [9, 2], [9, 3], [10, 0], [10, 1], [10, 2], [10, 3], [11, 0], [11, 1], [11, 2], [11, 3], [12, 0], [12, 1], [12, 2], [12, 3], [13, 0], [13, 1], [13, 2], [13, 3], [14, 0], [14, 1], [14, 2], [14, 3], [15, 0], [15, 1], [15, 2], [15, 3], [16, 0], [16, 1], [16, 2], [16, 3], [17, 0], [17, 1], [17, 2], [17, 3], [18, 0], [18, 1], [18, 2], [18, 3], [19, 0], [19, 1], [19, 2], [19, 3]], \&#39;p-ratio\&#39;: [], \&#39;nk-rule\&#39;: [], \&#39;all-values-are-same\&#39;: []}}\ncommand: safe_table = acro.surv_func(data.futime, data.death, output=&#34;table&#34;)\nsummary: fail; threshold: 76 cells suppressed; \noutcome:         Surv_prob Surv_prob_SE  num_at_risk   num_events\nTime                                                    \n51             ok           ok           ok           ok\n69    threshold;   threshold;   threshold;   threshold; \n85    threshold;   threshold;   threshold;   threshold; \n91    threshold;   threshold;   threshold;   threshold; \n115   threshold;   threshold;   threshold;   threshold; \n372   threshold;   threshold;   threshold;   threshold; \n667   threshold;   threshold;   threshold;   threshold; \n874   threshold;   threshold;   threshold;   threshold; \n1039  threshold;   threshold;   threshold;   threshold; \n1046  threshold;   threshold;   threshold;   threshold; \n1281  threshold;   threshold;   threshold;   threshold; \n1286  threshold;   threshold;   threshold;   threshold; \n1326  threshold;   threshold;   threshold;   threshold; \n1355  threshold;   threshold;   threshold;   threshold; \n1626  threshold;   threshold;   threshold;   threshold; \n1903  threshold;   threshold;   threshold;   threshold; \n1914  threshold;   threshold;   threshold;   threshold; \n2776  threshold;   threshold;   threshold;   threshold; \n2851  threshold;   threshold;   threshold;   threshold; \n3309  threshold;   threshold;   threshold;   threshold; \noutput: [      Surv prob  Surv prob SE  num at risk  num events\nTime                                                  \n51         0.95      0.048734         20.0         1.0\n69          NaN           NaN          NaN         NaN\n85          NaN           NaN          NaN         NaN\n91          NaN           NaN          NaN         NaN\n115         NaN           NaN          NaN         NaN\n372         NaN           NaN          NaN         NaN\n667         NaN           NaN          NaN         NaN\n874         NaN           NaN          NaN         NaN\n1039        NaN           NaN          NaN         NaN\n1046        NaN           NaN          NaN         NaN\n1281        NaN           NaN          NaN         NaN\n1286        NaN           NaN          NaN         NaN\n1326        NaN           NaN          NaN         NaN\n1355        NaN           NaN          NaN         NaN\n1626        NaN           NaN          NaN         NaN\n1903        NaN           NaN          NaN         NaN\n1914        NaN           NaN          NaN         NaN\n2776        NaN           NaN          NaN         NaN\n2851        NaN           NaN          NaN         NaN\n3309        NaN           NaN          NaN         NaN]\ntimestamp: 2025-03-06T19:39:48.298262\ncomments: []\nexception: \n\nuid: output_12\nstatus: fail\ntype: survival plot\nproperties: {\&#39;method\&#39;: \&#39;surv_func\&#39;}\nsdc: {\&#39;summary\&#39;: {\&#39;suppressed\&#39;: True, \&#39;negative\&#39;: 0, \&#39;missing\&#39;: 0, \&#39;threshold\&#39;: 76, \&#39;p-ratio\&#39;: 0, \&#39;nk-rule\&#39;: 0, \&#39;all-values-are-same\&#39;: 0}, \&#39;cells\&#39;: {\&#39;negative\&#39;: [], \&#39;missing\&#39;: [], \&#39;threshold\&#39;: [[1, 0], [1, 1], [1, 2], [1, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3], [4, 0], [4, 1], [4, 2], [4, 3], [5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1], [6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3], [8, 0], [8, 1], [8, 2], [8, 3], [9, 0], [9, 1], [9, 2], [9, 3], [10, 0], [10, 1], [10, 2], [10, 3], [11, 0], [11, 1], [11, 2], [11, 3], [12, 0], [12, 1], [12, 2], [12, 3], [13, 0], [13, 1], [13, 2], [13, 3], [14, 0], [14, 1], [14, 2], [14, 3], [15, 0], [15, 1], [15, 2], [15, 3], [16, 0], [16, 1], [16, 2], [16, 3], [17, 0], [17, 1], [17, 2], [17, 3], [18, 0], [18, 1], [18, 2], [18, 3], [19, 0], [19, 1], [19, 2], [19, 3]], \&#39;p-ratio\&#39;: [], \&#39;nk-rule\&#39;: [], \&#39;all-values-are-same\&#39;: []}}\ncommand: safe_plot = acro.surv_func(\nsummary: fail; threshold: 76 cells suppressed; \noutcome: Empty DataFrame\nColumns: []\nIndex: []\noutput: [\&#39;acro_artifacts/kaplan-mier_0.png\&#39;]\ntimestamp: 2025-03-06T19:39:48.450221\ncomments: []\nexception: \n\n&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="2:-Remove-some-ACRO-outputs-before-finalising">
+<h2>2: Remove some ACRO outputs before finalising<a class="headerlink" href="#2:-Remove-some-ACRO-outputs-before-finalising" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of deleting some of the ACRO outputs.</div>
+<div class="line">The name of the output that needs to be removed should be passed to the function remove_output.</div>
+</div>
+<ul class="simple">
+<li><p>Currently, all outputs names contain timestamp; that is the time when the output was created.</p></li>
+<li><p>The output name can be taken from the outputs listed by the print_outputs function,</p></li>
+<li><p>or by listing the results and choosing the specific output that needs to be removed</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">remove_output</span><span class="p">(</span><span class="s2">&quot;output_0&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:remove(): output_0 removed
+</pre></div></div>
+</div>
+</section>
+<section id="3:-Rename-ACRO-outputs-before-finalising">
+<h2>3: Rename ACRO outputs before finalising<a class="headerlink" href="#3:-Rename-ACRO-outputs-before-finalising" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of renaming the outputs to provide a more descriptive name.</div>
+<div class="line">The timestamp associated with the output name will not get overwritten</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">rename_output</span><span class="p">(</span><span class="s2">&quot;output_2&quot;</span><span class="p">,</span> <span class="s2">&quot;pivot_table&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:rename_output(): output_2 renamed to pivot_table
+</pre></div></div>
+</div>
+</section>
+<section id="4:-Add-a-comment-to-output">
+<h2>4: Add a comment to output<a class="headerlink" href="#4:-Add-a-comment-to-output" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example to add a comment to outputs.</div>
+<div class="line">It can be used to provide a description or to pass additional information to the output checkers.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">add_comments</span><span class="p">(</span><span class="s2">&quot;output_1&quot;</span><span class="p">,</span> <span class="s2">&quot;Please let me have this data.&quot;</span><span class="p">)</span>
+<span class="n">acro</span><span class="o">.</span><span class="n">add_comments</span><span class="p">(</span><span class="s2">&quot;output_1&quot;</span><span class="p">,</span> <span class="s2">&quot;6 cells were suppressed in this table&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:a comment was added to output_1
+INFO:acro:records:a comment was added to output_1
+</pre></div></div>
+</div>
+</section>
+<section id="5:-Add-an-unsupported-output-to-the-list-of-outputs">
+<h2>5: Add an unsupported output to the list of outputs<a class="headerlink" href="#5:-Add-an-unsupported-output-to-the-list-of-outputs" title="Link to this heading">#</a></h2>
+<p>This is an example to add an unsupported outputs (such as images) to the list of outputs</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">custom_output</span><span class="p">(</span>
+    <span class="s2">&quot;XandY.jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;This output is an image showing the relationship between X and Y&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:add_custom(): output_13
+</pre></div></div>
+</div>
+<section id="6:-(the-big-one)-Finalise-ACRO">
+<h3>6: (the big one) Finalise ACRO<a class="headerlink" href="#6:-(the-big-one)-Finalise-ACRO" title="Link to this heading">#</a></h3>
+<p>This is an example of the function <em>finalise()</em> which the users must call at the end of each session.</p>
+<ul class="simple">
+<li><p>It takes each output and saves it to a CSV file.</p></li>
+<li><p>It also saves the SDC analysis for each output to a json file or Excel file
+(depending on the extension of the name of the file provided as an input to the function)</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span><span class="s2">&quot;NURSERY&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_1
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 5, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.recommend, df.parents, margins=True)
+summary: fail; threshold: 5 cells suppressed;
+outcome: parents      great_pret  pretentious        usual          All
+recommend
+not_recom            ok           ok           ok           ok
+priority             ok           ok           ok           ok
+recommend   threshold;   threshold;   threshold;   threshold;
+spec_prior           ok           ok           ok           ok
+very_recom  threshold;            ok           ok           ok
+All                  ok           ok           ok           ok
+output: [parents     great_pret  pretentious  usual    All
+recommend
+not_recom       1440.0         1440   1440   4320
+priority         858.0         1484   1924   4266
+spec_prior      2022.0         1264    758   4044
+very_recom         NaN          132    196    328
+All             4320.0         4320   4318  12958]
+timestamp: 2025-03-06T19:39:46.961631
+comments: [&#39;Please let me have this data.&#39;, &#39;6 cells were suppressed in this table&#39;]
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ suppressed
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_3
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 1, &#39;p-ratio&#39;: 4, &#39;nk-rule&#39;: 4, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 2]], &#39;p-ratio&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;nk-rule&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 1 cells suppressed; p-ratio: 4 cells suppressed; nk-rule: 4 cells suppressed;
+outcome: parents             great_pret         pretentious  \
+recommend
+not_recom                   ok                  ok
+priority                    ok                  ok
+recommend   p-ratio; nk-rule;   p-ratio; nk-rule;
+spec_prior                  ok                  ok
+very_recom  p-ratio; nk-rule;                   ok
+
+parents                             usual
+recommend
+not_recom                              ok
+priority                               ok
+recommend   threshold; p-ratio; nk-rule;
+spec_prior                             ok
+very_recom                             ok
+output: [parents     great_pret  pretentious   usual
+recommend
+not_recom       1440.0       1440.0  1440.0
+priority         858.0       1484.0  1924.0
+recommend          NaN          NaN     NaN
+spec_prior      2022.0       1264.0   758.0
+very_recom         NaN        132.0   196.0]
+timestamp: 2025-03-06T19:39:47.019919
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ exception requested
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_4
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 2, &#39;p-ratio&#39;: 8, &#39;nk-rule&#39;: 8, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 2], [2, 5]], &#39;p-ratio&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [4, 0], [4, 3]], &#39;nk-rule&#39;: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [4, 0], [4, 3]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 2 cells suppressed; p-ratio: 8 cells suppressed; nk-rule: 8 cells suppressed;
+outcome:                   mode_aggfunc                      \
+parents             great_pret         pretentious
+recommend
+not_recom                   ok                  ok
+priority                    ok                  ok
+recommend   p-ratio; nk-rule;   p-ratio; nk-rule;
+spec_prior                  ok                  ok
+very_recom  p-ratio; nk-rule;                   ok
+
+                                                         mean  \
+parents                             usual          great_pret
+recommend
+not_recom                              ok                  ok
+priority                               ok                  ok
+recommend   threshold; p-ratio; nk-rule;   p-ratio; nk-rule;
+spec_prior                             ok                  ok
+very_recom                             ok  p-ratio; nk-rule;
+
+
+parents            pretentious                          usual
+recommend
+not_recom                   ok                             ok
+priority                    ok                             ok
+recommend   p-ratio; nk-rule;   threshold; p-ratio; nk-rule;
+spec_prior                  ok                             ok
+very_recom                  ok                             ok
+output: [           mode_aggfunc                         mean
+parents      great_pret pretentious usual great_pret pretentious     usual
+recommend
+not_recom           2.0         1.0   1.0   3.125694    3.105556  3.074306
+priority            1.0         1.0   1.0   2.665501    3.030323  3.116944
+recommend           NaN         NaN   NaN        NaN         NaN       NaN
+spec_prior          3.0         3.0   3.0   3.353610    3.370253  3.393140
+very_recom          NaN         1.0   1.0        NaN    2.204545  2.244898]
+timestamp: 2025-03-06T19:39:47.068066
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ exception requested
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_6
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;pivot_table&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 5, &#39;p-ratio&#39;: 5, &#39;nk-rule&#39;: 5, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], &#39;p-ratio&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], &#39;nk-rule&#39;: [[0, 2], [0, 4], [1, 2], [2, 2], [3, 2]], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.pivot_table(
+summary: fail; threshold: 5 cells suppressed; p-ratio: 5 cells suppressed; nk-rule: 5 cells suppressed;
+outcome:              children                                                     \
+recommend   not_recom priority                      recommend spec_prior
+parents
+great_pret         ok       ok  threshold; p-ratio; nk-rule;          ok
+pretentious        ok       ok  threshold; p-ratio; nk-rule;          ok
+usual              ok       ok  threshold; p-ratio; nk-rule;          ok
+All                ok       ok  threshold; p-ratio; nk-rule;          ok
+
+
+recommend                       very_recom All
+parents
+great_pret   threshold; p-ratio; nk-rule;   ok
+pretentious                             ok  ok
+usual                                   ok  ok
+All                                     ok  ok
+output: [             children
+recommend   not_recom  priority spec_prior very_recom       All
+parents
+great_pret   3.125694  2.665501   3.353610        NaN  3.140972
+pretentious  3.105556  3.030323   3.370253   2.204545  3.129630
+usual        3.074306  3.116944   3.393140   2.244898  3.111626
+All          3.101852  2.996015   3.366222   2.228659  3.127412]
+timestamp: 2025-03-06T19:39:47.231513
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ some reason
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_11
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;surv_func&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 76, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[1, 0], [1, 1], [1, 2], [1, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3], [4, 0], [4, 1], [4, 2], [4, 3], [5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1], [6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3], [8, 0], [8, 1], [8, 2], [8, 3], [9, 0], [9, 1], [9, 2], [9, 3], [10, 0], [10, 1], [10, 2], [10, 3], [11, 0], [11, 1], [11, 2], [11, 3], [12, 0], [12, 1], [12, 2], [12, 3], [13, 0], [13, 1], [13, 2], [13, 3], [14, 0], [14, 1], [14, 2], [14, 3], [15, 0], [15, 1], [15, 2], [15, 3], [16, 0], [16, 1], [16, 2], [16, 3], [17, 0], [17, 1], [17, 2], [17, 3], [18, 0], [18, 1], [18, 2], [18, 3], [19, 0], [19, 1], [19, 2], [19, 3]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.surv_func(data.futime, data.death, output=&#34;table&#34;)
+summary: fail; threshold: 76 cells suppressed;
+outcome:         Surv_prob Surv_prob_SE  num_at_risk   num_events
+Time
+51             ok           ok           ok           ok
+69    threshold;   threshold;   threshold;   threshold;
+85    threshold;   threshold;   threshold;   threshold;
+91    threshold;   threshold;   threshold;   threshold;
+115   threshold;   threshold;   threshold;   threshold;
+372   threshold;   threshold;   threshold;   threshold;
+667   threshold;   threshold;   threshold;   threshold;
+874   threshold;   threshold;   threshold;   threshold;
+1039  threshold;   threshold;   threshold;   threshold;
+1046  threshold;   threshold;   threshold;   threshold;
+1281  threshold;   threshold;   threshold;   threshold;
+1286  threshold;   threshold;   threshold;   threshold;
+1326  threshold;   threshold;   threshold;   threshold;
+1355  threshold;   threshold;   threshold;   threshold;
+1626  threshold;   threshold;   threshold;   threshold;
+1903  threshold;   threshold;   threshold;   threshold;
+1914  threshold;   threshold;   threshold;   threshold;
+2776  threshold;   threshold;   threshold;   threshold;
+2851  threshold;   threshold;   threshold;   threshold;
+3309  threshold;   threshold;   threshold;   threshold;
+output: [      Surv prob  Surv prob SE  num at risk  num events
+Time
+51         0.95      0.048734         20.0         1.0
+69          NaN           NaN          NaN         NaN
+85          NaN           NaN          NaN         NaN
+91          NaN           NaN          NaN         NaN
+115         NaN           NaN          NaN         NaN
+372         NaN           NaN          NaN         NaN
+667         NaN           NaN          NaN         NaN
+874         NaN           NaN          NaN         NaN
+1039        NaN           NaN          NaN         NaN
+1046        NaN           NaN          NaN         NaN
+1281        NaN           NaN          NaN         NaN
+1286        NaN           NaN          NaN         NaN
+1326        NaN           NaN          NaN         NaN
+1355        NaN           NaN          NaN         NaN
+1626        NaN           NaN          NaN         NaN
+1903        NaN           NaN          NaN         NaN
+1914        NaN           NaN          NaN         NaN
+2776        NaN           NaN          NaN         NaN
+2851        NaN           NaN          NaN         NaN
+3309        NaN           NaN          NaN         NaN]
+timestamp: 2025-03-06T19:39:48.298262
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ some other reason
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_12
+status: fail
+type: survival plot
+properties: {&#39;method&#39;: &#39;surv_func&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 76, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[1, 0], [1, 1], [1, 2], [1, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3], [4, 0], [4, 1], [4, 2], [4, 3], [5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1], [6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3], [8, 0], [8, 1], [8, 2], [8, 3], [9, 0], [9, 1], [9, 2], [9, 3], [10, 0], [10, 1], [10, 2], [10, 3], [11, 0], [11, 1], [11, 2], [11, 3], [12, 0], [12, 1], [12, 2], [12, 3], [13, 0], [13, 1], [13, 2], [13, 3], [14, 0], [14, 1], [14, 2], [14, 3], [15, 0], [15, 1], [15, 2], [15, 3], [16, 0], [16, 1], [16, 2], [16, 3], [17, 0], [17, 1], [17, 2], [17, 3], [18, 0], [18, 1], [18, 2], [18, 3], [19, 0], [19, 1], [19, 2], [19, 3]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_plot = acro.surv_func(
+summary: fail; threshold: 76 cells suppressed;
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;acro_artifacts/kaplan-mier_0.png&#39;]
+timestamp: 2025-03-06T19:39:48.450221
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ suppressed
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: pivot_table
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.recommend, df.parents)
+summary: fail; threshold: 4 cells may need suppressing;
+outcome: parents      great_pret  pretentious        usual
+recommend
+not_recom            ok           ok           ok
+priority             ok           ok           ok
+recommend   threshold;   threshold;   threshold;
+spec_prior           ok           ok           ok
+very_recom  threshold;            ok           ok
+output: [parents     great_pret  pretentious  usual
+recommend
+not_recom         1440         1440   1440
+priority           858         1484   1924
+recommend            0            0      2
+spec_prior        2022         1264    758
+very_recom           0          132    196]
+timestamp: 2025-03-06T19:39:46.980090
+comments: []
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ a reason is provided
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: output_13
+status: review
+type: custom
+properties: {}
+sdc: {}
+command: custom
+summary: review
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;XandY.jpeg&#39;]
+timestamp: 2025-03-06T19:39:48.518030
+comments: [&#39;This output is an image showing the relationship between X and Y&#39;]
+exception:
+
+The status of the record above is: review.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ image is not disclosive
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:outputs written to: NURSERY
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="7:-Add-a-directory-of-outputs-to-an-acro-object">
+<h2>7: Add a directory of outputs to an acro object<a class="headerlink" href="#7:-Add-a-directory-of-outputs-to-an-acro-object" title="Link to this heading">#</a></h2>
+<p>This is an example of adding a list of files (produced by the researcher without using ACRO) to an acro object and creates a results file for checking.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span>
+<span class="c1"># save the output table to a file and add this file to a directory</span>
+<span class="n">src_path</span> <span class="o">=</span> <span class="s2">&quot;test_add_to_acro&quot;</span>
+<span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;crosstab.pkl&quot;</span>
+<span class="n">dest_path</span> <span class="o">=</span> <span class="s2">&quot;SDC_results&quot;</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">src_path</span><span class="p">):</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">src_path</span><span class="p">,</span> <span class="n">copy_function</span><span class="o">=</span><span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">)</span>
+
+<span class="c1"># add the output to acro</span>
+<span class="n">add_to_acro</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:version: 0.4.8
+INFO:acro:config: {&#39;safe_threshold&#39;: 10, &#39;safe_dof_threshold&#39;: 10, &#39;safe_nk_n&#39;: 2, &#39;safe_nk_k&#39;: 0.9, &#39;safe_pratio_p&#39;: 0.1, &#39;check_missing_values&#39;: False, &#39;survival_safe_threshold&#39;: 10, &#39;zeros_are_disclosive&#39;: True}
+INFO:acro:automatic suppression: False
+INFO:acro:records:add_custom(): output_0
+INFO:acro:records:rename_output(): output_0 renamed to crosstab.pkl
+INFO:acro:records:
+uid: crosstab.pkl
+status: review
+type: custom
+properties: {}
+sdc: {}
+command: custom
+summary: review
+outcome: Empty DataFrame
+Columns: []
+Index: []
+output: [&#39;test_add_to_acro/crosstab.pkl&#39;]
+timestamp: 2025-03-06T19:41:22.128464
+comments: [&#39;&#39;]
+exception:
+
+The status of the record above is: review.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ pickle file need some explanation
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:outputs written to: SDC_results
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+
+
+
+
+
+                <footer class="prev-next-footer d-print-none">
+
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="test.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">ACRO Tests</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../api.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+
+            </div>
+
+
+
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">ACRO Demonstration</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Instantiate-ACRO">Instantiate ACRO</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Load-test-data">Load test data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Convert-'more-than-3'-children-to-random-between-4-and-10">Convert ‘more than 3’ children to random between 4 and 10</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#Examples-of-producing-tabular-output">Examples of producing tabular output</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Pandas-crosstab">Pandas crosstab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab">ACRO crosstab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-totals">ACRO crosstab with totals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-without-suppression">ACRO crosstab without suppression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-aggregation-function">ACRO crosstab with aggregation function</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-pivot_table">ACRO pivot_table</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-pivot_table-with-margins">ACRO pivot_table with margins</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#Regression-examples-using-ACRO">Regression examples using ACRO</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Start-by-manipulating-the-nursery-data-to-get-two-numeric-variables">Start by manipulating the nursery data to get two numeric variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-OLS">ACRO OLS</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-OLSR">ACRO OLSR</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-Probit">ACRO Probit</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-Logit">ACRO Logit</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-survival-analysis">ACRO survival analysis</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-functionality-to-let-users-manage-their-outputs">ACRO functionality to let users manage their outputs</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#1:-List-current-ACRO-outputs">1: List current ACRO outputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#2:-Remove-some-ACRO-outputs-before-finalising">2: Remove some ACRO outputs before finalising</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#3:-Rename-ACRO-outputs-before-finalising">3: Rename ACRO outputs before finalising</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#4:-Add-a-comment-to-output">4: Add a comment to output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#5:-Add-an-unsupported-output-to-the-list-of-outputs">5: Add an unsupported output to the list of outputs</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#6:-(the-big-one)-Finalise-ACRO">6: (the big one) Finalise ACRO</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#7:-Add-a-directory-of-outputs-to-an-acro-object">7: Add a directory of outputs to an acro object</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notebooks/test-nursery.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+
+
+          </div>
+          <footer class="bd-footer-content">
+
+          </footer>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+
+    <div class="footer-items__start">
+
+        <div class="footer-item">
+
+  <p class="copyright">
+
+      © Copyright 2025, SACRO Project Team.
+      <br/>
+
+  </p>
+</div>
+
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+
+    </div>
+
+
+
+    <div class="footer-items__end">
+
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+
+    </div>
+
+</div>
+
+  </footer>
+  </body>
+</html>

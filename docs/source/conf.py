@@ -57,7 +57,11 @@ autodoc_typehints = "description"
 autodoc_member_order = "bysource"
 
 
-html_theme_options = {"navigation_depth": 2}
+html_theme_options = {
+    "navigation_depth": 2,
+    "article_header_end": ["prev-next.html"],
+    "article_footer_items": [],
+}
 
 
 nbsphinx_execute = "never"

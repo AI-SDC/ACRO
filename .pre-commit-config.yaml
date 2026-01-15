@@ -34,7 +34,8 @@ repos:
             (?x)^(
                 .*\.txt|
                 .*\.ipynb|
-                .*\.html
+                .*\.html|
+                docs/source/_build/.*
             )$
 
  # Format docstrings

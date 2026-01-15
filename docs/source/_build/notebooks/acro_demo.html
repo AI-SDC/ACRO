@@ -1,0 +1,1105 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ACRO Demonstration &#8212; ACRO 0.4.11 documentation</title>
+
+
+
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=17306193" />
+
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=475c965b"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/acro_demo';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ACRO Tests" href="test.html" />
+    <link rel="prev" title="Notebook Examples" href="../notebook_examples.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+
+
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+
+
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  <div id="pst-scroll-pixel-helper"></div>
+
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+
+  <dialog id="pst-search-dialog">
+
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+
+
+  <div class="col-lg-3 navbar-header-items__start">
+
+      <div class="navbar-item">
+
+
+
+
+
+<a class="navbar-brand logo" href="../index.html">
+
+
+
+
+
+
+    <p class="title logo__title">ACRO 0.4.11 documentation</p>
+
+</a></div>
+
+  </div>
+
+  <div class="col-lg-9 navbar-header-items">
+
+    <div class="me-auto navbar-header-items__center">
+
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+
+  </ul>
+</nav></div>
+
+    </div>
+
+
+    <div class="navbar-header-items__end">
+
+        <div class="navbar-item navbar-persistent--container">
+
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+
+
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+    </div>
+
+  </div>
+
+
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+
+
+
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+
+</div>
+
+    </header>
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+
+
+
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+
+
+
+  <div class="sidebar-header-items sidebar-primary__section">
+
+
+      <div class="sidebar-header-items__center">
+
+
+
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+
+
+      </div>
+
+
+
+      <div class="sidebar-header-items__end">
+
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+
+      </div>
+
+  </div>
+
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/configuration.html">Configuration</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../notebook_examples.html">Notebook Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">ACRO Demonstration</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="test.html">ACRO Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="test-nursery.html">ACRO Demonstration</a></li>
+
+
+
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+
+
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+
+      <main id="main-content" class="bd-main" role="main">
+
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+
+    <div class="header-article-items__start">
+
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+
+    <li class="breadcrumb-item"><a href="../examples.html" class="nav-link">Examples</a></li>
+
+
+    <li class="breadcrumb-item"><a href="../notebook_examples.html" class="nav-link">Notebook Examples</a></li>
+
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ACRO Demonstration</span></li>
+  </ul>
+</nav>
+</div>
+
+    </div>
+
+
+</div>
+</div>
+
+
+
+
+<div id="searchbox"></div>
+                <article class="bd-article">
+
+  <section id="ACRO-Demonstration">
+<h1>ACRO Demonstration<a class="headerlink" href="#ACRO-Demonstration" title="Link to this heading">#</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># uncomment this line if acro is not installed</span>
+<span class="c1"># ie you are in development mode</span>
+<span class="c1"># sys.path.insert(0, os.path.abspath(&quot;..&quot;))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">acro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACRO</span>
+</pre></div>
+</div>
+</div>
+<section id="Instantiate-ACRO">
+<h2>Instantiate ACRO<a class="headerlink" href="#Instantiate-ACRO" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span> <span class="o">=</span> <span class="n">ACRO</span><span class="p">(</span><span class="n">suppress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:version: 0.4.8
+INFO:acro:config: {&#39;safe_threshold&#39;: 10, &#39;safe_dof_threshold&#39;: 10, &#39;safe_nk_n&#39;: 2, &#39;safe_nk_k&#39;: 0.9, &#39;safe_pratio_p&#39;: 0.1, &#39;check_missing_values&#39;: False, &#39;survival_safe_threshold&#39;: 10, &#39;zeros_are_disclosive&#39;: True}
+INFO:acro:automatic suppression: False
+</pre></div></div>
+</div>
+</section>
+<section id="Load-test-data">
+<h2>Load test data<a class="headerlink" href="#Load-test-data" title="Link to this heading">#</a></h2>
+<p>The dataset used in this notebook is the nursery dataset from OpenML.</p>
+<ul class="simple">
+<li><p>In this version, the data can be read directly from the local machine after it has been downloaded.</p></li>
+<li><p>The code below reads the data from a folder called “data” which we assume is at the same level as the folder where you are working.</p></li>
+<li><p>The path might need to be changed if the data has been downloaded and stored elsewhere.</p></li>
+<li><p>for example use:
+path = os.path.join(“data”, “nursery.arff”)
+if the data is in a sub-folder of your work folder</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.io.arff</span><span class="w"> </span><span class="kn">import</span> <span class="n">loadarff</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;../data&quot;</span><span class="p">,</span> <span class="s2">&quot;nursery.arff&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">loadarff</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">([</span><span class="nb">object</span><span class="p">])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;recommend&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parents</th>
+      <th>has_nurs</th>
+      <th>form</th>
+      <th>children</th>
+      <th>housing</th>
+      <th>finance</th>
+      <th>social</th>
+      <th>health</th>
+      <th>recommend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>nonprob</td>
+      <td>recommended</td>
+      <td>recommend</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>nonprob</td>
+      <td>priority</td>
+      <td>priority</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>nonprob</td>
+      <td>not_recom</td>
+      <td>not_recom</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>slightly_prob</td>
+      <td>recommended</td>
+      <td>recommend</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>usual</td>
+      <td>proper</td>
+      <td>complete</td>
+      <td>1</td>
+      <td>convenient</td>
+      <td>convenient</td>
+      <td>slightly_prob</td>
+      <td>priority</td>
+      <td>priority</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+<section id="Examples-of-producing-tabular-output">
+<h1>Examples of producing tabular output<a class="headerlink" href="#Examples-of-producing-tabular-output" title="Link to this heading">#</a></h1>
+<div class="line-block">
+<div class="line">We rely on the industry-standard package <strong>pandas</strong> for tabulating data.</div>
+<div class="line">In the next few examples we show:</div>
+</div>
+<ul class="simple">
+<li><p>first, how a researcher would normally make a call in pandas, saving the results in a variable that they can view on screen (or save to file?)</p></li>
+<li><p>then how the call is identical in SACRO, except that:</p>
+<ul>
+<li><p>“pd” is replaced by “acro”</p></li>
+<li><p>the researcher immediately sees a copy of what the TRE output checker will see.</p></li>
+</ul>
+</li>
+</ul>
+<section id="Pandas-crosstab">
+<h2>Pandas crosstab<a class="headerlink" href="#Pandas-crosstab" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of crosstab using pandas.</div>
+<div class="line">We first make the call, then the second line print the outputs to screen.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+parents     great_pret  pretentious  usual
+recommend
+not_recom         1440         1440   1440
+priority           858         1484   1924
+recommend            0            0      2
+spec_prior        2022         1264    758
+very_recom           0          132    196
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-crosstab">
+<h2>ACRO crosstab<a class="headerlink" href="#ACRO-crosstab" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>This is an example of crosstab using ACRO.</p></li>
+<li><p>The INFO lines show the researcher what will be reported to the output checkers.</p></li>
+<li><p>Then the (suppressed as necessary) table is shown via the print command as before.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">,</span> <span class="n">rownames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;recommendation&quot;</span><span class="p">],</span> <span class="n">colnames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;parents&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 4 cells may need suppressing;
+INFO:acro:outcome_df:
+--------------------------------------------------------|
+parents        |great_pret   |pretentious  |usual       |
+recommendation |             |             |            |
+--------------------------------------------------------|
+not_recom      |          ok |          ok |          ok|
+priority       |          ok |          ok |          ok|
+recommend      | threshold;  | threshold;  | threshold; |
+spec_prior     |          ok |          ok |          ok|
+very_recom     | threshold;  |          ok |          ok|
+--------------------------------------------------------|
+
+INFO:acro:records:add(): output_0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+parents         great_pret  pretentious  usual
+recommendation
+not_recom             1440         1440   1440
+priority               858         1484   1924
+recommend                0            0      2
+spec_prior            2022         1264    758
+very_recom               0          132    196
+</pre></div></div>
+</div>
+</section>
+<section id="ACRO-crosstab-with-suppression">
+<h2>ACRO crosstab with suppression<a class="headerlink" href="#ACRO-crosstab-with-suppression" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>This is an example of crosstab with suppressing the cells that violate the disclosure tests.</p></li>
+<li><p>Note that you need to change the value of the suppress variable in the acro object to True. Then run the crosstab command.</p></li>
+<li><p>If you wish to continue the research while suppressing the outputs, leave the suppress variable as it is, otherwise turn it off.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">safe_table</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">recommend</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">safe_table</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:get_summary(): fail; threshold: 4 cells suppressed;
+INFO:acro:outcome_df:
+----------------------------------------------------|
+parents    |great_pret   |pretentious  |usual       |
+recommend  |             |             |            |
+----------------------------------------------------|
+not_recom  |          ok |          ok |          ok|
+priority   |          ok |          ok |          ok|
+recommend  | threshold;  | threshold;  | threshold; |
+spec_prior |          ok |          ok |          ok|
+very_recom | threshold;  |          ok |          ok|
+----------------------------------------------------|
+
+INFO:acro:records:add(): output_1
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+parents     great_pret  pretentious   usual
+recommend
+not_recom       1440.0       1440.0  1440.0
+priority         858.0       1484.0  1924.0
+recommend          NaN          NaN     NaN
+spec_prior      2022.0       1264.0   758.0
+very_recom         NaN        132.0   196.0
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">suppress</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="ACRO-functionality-to-let-users-manage-their-outputs">
+<h1>ACRO functionality to let users manage their outputs<a class="headerlink" href="#ACRO-functionality-to-let-users-manage-their-outputs" title="Link to this heading">#</a></h1>
+<section id="1:-List-current-ACRO-outputs">
+<h2>1: List current ACRO outputs<a class="headerlink" href="#1:-List-current-ACRO-outputs" title="Link to this heading">#</a></h2>
+<p>This is an example of using the print_output function to list all the outputs created so far</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">print_outputs</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+uid: output_0
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(
+summary: fail; threshold: 4 cells may need suppressing;
+outcome: parents          great_pret  pretentious        usual
+recommendation
+not_recom                ok           ok           ok
+priority                 ok           ok           ok
+recommend       threshold;   threshold;   threshold;
+spec_prior               ok           ok           ok
+very_recom      threshold;            ok           ok
+output: [parents         great_pret  pretentious  usual
+recommendation
+not_recom             1440         1440   1440
+priority               858         1484   1924
+recommend                0            0      2
+spec_prior            2022         1264    758
+very_recom               0          132    196]
+timestamp: 2025-03-06T19:38:29.296719
+comments: []
+exception:
+
+uid: output_1
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.recommend, df.parents)
+summary: fail; threshold: 4 cells suppressed;
+outcome: parents      great_pret  pretentious        usual
+recommend
+not_recom            ok           ok           ok
+priority             ok           ok           ok
+recommend   threshold;   threshold;   threshold;
+spec_prior           ok           ok           ok
+very_recom  threshold;            ok           ok
+output: [parents     great_pret  pretentious   usual
+recommend
+not_recom       1440.0       1440.0  1440.0
+priority         858.0       1484.0  1924.0
+recommend          NaN          NaN     NaN
+spec_prior      2022.0       1264.0   758.0
+very_recom         NaN        132.0   196.0]
+timestamp: 2025-03-06T19:38:29.315826
+comments: []
+exception:
+
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#34;uid: output_0\nstatus: fail\ntype: table\nproperties: {&#39;method&#39;: &#39;crosstab&#39;}\nsdc: {&#39;summary&#39;: {&#39;suppressed&#39;: False, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}\ncommand: safe_table = acro.crosstab(\nsummary: fail; threshold: 4 cells may need suppressing; \noutcome: parents          great_pret  pretentious        usual\nrecommendation                                       \nnot_recom                ok           ok           ok\npriority                 ok           ok           ok\nrecommend       threshold;   threshold;   threshold; \nspec_prior               ok           ok           ok\nvery_recom      threshold;            ok           ok\noutput: [parents         great_pret  pretentious  usual\nrecommendation                                \nnot_recom             1440         1440   1440\npriority               858         1484   1924\nrecommend                0            0      2\nspec_prior            2022         1264    758\nvery_recom               0          132    196]\ntimestamp: 2025-03-06T19:38:29.296719\ncomments: []\nexception: \n\nuid: output_1\nstatus: fail\ntype: table\nproperties: {&#39;method&#39;: &#39;crosstab&#39;}\nsdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}\ncommand: safe_table = acro.crosstab(df.recommend, df.parents)\nsummary: fail; threshold: 4 cells suppressed; \noutcome: parents      great_pret  pretentious        usual\nrecommend                                        \nnot_recom            ok           ok           ok\npriority             ok           ok           ok\nrecommend   threshold;   threshold;   threshold; \nspec_prior           ok           ok           ok\nvery_recom  threshold;            ok           ok\noutput: [parents     great_pret  pretentious   usual\nrecommend                                  \nnot_recom       1440.0       1440.0  1440.0\npriority         858.0       1484.0  1924.0\nrecommend          NaN          NaN     NaN\nspec_prior      2022.0       1264.0   758.0\nvery_recom         NaN        132.0   196.0]\ntimestamp: 2025-03-06T19:38:29.315826\ncomments: []\nexception: \n\n&#34;
+</pre></div></div>
+</div>
+</section>
+<section id="2:-Remove-some-ACRO-outputs-before-finalising">
+<h2>2: Remove some ACRO outputs before finalising<a class="headerlink" href="#2:-Remove-some-ACRO-outputs-before-finalising" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example of deleting some of the ACRO outputs.</div>
+<div class="line">The name of the output that needs to be removed should be passed to the function remove_output.</div>
+</div>
+<ul class="simple">
+<li><p>The output name can be taken from the outputs listed by the print_outputs function,</p></li>
+<li><p>or by listing the results and choosing the specific output that needs to be removed</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">remove_output</span><span class="p">(</span><span class="s2">&quot;output_0&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:remove(): output_0 removed
+</pre></div></div>
+</div>
+</section>
+<section id="3:-Rename-ACRO-outputs-before-finalising">
+<h2>3: Rename ACRO outputs before finalising<a class="headerlink" href="#3:-Rename-ACRO-outputs-before-finalising" title="Link to this heading">#</a></h2>
+<p>This is an example of renaming the outputs to provide a more descriptive name.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">rename_output</span><span class="p">(</span><span class="s2">&quot;output_1&quot;</span><span class="p">,</span> <span class="s2">&quot;cross_tabulation&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:rename_output(): output_1 renamed to cross_tabulation
+</pre></div></div>
+</div>
+</section>
+<section id="4:-Add-a-comment-to-output">
+<h2>4: Add a comment to output<a class="headerlink" href="#4:-Add-a-comment-to-output" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">This is an example to add a comment to outputs.</div>
+<div class="line">It can be used to provide a description or to pass additional information to the output checkers.</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acro</span><span class="o">.</span><span class="n">add_comments</span><span class="p">(</span><span class="s2">&quot;cross_tabulation&quot;</span><span class="p">,</span> <span class="s2">&quot;Please let me have this data.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:a comment was added to cross_tabulation
+</pre></div></div>
+</div>
+<section id="5:-(the-big-one)-Finalise-ACRO">
+<h3>5: (the big one) Finalise ACRO<a class="headerlink" href="#5:-(the-big-one)-Finalise-ACRO" title="Link to this heading">#</a></h3>
+<p>This is an example of the function <em>finalise()</em> which the users must call at the end of each session.</p>
+<ul class="simple">
+<li><p>It takes each output and saves it to a CSV file.</p></li>
+<li><p>It also saves the SDC analysis for each output to a json file or Excel file
+(depending on the extension of the name of the file provided as an input to the function)</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output</span> <span class="o">=</span> <span class="n">acro</span><span class="o">.</span><span class="n">finalise</span><span class="p">(</span><span class="s2">&quot;Examples&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:
+uid: cross_tabulation
+status: fail
+type: table
+properties: {&#39;method&#39;: &#39;crosstab&#39;}
+sdc: {&#39;summary&#39;: {&#39;suppressed&#39;: True, &#39;negative&#39;: 0, &#39;missing&#39;: 0, &#39;threshold&#39;: 4, &#39;p-ratio&#39;: 0, &#39;nk-rule&#39;: 0, &#39;all-values-are-same&#39;: 0}, &#39;cells&#39;: {&#39;negative&#39;: [], &#39;missing&#39;: [], &#39;threshold&#39;: [[2, 0], [2, 1], [2, 2], [4, 0]], &#39;p-ratio&#39;: [], &#39;nk-rule&#39;: [], &#39;all-values-are-same&#39;: []}}
+command: safe_table = acro.crosstab(df.recommend, df.parents)
+summary: fail; threshold: 4 cells suppressed;
+outcome: parents      great_pret  pretentious        usual
+recommend
+not_recom            ok           ok           ok
+priority             ok           ok           ok
+recommend   threshold;   threshold;   threshold;
+spec_prior           ok           ok           ok
+very_recom  threshold;            ok           ok
+output: [parents     great_pret  pretentious   usual
+recommend
+not_recom       1440.0       1440.0  1440.0
+priority         858.0       1484.0  1924.0
+recommend          NaN          NaN     NaN
+spec_prior      2022.0       1264.0   758.0
+very_recom         NaN        132.0   196.0]
+timestamp: 2025-03-06T19:38:29.315826
+comments: [&#39;Please let me have this data.&#39;]
+exception:
+
+The status of the record above is: fail.
+Please explain why an exception should be granted.
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ exception requested
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:acro:records:outputs written to: Examples
+</pre></div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+
+
+
+
+
+                <footer class="prev-next-footer d-print-none">
+
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../notebook_examples.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Notebook Examples</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="test.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">ACRO Tests</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+
+            </div>
+
+
+
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">ACRO Demonstration</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Instantiate-ACRO">Instantiate ACRO</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Load-test-data">Load test data</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#Examples-of-producing-tabular-output">Examples of producing tabular output</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Pandas-crosstab">Pandas crosstab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab">ACRO crosstab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-crosstab-with-suppression">ACRO crosstab with suppression</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#ACRO-functionality-to-let-users-manage-their-outputs">ACRO functionality to let users manage their outputs</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#1:-List-current-ACRO-outputs">1: List current ACRO outputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#2:-Remove-some-ACRO-outputs-before-finalising">2: Remove some ACRO outputs before finalising</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#3:-Rename-ACRO-outputs-before-finalising">3: Rename ACRO outputs before finalising</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#4:-Add-a-comment-to-output">4: Add a comment to output</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#5:-(the-big-one)-Finalise-ACRO">5: (the big one) Finalise ACRO</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notebooks/acro_demo.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+
+
+          </div>
+          <footer class="bd-footer-content">
+
+          </footer>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+
+    <div class="footer-items__start">
+
+        <div class="footer-item">
+
+  <p class="copyright">
+
+      © Copyright 2025, SACRO Project Team.
+      <br/>
+
+  </p>
+</div>
+
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+
+    </div>
+
+
+
+    <div class="footer-items__end">
+
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+
+    </div>
+
+</div>
+
+  </footer>
+  </body>
+</html>

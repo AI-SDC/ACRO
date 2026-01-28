@@ -97,7 +97,7 @@ def test_crosstab_threshold(data, acro):
         assert np.isnan(output.output[0].iloc[row, col])
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
-    correct_summary: str = "fail; threshold: 6 cells suppressed; "
+    correct_summary: str = "review; threshold: 6 cells suppressed; "
     output = results.get_index(0)
     assert output.summary == correct_summary
     shutil.rmtree(PATH)
@@ -111,7 +111,7 @@ def test_crosstab_multiple(data, acro):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     correct_summary: str = (
-        "fail; threshold: 7 cells suppressed; p-ratio: 2 cells suppressed; "
+        "review; threshold: 7 cells suppressed; p-ratio: 2 cells suppressed; "
         "nk-rule: 1 cells suppressed; "
     )
     output = results.get_index(0)
@@ -174,7 +174,7 @@ def test_pivot_table_cols(data, acro):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     correct_summary: str = (
-        "fail; threshold: 14 cells suppressed; "
+        "review; threshold: 14 cells suppressed; "
         "p-ratio: 4 cells suppressed; nk-rule: 2 cells suppressed; "
     )
     output_0 = results.get_index(0)
@@ -332,7 +332,7 @@ def test_output_removal(data, acro, monkeypatch):
     # remove something that is there
     acro.remove_output(output_0.uid)
     results = acro.finalise(PATH)
-    correct_summary: str = "fail; threshold: 6 cells suppressed; "
+    correct_summary: str = "review; threshold: 6 cells suppressed; "
     keys = results.get_keys()
     assert output_0.uid not in keys
     assert output_1.uid in keys
@@ -646,7 +646,7 @@ def test_surv_func(acro):
     # table
     _ = acro.surv_func(data.futime, data.death, output="table")
     output = acro.results.get_index(0)
-    correct_summary: str = "fail; threshold: 3864 cells suppressed; "
+    correct_summary: str = "review; threshold: 3864 cells suppressed; "
     assert output.summary == correct_summary
 
     if not skip_exact_assertion:
@@ -686,7 +686,7 @@ def test_zeros_are_not_disclosive(data, acro):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     correct_summary: str = (
-        "fail; threshold: 14 cells suppressed; "
+        "review; threshold: 14 cells suppressed; "
         "p-ratio: 2 cells suppressed; nk-rule: 2 cells suppressed; "
     )
     output_0 = results.get_index(0)

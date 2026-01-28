@@ -1252,19 +1252,19 @@ def get_summary(sdc: dict) -> tuple[str, str]:
     else:
         if sdc_summary["threshold"] > 0:
             summary += f"threshold: {sdc_summary['threshold']} cells {sup}; "
-            status = "fail"
+            status = "review" if sdc_summary["suppressed"] else "fail"
         if sdc_summary["p-ratio"] > 0:
             summary += f"p-ratio: {sdc_summary['p-ratio']} cells {sup}; "
-            status = "fail"
+            status = "review" if sdc_summary["suppressed"] else "fail"
         if sdc_summary["nk-rule"] > 0:
             summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
-            status = "fail"
+            status = "review" if sdc_summary["suppressed"] else "fail"
         if sdc_summary["all-values-are-same"] > 0:
             summary += (
                 f"all-values-are-same: {sdc_summary['all-values-are-same']} "
                 f"cells {sup}; "
             )
-            status = "fail"
+            status = "review" if sdc_summary["suppressed"] else "fail"
     if summary != "":
         summary = f"{status}; {summary}"
     else:

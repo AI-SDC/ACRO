@@ -14,7 +14,7 @@ All pull requests must meet the following requirements before being accepted:
 
 Clone the repository and install the dependencies (within a virtual environment):
 
-```
+```shell
 $ git clone git@github.com:AI-SDC/ACRO.git
 $ cd ACRO
 $ pip install -e .
@@ -22,7 +22,7 @@ $ pip install -e .
 
 Then to run the tests:
 
-```
+```shell
 $ pip install pytest
 $ pytest .
 ```
@@ -48,13 +48,13 @@ A [pre-commit](https://pre-commit.com) configuration [file](../tree/main/.pre-co
 
 Pre-commit can be setup locally as follows:
 
-```
+```shell
 $ pip install pre-commit
 ```
 
 Then to run on all files locally:
 
-```
+```shell
 $ pre-commit run -a
 ```
 
@@ -62,6 +62,55 @@ Make any corrections as necessary and re-run before committing the fixes and the
 
 To install as a hook that executes with every `git commit`:
 
-```
+```shell
 $ pre-commit install
+```
+
+## Pull Request Titles
+
+Titles for pull requests should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+
+This is a lightweight convention on top of commit messages. It provides a simple set of rules for creating an explicit, readable, and automation-friendly project history.
+
+Individual commit messages in branches may follow an unrestricted policy, but **PR titles must follow Conventional Commits**.
+
+### Why We Use Conventional Commit PR Titles
+
+We require PR titles to follow the Conventional Commits format because it:
+
+- **Enables automatic changelogs** - release notes can be generated from PR titles without manual work.
+- **Clearly communicates intent** - reviewers can immediately see whether a PR is a `feat`, `fix`, `chore`, etc.
+- **Improves git history navigation** - makes it easy to scan and understand changes over time.
+- **Aligns with Semantic Versioning (SemVer)** - structured titles help determine version bumps automatically.
+- **Supports better PR labeling & filtering** - PRs are labeled by type, making them easier to prioritise and review.
+- **Flags breaking changes** - adding `!` (e.g. `feat!:`) automatically marks a PR as a breaking change.
+
+### Format
+
+The general structure is:
+
+```text
+<type>[optional scope]: <description>
+```
+
+Example:
+
+```text
+feat: send an email to the customer when a product is shipped
+```
+
+Types:
+
+```text
+feat — new feature
+fix — bug fix
+docs — documentation changes
+style — formatting/styling (no code logic)
+refactor — code changes without feature/bug impact
+perf — performance improvements
+test — adding/updating tests
+build — changes to build system or dependencies
+ci — changes to CI config/scripts
+chore — miscellaneous maintenance tasks
+revert — reverts an earlier commit
 ```

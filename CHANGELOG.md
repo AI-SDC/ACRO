@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.4.12 (TBC)
+
+*   docs: add documentation ([#273](https://github.com/AI-SDC/ACRO/pull/273), [#287](https://github.com/AI-SDC/ACRO/pull/287), [#288](https://github.com/AI-SDC/ACRO/pull/288), [#289](https://github.com/AI-SDC/ACRO/pull/289), [#291](https://github.com/AI-SDC/ACRO/pull/291), [#304](https://github.com/AI-SDC/ACRO/pull/304), [#306](https://github.com/AI-SDC/ACRO/pull/306), [#318](https://github.com/AI-SDC/ACRO/pull/318))
+*   feat: disallow `.gph` files as custom outputs in Stata ([#296](https://github.com/AI-SDC/ACRO/pull/296))
+*   feat: make finalise non-interactive by default ([#309](https://github.com/AI-SDC/ACRO/pull/309))
+*   fix: update summary status logic to reflect suppression state ([#317](https://github.com/AI-SDC/ACRO/pull/317))
+*   ci: set `MLPBACKEND`
+
 ## Version 0.4.11 (Nov 03, 2025)
 
 *   chore: increase max pandas to <=2.3.3 to avoid building from source for Python 3.14 ([#282](https://github.com/AI-SDC/ACRO/pull/282))

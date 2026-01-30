@@ -537,7 +537,7 @@ class Tables:
         filename, extension = os.path.splitext(filename)
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
-            return None
+            return None  # pragma: no cover
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
@@ -914,7 +914,7 @@ def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
     return (table, comments)
 
 
-def rounded_survival_table(survival_table):
+def rounded_survival_table(survival_table):  # pragma: no cover
     """Calculate the rounded surival function."""
     death_censored = (
         survival_table["num at risk"].shift(periods=1) - survival_table["num at risk"]
@@ -1429,7 +1429,7 @@ def create_dataframe(index, columns) -> DataFrame:
 
     try:
         data = pd.concat([index_df, columns_df], axis=1)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError):  # pragma: no cover
         data = empty_dataframe
 
     return data

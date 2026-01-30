@@ -1291,8 +1291,8 @@ def add_backticks(name: str) -> str:
     return name
 
 
-def format_label_condition(level_names, label) -> list[str]:
-    """Format a label into a list of condition strings for SDC queries.
+def _format_label_condition(level_names, label) -> list[str]:
+    """Format a label into a list of condition strings.
 
     Parameters
     ----------
@@ -1323,10 +1323,10 @@ def format_label_condition(level_names, label) -> list[str]:
     return parts
 
 
-def get_cell_suppression_query(
+def _get_cell_query(
     mask, row_index, col_index, index_level_names, column_level_names
 ) -> str | None:
-    """Generate a suppression query string for a cell marked in the SDC mask.
+    """Generate a query string for a cell if it's marked as true in the mask.
 
     Parameters
     ----------
@@ -1344,7 +1344,7 @@ def get_cell_suppression_query(
     Returns
     -------
     str or None
-        Query string if cell should be suppressed, None otherwise.
+        Query string if cell is true, None otherwise.
     """
     if not mask.iloc[row_index, col_index]:
         return None
@@ -1353,8 +1353,8 @@ def get_cell_suppression_query(
     row_label = mask.index[row_index]
     col_label = mask.columns[col_index]
 
-    parts.extend(format_label_condition(index_level_names, row_label))
-    parts.extend(format_label_condition(column_level_names, col_label))
+    parts.extend(_format_label_condition(index_level_names, row_label))
+    parts.extend(_format_label_condition(column_level_names, col_label))
 
     return " & ".join(parts)
 
@@ -1383,7 +1383,7 @@ def get_queries(masks, aggfunc) -> list[str]:
         column_level_names = mask.columns.names
         for col_index, _ in enumerate(mask.columns):
             for row_index, _ in enumerate(mask.index):
-                query = get_cell_suppression_query(
+                query = _get_cell_query(
                     mask, row_index, col_index, index_level_names, column_level_names
                 )
                 if query is not None:

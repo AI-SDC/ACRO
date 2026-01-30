@@ -9,4 +9,4 @@ Jim Smith 2023.
 
 import acro
 
-stata_acro = acro.ACRO()
+stata_acro: str | acro.ACRO = acro.ACRO()

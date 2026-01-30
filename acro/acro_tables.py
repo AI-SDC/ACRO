@@ -914,7 +914,7 @@ def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
     return (table, comments)
 
 
-def rounded_survival_table(survival_table):  # pragma: no cover
+def rounded_survival_table(survival_table):
     """Calculate the rounded surival function."""
     death_censored = (
         survival_table["num at risk"].shift(periods=1) - survival_table["num at risk"]

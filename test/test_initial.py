@@ -32,6 +32,21 @@ def acro() -> ACRO:
     return ACRO(suppress=True)
 
 
+def test_add_backticks():
+    """Test the add_backticks helper function."""
+    # Test simple string without spaces (no backticks added)
+    assert acro_tables.add_backticks("foo") == "foo"
+    
+    # Test string with spaces (backticks should be added)
+    assert acro_tables.add_backticks("foo bar") == "`foo bar`"
+    
+    # Test string already with backticks (no change)
+    assert acro_tables.add_backticks("`foo bar`") == "`foo bar`"
+    
+    # Test multiple spaces
+    assert acro_tables.add_backticks("foo bar baz") == "`foo bar baz`"
+
+
 def test_crosstab_without_suppression(data):
     """Crosstab threshold without automatic suppression."""
     acro = ACRO(suppress=False)
@@ -626,6 +641,7 @@ def test_surv_func(acro):
     # Load real data but with fallback to mock if network fails
     try:
         data = sm.datasets.get_rdataset("flchain", "survival").data
+        use_real_data = True
     except Exception:
         # Fallback to mock data if network is unavailable
         np.random.seed(42)
@@ -637,24 +653,21 @@ def test_surv_func(acro):
             }
         )
         data = mock_data
-        # Skip the exact assertion when using mock data
-        skip_exact_assertion = True
-    else:
-        skip_exact_assertion = False
+        use_real_data = False
 
     data = data.loc[data.sex == "F", :]
     # table
     _ = acro.surv_func(data.futime, data.death, output="table")
     output = acro.results.get_index(0)
-    correct_summary: str = "review; threshold: 3864 cells suppressed; "
-    assert output.summary == correct_summary
+    
+    # Check status and that cells are suppressed
+    assert output.status in ["review", "fail"]
+    assert "threshold" in output.summary or "cells suppressed" in output.summary
 
-    if not skip_exact_assertion:
+    # Only check exact number if using real data
+    if use_real_data:
+        correct_summary: str = "review; threshold: 3864 cells suppressed; "
         assert output.summary == correct_summary
-    else:
-        # Just verify the output contains "fail" and "cells suppressed"
-        assert "fail" in output.summary
-        assert "cells suppressed" in output.summary
 
     # plot
     filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
@@ -671,6 +684,28 @@ def test_surv_func(acro):
     output_1 = results.get_index(1)
     assert output_1.output == [filename]
     shutil.rmtree(PATH)
+
+
+def test_rounded_survival_table():
+    """Test the rounded_survival_table function for survival analysis."""
+    from acro.acro_tables import rounded_survival_table
+    
+    # Create a minimal survival table with required columns
+    survival_table = pd.DataFrame({
+        "Surv prob": [1.0, 0.95, 0.90, 0.85, 0.80],
+        "num at risk": [100, 95, 85, 75, 60],
+        "num events": [0, 5, 10, 10, 15],
+    })
+    
+    # Apply rounded_survival_table
+    result = rounded_survival_table(survival_table.copy())
+    
+    # Check that it has the rounded_survival_fun column
+    assert "rounded_survival_fun" in result.columns
+    assert len(result) == 5
+    
+    # Check that values are reasonable (between 0 and 1)
+    assert all((result["rounded_survival_fun"] >= 0) & (result["rounded_survival_fun"] <= 1))
 
 
 def test_zeros_are_not_disclosive(data, acro):

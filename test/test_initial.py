@@ -48,6 +48,27 @@ def test_add_backticks():
     assert acro_tables.add_backticks("foo bar baz") == "`foo bar baz`"
 
 
+def test_crosstab_with_spaces_in_variable_names(data, acro):
+    """Test crosstab with spaces in column names (Issue #305)."""
+    # Create a test dataframe with a column name containing spaces
+    test_data = data.copy()
+    test_data["grant type with spaces"] = test_data["grant_type"]
+    test_data["year of study"] = test_data["year"]
+
+    # This should handle spaces in variable names correctly
+    result = acro.crosstab(
+        test_data["year of study"], test_data["grant type with spaces"]
+    )
+
+    # Verify the crosstab was created successfully
+    assert isinstance(result, pd.DataFrame)
+    assert not result.empty
+
+    # Verify that suppression was applied
+    output = acro.results.get_index(0)
+    assert output.status in ["review", "fail"]
+
+
 def test_crosstab_without_suppression(data):
     """Crosstab threshold without automatic suppression."""
     acro = ACRO(suppress=False)
@@ -642,7 +663,6 @@ def test_surv_func(acro):
     # Load real data but with fallback to mock if network fails
     try:
         data = sm.datasets.get_rdataset("flchain", "survival").data
-        use_real_data = True
     except Exception:
         # Fallback to mock data if network is unavailable
         np.random.seed(42)
@@ -654,21 +674,24 @@ def test_surv_func(acro):
             }
         )
         data = mock_data
-        use_real_data = False
+        # Skip the exact assertion when using mock data
+        skip_exact_assertion = True
+    else:
+        skip_exact_assertion = False
 
     data = data.loc[data.sex == "F", :]
     # table
     _ = acro.surv_func(data.futime, data.death, output="table")
     output = acro.results.get_index(0)
+    correct_summary: str = "review; threshold: 3864 cells suppressed; "
+    assert output.summary == correct_summary
 
-    # Check status and that cells are suppressed
-    assert output.status in ["review", "fail"]
-    assert "threshold" in output.summary or "cells suppressed" in output.summary
-
-    # Only check exact number if using real data
-    if use_real_data:
-        correct_summary: str = "review; threshold: 3864 cells suppressed; "
+    if not skip_exact_assertion:
         assert output.summary == correct_summary
+    else:
+        # Just verify the output contains "fail" and "cells suppressed"
+        assert "fail" in output.summary
+        assert "cells suppressed" in output.summary
 
     # plot
     filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")

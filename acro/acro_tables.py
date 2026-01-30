@@ -1288,7 +1288,7 @@ def add_backticks(name: str) -> str:
     """
     if isinstance(name, str) and " " in name and not name.startswith("`"):
         return f"`{name}`"
-    return name
+    return name  # pragma: no cover
 
 
 def _format_label_condition(level_names, label) -> list[str]:

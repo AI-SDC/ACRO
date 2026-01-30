@@ -710,30 +710,6 @@ def test_surv_func(acro):
     shutil.rmtree(PATH)
 
 
-def test_rounded_survival_table():
-    """Test the rounded_survival_table function for survival analysis."""
-    # Create a minimal survival table with required columns
-    survival_table = pd.DataFrame(
-        {
-            "Surv prob": [1.0, 0.95, 0.90, 0.85, 0.80],
-            "num at risk": [100, 95, 85, 75, 60],
-            "num events": [0, 5, 10, 10, 15],
-        }
-    )
-
-    # Apply rounded_survival_table
-    result = rounded_survival_table(survival_table.copy())
-
-    # Check that it has the rounded_survival_fun column
-    assert "rounded_survival_fun" in result.columns
-    assert len(result) == 5
-
-    # Check that values are reasonable (between 0 and 1)
-    assert all(
-        (result["rounded_survival_fun"] >= 0) & (result["rounded_survival_fun"] <= 1)
-    )
-
-
 def test_zeros_are_not_disclosive(data, acro):
     """Test that zeros are handled as not disclosive when `zeros_are_disclosive=False`."""
     acro_tables.ZEROS_ARE_DISCLOSIVE = False

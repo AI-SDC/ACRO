@@ -11,6 +11,7 @@ import pytest
 import statsmodels.api as sm
 
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
+from acro.acro_tables import rounded_survival_table
 from acro.record import Records, load_records
 
 # pylint: disable=redefined-outer-name,too-many-lines
@@ -36,13 +37,13 @@ def test_add_backticks():
     """Test the add_backticks helper function."""
     # Test simple string without spaces (no backticks added)
     assert acro_tables.add_backticks("foo") == "foo"
-    
+
     # Test string with spaces (backticks should be added)
     assert acro_tables.add_backticks("foo bar") == "`foo bar`"
-    
+
     # Test string already with backticks (no change)
     assert acro_tables.add_backticks("`foo bar`") == "`foo bar`"
-    
+
     # Test multiple spaces
     assert acro_tables.add_backticks("foo bar baz") == "`foo bar baz`"
 
@@ -659,7 +660,7 @@ def test_surv_func(acro):
     # table
     _ = acro.surv_func(data.futime, data.death, output="table")
     output = acro.results.get_index(0)
-    
+
     # Check status and that cells are suppressed
     assert output.status in ["review", "fail"]
     assert "threshold" in output.summary or "cells suppressed" in output.summary
@@ -688,24 +689,26 @@ def test_surv_func(acro):
 
 def test_rounded_survival_table():
     """Test the rounded_survival_table function for survival analysis."""
-    from acro.acro_tables import rounded_survival_table
-    
     # Create a minimal survival table with required columns
-    survival_table = pd.DataFrame({
-        "Surv prob": [1.0, 0.95, 0.90, 0.85, 0.80],
-        "num at risk": [100, 95, 85, 75, 60],
-        "num events": [0, 5, 10, 10, 15],
-    })
-    
+    survival_table = pd.DataFrame(
+        {
+            "Surv prob": [1.0, 0.95, 0.90, 0.85, 0.80],
+            "num at risk": [100, 95, 85, 75, 60],
+            "num events": [0, 5, 10, 10, 15],
+        }
+    )
+
     # Apply rounded_survival_table
     result = rounded_survival_table(survival_table.copy())
-    
+
     # Check that it has the rounded_survival_fun column
     assert "rounded_survival_fun" in result.columns
     assert len(result) == 5
-    
+
     # Check that values are reasonable (between 0 and 1)
-    assert all((result["rounded_survival_fun"] >= 0) & (result["rounded_survival_fun"] <= 1))
+    assert all(
+        (result["rounded_survival_fun"] >= 0) & (result["rounded_survival_fun"] <= 1)
+    )
 
 
 def test_zeros_are_not_disclosive(data, acro):

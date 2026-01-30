@@ -7,7 +7,7 @@ use "../data/nursery_dataset", clear
 ** start the session ******
 noisily display `"***********************************************"'
 noisily display `" Creating acro session"'
-noisily acro init
+noisily acro init, config(myconfig.yaml) suppress(True)
 
 noisily display `""'
 

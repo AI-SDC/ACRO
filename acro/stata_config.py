@@ -7,6 +7,8 @@ mutable hence use of lower case naming.
 Jim Smith 2023.
 """
 
+from typing import Any
+
 import acro
 
-stata_acro = acro.ACRO()
+stata_acro: Any = acro.ACRO()

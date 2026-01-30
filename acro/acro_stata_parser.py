@@ -307,7 +307,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     regression_commands = ["regress", "probit", "logit"]
     outcome = ""
     if command in session_commands:
-        outcome = run_session_command(command, varlist)
+        outcome = run_session_command(command, varlist, options)
     elif command == "custom_output":
         outcome = add_custom_output(varlist)
     elif command in output_commands:
@@ -325,12 +325,20 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     return outcome
 
 
-def run_session_command(command: str, varlist: list) -> str:
+def run_session_command(command: str, varlist: list, options: str) -> str:
     """Run session commands that are data-independent."""
     outcome = ""
 
     if command == "init":
-        stata_config.stata_acro = ACRO()
+        args: dict = {}
+        found, config = find_brace_word("config", options)
+        if found:
+            assert len(config) == 1, "can only supply one config file name"
+            args["config"] = config[0]
+        found, suppress = find_brace_word("suppress", options)
+        if found:
+            args["suppress"] = suppress  # True if suppress[0]=='True' else False
+        stata_config.stata_acro = ACRO(**args)
         outcome = "acro analysis session created\n"
 
     elif command == "enable_suppression":

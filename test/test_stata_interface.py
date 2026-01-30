@@ -199,6 +199,55 @@ def test_parse_table_details(data):
 #     ), f"wrong string for acro command before init: {ret}\n"
 
 
+def test_stata_acro_init_options():
+    """
+    Test creation of an acro object with options at the start of a session.
+
+    For stata this gets held in a variable stata_acro
+    Which is initialised to the string "empty" in the acro.ado file
+    Then should be pointed at a new acro instance.
+    """
+    # reset acro so we can reinitialise
+    stata_config.stata_acro = "empty"
+    # create dummy myconfig file
+
+    with open("acro/myconfig.yaml", "w") as config:
+        config.write(
+            "---\n"
+            "safe_threshold: 100\n"
+            "safe_dof_threshold: 100\n"
+            "safe_nk_n: 2\n"
+            "safe_nk_k: 0.90\n"
+            "safe_pratio_p: 0.10\n"
+            "check_missing_values: False\n"
+            "survival_safe_threshold: 10\n"
+            "zeros_are_disclosive: True\n"
+            "...\n"
+        )
+    # assert isinstance(stata_config.stata_acro, str)
+    ret2 = dummy_acrohandler(
+        data,
+        command="init",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="config(myconfig) suppress(True)",
+        stata_version="17",
+    )
+    assert ret2 == "acro analysis session created\n", (
+        f"wrong string for acro init: {ret2}\n"
+    )
+    errmsg = f"wrong type for stata_acro:{type(stata_config.stata_acro)}"
+    assert isinstance(stata_config.stata_acro, ACRO), errmsg
+    errmsg2 = "suppress should be initialised True"
+    assert stata_config.stata_acro.suppress, errmsg2
+    assert stata_config.stata_acro.config["safe_threshold"] == 100, (
+        "myconfig not ingested"
+    )
+    clean_up("acro/myconfig.yaml")
+
+
 def test_stata_acro_init():
     """
     Test creation of an acro object at the start of a session.
@@ -207,6 +256,8 @@ def test_stata_acro_init():
     Which is initialsied to the string "empty" in the acro.ado file
     Then should be pointed at a new acro instance.
     """
+    # reset acro so we can reinitialise
+    stata_config.stata_acro = "empty"
     # assert isinstance(stata_config.stata_acro, str)
     ret = dummy_acrohandler(
         data,

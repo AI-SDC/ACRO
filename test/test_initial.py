@@ -11,7 +11,6 @@ import pytest
 import statsmodels.api as sm
 
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
-from acro.acro_tables import rounded_survival_table
 from acro.record import Records, load_records
 
 # pylint: disable=redefined-outer-name,too-many-lines

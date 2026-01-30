@@ -337,7 +337,7 @@ def run_session_command(command: str, varlist: list, options: str) -> str:
             args["config"] = config[0]
         found, suppress = find_brace_word("suppress", options)
         if found:
-            args["suppress"] = suppress  # True if suppress[0]=='True' else False
+            args["suppress"] = suppress
         stata_config.stata_acro = ACRO(**args)
         outcome = "acro analysis session created\n"
 

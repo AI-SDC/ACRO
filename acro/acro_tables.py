@@ -1291,7 +1291,7 @@ def add_backticks(name: str) -> str:
     return name  # pragma: no cover
 
 
-def _format_label_condition(level_names, label) -> list[str]:
+def _format_label_condition(level_names: list, label: str) -> list[str]:
     """Format a label into a list of condition strings.
 
     Parameters

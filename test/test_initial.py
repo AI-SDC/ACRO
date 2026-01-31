@@ -33,6 +33,42 @@ def acro() -> ACRO:
     return ACRO(suppress=True)
 
 
+def test_add_backticks():
+    """Test the add_backticks helper function."""
+    # Test simple string without spaces (no backticks added)
+    assert acro_tables.add_backticks("foo") == "foo"
+
+    # Test string with spaces (backticks should be added)
+    assert acro_tables.add_backticks("foo bar") == "`foo bar`"
+
+    # Test string already with backticks (no change)
+    assert acro_tables.add_backticks("`foo bar`") == "`foo bar`"
+
+    # Test multiple spaces
+    assert acro_tables.add_backticks("foo bar baz") == "`foo bar baz`"
+
+
+def test_crosstab_with_spaces_in_variable_names(data, acro):
+    """Test crosstab with spaces in column names (Issue #305)."""
+    # Create a test dataframe with a column name containing spaces
+    test_data = data.copy()
+    test_data["grant type with spaces"] = test_data["grant_type"]
+    test_data["year of study"] = test_data["year"]
+
+    # This should handle spaces in variable names correctly
+    result = acro.crosstab(
+        test_data["year of study"], test_data["grant type with spaces"]
+    )
+
+    # Verify the crosstab was created successfully
+    assert isinstance(result, pd.DataFrame)
+    assert not result.empty
+
+    # Verify that suppression was applied
+    output = acro.results.get_index(0)
+    assert output.status in ["review", "fail"]
+
+
 def test_crosstab_without_suppression(data):
     """Crosstab threshold without automatic suppression."""
     acro = ACRO(suppress=False)

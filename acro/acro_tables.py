@@ -537,7 +537,7 @@ class Tables:
         filename, extension = os.path.splitext(filename)
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
-            return None
+            return None  # pragma: no cover
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
@@ -1273,6 +1273,92 @@ def get_summary(sdc: dict) -> tuple[str, str]:
     return status, summary
 
 
+def add_backticks(name: str) -> str:
+    """Add backticks to a name if it contains spaces and doesn't have them.
+
+    Parameters
+    ----------
+    name : str
+        The name to add backticks to.
+
+    Returns
+    -------
+    str
+        The name with backticks if needed.
+    """
+    if isinstance(name, str) and " " in name and not name.startswith("`"):
+        return f"`{name}`"
+    return name  # pragma: no cover
+
+
+def _format_label_condition(level_names: list, label: str) -> list[str]:
+    """Format a label into a list of condition strings.
+
+    Parameters
+    ----------
+    level_names : list
+        The names of the levels.
+    label : tuple or scalar
+        The label value(s).
+
+    Returns
+    -------
+    list[str]
+        List of condition strings for this label.
+    """
+    parts = []
+    if isinstance(label, tuple):
+        for level, val in zip(level_names, label, strict=False):
+            level = add_backticks(str(level))
+            if isinstance(val, (int, float)):
+                parts.append(f"({level} == {val})")
+            else:
+                parts.append(f'({level} == "{val}")')
+    else:
+        level = add_backticks(str(level_names[0]))
+        if isinstance(label, (int, float)):
+            parts.append(f"({level} == {label})")
+        else:
+            parts.append(f'({level} == "{label}")')
+    return parts
+
+
+def _get_cell_query(
+    mask, row_index, col_index, index_level_names, column_level_names
+) -> str | None:
+    """Generate a query string for a cell if it's marked as true in the mask.
+
+    Parameters
+    ----------
+    mask : DataFrame
+        The suppression mask.
+    row_index : int
+        Row index.
+    col_index : int
+        Column index.
+    index_level_names : list
+        Names of index levels.
+    column_level_names : list
+        Names of column levels.
+
+    Returns
+    -------
+    str or None
+        Query string if cell is true, None otherwise.
+    """
+    if not mask.iloc[row_index, col_index]:
+        return None
+
+    parts = []
+    row_label = mask.index[row_index]
+    col_label = mask.columns[col_index]
+
+    parts.extend(_format_label_condition(index_level_names, row_label))
+    parts.extend(_format_label_condition(column_level_names, col_label))
+
+    return " & ".join(parts)
+
+
 def get_queries(masks, aggfunc) -> list[str]:
     """Return a list of the boolean conditions for each true cell in the suppression masks.
 
@@ -1288,69 +1374,20 @@ def get_queries(masks, aggfunc) -> list[str]:
     str
         The boolean conditions for each true cell in the suppression masks.
     """
-    # initialize a list to store queries for true cells
     true_cell_queries = []
     for _, mask in masks.items():
-        # drop the name of the mask
         if aggfunc is not None:
             if mask.columns.nlevels > 1:
                 mask = mask.droplevel(0, axis=1)
-        # identify level names for rows and columns
         index_level_names = mask.index.names
         column_level_names = mask.columns.names
-        # iterate through the masks to identify the true cells and extract queries
-        for col_index, col_label in enumerate(mask.columns):
-            for row_index, row_label in enumerate(mask.index):
-                if mask.iloc[row_index, col_index]:
-                    if isinstance(row_label, tuple):
-                        index_query = " & ".join(
-                            [
-                                (
-                                    f"({level} == {val})"
-                                    if isinstance(val, (int, float))
-                                    else f'({level} == "{val}")'
-                                )
-                                for level, val in zip(
-                                    index_level_names, row_label, strict=False
-                                )
-                            ]
-                        )
-                    else:
-                        index_query = " & ".join(
-                            [
-                                (
-                                    f"({index_level_names} == {row_label})"
-                                    if isinstance(row_label, (int, float))
-                                    else (f'({index_level_names}== "{row_label}")')
-                                )
-                            ]
-                        )
-                    if isinstance(col_label, tuple):
-                        column_query = " & ".join(
-                            [
-                                (
-                                    f"({level} == {val})"
-                                    if isinstance(val, (int, float))
-                                    else f'({level} == "{val}")'
-                                )
-                                for level, val in zip(
-                                    column_level_names, col_label, strict=False
-                                )
-                            ]
-                        )
-                    else:
-                        column_query = " & ".join(
-                            [
-                                (
-                                    f"({column_level_names} == {col_label})"
-                                    if isinstance(col_label, (int, float))
-                                    else (f'({column_level_names}== "{col_label}")')
-                                )
-                            ]
-                        )
-                    query = f"{index_query} & {column_query}"
+        for col_index, _ in enumerate(mask.columns):
+            for row_index, _ in enumerate(mask.index):
+                query = _get_cell_query(
+                    mask, row_index, col_index, index_level_names, column_level_names
+                )
+                if query is not None:
                     true_cell_queries.append(query)
-    # delete the duplication
     true_cell_queries = list(set(true_cell_queries))
     return true_cell_queries
 
@@ -1392,7 +1429,7 @@ def create_dataframe(index, columns) -> DataFrame:
 
     try:
         data = pd.concat([index_df, columns_df], axis=1)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError):  # pragma: no cover
         data = empty_dataframe
 
     return data
@@ -1502,7 +1539,6 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
         data = create_dataframe(index, columns)
     # apply the queries to the data
     for query in true_cell_queries:
-        query = str(query).replace("['", "").replace("']", "")
         data = data.query(f"not ({query})")
 
     # get the index and columns from the data after the queries are applied

@@ -143,3 +143,6 @@ stata/various_stata_development__files
 # test output
 /test.xlsx
 /outputs/
+
+# test datasets that can't b shared
+UKDA-7401-stata12/

@@ -56,17 +56,30 @@ def test_crosstab_with_spaces_in_variable_names(data, acro):
     test_data["year of study"] = test_data["year"]
 
     # This should handle spaces in variable names correctly
-    result = acro.crosstab(
-        test_data["year of study"], test_data["grant type with spaces"]
+    # first check is that it behaves the same as pandas without suppression
+    acro.suppress = False
+    pandas_nospace_version = pd.crosstab(data["year"], data["grant_type"], margins=True)
+    acro_with_spaces_version = acro.crosstab(
+        test_data["year of study"], test_data["grant type with spaces"], margins=True
     )
+    assert (
+        acro_with_spaces_version.to_numpy() == pandas_nospace_version.to_numpy()
+    ).all()
+    # Verify that suppression was not applied in this case
+    assert acro.results.get_index(-1).status == "fail"
 
     # Verify the crosstab was created successfully
+
+    # turn suppression back on, run rest of checks
+    acro.suppress = True
+    result = acro.crosstab(
+        test_data["year of study"], test_data["grant type with spaces"], margins=True
+    )
     assert isinstance(result, pd.DataFrame)
     assert not result.empty
 
-    # Verify that suppression was applied
-    output = acro.results.get_index(0)
-    assert output.status in ["review", "fail"]
+    # Verify that suppression was applied in second case
+    assert acro.results.get_index(-1).status == "review"
 
 
 def test_crosstab_without_suppression(data):

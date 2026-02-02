@@ -185,11 +185,11 @@ class ACRO(Tables, Regression):
         """
         self.results.add_exception(output, reason)
 
-    def enable_suppression(self):
+    def enable_suppression(self) -> None:
         """Turn suppression on during a session."""
         self.suppress = True
 
-    def disable_suppression(self):
+    def disable_suppression(self) -> None:
         """Turn suppression off during a session."""
         self.suppress = False
 

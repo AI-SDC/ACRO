@@ -185,6 +185,14 @@ class ACRO(Tables, Regression):
         """
         self.results.add_exception(output, reason)
 
+    def enable_suppression(self):
+        """Turn suppression on during a session."""
+        self.suppress = True
+
+    def disable_suppression(self):
+        """Turn suppression off during a session."""
+        self.suppress = False
+
 
 def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
     """Add outputs to an acro object and creates a results file for checking.

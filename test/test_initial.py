@@ -1240,3 +1240,13 @@ def test_create_dataframe(data):
         "dataframe created with invalid rows  and columns should be empty"
         f"but got shape{mydataframe4a.shape}"
     )
+
+
+def test_toggle_suppression():
+    """Test toggling suppression on/off."""
+    acro = ACRO(suppress=False)
+    assert not acro.suppress
+    acro.enable_suppression()
+    assert acro.suppress
+    acro.disable_suppression()
+    assert not acro.suppress

@@ -6,10 +6,10 @@
 *   feat: disallow `.gph` files as custom outputs in Stata ([#296](https://github.com/AI-SDC/ACRO/pull/296))
 *   feat: make finalise non-interactive by default ([#309](https://github.com/AI-SDC/ACRO/pull/309))
 *   feat: add setters to toggle suppression ([#326](https://github.com/AI-SDC/ACRO/pull/326))
-*   feat: add support for `init` options in Stata ([#320](https://github.com/AI-SDC/ACRO/pull/320)
+*   feat: add support for `init` options in Stata ([#320](https://github.com/AI-SDC/ACRO/pull/320))
 *   fix: update summary status logic to reflect suppression state ([#317](https://github.com/AI-SDC/ACRO/pull/317))
 *   fix: handle spaces in variable names for `crosstab` ([#321](https://github.com/AI-SDC/ACRO/pull/321))
-*   test: add test for `rounded_survival_table` function in survival analysis ([#324](https://github.com/AI-SDC/ACRO/pull/324)
+*   test: add test for `rounded_survival_table` function in survival analysis ([#324](https://github.com/AI-SDC/ACRO/pull/324))
 *   ci: set `MPLBACKEND`
 
 ## Version 0.4.11 (Nov 03, 2025)

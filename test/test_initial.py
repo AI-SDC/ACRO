@@ -11,7 +11,7 @@ import pytest
 import statsmodels.api as sm
 
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
-from acro.acro_tables import rounded_survival_table
+from acro.acro_tables import _rounded_survival_table
 from acro.record import Records, load_records
 
 # pylint: disable=redefined-outer-name,too-many-lines
@@ -735,7 +735,7 @@ def test_rounded_survival_table():
     )
 
     # Apply rounded_survival_table
-    result = rounded_survival_table(survival_table.copy())
+    result = _rounded_survival_table(survival_table.copy())
 
     # Check that it has the rounded_survival_fun column
     assert "rounded_survival_fun" in result.columns

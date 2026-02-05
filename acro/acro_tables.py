@@ -522,7 +522,7 @@ class Tables:
     ):
         """Create the survival plot according to the status of suppressing."""
         if self.suppress:
-            survival_table = rounded_survival_table(survival_table)
+            survival_table = _rounded_survival_table(survival_table)
             plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
         else:  # pragma: no cover
             plot = survival_func.plot()
@@ -914,12 +914,30 @@ def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
     return (table, comments)
 
 
-def rounded_survival_table(
-    survival_table,
-    num_at_risk_col="num at risk",
-    num_events_col="num events",
-):
-    """Calculate the rounded surival function."""
+def _rounded_survival_table(
+    survival_table: pd.DataFrame,
+    num_at_risk_col: str = "num at risk",
+    num_events_col: str = "num events",
+) -> pd.DataFrame:
+    """Calculate the rounded survival function.
+
+    Internal helper function for survival analysis with disclosure control.
+    Applies rounding to survival tables to prevent disclosure of small counts.
+
+    Parameters
+    ----------
+    survival_table : pd.DataFrame
+        The survival table containing survival analysis results.
+    num_at_risk_col : str, default "num at risk"
+        Name of the column containing number at risk values.
+    num_events_col : str, default "num events"
+        Name of the column containing number of events.
+
+    Returns
+    -------
+    pd.DataFrame
+        The survival table with rounded survival function added.
+    """
     death_censored = (
         survival_table[num_at_risk_col].shift(periods=1)
         - survival_table[num_at_risk_col]

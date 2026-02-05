@@ -914,14 +914,19 @@ def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
     return (table, comments)
 
 
-def rounded_survival_table(survival_table):
+def rounded_survival_table(
+    survival_table,
+    num_at_risk_col="num at risk",
+    num_events_col="num events",
+):
     """Calculate the rounded surival function."""
     death_censored = (
-        survival_table["num at risk"].shift(periods=1) - survival_table["num at risk"]
+        survival_table[num_at_risk_col].shift(periods=1)
+        - survival_table[num_at_risk_col]
     )
     death_censored = death_censored.tolist()
-    survivor = survival_table["num at risk"].tolist()
-    deaths = survival_table["num events"].tolist()
+    survivor = survival_table[num_at_risk_col].tolist()
+    deaths = survival_table[num_events_col].tolist()
     rounded_num_of_deaths = []
     rounded_num_at_risk = []
     sub_total = 0

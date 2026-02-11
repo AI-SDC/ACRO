@@ -4,7 +4,6 @@ Acro_demo_2026.py.
 Created (except this docstring) from acro_demo_2026.iynb
 author Jim Smith.
 """
-#!/usr/bin/env python
 
 # # ACRO Demonstration
 # This is a simple notebook to get you started with using the ```acro``` package to add disclosure risk control  to your analysis.

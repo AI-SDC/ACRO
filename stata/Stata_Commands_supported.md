@@ -61,7 +61,12 @@ At present most  acro-assessed outputs are saved and egressed as csv files or im
 
 ```acro add_exception output_id exception_string```:  _adds an exception request (string) comment to a named output_
 
-```acro finalise [output_dir] [filetype]```: _wraps up the session, writing the outputs to a named directory (default= "stata_output" ) in json (default) or xlsx format._
+```acro finalise [output_dir] [filetype]```: _wraps up the session, writing the outputs to a named directory (default= "stata_output" ) in json (default) or xlsx format.
+
+Note that **acro will not overwrite your work**, so the name of the directory you pass to _finalise_ must not exist.<br>
+You can: delete old versions manually; provide a new name; or create the name in code - for example including the date/time.<br>
+The acro_demo_2026 do-file (and supporting pdfs) show how to this.
+
 
 ----
 

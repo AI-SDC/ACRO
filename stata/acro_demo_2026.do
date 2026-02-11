@@ -1,6 +1,6 @@
 capture program drop engage
 program engage
-  di "" 
+  di ""
   di as err "==press <return> to continue==" _request(dummy)
   di ""
 end
@@ -9,37 +9,37 @@ end
 
 ************************************************************
 * Simple introduction to using acro for Stata researchers. *
-*                                                          * 
-* Author: Jim Smith. 2026                                  * 
+*                                                          *
+* Author: Jim Smith. 2026                                  *
 ************************************************************
 
 quietly {
 noisily display  " {title:ACRO demonstration}"
 
 noisily display as txt "This is a simple do-file to get you started with using the {bf:{it:acro}} package to add disclosure risk control  to your analysis."
-noisily display as txt"This is an interactive demonstration, so occasionally you will be prompted to hit <return> to either:" 
-noisily display as txt " - display the next piece of  information or " 
+noisily display as txt"This is an interactive demonstration, so occasionally you will be prompted to hit <return> to either:"
+noisily display as txt " - display the next piece of  information or "
 noisily display as txt " - run the next code snippet."
-noisily display "" 
+noisily display ""
 
 
 
 noisily display as err "{bf:In displaying some of the examples below we have used the terms 'dollar' 'backtick_' and '_tick'}"
-noisily display as err " You will need to replace them with the appropriate symbols in your actual code" 
+noisily display as err " You will need to replace them with the appropriate symbols in your actual code"
 
-noisily engage 
+noisily engage
 
 
 noisily display  " {title:A: The basic concepts}"
 
-noisily display "" 
+noisily display ""
 
 noisily display as text   "{bf:1 A research {it:session}:}"
 noisily display as text   "by which we mean the activity of running a series of commands (interactively or via a script) that:"
  noisily display as text  " -  ingest some data,"
  noisily display as text  " -  manipulate it, and then"
  noisily display as text  " -  produce (and store) some outputs."
-noisily display "" 
+noisily display ""
 
 noisily display as text  "{bf:2 Types of commands:}"
 noisily display as text  "Whether interactive, or just running a final script, we can think of the commands that get run in a session as dividing into:"
@@ -48,20 +48,20 @@ noisily display as text  "Whether interactive, or just running a final script, w
  noisily display as text  "   - in Stata these might use the variables window, or the {it:display} command"
  noisily display as text  " - {it:query} commands that produce an output from your data (table/plot/regression model etc.) "
  noisily display as text  "     that you might want to export from the Trusted Research Environment (TRE)"
-noisily display "" 
+noisily display ""
 
 
  noisily display as text  " {bf:3 Risk Assessment vs decision making:}"
  noisily display as text  " SACRO stands for Semi-Automated Checking of Research Outputs."
  noisily display as text  " The prefix 'Semi' is important here - because in a principles-based system humans should make {it:decisions} about output requests. "
  noisily display as text  " To help with that we provide the SACRO-Viewer, which collates all the relevant information for them."
-noisily display "" 
+noisily display ""
 
 noisily display as text  " A key part of that information is the  {it:Risk Assessment}."
  noisily display as text  " - Since it involves calculating metrics and comparing them to thresholds (the TRE's risk appetite)"
  noisily display as text  "    it can be done automatically, at the time an output query runs on the data."
  noisily display as text  " - This is what the ACRO tool does when you use it as part of your workflow."
-noisily display "" 
+noisily display ""
 
 noisily engage
 
@@ -79,27 +79,27 @@ noisily display as text  "     from the process of {it:formatting} them for publ
 noisily display as text  "   - ACRO handles creation. We are interested in hearing from researchers whether it is important to support them with formatting."
 
 noisily display ""
- 
+
  noisily display as text "{bf: 5 What ACRO doesn't support (yet)}"
  noisily display as text  " - Weightings as an option when creating tables/regressions"
- noisily display as text  "   We would greatly appreciate input on which versions peope use most" 
- noisily display as text  "   so we can plan their implementation"  
- noisily display as text  " - Abbreviations/synonyms e.g. {cmd:reg} for {cmd:regress} etc." 
+ noisily display as text  "   We would greatly appreciate input on which versions peope use most"
+ noisily display as text  "   so we can plan their implementation"
+ noisily display as text  " - Abbreviations/synonyms e.g. {cmd:reg} for {cmd:regress} etc."
  noisily display as text  "   this would make a nice (and easy) job for someone who wanted to get involved supporting this initiative!"
  noisily display as text  " - Statements that combined manipulation and query commands, for example,"
  noisily display as text  "   {it: xi: regress wage i.year age}"
  noisily display as text  "   {bf:Workaround} You can achieve this by creating the dummy variables {bf:before} calling your query command:"
  noisily display as text  "   {it: xi year}"
  noisily display as text  "   {it: regress wage  backtick_ds _I*_tick age} "
- noisily display as text  "   NB: ACRO needs to be passed an explicit list of independent variables rather than Stata's i.year shortcut" 
+ noisily display as text  "   NB: ACRO needs to be passed an explicit list of independent variables rather than Stata's i.year shortcut"
  noisily display as text  "   The easiest way to avoid listing the indicator variables manually is to use the macro ds_I* as shown"
  noisily display as text  "     - Stata will expand this automatically before it gets passed to acro"
  noisily display as text  "   See that Stata manual https://www.stata.com/manuals15/rxi.pdf for further discussion"
- 
- 
+
+
  noisily engage
-   
- 
+
+
 
 noisily display as text "{title:B Getting Started with the demonstration}"
 
@@ -142,7 +142,7 @@ noisily display as text " - whether suppression is automatically applied to disc
 noisily display as text ""
 
 
-noisily acro init, config(default) 
+noisily acro init, config(default)
 noisily acro disable_suppression
 
 noisily display as text ""
@@ -178,7 +178,7 @@ noisily display as text "    especially as the functionality can be recreated by
 noisily display as text "2. We do not support abbreviations (creating a lookup table for this would be a nice first issue if someone wanted to contribute)."
 noisily display as text ""
 
-noisily display as text "The code should automatically accomodate the syntax from Stata versions <=16 and 17+" 
+noisily display as text "The code should automatically accomodate the syntax from Stata versions <=16 and 17+"
 noisily display as text "  - in the examples below we will show the syntax from versions 17 and beyond,"
 noisily display as text " So the syntax is {bf: acro table  rowvars colvars [if] [in]  [, *]}"
 noisily display as text ""
@@ -302,7 +302,7 @@ noisily display as text "We welcome feedback, and suggestions for the next prior
 noisily display as text "Offers to contribute code are especially welcome!"
 noisily display as text "There is more help on how to use all of these available from the {it:acro cheat sheet} or (if have have internet access) from www.sacro-tools.org"
 
-noisily engage 
+noisily engage
 
 noisily display as text ""
 
@@ -373,14 +373,14 @@ noisily display as text `"{cmd:acro add_comments "mean_children_by_parents_finan
 noisily acro add_comments "mean_children_by_parents_finance_recommendation" "too few cases of recommend to report"
 
 
-noisily engage 
+noisily engage
 
 noisily display as text "{bf: 5. Request an exception}"
 noisily display as text " An example of providing a reason why an exception should be made"
 
 noisily display as text `"e.g.: {cmd:acro add_exception "output_n" "This is evidence of systematic bias"}"'
 
-noisily engage 
+noisily engage
 noisily display as text "{bf: 6 Adding a custom output.}"
 
 noisily display as text " As mentioned above you might want to request release of all sorts of things"
@@ -425,6 +425,3 @@ noisily display as text `"{cmd:acro finalise "backtick_myfoldername_tick"}"'
 
 noisily acro finalise "`myfoldername'"
 }
-
-
-

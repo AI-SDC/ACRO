@@ -113,7 +113,7 @@ These examples assume we have a simple data set with:
 
 ```acro table a b ``` produces
 <div style="display: inline-block">
-    
+
 |  |b1|b2|
 |--|--|--|
 |a1|  |  |
@@ -129,7 +129,7 @@ These examples assume we have a simple data set with:
 
 produces the table with the shape
 <div style="display: inline-block">
- 
+
 |  |b1|b2|
 |--|--|--|
 |a1|  |  |
@@ -145,7 +145,7 @@ For example: ```acro table a b, statistic(mean myvar) statistic(std myvar)``` <b
 produces
 
 <div style="display: inline-block">
- 
+
 |  | mean| |std | |
 |---|---|---|---|---|
 |  |b1|b2|b1|b2|

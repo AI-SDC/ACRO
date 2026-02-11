@@ -148,7 +148,7 @@ suppression toggled off for subsequent commands{txt}
 {res}{txt}    especially as the functionality can be recreated by creating extra variables in Stata.
 {res}{txt}2. We do not support abbreviations (creating a lookup table for this would be a nice first issue if someone wanted to contribute).
 {res}{txt}
-{res}{txt}The code should automatically accomodate the syntax from Stata versions <=16 and 17+
+{res}{txt}The code should automatically accommodate the syntax from Stata versions <=16 and 17+
 {res}{txt}  - in the examples below we will show the syntax from versions 17 and beyond,
 {res}{txt} So the syntax is {bf: acro table  rowvars colvars [if] [in]  [, *]}
 {res}{txt}
@@ -279,7 +279,7 @@ Total       |4320.0      |4320         |4318   |12958|
 {res}{txt}{bf: This highlights a wider issue about Stata's inconsistent treatment of missing values}
 {res}{txt}For reasons best known to itself, Stata sometimes (but not always) interprets missing numerical values as {bf:extremely high numbers}
 {res}{txt}    so in one example we saw recently it reported a lot of people aged 250 years and above ...
-{res}{txt}By contrast Pandas removes records with missing values if needed, whis is more sane
+{res}{txt}By contrast Pandas removes records with missing values if needed, which is more sane
 {res}{txt} {bf: You can replicate Stata's behaviour} by explicitly mapping missing values (represented as .) to a suitably high number
 {res}{txt}
 

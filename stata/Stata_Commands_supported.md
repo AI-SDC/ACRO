@@ -43,7 +43,7 @@ At present most  acro-assessed outputs are saved and egressed as csv files or im
 
 # ACRO session management commands
 
-```acro init, config(filename)```: _starts an acro session_ using a TRE-provided risk apptetite in _filename.yaml_
+```acro init, config(filename)```: _starts an acro session_ using a TRE-provided risk appetite in _filename.yaml_
 
 ```acro custom_output myfilename.xxx```: _adds a custom output i.e. code, or a paper version, or images of plots or results from analyses we can't auto-check (yet)_
 
@@ -57,7 +57,7 @@ At present most  acro-assessed outputs are saved and egressed as csv files or im
 
 ```acro rename_output output_id new_name```:  _renames a named output from an acro session_
 
-```acro add_comments output_id comment_string```:  _adds a comment (string) to a named outputn_
+```acro add_comments output_id comment_string```:  _adds a comment (string) to a named output_
 
 ```acro add_exception output_id exception_string```:  _adds an exception request (string) comment to a named output_
 
@@ -78,7 +78,7 @@ There are some minor differences, which will be addressed in the next version.<b
 Currently not supported:
 - **weights within the options**
 - **formatting commands  (see above).**
-- compound manipulation/query commands such creeating indicator variables from categorical ones eg.<br>
+- compound manipulation/query commands such creating indicator variables from categorical ones eg.<br>
     _xi: regress myvar1 i.myvar2 myvar3_<br>
     As shown in the demo you can achieve the same  effects by doing this in two steps: <br>
     _xi myvar2_ <br>

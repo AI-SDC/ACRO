@@ -178,7 +178,7 @@ noisily display as text "    especially as the functionality can be recreated by
 noisily display as text "2. We do not support abbreviations (creating a lookup table for this would be a nice first issue if someone wanted to contribute)."
 noisily display as text ""
 
-noisily display as text "The code should automatically accomodate the syntax from Stata versions <=16 and 17+"
+noisily display as text "The code should automatically accommodate the syntax from Stata versions <=16 and 17+"
 noisily display as text "  - in the examples below we will show the syntax from versions 17 and beyond,"
 noisily display as text " So the syntax is {bf: acro table  rowvars colvars [if] [in]  [, *]}"
 noisily display as text ""
@@ -272,7 +272,7 @@ noisily display as text ""
 noisily display as text "{bf: This highlights a wider issue about Stata's inconsistent treatment of missing values}"
 noisily display as text "For reasons best known to itself, Stata sometimes (but not always) interprets missing numerical values as {bf:extremely high numbers}"
 noisily display as text "    so in one example we saw recently it reported a lot of people aged 250 years and above ..."
-noisily display as text "By contrast Pandas removes records with missing values if needed, whis is more sane"
+noisily display as text "By contrast Pandas removes records with missing values if needed, which is more sane"
 noisily display as text " {bf: You can replicate Stata's behaviour} by explicitly mapping missing values (represented as .) to a suitably high number"
 
 noisily display as text ""

@@ -1,7 +1,8 @@
 """
-Simple introduction to using acro for researchers.
+Acro_demo_2026.py.
 
-Author: Jim Smith. 2026
+Created (except this docstring) from acro_demo_2026.iynb
+author Jim Smith.
 """
 #!/usr/bin/env python
 
@@ -59,7 +60,7 @@ Author: Jim Smith. 2026
 # ### Step 1: Setting up the environment with the tools we will use
 # We will begin by importing some standard data science packages, and also the acro  package itself.
 
-# In[ ]:
+# In[1]:
 
 import os
 
@@ -80,7 +81,7 @@ from acro import ACRO
 # - the TRE's risk appetite: that defines the rules your outputs will be checked against.
 # - whether suppression is automatically applied to disclosive outputs.
 
-# In[ ]:
+# In[2]:
 
 
 acro = ACRO(config="default", suppress=False)
@@ -97,7 +98,7 @@ acro = ACRO(config="default", suppress=False)
 #
 #
 
-# In[ ]:
+# In[3]:
 
 
 from scipy.io.arff import loadarff
@@ -131,7 +132,7 @@ df["children"] = df.apply(
 )
 
 
-# In[ ]:
+# In[4]:
 
 
 ##--- Feedback Command ----
@@ -162,7 +163,7 @@ df.head()
 #
 # Now run the next cell.
 
-# In[ ]:
+# In[5]:
 
 
 acro.crosstab(index=df.recommendation, columns=df.parents)
@@ -201,7 +202,7 @@ acro.crosstab(index=df.recommendation, columns=df.parents)
 # - the code automatically adds an exception request saying that suppression has been applied
 # - and, most importantly,  the cells are redacted.
 
-# In[ ]:
+# In[6]:
 
 
 acro.enable_suppression()
@@ -215,12 +216,12 @@ acro.crosstab(index=df.recommendation, columns=df.parents)
 #   - we can do the same to columns as well (or instead) if we want to
 # - setting `values=df.children`(the name of a column in the dataset) tells it we want to report something about the number of children for each sub-group (table cell)
 # - setting `aggfunc=mean` tells it the statistic we want to report is the  mean number of children (which introduces additional risks of *dominance*)
-# - setting `margins=total` tells it to display row and column sub-totals
+# - setting `margins=True` tells it to display row and column sub-totals
 #
 # It's worth noting that including the totals there are  6 columns in the risk assessment and 5 in the suppressed table. <br>
 # This is because after suppression has replaced numbers with `NaN`, pandas removes the fully suppressed column (_'recommend'_) from the table.
 
-# In[ ]:
+# In[7]:
 
 
 acro.suppress = True
@@ -229,7 +230,7 @@ acro.crosstab(
     columns=df.recommendation,
     values=df.children,
     aggfunc="mean",
-    margins="total",
+    margins=True,
 )
 
 
@@ -246,7 +247,7 @@ acro.crosstab(
 #
 # You can get help on using any of these using the standard python `help()` syntax as shown in the next cell
 
-# In[ ]:
+# In[8]:
 
 
 help(acro.logit)
@@ -270,7 +271,7 @@ help(acro.logit)
 # ### 1: Listing the  current contents of an  ACRO session
 # This output is not beautiful (there's a GUI come soon) but should let you identify outputs you want to rename,comment on, or delete
 
-# In[ ]:
+# In[9]:
 
 
 _ = acro.print_outputs()
@@ -281,7 +282,7 @@ _ = acro.print_outputs()
 #
 # We don't want to waste the output checker's time so lets remove it.
 
-# In[ ]:
+# In[10]:
 
 
 acro.remove_output("output_0")
@@ -290,7 +291,7 @@ acro.remove_output("output_0")
 # ### 3: Rename ACRO outputs before finalising
 # This is an example of renaming the outputs to provide  more descriptive names.
 
-# In[ ]:
+# In[11]:
 
 
 acro.rename_output("output_1", " crosstab_recommendation_vs_parents")
@@ -302,7 +303,7 @@ acro.rename_output("output_2", "mean_children_by_parents_finance_recommendation"
 # It can be used to provide a description or to pass additional information to the TRE staff.<br>
 # They will see it alongside your file in the output checking viewer - rather than having it in an email somewhere.
 
-# In[ ]:
+# In[12]:
 
 
 acro.add_comments(
@@ -325,12 +326,10 @@ acro.add_comments(
 #
 # In ACRO we can add a file to our session with a comment describing what it is
 
-# In[ ]:
+# In[13]:
 
 
-acro.custom_output(
-    "acro_demo2026_code.py", "This is the code that produced this session"
-)
+acro.custom_output("acro_demo_2026.py", "This is the code that produced this session")
 
 
 # ## F: Finishing your session and producing a folder of files to release.
@@ -346,7 +345,7 @@ acro.custom_output(
 #   - delete the previous folder, or
 #   - provide a new folder name
 
-# In[ ]:
+# In[14]:
 
 
 output = acro.finalise("my_acro_outputs_v1")

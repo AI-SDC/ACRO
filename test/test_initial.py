@@ -555,10 +555,14 @@ def test_add_to_acro(data, monkeypatch):
     src_path = "test_add_to_acro"
     dest_path = "sdc_results"
     file_path = "crosstab.pkl"
-    if not os.path.exists(src_path):  # pragma no cover
-        table.to_pickle(file_path)
-        os.mkdir(src_path)
-        shutil.move(file_path, src_path, copy_function=shutil.copytree)
+    # ensure a clean state before setup
+    if os.path.exists(src_path):
+        shutil.rmtree(src_path)
+    if os.path.exists(dest_path):
+        shutil.rmtree(dest_path)
+    table.to_pickle(file_path)
+    os.mkdir(src_path)
+    shutil.move(file_path, src_path, copy_function=shutil.copytree)
     # add exception to the output
     exception = ["I want it"]
     monkeypatch.setattr("builtins.input", lambda _: exception.pop(0))
@@ -566,6 +570,8 @@ def test_add_to_acro(data, monkeypatch):
     add_to_acro(src_path, dest_path)
     assert "results.json" in os.listdir(dest_path)
     assert "crosstab.pkl" in os.listdir(dest_path)
+    shutil.rmtree(src_path)
+    shutil.rmtree(dest_path)
 
 
 def test_prettify_tablestring(data):
@@ -1545,3 +1551,74 @@ def test_generate_summary_with_crosstab(data, acro):
         "year" in summary_df.iloc[0]["variables"]
         or "grant_type" in summary_df.iloc[0]["variables"]
     )
+
+
+def test_extract_table_info_elif_index_name():
+    """Cover lines 456-457: elif table.index.name branch.
+
+    Triggered when index.names has no truthy entries (any() is False)
+    but index.name is set.
+    """
+    records = Records()
+
+    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
+    table.index.name = "myindex"
+
+    # Subclass the index type to override `names` so any(names) is False,
+    # while `name` still returns "myindex" (reads from _names[0]).
+    idx_type = type(table.index)
+    patched_idx = type("PatchedIdx", (idx_type,), {"names": property(lambda _: [None])})
+    table.index.__class__ = patched_idx
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output, "linear")
+
+    assert "myindex" in variables
+
+
+def test_extract_table_info_elif_columns_name():
+    """Cover line 465: elif table.columns.name branch.
+
+    Triggered when columns.names has no truthy entries (any() is False)
+    but columns.name is set.
+    """
+    records = Records()
+
+    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
+    table.columns.name = "mycols"
+
+    # Override index.names to avoid the `if` branch for index (no index name set).
+    # Override columns.names so any() is False, forcing the elif for columns.
+    col_type = type(table.columns)
+    patched_idx = type("PatchedIdx", (col_type,), {"names": property(lambda _: [None])})
+    table.columns.__class__ = patched_idx
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output, "linear")
+
+    assert "mycols" in variables
+
+
+def test_extract_table_info_shape_type_error():
+    """Cover lines 474-475: except (TypeError, ValueError) in _extract_table_info.
+
+    Triggered when shape multiplication raises TypeError (e.g. shape returns
+    (None, None) so None * None raises TypeError).
+    """
+    records = Records()
+
+    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
+    table.index.name = "idx"
+
+    class BrokenShapeDF(pd.DataFrame):
+        @property
+        def shape(self):
+            return (None, None)
+
+    table.__class__ = BrokenShapeDF
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output, "linear")
+
+    assert isinstance(variables, list)
+    assert total_records == 0

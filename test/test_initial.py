@@ -1481,3 +1481,67 @@ def test_extract_regression_info_with_invalid_value():
     # Should handle ValueError gracefully
     assert isinstance(variables, list)
     assert total_records == 0
+
+
+def test_extract_table_info_with_numeric_data():
+    """Test _extract_table_info with numeric data to cover line 456 and 465."""
+    records = Records()
+
+    # Create a table with numeric values (not NaN)
+    table = pd.DataFrame(
+        [[10, 20], [30, 40]],
+        index=["row1", "row2"],
+        columns=["col1", "col2"],
+    )
+    table.index.name = "idx"
+    table.columns.name = "cols"
+
+    output = [table]
+    # Test with crosstab method to trigger the cell_sum > 0 path
+    variables, total_records = records._extract_table_info(output, "crosstab")
+
+    # Should extract variables
+    assert "idx" in variables
+    assert "cols" in variables
+    # With numeric data, cell_sum will be 100 (10+20+30+40), so total_records should be 100
+    assert total_records == 100
+
+
+def test_extract_table_info_with_mixed_data():
+    """Test _extract_table_info with mixed NaN and numeric data."""
+    records = Records()
+
+    # Create a table with some NaN and some numeric values
+    table = pd.DataFrame(
+        [[10, np.nan], [np.nan, 40]],
+        index=["row1", "row2"],
+        columns=["col1", "col2"],
+    )
+    table.index.name = "idx"
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output, "crosstab")
+
+    # Should extract variables
+    assert "idx" in variables
+    # cell_sum = 10 + 40 = 50, so total_records should be 50
+    assert total_records == 50
+
+
+def test_generate_summary_with_crosstab(data, acro):
+    """Test generate_summary triggers _extract_table_info coverage for lines 456-465."""
+    # Create actual crosstab output to trigger generate_summary path
+    _ = acro.crosstab(data.year, data.grant_type)
+
+    # Call generate_summary which will call _extract_table_info
+    summary_df = acro.results.generate_summary()
+
+    # Verify summary was generated
+    assert len(summary_df) > 0
+    assert "variables" in summary_df.columns
+    assert "total_records" in summary_df.columns
+    # Should have extracted year and grant_type as variables
+    assert (
+        "year" in summary_df.iloc[0]["variables"]
+        or "grant_type" in summary_df.iloc[0]["variables"]
+    )

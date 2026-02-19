@@ -1357,13 +1357,20 @@ def test_extract_table_info(data, acro):
     acro.crosstab(data.year, data.grant_type)
     output = acro.results.get_index(0)
 
-    # Test extracting info from table output
+    # Test extracting info from table output with crosstab method
     variables, total_records = acro.results._extract_table_info(
         output.output, "crosstab"
     )
     assert len(variables) > 0
     assert total_records > 0
     assert "year" in variables or "grant_type" in variables
+    
+    # Also test with non-crosstab method to ensure both paths work
+    variables2, total_records2 = acro.results._extract_table_info(
+        output.output, "pivot_table"
+    )
+    assert len(variables2) > 0
+    assert total_records2 > 0
 
 
 def test_extract_regression_info():

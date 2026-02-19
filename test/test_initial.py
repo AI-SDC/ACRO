@@ -1574,7 +1574,7 @@ def test_extract_table_info_elif_index_name():
     table.index.__class__ = patched_idx
 
     output = [table]
-    variables, total_records = records._extract_table_info(output, "linear")
+    variables, _ = records._extract_table_info(output, "linear")
 
     assert "myindex" in variables
 
@@ -1597,7 +1597,7 @@ def test_extract_table_info_elif_columns_name():
     table.columns.__class__ = patched_idx
 
     output = [table]
-    variables, total_records = records._extract_table_info(output, "linear")
+    variables, _ = records._extract_table_info(output, "linear")
 
     assert "mycols" in variables
 

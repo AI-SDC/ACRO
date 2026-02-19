@@ -8,4 +8,6 @@ Interactive Jupyter notebook examples demonstrating ACRO functionality.
    :maxdepth: 2
    :caption: ACRO Notebooks
 
-   notebooks/acro_demo_2026.ipynb
+   notebooks/acro_demo.ipynb
+   notebooks/test.ipynb
+   notebooks/test-nursery.ipynb

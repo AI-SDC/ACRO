@@ -555,10 +555,14 @@ def test_add_to_acro(data, monkeypatch):
     src_path = "test_add_to_acro"
     dest_path = "sdc_results"
     file_path = "crosstab.pkl"
-    if not os.path.exists(src_path):  # pragma no cover
-        table.to_pickle(file_path)
-        os.mkdir(src_path)
-        shutil.move(file_path, src_path, copy_function=shutil.copytree)
+    # ensure a clean state before setup
+    if os.path.exists(src_path):
+        shutil.rmtree(src_path)
+    if os.path.exists(dest_path):
+        shutil.rmtree(dest_path)
+    table.to_pickle(file_path)
+    os.mkdir(src_path)
+    shutil.move(file_path, src_path, copy_function=shutil.copytree)
     # add exception to the output
     exception = ["I want it"]
     monkeypatch.setattr("builtins.input", lambda _: exception.pop(0))
@@ -566,6 +570,8 @@ def test_add_to_acro(data, monkeypatch):
     add_to_acro(src_path, dest_path)
     assert "results.json" in os.listdir(dest_path)
     assert "crosstab.pkl" in os.listdir(dest_path)
+    shutil.rmtree(src_path)
+    shutil.rmtree(dest_path)
 
 
 def test_prettify_tablestring(data):
@@ -1250,3 +1256,386 @@ def test_toggle_suppression():
     assert acro.suppress
     acro.disable_suppression()
     assert not acro.suppress
+
+
+def test_summary_csv_created_with_json(data, acro):
+    """Test that summary.csv is created when finalising to JSON (Issue #224)."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
+    acro.finalise(PATH, "json")
+    summary_path = os.path.normpath(f"{PATH}/summary.csv")
+    assert os.path.exists(summary_path), "summary.csv was not created"
+    summary_df = pd.read_csv(summary_path)
+    assert len(summary_df) == 1
+    assert "id" in summary_df.columns
+    assert "method" in summary_df.columns
+    assert "variables" in summary_df.columns
+    assert "total_records" in summary_df.columns
+    assert "diff_risk" in summary_df.columns
+    # check values
+    assert summary_df.iloc[0]["id"] == "output_0"
+    assert summary_df.iloc[0]["method"] == "crosstab"
+    assert summary_df.iloc[0]["total_records"] > 0
+    shutil.rmtree(PATH)
+
+
+def test_summary_sheet_in_excel(data, acro):
+    """Test that a 'summary' sheet is created in results.xlsx (Issue #224)."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.pivot_table(
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+    )
+    acro.add_exception("output_0", "Let me have it")
+    acro.add_exception("output_1", "I need this")
+    acro.finalise(PATH, "xlsx")
+    filename = os.path.normpath(f"{PATH}/results.xlsx")
+    xl = pd.ExcelFile(filename)
+    assert "summary" in xl.sheet_names, "'summary' sheet not found in Excel"
+    summary_df = pd.read_excel(filename, sheet_name="summary")
+    xl.close()
+    assert len(summary_df) == 2
+    methods = summary_df["method"].tolist()
+    assert "crosstab" in methods
+    assert "pivot_table" in methods
+    shutil.rmtree(PATH)
+
+
+def test_summary_variables_extracted(data):
+    """Test that variable names are correctly extracted into the summary."""
+    acro_obj = ACRO(suppress=False)
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    acro_obj.add_exception("output_0", "Let me have it")
+    acro_obj.finalise(PATH, "json")
+    summary_path = os.path.normpath(f"{PATH}/summary.csv")
+    summary_df = pd.read_csv(summary_path)
+    variables = summary_df.iloc[0]["variables"]
+    assert "year" in variables
+    assert "grant_type" in variables
+    shutil.rmtree(PATH)
+
+
+def test_summary_differencing_risk(data):
+    """Test that differencing risk is flagged when tables share variables but have different record counts (Issue #224)."""
+    acro_obj = ACRO(suppress=True)
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    data_subset = data.iloc[10:].copy()
+    _ = acro_obj.crosstab(data_subset.year, data_subset.grant_type)
+    acro_obj.add_exception("output_0", "Let me have it")
+    acro_obj.add_exception("output_1", "I need this")
+
+    summary_df = acro_obj.results.generate_summary()
+
+    assert summary_df.iloc[0]["variables"] == summary_df.iloc[1]["variables"]
+
+    assert summary_df.iloc[0]["total_records"] != summary_df.iloc[1]["total_records"]
+
+    assert summary_df.iloc[0]["diff_risk"] == True
+    assert summary_df.iloc[1]["diff_risk"] == True
+
+
+def test_summary_regression_metadata(data, acro):
+    """Test that regression outputs are correctly captured in the summary."""
+    new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    new_df = new_df.dropna()
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    _ = acro.ols(endog, exog)
+    summary_df = acro.results.generate_summary()
+    assert len(summary_df) == 1
+    row = summary_df.iloc[0]
+    assert row["method"] == "ols"
+    assert row["type"] == "regression"
+    assert row["total_records"] > 0
+    assert "dof=" in row["variables"]
+
+
+def test_summary_empty_session():
+    """Test that summary handles an empty session gracefully."""
+    acro_obj = ACRO(suppress=False)
+    summary_df = acro_obj.results.generate_summary()
+    assert summary_df.empty
+    assert "diff_risk" in summary_df.columns
+
+
+def test_extract_table_info(data, acro):
+    """Test the _extract_table_info helper method."""
+    acro.crosstab(data.year, data.grant_type)
+    output = acro.results.get_index(0)
+
+    # Test extracting info from table output with crosstab method
+    variables, total_records = acro.results._extract_table_info(
+        output.output, "crosstab"
+    )
+    assert len(variables) > 0
+    assert total_records > 0
+    assert "year" in variables or "grant_type" in variables
+
+    # Also test with non-crosstab method to ensure both paths work
+    variables2, total_records2 = acro.results._extract_table_info(
+        output.output, "pivot_table"
+    )
+    assert len(variables2) > 0
+    assert total_records2 > 0
+
+
+def test_extract_regression_info():
+    """Test the _extract_regression_info helper method with sample data."""
+    # Create a simple regression output for testing
+    records = Records()
+
+    # Create sample regression output
+    reg_output = pd.DataFrame(
+        {
+            "coef": [1.0, 2.0],
+            "std err": [0.1, 0.2],
+            "t": [10.0, 10.0],
+            "P>|t|": [0.0, 0.0],
+        },
+        index=["const", "x1"],
+    )
+
+    # Create a second table with "no. observations"
+    obs_output = pd.DataFrame({"Value": [100]}, index=["no. observations"])
+
+    output = [reg_output, obs_output]
+    variables, total_records = records._extract_regression_info(output)
+
+    # Should have extracted the observations
+    assert isinstance(variables, list)
+    assert total_records == 100
+
+
+def test_mark_diff_risk(data, acro):
+    """Test the _mark_diff_risk helper method."""
+    # Create two crosstabs with same variables but different data
+    acro.crosstab(data.year, data.grant_type)
+    acro.crosstab(data.year, data.grant_type)
+
+    summary_df = acro.results.generate_summary()
+
+    # Check that diff_risk column exists
+    assert "diff_risk" in summary_df.columns
+    # Both outputs should have diff_risk marked
+    assert all(isinstance(x, (bool, type(pd.NA))) for x in summary_df["diff_risk"])
+
+
+def test_extract_table_info_with_zero_cell_sum():
+    """Test _extract_table_info when cell_sum equals 0."""
+    records = Records()
+
+    # Create a table with all NaN values to trigger cell_sum = 0 path
+    table = pd.DataFrame(
+        [[np.nan, np.nan], [np.nan, np.nan]],
+        index=["row1", "row2"],
+        columns=["col1", "col2"],
+    )
+    table.index.name = "idx"
+    table.columns.name = "cols"
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output, "crosstab")
+
+    # Should extract variables and use shape-based count when cell_sum is 0
+    assert "idx" in variables
+    assert "cols" in variables
+    assert total_records > 0
+
+
+def test_extract_table_info_exception_handling():
+    """Test _extract_table_info exception handling with invalid table."""
+    records = Records()
+
+    # Create a table that will cause TypeError during shape multiplication
+    class InvalidTable:
+        def __init__(self):
+            self.shape = "invalid"  # Non-integer shape to trigger TypeError
+
+    output = [InvalidTable()]
+    variables, total_records = records._extract_table_info(output, "crosstab")
+
+    # Should handle exception gracefully
+    assert isinstance(variables, list)
+    assert isinstance(total_records, int)
+
+
+def test_extract_regression_info_with_missing_observations():
+    """Test _extract_regression_info when observation value is NaN."""
+    records = Records()
+
+    # Create regression output with no. observations but NaN value
+    obs_output = pd.DataFrame({"Value": [np.nan]}, index=["no. observations"])
+
+    output = [obs_output]
+    variables, total_records = records._extract_regression_info(output)
+
+    # Should handle NaN gracefully
+    assert isinstance(variables, list)
+    assert total_records == 0
+
+
+def test_extract_regression_info_with_invalid_value():
+    """Test _extract_regression_info when observation value is non-numeric."""
+    records = Records()
+
+    # Create regression output with invalid observation value
+    obs_output = pd.DataFrame({"Value": ["not_a_number"]}, index=["no. observations"])
+
+    output = [obs_output]
+    variables, total_records = records._extract_regression_info(output)
+
+    # Should handle ValueError gracefully
+    assert isinstance(variables, list)
+    assert total_records == 0
+
+
+def test_extract_table_info_with_numeric_data():
+    """Test _extract_table_info with numeric data to cover line 456 and 465."""
+    records = Records()
+
+    # Create a table with numeric values (not NaN)
+    table = pd.DataFrame(
+        [[10, 20], [30, 40]],
+        index=["row1", "row2"],
+        columns=["col1", "col2"],
+    )
+    table.index.name = "idx"
+    table.columns.name = "cols"
+
+    output = [table]
+    # Test with crosstab method to trigger the cell_sum > 0 path
+    variables, total_records = records._extract_table_info(output, "crosstab")
+
+    # Should extract variables
+    assert "idx" in variables
+    assert "cols" in variables
+    # With numeric data, cell_sum will be 100 (10+20+30+40), so total_records should be 100
+    assert total_records == 100
+
+
+def test_extract_table_info_with_mixed_data():
+    """Test _extract_table_info with mixed NaN and numeric data."""
+    records = Records()
+
+    # Create a table with some NaN and some numeric values
+    table = pd.DataFrame(
+        [[10, np.nan], [np.nan, 40]],
+        index=["row1", "row2"],
+        columns=["col1", "col2"],
+    )
+    table.index.name = "idx"
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output, "crosstab")
+
+    # Should extract variables
+    assert "idx" in variables
+    # cell_sum = 10 + 40 = 50, so total_records should be 50
+    assert total_records == 50
+
+
+def test_generate_summary_with_crosstab(data, acro):
+    """Test generate_summary triggers _extract_table_info coverage for lines 456-465."""
+    # Create actual crosstab output to trigger generate_summary path
+    _ = acro.crosstab(data.year, data.grant_type)
+
+    # Call generate_summary which will call _extract_table_info
+    summary_df = acro.results.generate_summary()
+
+    # Verify summary was generated
+    assert len(summary_df) > 0
+    assert "variables" in summary_df.columns
+    assert "total_records" in summary_df.columns
+    # Should have extracted year and grant_type as variables
+    assert (
+        "year" in summary_df.iloc[0]["variables"]
+        or "grant_type" in summary_df.iloc[0]["variables"]
+    )
+
+
+def test_extract_table_info_elif_index_name():
+    """Cover lines 456-457: elif table.index.name branch.
+
+    Triggered when index.names has no truthy entries (any() is False)
+    but index.name is set.
+    """
+    records = Records()
+
+    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
+    table.index.name = "myindex"
+
+    # Subclass the index type to override `names` so any(names) is False,
+    # while `name` still returns "myindex" (reads from _names[0]).
+    patched_idx = type(
+        "PatchedIdx",
+        (type(table.index),),
+        {"names": property(lambda _: [None])},
+    )
+    table.index.__class__ = patched_idx
+
+    output = [table]
+    variables, _ = records._extract_table_info(output, "linear")
+
+    assert "myindex" in variables
+
+
+def test_extract_table_info_elif_columns_name():
+    """Cover line 465: elif table.columns.name branch.
+
+    Triggered when columns.names has no truthy entries (any() is False)
+    but columns.name is set.
+    """
+    records = Records()
+
+    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
+    table.columns.name = "mycols"
+
+    # Override index.names to avoid the `if` branch for index (no index name set).
+    # Override columns.names so any() is False, forcing the elif for columns.
+    col_type = type(table.columns)
+    patched_idx = type("PatchedIdx", (col_type,), {"names": property(lambda _: [None])})
+    table.columns.__class__ = patched_idx
+
+    output = [table]
+    variables, _ = records._extract_table_info(output, "linear")
+
+    assert "mycols" in variables
+
+
+def test_extract_table_info_shape_type_error():
+    """Cover lines 474-475: except (TypeError, ValueError) in _extract_table_info.
+
+    Triggered when shape multiplication raises TypeError (e.g. shape returns
+    (None, None) so None * None raises TypeError).
+    """
+    records = Records()
+
+    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
+    table.index.name = "idx"
+
+    class BrokenShapeDF(pd.DataFrame):
+        @property
+        def shape(self):
+            return (None, None)
+
+    table.__class__ = BrokenShapeDF
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output, "linear")
+
+    assert isinstance(variables, list)
+    assert total_records == 0
+
+
+def test_write_summary_empty_session(tmp_path):
+    """Test write_summary when there are no outputs (line 595 coverage)."""
+    records = Records()
+
+    # Create a temp directory for output
+    output_path = str(tmp_path / "empty_summary")
+
+    # Call write_summary with no outputs - should return early without creating file
+    records.write_summary(output_path)
+
+    # Verify no file was created since summary was empty
+    assert not os.path.exists(os.path.normpath(f"{output_path}/summary.csv"))

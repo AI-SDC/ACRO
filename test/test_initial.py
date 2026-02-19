@@ -1364,7 +1364,7 @@ def test_extract_table_info(data, acro):
     assert len(variables) > 0
     assert total_records > 0
     assert "year" in variables or "grant_type" in variables
-    
+
     # Also test with non-crosstab method to ensure both paths work
     variables2, total_records2 = acro.results._extract_table_info(
         output.output, "pivot_table"

@@ -1566,8 +1566,11 @@ def test_extract_table_info_elif_index_name():
 
     # Subclass the index type to override `names` so any(names) is False,
     # while `name` still returns "myindex" (reads from _names[0]).
-    idx_type = type(table.index)
-    patched_idx = type("PatchedIdx", (idx_type,), {"names": property(lambda _: [None])})
+    patched_idx = type(
+        "PatchedIdx",
+        (type(table.index),),
+        {"names": property(lambda _: [None])},
+    )
     table.index.__class__ = patched_idx
 
     output = [table]

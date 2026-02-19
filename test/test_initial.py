@@ -1622,3 +1622,17 @@ def test_extract_table_info_shape_type_error():
 
     assert isinstance(variables, list)
     assert total_records == 0
+
+
+def test_write_summary_empty_session(tmp_path):
+    """Test write_summary when there are no outputs (line 595 coverage)."""
+    records = Records()
+
+    # Create a temp directory for output
+    output_path = str(tmp_path / "empty_summary")
+
+    # Call write_summary with no outputs - should return early without creating file
+    records.write_summary(output_path)
+
+    # Verify no file was created since summary was empty
+    assert not os.path.exists(os.path.normpath(f"{output_path}/summary.csv"))

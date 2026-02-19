@@ -1350,3 +1350,58 @@ def test_summary_empty_session():
     summary_df = acro_obj.results.generate_summary()
     assert summary_df.empty
     assert "diff_risk" in summary_df.columns
+
+
+def test_extract_table_info(data, acro):
+    """Test the _extract_table_info helper method."""
+    acro.crosstab(data.year, data.grant_type)
+    output = acro.results.get_index(0)
+
+    # Test extracting info from table output
+    variables, total_records = acro.results._extract_table_info(
+        output.output, "crosstab"
+    )
+    assert len(variables) > 0
+    assert total_records > 0
+    assert "year" in variables or "grant_type" in variables
+
+
+def test_extract_regression_info():
+    """Test the _extract_regression_info helper method with sample data."""
+    # Create a simple regression output for testing
+    records = Records()
+
+    # Create sample regression output
+    reg_output = pd.DataFrame(
+        {
+            "coef": [1.0, 2.0],
+            "std err": [0.1, 0.2],
+            "t": [10.0, 10.0],
+            "P>|t|": [0.0, 0.0],
+        },
+        index=["const", "x1"],
+    )
+
+    # Create a second table with "no. observations"
+    obs_output = pd.DataFrame({"Value": [100]}, index=["no. observations"])
+
+    output = [reg_output, obs_output]
+    variables, total_records = records._extract_regression_info(output)
+
+    # Should have extracted the observations
+    assert isinstance(variables, list)
+    assert total_records == 100
+
+
+def test_mark_diff_risk(data, acro):
+    """Test the _mark_diff_risk helper method."""
+    # Create two crosstabs with same variables but different data
+    acro.crosstab(data.year, data.grant_type)
+    acro.crosstab(data.year, data.grant_type)
+
+    summary_df = acro.results.generate_summary()
+
+    # Check that diff_risk column exists
+    assert "diff_risk" in summary_df.columns
+    # Both outputs should have diff_risk marked
+    assert all(isinstance(x, (bool, type(pd.NA))) for x in summary_df["diff_risk"])

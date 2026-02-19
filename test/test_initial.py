@@ -1250,3 +1250,103 @@ def test_toggle_suppression():
     assert acro.suppress
     acro.disable_suppression()
     assert not acro.suppress
+
+
+def test_summary_csv_created_with_json(data, acro):
+    """Test that summary.csv is created when finalising to JSON (Issue #224)."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
+    acro.finalise(PATH, "json")
+    summary_path = os.path.normpath(f"{PATH}/summary.csv")
+    assert os.path.exists(summary_path), "summary.csv was not created"
+    summary_df = pd.read_csv(summary_path)
+    assert len(summary_df) == 1
+    assert "id" in summary_df.columns
+    assert "method" in summary_df.columns
+    assert "variables" in summary_df.columns
+    assert "total_records" in summary_df.columns
+    assert "diff_risk" in summary_df.columns
+    # check values
+    assert summary_df.iloc[0]["id"] == "output_0"
+    assert summary_df.iloc[0]["method"] == "crosstab"
+    assert summary_df.iloc[0]["total_records"] > 0
+    shutil.rmtree(PATH)
+
+
+def test_summary_sheet_in_excel(data, acro):
+    """Test that a 'summary' sheet is created in results.xlsx (Issue #224)."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.pivot_table(
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+    )
+    acro.add_exception("output_0", "Let me have it")
+    acro.add_exception("output_1", "I need this")
+    acro.finalise(PATH, "xlsx")
+    filename = os.path.normpath(f"{PATH}/results.xlsx")
+    xl = pd.ExcelFile(filename)
+    assert "summary" in xl.sheet_names, "'summary' sheet not found in Excel"
+    summary_df = pd.read_excel(filename, sheet_name="summary")
+    xl.close()
+    assert len(summary_df) == 2
+    methods = summary_df["method"].tolist()
+    assert "crosstab" in methods
+    assert "pivot_table" in methods
+    shutil.rmtree(PATH)
+
+
+def test_summary_variables_extracted(data):
+    """Test that variable names are correctly extracted into the summary."""
+    acro_obj = ACRO(suppress=False)
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    acro_obj.add_exception("output_0", "Let me have it")
+    acro_obj.finalise(PATH, "json")
+    summary_path = os.path.normpath(f"{PATH}/summary.csv")
+    summary_df = pd.read_csv(summary_path)
+    variables = summary_df.iloc[0]["variables"]
+    assert "year" in variables
+    assert "grant_type" in variables
+    shutil.rmtree(PATH)
+
+
+def test_summary_differencing_risk(data):
+    """Test that differencing risk is flagged when tables share variables but have different record counts (Issue #224)."""
+    acro_obj = ACRO(suppress=True)
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    data_subset = data.iloc[10:].copy()
+    _ = acro_obj.crosstab(data_subset.year, data_subset.grant_type)
+    acro_obj.add_exception("output_0", "Let me have it")
+    acro_obj.add_exception("output_1", "I need this")
+
+    summary_df = acro_obj.results.generate_summary()
+
+    assert summary_df.iloc[0]["variables"] == summary_df.iloc[1]["variables"]
+
+    assert summary_df.iloc[0]["total_records"] != summary_df.iloc[1]["total_records"]
+
+    assert summary_df.iloc[0]["diff_risk"] == True
+    assert summary_df.iloc[1]["diff_risk"] == True
+
+
+def test_summary_regression_metadata(data, acro):
+    """Test that regression outputs are correctly captured in the summary."""
+    new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    new_df = new_df.dropna()
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    _ = acro.ols(endog, exog)
+    summary_df = acro.results.generate_summary()
+    assert len(summary_df) == 1
+    row = summary_df.iloc[0]
+    assert row["method"] == "ols"
+    assert row["type"] == "regression"
+    assert row["total_records"] > 0
+    assert "dof=" in row["variables"]
+
+
+def test_summary_empty_session():
+    """Test that summary handles an empty session gracefully."""
+    acro_obj = ACRO(suppress=False)
+    summary_df = acro_obj.results.generate_summary()
+    assert summary_df.empty
+    assert "diff_risk" in summary_df.columns

@@ -38,24 +38,24 @@ $ pytest .
 
 ## Style Guide
 
-Code quality is maintained through [pre-commit](https://pre-commit.com) hooks that run [Ruff](https://github.com/astral-sh/ruff) (which includes pylint-style checks) along with other formatting and linting tools.
+Code quality is maintained through [prek](https://prek.j178.dev) hooks that run [Ruff](https://github.com/astral-sh/ruff) (which includes pylint-style checks) along with other formatting and linting tools.
 
-A [pre-commit](https://pre-commit.com) configuration [file](../tree/main/.pre-commit-config.yaml) is provided to automatically:
+A [prek](https://prek.j178.dev) configuration [file](../tree/main/.pre-commit-config.yaml) is provided to automatically:
 * Trim trailing whitespace and fix line endings;
 * Check for spelling errors;
 * Check Yaml files;
 * Automatically format and lint with [Ruff](https://github.com/astral-sh/ruff);
 
-Pre-commit can be setup locally as follows:
+Prek can be setup locally as follows:
 
 ```shell
-$ pip install pre-commit
+$ pip install prek
 ```
 
 Then to run on all files locally:
 
 ```shell
-$ pre-commit run -a
+$ prek run -a
 ```
 
 Make any corrections as necessary and re-run before committing the fixes and then pushing.
@@ -63,7 +63,7 @@ Make any corrections as necessary and re-run before committing the fixes and the
 To install as a hook that executes with every `git commit`:
 
 ```shell
-$ pre-commit install
+$ prek install
 ```
 
 ## Pull Request Titles

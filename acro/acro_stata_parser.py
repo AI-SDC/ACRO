@@ -112,7 +112,7 @@ def find_brace_word(word: str, raw: str) -> tuple[bool, list[str] | str]:
 
 
 def extract_aggfun_values_from_options(
-    contents_found: bool, content: list[str], varnames: list[str]
+    contents_found: bool, content: list[str] | str, varnames: list[str]
 ) -> dict[str, list[str]]:
     """
     Extract the variables to aggregate, and the aggregation function.
@@ -121,17 +121,18 @@ def extract_aggfun_values_from_options(
     ----------
         contents_found:bool
             did the user specify what other put in cells?
-        content: list(str)
-            what did they ask for?
+        content: list(str) or str
+            what did they ask for? (list when found, str error message otherwise)
 
     Returns
     -------
      cell contents: (dictionary)
     """
-    # contents can be variable names or aggregation functions
+    # content from find_brace_word is list[str]|str; normalize so iteration is over list (mypy)
+    content_list: list[str] = content if isinstance(content, list) else [content]
     cell_content: dict[str, list[str]] = {"aggfuncs": [], "values": []}
-    if contents_found and len(content) > 0:
-        for element in content:
+    if contents_found and len(content_list) > 0:
+        for element in content_list:
             contents = element.split()
             for word in contents:
                 if word in varnames:

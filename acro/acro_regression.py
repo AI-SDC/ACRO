@@ -24,7 +24,7 @@ logger = logging.getLogger("acro")
 class Regression:
     """Creates regression models."""
 
-    def __init__(self, config: str) -> None:
+    def __init__(self, _config: str) -> None:  # _config: unused; ACRO sets self.config (Ruff ARG002)
         self.config: dict[str, Any] = {}
         self.results: Records = Records()
 

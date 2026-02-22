@@ -8,7 +8,7 @@ import os
 import secrets
 from collections.abc import Callable
 from inspect import stack
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -302,8 +302,9 @@ class Tables:
         logger.debug("pivot_table()")
         command: str = utils.get_command("pivot_table()", stack())
 
-        aggfunc = get_aggfuncs(aggfunc)  # convert string(s) to function(s)
-        n_agg: int = 1 if not isinstance(aggfunc, list) else len(aggfunc)
+        # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
+        resolved_aggfunc: str | Callable[..., Any] | list[str | Callable[..., Any]] | None = get_aggfuncs(aggfunc)
+        n_agg: int = 1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
 
         # requested table
         table: DataFrame = pd.pivot_table(
@@ -311,7 +312,7 @@ class Tables:
             values,
             index,
             columns,
-            aggfunc,
+            resolved_aggfunc,
             fill_value,
             margins,
             dropna,
@@ -333,7 +334,7 @@ class Tables:
         )
         masks["threshold"] = t_values
 
-        if aggfunc is not None:
+        if resolved_aggfunc is not None:
             # check for negative values -- currently unsupported
             agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
             negative = pd.pivot_table(
@@ -380,7 +381,7 @@ class Tables:
                 )
                 table = crosstab_with_totals(
                     masks=masks,
-                    aggfunc=aggfunc,
+                    aggfunc=resolved_aggfunc,
                     index=index,
                     columns=columns,
                     values=values,
@@ -494,8 +495,12 @@ class Tables:
             )
             return table
         if output == "plot":
-            plot, filename = self.survival_plot(
-                survival_table, survival_func, filename, status, sdc, command, summary
+            # cast: survival_plot can return None; this path assumes tuple (mypy)
+            plot, filename = cast(
+                tuple[Any, str],
+                self.survival_plot(
+                    survival_table, survival_func, filename, status, sdc, command, summary
+                ),
             )
             return (plot, filename)
         return None
@@ -1585,7 +1590,8 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     true_cell_queries = get_queries(masks, aggfunc)
     if crosstab:
         data = create_dataframe(index, columns)
-    # apply the queries to the data
+    # apply the queries to the data (assert: caller ensures data set when crosstab=False; mypy)
+    assert data is not None
     for query in true_cell_queries:
         data = data.query(f"not ({query})")
 

@@ -303,8 +303,12 @@ class Tables:
         command: str = utils.get_command("pivot_table()", stack())
 
         # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
-        resolved_aggfunc: str | Callable[..., Any] | list[str | Callable[..., Any]] | None = get_aggfuncs(aggfunc)
-        n_agg: int = 1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
+        resolved_aggfunc: (
+            str | Callable[..., Any] | list[str | Callable[..., Any]] | None
+        ) = get_aggfuncs(aggfunc)
+        n_agg: int = (
+            1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
+        )
 
         # requested table
         table: DataFrame = pd.pivot_table(
@@ -499,7 +503,13 @@ class Tables:
             plot, filename = cast(
                 tuple[Any, str],
                 self.survival_plot(
-                    survival_table, survival_func, filename, status, sdc, command, summary
+                    survival_table,
+                    survival_func,
+                    filename,
+                    status,
+                    sdc,
+                    command,
+                    summary,
                 ),
             )
             return (plot, filename)

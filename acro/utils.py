@@ -29,7 +29,7 @@ def get_command(default: str, stack_list: list[FrameInfo]) -> str:
     """
     command: str = default
     if len(stack_list) > 1:
-        code = getframeinfo(stack_list[1][0]).code_context
+        code: list[str] | None = getframeinfo(stack_list[1][0]).code_context
         if code is not None:
             command = "\n".join(code).strip()
     logger.debug("command: %s", command)
@@ -42,23 +42,23 @@ def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> 
 
     Splits fields on whitespace unless an optional separator is provided e.g. ',' for csv.
     """
-    hdelim = "-"
-    vdelim = "|"
+    hdelim: str = "-"
+    vdelim: str = "|"
 
     table.rename(columns=lambda x: str(x).replace(" ", "_"), inplace=True)
-    output = table.to_string(justify="left")
-    as_strings = output.split("\n")
+    output: str = table.to_string(justify="left")
+    as_strings: list[str] = output.split("\n")
     nheaders = len(as_strings) - table.shape[0]
     rowlen = len(as_strings[0])
 
     # get top level column labels and their positions
     if separator is not None:
-        rowone_strings = as_strings[0].split(separator)
+        rowone_strings: list[str] = as_strings[0].split(separator)
     else:
         rowone_strings = as_strings[0].split()
 
-    vals = rowone_strings[1:]
-    positions = []
+    vals: list[str] = rowone_strings[1:]
+    positions: list[int] = []
     for val in vals:
         positions.append(as_strings[0].find(val))
 
@@ -68,7 +68,7 @@ def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> 
 
     rowlen += len(positions)  # add on space for v delimiters
 
-    outstr = ""
+    outstr: str = ""
     outstr += hdelim * rowlen + vdelim + "\n"
     for row in range(nheaders):
         outstr += as_strings[row] + vdelim + "\n"

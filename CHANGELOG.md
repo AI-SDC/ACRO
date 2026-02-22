@@ -2,6 +2,7 @@
 
 ## Version 0.4.12 (Feb 02, 2026)
 
+*   ci: add type hints to all function/method definitions and code variables ([#328](https://github.com/AI-SDC/ACRO/issues/328))
 *   docs: add documentation ([#273](https://github.com/AI-SDC/ACRO/pull/273), [#287](https://github.com/AI-SDC/ACRO/pull/287), [#288](https://github.com/AI-SDC/ACRO/pull/288), [#289](https://github.com/AI-SDC/ACRO/pull/289), [#291](https://github.com/AI-SDC/ACRO/pull/291), [#304](https://github.com/AI-SDC/ACRO/pull/304), [#306](https://github.com/AI-SDC/ACRO/pull/306), [#318](https://github.com/AI-SDC/ACRO/pull/318))
 *   feat: disallow `.gph` files as custom outputs in Stata ([#296](https://github.com/AI-SDC/ACRO/pull/296))
 *   feat: make finalise non-interactive by default ([#309](https://github.com/AI-SDC/ACRO/pull/309))

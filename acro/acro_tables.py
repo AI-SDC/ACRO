@@ -893,7 +893,6 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
 def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
     """Delete empty rows and columns from table.
 
-
     Parameters
     ----------
     table : DataFrame

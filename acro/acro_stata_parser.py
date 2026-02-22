@@ -12,7 +12,6 @@ import re
 from typing import Any
 
 import pandas as pd
-import statsmodels.iolib.summary as sm_iolib_summary
 
 from acro import ACRO, acro_regression, add_constant, stata_config
 from acro.utils import prettify_table_string

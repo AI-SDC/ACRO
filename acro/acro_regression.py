@@ -445,9 +445,7 @@ def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
     return tables
 
 
-def add_constant(
-    data: Any, prepend: bool = True, has_constant: str = "skip"
-) -> Any:
+def add_constant(data: Any, prepend: bool = True, has_constant: str = "skip") -> Any:
     """Add a column of ones to an array.
 
     Parameters

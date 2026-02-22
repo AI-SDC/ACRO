@@ -1589,8 +1589,9 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     true_cell_queries = get_queries(masks, aggfunc)
     if crosstab:
         data = create_dataframe(index, columns)
-    # apply the queries to the data (assert: caller ensures data set when crosstab=False; mypy)
-    assert data is not None
+    # Caller ensures data is set when crosstab=False; explicit check for mypy and Bandit (no assert)
+    if data is None:
+        raise AssertionError("data must be set when applying crosstab queries")
     for query in true_cell_queries:
         data = data.query(f"not ({query})")
 

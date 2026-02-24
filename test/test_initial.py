@@ -1275,3 +1275,33 @@ def test_pivot_table_std_dropna():
     assert "y" not in table.index
     assert "z" not in table.index
     assert "c2" not in table.columns
+
+
+def test_align_masks_droplevel():
+    """Test align_masks drops extra index/column levels to match table shape."""
+    # table with single-level columns and index
+    table = pd.DataFrame(
+        {"c1": [1.0, 2.0], "c2": [3.0, 4.0]},
+        index=pd.Index(["r1", "r2"]),
+    )
+    # mask with MultiIndex columns (extra level)
+    multi_cols = pd.MultiIndex.from_tuples([("agg", "c1"), ("agg", "c2")])
+    mask_multi_col = pd.DataFrame(
+        [[False, False], [False, True]],
+        index=pd.Index(["r1", "r2"]),
+        columns=multi_cols,
+    )
+    # mask with MultiIndex index (extra level)
+    multi_idx = pd.MultiIndex.from_tuples([("g1", "r1"), ("g1", "r2")])
+    mask_multi_idx = pd.DataFrame(
+        [[False, False], [False, True]],
+        index=multi_idx,
+        columns=pd.Index(["c1", "c2"]),
+    )
+    masks = {"multi_col": mask_multi_col, "multi_idx": mask_multi_idx}
+    aligned = acro_tables.align_masks(table, masks)
+    # both masks should now match table shape exactly
+    assert aligned["multi_col"].columns.tolist() == ["c1", "c2"]
+    assert aligned["multi_col"].index.tolist() == ["r1", "r2"]
+    assert aligned["multi_idx"].index.tolist() == ["r1", "r2"]
+    assert aligned["multi_idx"].columns.tolist() == ["c1", "c2"]

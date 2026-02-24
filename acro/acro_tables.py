@@ -8,6 +8,7 @@ import os
 import secrets
 from collections.abc import Callable
 from inspect import stack
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -175,7 +176,7 @@ class Tables:
             normalize,
         )
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -328,7 +329,7 @@ class Tables:
         # threshold check
         agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
         t_values = pd.pivot_table(
-            data, values, index, columns, aggfunc=agg, margins=margins
+            data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
         )
         masks["threshold"] = t_values
 
@@ -336,25 +337,49 @@ class Tables:
             # check for negative values -- currently unsupported
             agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
             negative = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
             agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
             masks["p-ratio"] = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             # nk values check
             agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
             masks["nk-rule"] = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
                 agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
                 masks["missing"] = pd.pivot_table(
-                    data, values, index, columns, aggfunc=agg, margins=margins
+                    data,
+                    values,
+                    index,
+                    columns,
+                    aggfunc=agg,
+                    margins=margins,
+                    dropna=dropna,
                 )
 
         # pd.pivot_table returns nan for an empty cell
@@ -365,7 +390,7 @@ class Tables:
             masks[name] = mask
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -480,7 +505,7 @@ class Tables:
         masks["threshold"].insert(3, "num events", t_values, True)
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, survival_table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -802,13 +827,15 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
                 dropna=dropna,
             )
         else:
+            is_list = isinstance(agg_func, list) and len(agg_func) > 1
+            agg_arg: Any = count_funcs if is_list else count_funcs[0]
             t_values = pd.crosstab(
                 index,
                 columns,
                 values=values,
                 rownames=rownames,
                 colnames=colnames,
-                aggfunc=count_funcs,
+                aggfunc=agg_arg,
                 margins=margins,
                 margins_name=margins_name,
                 dropna=dropna,
@@ -826,28 +853,32 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
             t_values = t_values < THRESHOLD
             masks["threshold"] = t_values
             # check for negative values -- currently unsupported
+            agg_arg = neg_funcs if is_list else neg_funcs[0]
             negative = pd.crosstab(
-                index, columns, values, aggfunc=neg_funcs, margins=margins
+                index, columns, values, aggfunc=agg_arg, margins=margins
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
+            agg_arg = pperc_funcs if is_list else pperc_funcs[0]
             masks["p-ratio"] = pd.crosstab(
                 index,
                 columns,
                 values,
-                aggfunc=pperc_funcs,
+                aggfunc=agg_arg,
                 margins=margins,
                 dropna=dropna,
             )
             # nk values check
+            agg_arg = nk_funcs if is_list else nk_funcs[0]
             masks["nk-rule"] = pd.crosstab(
-                index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
+                index, columns, values, aggfunc=agg_arg, margins=margins, dropna=dropna
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
+                agg_arg = missing_funcs if is_list else missing_funcs[0]
                 masks["missing"] = pd.crosstab(
-                    index, columns, values, aggfunc=missing_funcs, margins=margins
+                    index, columns, values, aggfunc=agg_arg, margins=margins
                 )
     else:
         # threshold check- doesn't matter what we pass for value
@@ -1158,6 +1189,44 @@ def agg_values_are_same(vals: Series) -> bool:
     return vals.nunique(dropna=True) == 1
 
 
+def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
+    """Align masks to the table's index and columns.
+
+    Parameters
+    ----------
+    table : DataFrame
+        Table to align masks to.
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks.
+
+    Returns
+    -------
+    dict[str, DataFrame]
+        The aligned masks.
+    """
+    aligned_masks = {}
+    for name, mask in masks.items():
+        m = mask
+        # handle level mismatch
+        if m.columns.nlevels > table.columns.nlevels:
+            # try to drop the first level if it matches aggfunc names
+            m = m.droplevel(0, axis=1)
+        if m.index.nlevels > table.index.nlevels:
+            m = m.droplevel(0, axis=0)
+
+        # only reindex if necessary
+        if not m.index.equals(table.index) or not m.columns.equals(table.columns):
+            try:
+                # use reindex with specific index and columns to avoid reindex_like issues
+                m = m.reindex(
+                    index=table.index, columns=table.columns, fill_value=False
+                )
+            except (ValueError, TypeError):  # pragma: no cover
+                logger.warning("Could not reindex mask %s", name)
+        aligned_masks[name] = m
+    return aligned_masks
+
+
 def apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]
 ) -> tuple[DataFrame, DataFrame]:
@@ -1178,6 +1247,8 @@ def apply_suppression(
         Table with outcomes of suppression checks.
     """
     logger.debug("apply_suppression()")
+    # align masks
+    masks = align_masks(table, masks)
     safe_df = table.copy()
     outcome_df = DataFrame().reindex_like(table)
     outcome_df.fillna("", inplace=True)
@@ -1212,7 +1283,9 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
+def get_table_sdc(
+    masks: dict[str, DataFrame], suppress: bool, table: DataFrame | None = None
+) -> dict:
     """Return the SDC dictionary using the suppression masks.
 
     Parameters
@@ -1221,7 +1294,11 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
         Dictionary of tables specifying suppression masks for application.
     suppress : bool
         Whether suppression has been applied.
+    table : DataFrame, optional
+        The table to align masks to.
     """
+    if table is not None:
+        masks = align_masks(table, masks)
     # summary of cells to be suppressed
     sdc: dict = {"summary": {"suppressed": suppress}, "cells": {}}
     sdc["summary"]["negative"] = 0

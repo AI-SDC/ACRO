@@ -1250,3 +1250,28 @@ def test_toggle_suppression():
     assert acro.suppress
     acro.disable_suppression()
     assert not acro.suppress
+
+
+def test_crosstab_std_dropna(data, acro):
+    """Test acro crosstab process error when reporting std in some cases."""
+    table = acro.crosstab(
+        data["year"], data["grant_type"], values=data["inc_grants"], aggfunc="std"
+    )
+    assert isinstance(table, pd.DataFrame)
+
+
+def test_pivot_table_std_dropna():
+    """Test pivot_table with std and dropna=True."""
+    data = pd.DataFrame(
+        {
+            "A": ["x", "x", "y", "z"],
+            "B": ["c1", "c1", "c2", "c2"],
+            "V": [1, 2, 3, 4],
+        }
+    )
+    acro = ACRO()
+    table = acro.pivot_table(data, values="V", index="A", columns="B", aggfunc="std")
+    assert isinstance(table, pd.DataFrame)
+    assert "y" not in table.index
+    assert "z" not in table.index
+    assert "c2" not in table.columns

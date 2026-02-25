@@ -1232,18 +1232,15 @@ def _align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
         table_top = table.columns.get_level_values(0).unique().tolist()
         mask_top = m.columns.get_level_values(0).unique().tolist()
         if mask_top != table_top:
-            
             n_base = len(table.columns.get_level_values(1).unique())
             base_mask = m.iloc[:, :n_base]
             flat_cols = base_mask.columns.get_level_values(1)
             base_mask = pd.DataFrame(base_mask.values, index=m.index, columns=flat_cols)
             m = _broadcast_mask_to_multiindex(base_mask, table, table_top)
     elif mask_nlevels < table_nlevels:
-        
         top_levels = table.columns.get_level_values(0).unique().tolist()
         m = _broadcast_mask_to_multiindex(m, table, top_levels)
     elif mask_nlevels > table_nlevels:
-       
         m = m.droplevel(0, axis=1)
 
     return m

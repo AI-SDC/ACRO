@@ -1250,3 +1250,86 @@ def test_toggle_suppression():
     assert acro.suppress
     acro.disable_suppression()
     assert not acro.suppress
+
+
+def test_crosstab_std_dropna(data, acro):
+    """Test acro crosstab process error when reporting std in some cases."""
+    table = acro.crosstab(
+        data["year"], data["grant_type"], values=data["inc_grants"], aggfunc="std"
+    )
+    assert isinstance(table, pd.DataFrame)
+
+
+def test_pivot_table_std_dropna():
+    """Test pivot_table with std and dropna=True."""
+    data = pd.DataFrame(
+        {
+            "A": ["x", "x", "y", "z"],
+            "B": ["c1", "c1", "c2", "c2"],
+            "V": [1, 2, 3, 4],
+        }
+    )
+    acro = ACRO()
+    table = acro.pivot_table(data, values="V", index="A", columns="B", aggfunc="std")
+    assert isinstance(table, pd.DataFrame)
+    assert "y" not in table.index
+    assert "z" not in table.index
+    assert "c2" not in table.columns
+
+
+def test_crosstab_multi_aggfunc(data):
+    """Test acro crosstab with multi-aggfunc list e.g. ['mean', 'std']."""
+    acro = ACRO(suppress=False)
+    table = acro.crosstab(
+        data["survivor"],
+        data["grant_type"],
+        values=data["inc_grants"],
+        aggfunc=["mean", "std"],
+        margins=False,
+    )
+    assert isinstance(table, pd.DataFrame)
+    assert table.columns.nlevels == 2
+    top_levels = table.columns.get_level_values(0).unique().tolist()
+    assert "mean" in top_levels
+    assert "std" in top_levels
+
+    acro2 = ACRO(suppress=True)
+    table2 = acro2.crosstab(
+        data["survivor"],
+        data["grant_type"],
+        values=data["inc_grants"],
+        aggfunc=["mean", "std"],
+        margins=True,
+    )
+    assert isinstance(table2, pd.DataFrame)
+    assert table2.columns.nlevels == 2
+
+
+def test_align_masks_droplevel():
+    """Test align_masks drops extra index/column levels to match table shape."""
+    # table with single-level columns and index
+    table = pd.DataFrame(
+        {"c1": [1.0, 2.0], "c2": [3.0, 4.0]},
+        index=pd.Index(["r1", "r2"]),
+    )
+    # mask with MultiIndex columns (extra level)
+    multi_cols = pd.MultiIndex.from_tuples([("agg", "c1"), ("agg", "c2")])
+    mask_multi_col = pd.DataFrame(
+        [[False, False], [False, True]],
+        index=pd.Index(["r1", "r2"]),
+        columns=multi_cols,
+    )
+    # mask with MultiIndex index (extra level)
+    multi_idx = pd.MultiIndex.from_tuples([("g1", "r1"), ("g1", "r2")])
+    mask_multi_idx = pd.DataFrame(
+        [[False, False], [False, True]],
+        index=multi_idx,
+        columns=pd.Index(["c1", "c2"]),
+    )
+    masks = {"multi_col": mask_multi_col, "multi_idx": mask_multi_idx}
+    aligned = acro_tables.align_masks(table, masks)
+    # both masks should now match table shape exactly
+    assert aligned["multi_col"].columns.tolist() == ["c1", "c2"]
+    assert aligned["multi_col"].index.tolist() == ["r1", "r2"]
+    assert aligned["multi_idx"].index.tolist() == ["r1", "r2"]
+    assert aligned["multi_idx"].columns.tolist() == ["c1", "c2"]

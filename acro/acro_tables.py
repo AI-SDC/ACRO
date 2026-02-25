@@ -1189,6 +1189,18 @@ def agg_values_are_same(vals: Series) -> bool:
     return vals.nunique(dropna=True) == 1
 
 
+def _get_label_map(table_axis: pd.Index, mask_axis: pd.Index) -> dict[Any, Any]:
+    """Create a map from table labels to mask labels."""
+    label_map = {}
+    for label in table_axis:
+        search = label[-1] if isinstance(label, tuple) else label
+        if search in mask_axis:
+            label_map[label] = search
+        elif label in mask_axis:
+            label_map[label] = label
+    return label_map
+
+
 def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
     """Align masks to the table's index and columns.
 
@@ -1206,24 +1218,22 @@ def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, Data
     """
     aligned_masks = {}
     for name, mask in masks.items():
-        m = mask
-        # handle level mismatch
-        if m.columns.nlevels > table.columns.nlevels:
-            # try to drop the first level if it matches aggfunc names
-            m = m.droplevel(0, axis=1)
-        if m.index.nlevels > table.index.nlevels:
-            m = m.droplevel(0, axis=0)
+        if mask.index.equals(table.index) and mask.columns.equals(table.columns):
+            aligned_masks[name] = mask
+            continue
 
-        # only reindex if necessary
-        if not m.index.equals(table.index) or not m.columns.equals(table.columns):
-            try:
-                # use reindex with specific index and columns to avoid reindex_like issues
-                m = m.reindex(
-                    index=table.index, columns=table.columns, fill_value=False
-                )
-            except (ValueError, TypeError):  # pragma: no cover
-                logger.warning("Could not reindex mask %s", name)
-        aligned_masks[name] = m
+        template = pd.DataFrame(
+            False, index=table.index, columns=table.columns, dtype=bool
+        )
+
+        row_map = _get_label_map(table.index, mask.index)
+        col_map = _get_label_map(table.columns, mask.columns)
+
+        for t_row, m_row in row_map.items():
+            for t_col, m_col in col_map.items():
+                template.loc[t_row, t_col] = mask.loc[m_row, m_col]
+
+        aligned_masks[name] = template
     return aligned_masks
 
 
@@ -1250,7 +1260,7 @@ def apply_suppression(
     # align masks
     masks = align_masks(table, masks)
     safe_df = table.copy()
-    outcome_df = DataFrame().reindex_like(table)
+    outcome_df = DataFrame(index=table.index, columns=table.columns)
     outcome_df.fillna("", inplace=True)
     # don't apply suppression if negatives are present
     if "negative" in masks:
@@ -1265,7 +1275,7 @@ def apply_suppression(
         for name, mask in masks.items():
             try:
                 safe_df[mask.values] = np.nan
-                tmp_df = DataFrame().reindex_like(outcome_df)
+                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
                 tmp_df.fillna("", inplace=True)
                 tmp_df[mask.values] = name + "; "
                 outcome_df += tmp_df

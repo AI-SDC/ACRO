@@ -1182,6 +1182,73 @@ def agg_values_are_same(vals: Series) -> bool:
     return vals.nunique(dropna=True) == 1
 
 
+def _broadcast_mask_to_multiindex(
+    m: DataFrame, table: DataFrame, top_levels: list
+) -> DataFrame:
+    """Replicate a flat (or single-group) mask across each aggfunc top-level group.
+
+    Parameters
+    ----------
+    m : DataFrame
+        Flat mask with base columns only.
+    table : DataFrame
+        MultiIndex table whose top-level groups define the replication targets.
+    top_levels : list
+        Ordered list of unique top-level values from the table's MultiIndex columns.
+
+    Returns
+    -------
+    DataFrame
+        A mask with MultiIndex columns matching the table's column structure.
+    """
+    frames = []
+    for lvl in top_levels:
+        sub_cols = table[lvl].columns
+        sub_m = m.reindex(index=table.index, columns=sub_cols, fill_value=False)
+        sub_m.columns = pd.MultiIndex.from_product([[lvl], sub_m.columns])
+        frames.append(sub_m)
+    return pd.concat(frames, axis=1)
+
+
+def _align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
+    """Align the columns of mask *m* to match those of *table*.
+
+    Parameters
+    ----------
+    m : DataFrame
+        A single suppression mask.
+    table : DataFrame
+        The output table the mask should match.
+
+    Returns
+    -------
+    DataFrame
+        The mask with columns aligned to the table.
+    """
+    table_nlevels = table.columns.nlevels
+    mask_nlevels = m.columns.nlevels
+
+    if table_nlevels == 2 and mask_nlevels == 2:
+        table_top = table.columns.get_level_values(0).unique().tolist()
+        mask_top = m.columns.get_level_values(0).unique().tolist()
+        if mask_top != table_top:
+            
+            n_base = len(table.columns.get_level_values(1).unique())
+            base_mask = m.iloc[:, :n_base]
+            flat_cols = base_mask.columns.get_level_values(1)
+            base_mask = pd.DataFrame(base_mask.values, index=m.index, columns=flat_cols)
+            m = _broadcast_mask_to_multiindex(base_mask, table, table_top)
+    elif mask_nlevels < table_nlevels:
+        
+        top_levels = table.columns.get_level_values(0).unique().tolist()
+        m = _broadcast_mask_to_multiindex(m, table, top_levels)
+    elif mask_nlevels > table_nlevels:
+       
+        m = m.droplevel(0, axis=1)
+
+    return m
+
+
 def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
     """Align masks to the table's index and columns.
 
@@ -1200,17 +1267,16 @@ def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, Data
     aligned_masks = {}
     for name, mask in masks.items():
         m = mask
-        # handle level mismatch
-        if m.columns.nlevels > table.columns.nlevels:
-            # try to drop the first level if it matches aggfunc names
-            m = m.droplevel(0, axis=1)
+
+        # handle index level mismatch
         if m.index.nlevels > table.index.nlevels:
             m = m.droplevel(0, axis=0)
 
-        # only reindex if necessary
+        m = _align_mask_columns(m, table)
+
+        # reindex if still necessary
         if not m.index.equals(table.index) or not m.columns.equals(table.columns):
             try:
-                # use reindex with specific index and columns to avoid reindex_like issues
                 m = m.reindex(
                     index=table.index, columns=table.columns, fill_value=False
                 )

@@ -1277,6 +1277,34 @@ def test_pivot_table_std_dropna():
     assert "c2" not in table.columns
 
 
+def test_crosstab_multi_aggfunc(data):
+    """Test acro crosstab with multi-aggfunc list e.g. ['mean', 'std']."""
+    acro = ACRO(suppress=False)
+    table = acro.crosstab(
+        data["survivor"],
+        data["grant_type"],
+        values=data["inc_grants"],
+        aggfunc=["mean", "std"],
+        margins=False,
+    )
+    assert isinstance(table, pd.DataFrame)
+    assert table.columns.nlevels == 2
+    top_levels = table.columns.get_level_values(0).unique().tolist()
+    assert "mean" in top_levels
+    assert "std" in top_levels
+
+    acro2 = ACRO(suppress=True)
+    table2 = acro2.crosstab(
+        data["survivor"],
+        data["grant_type"],
+        values=data["inc_grants"],
+        aggfunc=["mean", "std"],
+        margins=True,
+    )
+    assert isinstance(table2, pd.DataFrame)
+    assert table2.columns.nlevels == 2
+
+
 def test_align_masks_droplevel():
     """Test align_masks drops extra index/column levels to match table shape."""
     # table with single-level columns and index

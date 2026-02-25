@@ -8,7 +8,6 @@ import os
 import secrets
 from collections.abc import Callable
 from inspect import stack
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -827,15 +826,13 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
                 dropna=dropna,
             )
         else:
-            is_list = isinstance(agg_func, list) and len(agg_func) > 1
-            agg_arg: Any = count_funcs if is_list else count_funcs[0]
             t_values = pd.crosstab(
                 index,
                 columns,
                 values=values,
                 rownames=rownames,
                 colnames=colnames,
-                aggfunc=agg_arg,
+                aggfunc=count_funcs,
                 margins=margins,
                 margins_name=margins_name,
                 dropna=dropna,
@@ -853,32 +850,28 @@ def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
             t_values = t_values < THRESHOLD
             masks["threshold"] = t_values
             # check for negative values -- currently unsupported
-            agg_arg = neg_funcs if is_list else neg_funcs[0]
             negative = pd.crosstab(
-                index, columns, values, aggfunc=agg_arg, margins=margins
+                index, columns, values, aggfunc=neg_funcs, margins=margins
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
-            agg_arg = pperc_funcs if is_list else pperc_funcs[0]
             masks["p-ratio"] = pd.crosstab(
                 index,
                 columns,
                 values,
-                aggfunc=agg_arg,
+                aggfunc=pperc_funcs,
                 margins=margins,
                 dropna=dropna,
             )
             # nk values check
-            agg_arg = nk_funcs if is_list else nk_funcs[0]
             masks["nk-rule"] = pd.crosstab(
-                index, columns, values, aggfunc=agg_arg, margins=margins, dropna=dropna
+                index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
-                agg_arg = missing_funcs if is_list else missing_funcs[0]
                 masks["missing"] = pd.crosstab(
-                    index, columns, values, aggfunc=agg_arg, margins=margins
+                    index, columns, values, aggfunc=missing_funcs, margins=margins
                 )
     else:
         # threshold check- doesn't matter what we pass for value
@@ -1189,18 +1182,6 @@ def agg_values_are_same(vals: Series) -> bool:
     return vals.nunique(dropna=True) == 1
 
 
-def _get_label_map(table_axis: pd.Index, mask_axis: pd.Index) -> dict[Any, Any]:
-    """Create a map from table labels to mask labels."""
-    label_map = {}
-    for label in table_axis:
-        search = label[-1] if isinstance(label, tuple) else label
-        if search in mask_axis:
-            label_map[label] = search
-        elif label in mask_axis:
-            label_map[label] = label
-    return label_map
-
-
 def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
     """Align masks to the table's index and columns.
 
@@ -1218,22 +1199,24 @@ def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, Data
     """
     aligned_masks = {}
     for name, mask in masks.items():
-        if mask.index.equals(table.index) and mask.columns.equals(table.columns):
-            aligned_masks[name] = mask
-            continue
+        m = mask
+        # handle level mismatch
+        if m.columns.nlevels > table.columns.nlevels:
+            # try to drop the first level if it matches aggfunc names
+            m = m.droplevel(0, axis=1)
+        if m.index.nlevels > table.index.nlevels:
+            m = m.droplevel(0, axis=0)
 
-        template = pd.DataFrame(
-            False, index=table.index, columns=table.columns, dtype=bool
-        )
-
-        row_map = _get_label_map(table.index, mask.index)
-        col_map = _get_label_map(table.columns, mask.columns)
-
-        for t_row, m_row in row_map.items():
-            for t_col, m_col in col_map.items():
-                template.loc[t_row, t_col] = mask.loc[m_row, m_col]
-
-        aligned_masks[name] = template
+        # only reindex if necessary
+        if not m.index.equals(table.index) or not m.columns.equals(table.columns):
+            try:
+                # use reindex with specific index and columns to avoid reindex_like issues
+                m = m.reindex(
+                    index=table.index, columns=table.columns, fill_value=False
+                )
+            except (ValueError, TypeError):  # pragma: no cover
+                logger.warning("Could not reindex mask %s", name)
+        aligned_masks[name] = m
     return aligned_masks
 
 

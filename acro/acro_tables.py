@@ -1242,7 +1242,9 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict[str, Any]:
+def get_table_sdc(
+    masks: dict[str, DataFrame], suppress: bool, table: DataFrame | None = None
+) -> dict[str, Any]:
     """Return the SDC dictionary using the suppression masks.
 
     Parameters
@@ -1599,7 +1601,6 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     true_cell_queries = get_queries(masks, aggfunc)
     if crosstab:
         data = create_dataframe(index, columns)
-    # Caller ensures data is set when crosstab=False; explicit check for mypy and Bandit (no assert)
     if data is None:
         raise AssertionError("data must be set when applying crosstab queries")
     for query in true_cell_queries:

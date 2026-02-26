@@ -1,6 +1,6 @@
 ---
-# Changelog CI: update CHANGELOG.md from every PR (see CONTRIBUTING.md for title format).
-# Release PRs -> "Version X.Y.Z"; other PRs -> "Unreleased". Runs on open and push.
+# Update CHANGELOG.md from PR titles (e.g. "feat: description", no link in title).
+# Output format: *   feat: description ([#N](url)). Runs when a PR titled
 name: Changelog CI
 
 on:

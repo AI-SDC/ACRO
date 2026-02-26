@@ -1,11 +1,11 @@
 ---
-# Update CHANGELOG.md from PR titles (e.g. "feat: description", no link in title).
-# Output format: *   feat: description ([#N](url)). Runs when a PR titled
+# Changelog CI: update CHANGELOG.md from every PR (see CONTRIBUTING.md for title format).
+# Release PRs -> "Version X.Y.Z"; other PRs -> "Unreleased". Runs on open and push.
 name: Changelog CI
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
   workflow_dispatch:
     inputs:
       release_version:
@@ -21,18 +21,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
-      # On pull_request: Changelog CI only runs if PR title matches "Release X.Y.Z".
-      # Your draft PR title does not match, so it skips. Use "Run workflow" (manual)
-      # and select this branch + fill Release version to update the changelog.
-      - name: Log context
-        run: |
-          echo "Event: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "PR title: ${{ github.event.pull_request.title }}"
-            echo "Changelog CI only generates when title matches 'Release X.Y.Z' (e.g. Release 0.4.14)"
-          fi
 
       - name: Run Changelog CI
         uses: saadmk11/changelog-ci@v1.2.0

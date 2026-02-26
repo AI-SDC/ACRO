@@ -3,7 +3,7 @@
 Reformat the first version section of CHANGELOG.md to match project style.
 
 - Header: ## Version X.Y.Z (Mon DD, YYYY)  (add date, no colon after Version)
-- Bullets: *   <text>: description ([#N](url))  (PR title + PR link; titles have no link).
+- Bullets: *   <text>: description ([#N](url))  (PR title + link at end; strip trailing " #N" if present).
 Only the first version block (the one Changelog CI just added) is modified.
 """
 
@@ -46,9 +46,11 @@ def main() -> None:
             in_first_block = True
             continue
         if in_first_block and (b := bullet_re.match(line)):
-            # Conform: *   feat: description ([#N](url))
+            # Conform: *   ci: description ([#N](url))  (no #N in title; link at end)
             rest = b.group(3).rstrip()
             pr_num = b.group(2)
+            if rest.endswith(f" #{pr_num}"):
+                rest = rest[: -len(f" #{pr_num}")].rstrip()
             out.append(f"{b.group(1)}   {rest} ([#{pr_num}]({pr_base_url}/{pr_num}))\n")
             continue
         out.append(line)

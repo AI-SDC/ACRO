@@ -8,9 +8,9 @@ from inspect import stack
 from typing import Any
 
 import pandas as pd
-from numpy.typing import ArrayLike
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from numpy.typing import ArrayLike
 from pandas import DataFrame
 from statsmodels.discrete.discrete_model import BinaryResultsWrapper
 from statsmodels.iolib.table import SimpleTable

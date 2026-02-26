@@ -58,7 +58,6 @@ The github-pages contains pre-built [documentation](https://ai-sdc.github.io/ACR
 
 Additionally, see our [paper describing the SACRO framework](https://doi.org/10.1109/TP.2025.3566052) to learn about its principles-based SDC methodology and usage.
 
-
 ### Training Materials
 
 For training videos about ACRO, see [training videos](https://drive.google.com/drive/folders/1z5zKuZdiNth0c7CLBt3vDEyhGwSIocw_).

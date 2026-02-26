@@ -5,10 +5,12 @@ from __future__ import annotations
 import logging
 import warnings
 from inspect import stack
+from typing import Any
 
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from numpy.typing import ArrayLike
 from pandas import DataFrame
 from statsmodels.discrete.discrete_model import BinaryResultsWrapper
 from statsmodels.iolib.table import SimpleTable
@@ -23,12 +25,19 @@ logger = logging.getLogger("acro")
 class Regression:
     """Creates regression models."""
 
-    def __init__(self, config) -> None:
-        self.config = config
+    def __init__(
+        self, _config: str
+    ) -> None:  # _config: unused; ACRO sets self.config (Ruff ARG002)
+        self.config: dict[str, Any] = {}
         self.results: Records = Records()
 
     def ols(
-        self, endog, exog=None, missing="none", hasconst=None, **kwargs
+        self,
+        endog: ArrayLike,
+        exog: ArrayLike | None = None,
+        missing: str = "none",
+        hasconst: bool | None = None,
+        **kwargs: Any,
     ) -> RegressionResultsWrapper:
         """Fits Ordinary Least Squares Regression.
 
@@ -77,7 +86,13 @@ class Regression:
         return results
 
     def olsr(  # pylint: disable=keyword-arg-before-vararg
-        self, formula, data, subset=None, drop_cols=None, *args, **kwargs
+        self,
+        formula: str,
+        data: Any,
+        subset: Any = None,
+        drop_cols: Any = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> RegressionResultsWrapper:
         """Fits Ordinary Least Squares Regression from a formula and dataframe.
 
@@ -143,8 +158,8 @@ class Regression:
 
     def logit(
         self,
-        endog,
-        exog,
+        endog: ArrayLike,
+        exog: ArrayLike,
         missing: str | None = None,
         check_rank: bool = True,
     ) -> BinaryResultsWrapper:
@@ -191,7 +206,13 @@ class Regression:
         return results
 
     def logitr(  # pylint: disable=keyword-arg-before-vararg
-        self, formula, data, subset=None, drop_cols=None, *args, **kwargs
+        self,
+        formula: str,
+        data: Any,
+        subset: Any = None,
+        drop_cols: Any = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> RegressionResultsWrapper:
         """Fits Logit model from a formula and dataframe.
 
@@ -257,8 +278,8 @@ class Regression:
 
     def probit(
         self,
-        endog,
-        exog,
+        endog: ArrayLike,
+        exog: ArrayLike,
         missing: str | None = None,
         check_rank: bool = True,
     ) -> BinaryResultsWrapper:
@@ -305,7 +326,13 @@ class Regression:
         return results
 
     def probitr(  # pylint: disable=keyword-arg-before-vararg
-        self, formula, data, subset=None, drop_cols=None, *args, **kwargs
+        self,
+        formula: str,
+        data: Any,
+        subset: Any = None,
+        drop_cols: Any = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> RegressionResultsWrapper:
         """Fits Probit model from a formula and dataframe.
 
@@ -369,7 +396,7 @@ class Regression:
         )
         return results
 
-    def __check_model_dof(self, name: str, model) -> tuple[str, str, float]:
+    def __check_model_dof(self, name: str, model: Any) -> tuple[str, str, float]:
         """Check model DOF.
 
         Parameters
@@ -421,7 +448,7 @@ def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
     return tables
 
 
-def add_constant(data, prepend: bool = True, has_constant: str = "skip"):
+def add_constant(data: Any, prepend: bool = True, has_constant: str = "skip") -> Any:
     """Add a column of ones to an array.
 
     Parameters

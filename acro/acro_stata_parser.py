@@ -5,8 +5,6 @@ Jim Smith 2023 @james.smith@uwe.ac.uk
 MIT licenses apply.
 """
 
-from __future__ import annotations
-
 import os
 import re
 from typing import Any
@@ -660,7 +658,7 @@ def run_regression(command: str, data: pd.DataFrame, varlist: list[str]) -> str:
     return res_str
 
 
-def get_regr_results(results: Any, title: str) -> str:
+def get_regr_results(results: sm_iolib_summary.Summary, title: str) -> str:
     """Translate statsmodels fit result into prettified table."""
     res_str: str = title + "\n"
     for table in acro_regression.get_summary_dataframes(results.summary().tables):

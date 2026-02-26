@@ -484,7 +484,7 @@ class Records:
             for file in files:
                 outputs[key]["files"].append({"name": file, "sdc": val.sdc})
 
-        results: dict[str, Any] = {"version": __version__, "results": outputs}
+        results: dict[str, str | dict] = {"version": __version__, "results": outputs}
         filename: str = os.path.normpath(f"{path}/results.json")
         try:
             with open(filename, "w", newline="", encoding="utf-8") as handle:

@@ -32,8 +32,8 @@ class Regression:
 
     def ols(
         self,
-        endog: Any,
-        exog: Any = None,
+        endog: ArrayLike,
+        exog: ArrayLike | None = None,
         missing: str = "none",
         hasconst: bool | None = None,
         **kwargs: Any,
@@ -157,8 +157,8 @@ class Regression:
 
     def logit(
         self,
-        endog: Any,
-        exog: Any,
+        endog: ArrayLike,
+        exog: ArrayLike,
         missing: str | None = None,
         check_rank: bool = True,
     ) -> BinaryResultsWrapper:
@@ -277,8 +277,8 @@ class Regression:
 
     def probit(
         self,
-        endog: Any,
-        exog: Any,
+        endog: ArrayLike,
+        exog: ArrayLike,
         missing: str | None = None,
         check_rank: bool = True,
     ) -> BinaryResultsWrapper:

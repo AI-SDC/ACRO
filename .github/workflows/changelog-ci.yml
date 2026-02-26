@@ -38,3 +38,4 @@ jobs:
           git add CHANGELOG.md
           git diff --staged --quiet || git commit -m "chore: reformat changelog to match project style"
           git push
+...

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Reformat the first version section of CHANGELOG.md to match project style:
+Reformat the first version section of CHANGELOG.md to match project style.
+
 - Header: ## Version X.Y.Z (Mon DD, YYYY)  (add date, no colon after Version)
 - Bullets: *   <text>  (strip Changelog CI's leading "#N: " from each line)
 Only the first version block (the one Changelog CI just added) is modified.
@@ -13,6 +14,7 @@ from pathlib import Path
 
 
 def main() -> None:
+    """Reformat the first version block in CHANGELOG.md to project style and write back."""
     path = Path(__file__).resolve().parent.parent.parent / "CHANGELOG.md"
     if not path.exists():
         print("CHANGELOG.md not found", file=sys.stderr)

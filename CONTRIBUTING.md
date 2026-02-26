@@ -78,7 +78,7 @@ Individual commit messages in branches may follow an unrestricted policy, but **
 
 We require PR titles to follow the Conventional Commits format because it:
 
-- **Enables automatic changelogs** - the changelog is generated from PR titles when a release PR is opened; you do not need to edit `CHANGELOG.md` manually.
+- **Enables automatic changelogs** - release notes can be generated from PR titles without manual work.
 - **Clearly communicates intent** - reviewers can immediately see whether a PR is a `feat`, `fix`, `chore`, etc.
 - **Improves git history navigation** - makes it easy to scan and understand changes over time.
 - **Aligns with Semantic Versioning (SemVer)** - structured titles help determine version bumps automatically.

@@ -58,29 +58,6 @@ The github-pages contains pre-built [documentation](https://ai-sdc.github.io/ACR
 
 Additionally, see our [paper describing the SACRO framework](https://doi.org/10.1109/TP.2025.3566052) to learn about its principles-based SDC methodology and usage.
 
-### Running tests (WSL / Linux)
-
-On WSL (Debian/Ubuntu), install the venv package once (you will be prompted for your sudo password):
-
-```bash
-sudo apt install -y python3.12-venv
-```
-
-Then from the `ACRO` directory:
-
-```bash
-python3 -m venv .venv
-.venv/bin/pip install -e ".[test]"
-.venv/bin/pytest test/ -v
-```
-
-To run a single test:
-
-```bash
-.venv/bin/pytest test/test_initial.py::test_crosstab_with_totals_raises_when_data_none -v
-```
-
-Alternatively, run `./scripts/setup_venv.sh` after installing `python3.12-venv` to create the venv and install test deps.
 
 ### Training Materials
 

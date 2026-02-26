@@ -114,13 +114,3 @@ ci — changes to CI config/scripts
 chore — miscellaneous maintenance tasks
 revert — reverts an earlier commit
 ```
-
-Put the one-line summary (and optional PR link) in the **title**; use the PR **description** for full context, rationale, and testing notes for reviewers.
-
-## Releasing
-
-To cut a release:
-
-1. Open a pull request whose title matches the release pattern, e.g. `Release 0.4.13` or `release 0.4.13`.
-2. Changelog CI will run, generate a new changelog section from PRs merged since the last GitHub release, and commit the updated `CHANGELOG.md` to that PR (and optionally comment the changelog on the PR).
-3. After review and merge, maintainers create the GitHub release; the existing PyPI workflow will publish when the release is published.

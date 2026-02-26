@@ -2,7 +2,7 @@
 """
 Reformat the first version section of CHANGELOG.md to match project style.
 
-- Header: ## Version X.Y.Z (Mon DD, YYYY)  (add date, no colon after Version)
+- Header: ## Version X.Y.Z (date) or ## Unreleased (date) for non-release PRs
 - Bullets: *   <text>: description ([#N](url))  (PR title + link at end; strip trailing " #N" if present).
 Only the first version block (the one Changelog CI just added) is modified.
 """
@@ -26,23 +26,28 @@ def main() -> None:
     in_first_block = False
     date_str = datetime.utcnow().strftime("%b %d, %Y")  # e.g. Feb 26, 2026
 
-    # Match Changelog CI header: "## Version: 0.4.13" or "## Version 0.4.13"
-    version_header_re = re.compile(
-        r"^(\s*##\s+Version):?\s+([0-9]+\.[0-9]+\.[0-9]+)\s*\n$"
-    )
+    # Match Changelog CI header: "## Version: 0.4.13" or "## Version: ci: description"
+    version_header_re = re.compile(r"^(\s*##\s+Version):?\s+(.+)\s*\n$")
+    semver_re = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
     # Match Changelog CI bullet: "* #273: feat: description" -> *   feat: description ([#273](url))
     bullet_re = re.compile(r"^(\s*\*)\s+#(\d+):\s+(.*)$")
     pr_base_url = "https://github.com/AI-SDC/ACRO/pull"
     # Next version section (end of first block)
-    next_version_re = re.compile(r"^\s*##\s+Version\s+")
+    next_version_re = re.compile(r"^\s*##\s+(?:Version\s+|Unreleased\s+)")
 
     for line in lines:
         if next_version_re.match(line) and in_first_block:
             in_first_block = False
         m = version_header_re.match(line)
         if m and not in_first_block:
-            # First version header: conform to ## Version 0.4.12 (Feb 02, 2026)
-            out.append(f"{m.group(1)} {m.group(2)} ({date_str})\n")
+            version_part = m.group(2).strip()
+            if version_part.lower().startswith("release "):
+                version_part = version_part[8:].strip()
+            if semver_re.match(version_part):
+                header = f"{m.group(1)} {version_part} ({date_str})\n"
+            else:
+                header = f"{m.group(1)} Unreleased ({date_str})\n"
+            out.append(header)
             in_first_block = True
             continue
         if in_first_block and (b := bullet_re.match(line)):

@@ -5,6 +5,7 @@ Reformat the first version section of CHANGELOG.md to match project style:
 - Bullets: *   <text>  (strip Changelog CI's leading "#N: " from each line)
 Only the first version block (the one Changelog CI just added) is modified.
 """
+
 import re
 import sys
 from datetime import datetime
@@ -24,7 +25,9 @@ def main() -> None:
     date_str = datetime.utcnow().strftime("%b %d, %Y")  # e.g. Feb 26, 2026
 
     # Match Changelog CI header: "## Version: 0.4.13" or "## Version 0.4.13"
-    version_header_re = re.compile(r"^(\s*##\s+Version):?\s+([0-9]+\.[0-9]+\.[0-9]+)\s*\n$")
+    version_header_re = re.compile(
+        r"^(\s*##\s+Version):?\s+([0-9]+\.[0-9]+\.[0-9]+)\s*\n$"
+    )
     # Match Changelog CI bullet: "* #273: rest of line"
     bullet_re = re.compile(r"^(\s*\*)\s+#\d+:\s+(.*\n)$")
     # Next version section (end of first block)

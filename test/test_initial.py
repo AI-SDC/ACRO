@@ -1205,7 +1205,9 @@ def test_crosstab_with_totals_raises_when_data_none():
     """Test that crosstab_with_totals raises AssertionError when data is None."""
     # When crosstab=False, data is not set from create_dataframe; passing data=None
     # must raise "data must be set when applying crosstab queries".
-    with pytest.raises(AssertionError, match="data must be set when applying crosstab queries"):
+    with pytest.raises(
+        AssertionError, match="data must be set when applying crosstab queries"
+    ):
         crosstab_with_totals(
             masks={},
             aggfunc=None,

@@ -176,7 +176,7 @@ class Tables:
             normalize,
         )
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -334,7 +334,7 @@ class Tables:
         # threshold check
         agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
         t_values = pd.pivot_table(
-            data, values, index, columns, aggfunc=agg, margins=margins
+            data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
         )
         masks["threshold"] = t_values
 
@@ -342,25 +342,49 @@ class Tables:
             # check for negative values -- currently unsupported
             agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
             negative = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
             agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
             masks["p-ratio"] = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             # nk values check
             agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
             masks["nk-rule"] = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
                 agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
                 masks["missing"] = pd.pivot_table(
-                    data, values, index, columns, aggfunc=agg, margins=margins
+                    data,
+                    values,
+                    index,
+                    columns,
+                    aggfunc=agg,
+                    margins=margins,
+                    dropna=dropna,
                 )
 
         # pd.pivot_table returns nan for an empty cell
@@ -371,7 +395,7 @@ class Tables:
             masks[name] = mask
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -486,7 +510,7 @@ class Tables:
         masks["threshold"].insert(3, "num events", t_values, True)
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, survival_table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -1188,6 +1212,107 @@ def agg_values_are_same(vals: Series) -> bool:
     return vals.nunique(dropna=True) == 1
 
 
+def _broadcast_mask_to_multiindex(
+    m: DataFrame, table: DataFrame, top_levels: list
+) -> DataFrame:
+    """Replicate a flat (or single-group) mask across each aggfunc top-level group.
+
+    Parameters
+    ----------
+    m : DataFrame
+        Flat mask with base columns only.
+    table : DataFrame
+        MultiIndex table whose top-level groups define the replication targets.
+    top_levels : list
+        Ordered list of unique top-level values from the table's MultiIndex columns.
+
+    Returns
+    -------
+    DataFrame
+        A mask with MultiIndex columns matching the table's column structure.
+    """
+    frames = []
+    for lvl in top_levels:
+        sub_cols = table[lvl].columns
+        sub_m = m.reindex(index=table.index, columns=sub_cols, fill_value=False)
+        sub_m.columns = pd.MultiIndex.from_product([[lvl], sub_m.columns])
+        frames.append(sub_m)
+    return pd.concat(frames, axis=1)
+
+
+def _align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
+    """Align the columns of mask *m* to match those of *table*.
+
+    Parameters
+    ----------
+    m : DataFrame
+        A single suppression mask.
+    table : DataFrame
+        The output table the mask should match.
+
+    Returns
+    -------
+    DataFrame
+        The mask with columns aligned to the table.
+    """
+    table_nlevels = table.columns.nlevels
+    mask_nlevels = m.columns.nlevels
+
+    if table_nlevels == 2 and mask_nlevels == 2:
+        table_top = table.columns.get_level_values(0).unique().tolist()
+        mask_top = m.columns.get_level_values(0).unique().tolist()
+        if mask_top != table_top:
+            n_base = len(table.columns.get_level_values(1).unique())
+            base_mask = m.iloc[:, :n_base]
+            flat_cols = base_mask.columns.get_level_values(1)
+            base_mask = pd.DataFrame(base_mask.values, index=m.index, columns=flat_cols)
+            m = _broadcast_mask_to_multiindex(base_mask, table, table_top)
+    elif mask_nlevels < table_nlevels:
+        top_levels = table.columns.get_level_values(0).unique().tolist()
+        m = _broadcast_mask_to_multiindex(m, table, top_levels)
+    elif mask_nlevels > table_nlevels:
+        m = m.droplevel(0, axis=1)
+
+    return m
+
+
+def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
+    """Align masks to the table's index and columns.
+
+    Parameters
+    ----------
+    table : DataFrame
+        Table to align masks to.
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks.
+
+    Returns
+    -------
+    dict[str, DataFrame]
+        The aligned masks.
+    """
+    aligned_masks = {}
+    for name, mask in masks.items():
+        m = mask
+
+        # handle index level mismatch
+        if m.index.nlevels > table.index.nlevels:
+            m = m.droplevel(0, axis=0)
+
+        m = _align_mask_columns(m, table)
+
+        # reindex if still necessary
+        if not m.index.equals(table.index) or not m.columns.equals(table.columns):
+            try:
+                m = m.reindex(
+                    index=table.index, columns=table.columns, fill_value=False
+                )
+            except (ValueError, TypeError):  # pragma: no cover
+                logger.warning("Could not reindex mask %s", name)
+        aligned_masks[name] = m
+    return aligned_masks
+
+
 def apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]
 ) -> tuple[DataFrame, DataFrame]:
@@ -1208,8 +1333,10 @@ def apply_suppression(
         Table with outcomes of suppression checks.
     """
     logger.debug("apply_suppression()")
+    # align masks
+    masks = align_masks(table, masks)
     safe_df = table.copy()
-    outcome_df = DataFrame().reindex_like(table)
+    outcome_df = DataFrame(index=table.index, columns=table.columns)
     outcome_df.fillna("", inplace=True)
     # don't apply suppression if negatives are present
     if "negative" in masks:
@@ -1224,7 +1351,7 @@ def apply_suppression(
         for name, mask in masks.items():
             try:
                 safe_df[mask.values] = np.nan
-                tmp_df = DataFrame().reindex_like(outcome_df)
+                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
                 tmp_df.fillna("", inplace=True)
                 tmp_df[mask.values] = name + "; "
                 outcome_df += tmp_df
@@ -1253,7 +1380,11 @@ def get_table_sdc(
         Dictionary of tables specifying suppression masks for application.
     suppress : bool
         Whether suppression has been applied.
+    table : DataFrame, optional
+        The table to align masks to.
     """
+    if table is not None:
+        masks = align_masks(table, masks)
     # summary of cells to be suppressed
     sdc: dict[str, Any] = {"summary": {"suppressed": suppress}, "cells": {}}
     sdc["summary"]["negative"] = 0

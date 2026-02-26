@@ -3,7 +3,7 @@
 Reformat the first version section of CHANGELOG.md to match project style.
 
 - Header: ## Version X.Y.Z (Mon DD, YYYY)  (add date, no colon after Version)
-- Bullets: *   <text>  (strip Changelog CI's leading "#N: " from each line)
+- Bullets: *   <text>: description ([#N](url))  (PR title + PR link; titles have no link).
 Only the first version block (the one Changelog CI just added) is modified.
 """
 
@@ -30,8 +30,9 @@ def main() -> None:
     version_header_re = re.compile(
         r"^(\s*##\s+Version):?\s+([0-9]+\.[0-9]+\.[0-9]+)\s*\n$"
     )
-    # Match Changelog CI bullet: "* #273: rest of line"
-    bullet_re = re.compile(r"^(\s*\*)\s+#\d+:\s+(.*\n)$")
+    # Match Changelog CI bullet: "* #273: feat: description" -> *   feat: description ([#273](url))
+    bullet_re = re.compile(r"^(\s*\*)\s+#(\d+):\s+(.*)$")
+    pr_base_url = "https://github.com/AI-SDC/ACRO/pull"
     # Next version section (end of first block)
     next_version_re = re.compile(r"^\s*##\s+Version\s+")
 
@@ -45,8 +46,10 @@ def main() -> None:
             in_first_block = True
             continue
         if in_first_block and (b := bullet_re.match(line)):
-            # Conform to existing: *   feat: description ...
-            out.append(f"{b.group(1)}   {b.group(2)}")
+            # Conform: *   feat: description ([#N](url))
+            rest = b.group(3).rstrip()
+            pr_num = b.group(2)
+            out.append(f"{b.group(1)}   {rest} ([#{pr_num}]({pr_base_url}/{pr_num}))\n")
             continue
         out.append(line)
 

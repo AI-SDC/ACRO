@@ -1,0 +1,7 @@
+changelog_type: pull_request
+header_prefix: "Version"
+# We commit ourselves after reformatting to match existing changelog style
+commit_changelog: false
+comment_changelog: true
+pull_request_title_regex: ".*"
+version_regex: "^(?i:release)\\s+v?([0-9]+\\.[0-9]+\\.[0-9]+)|^(.+)$"

@@ -1,0 +1,43 @@
+---
+# Update CHANGELOG.md from PR titles (e.g. "feat: description", no link in title).
+# Output format: *   feat: description ([#N](url)). Runs when a PR titled
+name: Changelog CI
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release version (e.g. 0.4.13)"
+        required: true
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # push reformatted changelog to the PR branch
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run Changelog CI
+        uses: saadmk11/changelog-ci@v1.2.0
+        with:
+          changelog_filename: CHANGELOG.md
+          config_file: changelog-ci.yaml
+          release_version: ${{ github.event.inputs.release_version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Reformat changelog to match project style
+        run: python .github/scripts/reformat_changelog.py
+
+      - name: Commit and push reformatted changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git diff --staged --quiet || git commit -m "chore: reformat changelog to match project style"
+          git push
+...

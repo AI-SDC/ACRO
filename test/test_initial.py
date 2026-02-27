@@ -1105,6 +1105,45 @@ def test_histogram_non_disclosive(data, acro):
     shutil.rmtree(PATH)
 
 
+def test_pie_disclosive(data, acro, caplog):
+    """Test a disclosive pie chart (a category has fewer than threshold observations)."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    # inject one rare category (count=1, well below THRESHOLD=10)
+    small = pd.concat(
+        [data["grant_type"], pd.Series(["rare_label"])], ignore_index=True
+    )
+    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    _ = acro.pie(small.to_frame(name="grant_type"), "grant_type", filename="pie.png")
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert (
+        "Pie chart will not be shown as the grant_type column is disclosive."
+        in caplog.text
+    )
+    assert output_0.status == "fail"
+    shutil.rmtree(PATH)
+
+
+def test_pie_non_disclosive(data, acro):
+    """Test a non-disclosive pie chart (all categories meet the threshold)."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    result = acro.pie(data, "grant_type", filename="pie.png")
+    assert os.path.normpath(result) == filename
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "review"
+    shutil.rmtree(PATH)
+
+
 def test_finalise_with_existing_path(data, acro, caplog):
     """Test using a path that already exists when finalising."""
     _ = acro.crosstab(data.year, data.grant_type)

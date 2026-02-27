@@ -779,6 +779,108 @@ class Tables:
         )
         return unique_filename
 
+    def pie(
+        self,
+        data,
+        column,
+        filename="pie.png",
+        **kwargs,
+    ):
+        """Create a disclosure-safe pie chart from a categorical column.
+
+            Per-category counts are computed using value_counts(). If any
+            category has fewer observations than THRESHOLD, the output is
+            marked as "fail" and the chart is suppressed when
+            suppress=True. Otherwise the chart is produced and marked as
+            "review".
+
+            The chart is saved to acro_artifacts/ with a unique incrementing
+            number appended to avoid overwriting existing files.
+
+        Parameters
+        ----------
+            data : DataFrame
+                The pandas DataFrame holding the data.
+            column : str
+                The column whose category proportions will be plotted.
+            filename : str, default 'pie.png'
+                The name of the file where the chart will be saved.
+            **kwargs
+                Additional keyword arguments forwarded to
+                matplotlib.axes.Axes.pie().
+
+        Returns
+        -------
+        str
+        The path to the saved pie chart file.
+        """
+        logger.debug("pie()")
+        command: str = utils.get_command("pie()", stack())
+
+        # COMPUTE PRE-CATEGORY COUNTS
+        counts = data[column].value_counts()
+
+        # THRESHOLD CHECK - same as hist() logic
+        threshold_mask = counts < THRESHOLD
+
+        if np.any(threshold_mask):
+            status = "fail"
+            if self.suppress:
+                logger.warning(
+                    "Pie chart will not be shown as the %s column is disclosive.",
+                    column,
+                )
+            else:  # pragma: no cover
+                _, ax = plt.subplots()
+                ax.pie(counts.values, labels=counts.index, **kwargs)
+        else:
+            status = "review"
+            _, ax = plt.subplots()
+            ax.pie(counts.values, labels=counts.index, **kwargs)
+
+        logger.info("status: %s", status)
+
+        # CREATE SUMMARY
+        summary = f"Pie chart of {column}. Categories and counts: {counts.to_dict()}."
+
+        # CREATE acro_artifacts DIRECTORY to save plot in
+        try:
+            os.makedirs("acro_artifacts")
+            logger.debug("Directory acro_artifacts created successfully")
+        except FileExistsError:  # pragma: no cover
+            logger.debug("Directory acro_artifacts already exists")
+
+        # CREATE UNIQUE FILENAME to avoid overwrite
+
+        filename, extension = os.path.splitext(filename)
+        if not extension:  # pragma: no cover
+            logger.info("Please provide a valid file extension")
+            return None
+        increment_number = 0
+
+        while os.path.exists(
+            f"acro_artifacts/{filename}_{increment_number}{extension}"
+        ):  # pragma: no cover
+            increment_number += 1
+        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+
+        # SAVE PLOT to acro_artifacts directory
+        plt.savefig(unique_filename)
+
+        # RECORD OUTPUT
+        self.results.add(
+            status=status,
+            output_type="pie chart",
+            properties={"method": "pie"},
+            sdc={},
+            command=command,
+            summary=summary,
+            outcome=pd.DataFrame(),
+            output=[os.path.normpath(unique_filename)],
+        )
+
+        return unique_filename
+
 
 def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
     index,

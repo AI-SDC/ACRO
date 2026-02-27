@@ -34,6 +34,10 @@ authors:
     given-names: Jost
     affiliation: King’s College London
     orcid: https://orcid.org/0000-0002-5350-8049
+  - family-names: Ahmad
+    given-names: Hasaan
+    affiliation: University of the West of England
+    orcid: https://orcid.org/0009-0009-2443-3015
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7273903

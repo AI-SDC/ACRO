@@ -175,7 +175,7 @@ class Record:  # pylint: disable=too-many-instance-attributes
                 if os.path.exists(filename):
                     shutil.copy(filename, path)
                     output.append(Path(filename).name)
-        if self.output_type in ["survival plot", "histogram"]:
+        if self.output_type in ["survival plot", "histogram", "pie chart"]:
             for filename in self.output:
                 if os.path.exists(filename):
                     output.append(Path(filename).name)

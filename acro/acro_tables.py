@@ -831,11 +831,11 @@ class Tables:
                     column,
                 )
             else:  # pragma: no cover
-                fig, ax = plt.subplots()
+                _, ax = plt.subplots()
                 ax.pie(counts.values, labels=counts.index, **kwargs)
         else:
             status = "review"
-            fig, ax = plt.subplots()
+            _, ax = plt.subplots()
             ax.pie(counts.values, labels=counts.index, **kwargs)
 
         logger.info("status: %s", status)

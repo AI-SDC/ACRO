@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 import statsmodels.api as sm
 
-from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
+from acro import ACRO, ARTIFACTS_DIR, acro_tables, add_constant, add_to_acro, record, utils
 from acro.acro_tables import _rounded_survival_table
 from acro.record import Records, load_records
 
@@ -707,7 +707,7 @@ def test_surv_func(acro):
         assert "cells suppressed" in output.summary
 
     # plot
-    filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/kaplan-meier_0.png")
     _ = acro.surv_func(data.futime, data.death, output="plot")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "I need this")
@@ -1077,7 +1077,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
 
 def test_histogram_disclosive(data, acro, caplog):
     """Test a discolsive histogram."""
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
     _ = acro.hist(data, "inc_grants")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
@@ -1094,7 +1094,7 @@ def test_histogram_disclosive(data, acro, caplog):
 
 def test_histogram_non_disclosive(data, acro):
     """Test a non disclosive histogram."""
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
     _ = acro.hist(data, "inc_grants", bins=1)
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")

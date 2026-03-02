@@ -15,7 +15,7 @@ import statsmodels.api as sm
 from matplotlib import pyplot as plt
 from pandas import DataFrame, Series
 
-from . import utils
+from . import ARTIFACTS_DIR, utils
 from .record import Records
 
 logger = logging.getLogger("acro")
@@ -552,10 +552,10 @@ class Tables:
             plot = survival_func.plot()
 
         try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
+            os.makedirs(ARTIFACTS_DIR)
+            logger.debug(f"Directory {ARTIFACTS_DIR} created successfully")
         except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            logger.debug(f"Directory {ARTIFACTS_DIR} already exists")
 
         # create a unique filename with number to avoid overwrite
         filename, extension = os.path.splitext(filename)
@@ -564,10 +564,10 @@ class Tables:
             return None  # pragma: no cover
         increment_number = 0
         while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
+            f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
         ):  # pragma: no cover
             increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+        unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
 
         # save the plot to the acro artifacts directory
         plt.savefig(unique_filename)
@@ -744,12 +744,12 @@ class Tables:
             f"The maximum value of the {column} column is: {max_value}"
         )
 
-        # create the acro_artifacts directory to save the plot in it
+        # create the artifacts directory to save the plot in it
         try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
+            os.makedirs(ARTIFACTS_DIR)
+            logger.debug(f"Directory {ARTIFACTS_DIR} created successfully")
         except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            logger.debug(f"Directory {ARTIFACTS_DIR} already exists")
 
         # create a unique filename with number to avoid overwrite
         filename, extension = os.path.splitext(filename)
@@ -758,10 +758,10 @@ class Tables:
             return None
         increment_number = 0
         while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
+            f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
         ):  # pragma: no cover
             increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+        unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
 
         # save the plot to the acro artifacts directory
         plt.savefig(unique_filename)

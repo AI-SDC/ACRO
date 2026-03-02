@@ -10,7 +10,15 @@ import pandas as pd
 import pytest
 import statsmodels.api as sm
 
-from acro import ACRO, ARTIFACTS_DIR, acro_tables, add_constant, add_to_acro, record, utils
+from acro import (
+    ACRO,
+    ARTIFACTS_DIR,
+    acro_tables,
+    add_constant,
+    add_to_acro,
+    record,
+    utils,
+)
 from acro.acro_tables import _rounded_survival_table
 from acro.record import Records, load_records
 

@@ -59,6 +59,43 @@ ZEROS_ARE_DISCLOSIVE: bool = True
 SURVIVAL_THRESHOLD: int = 10
 
 
+import os
+import matplotlib.pyplot as plt
+
+def _save_plot(filename: str) -> str | None:
+    """Save the current plot to the acro_artifacts directory with a unique name.
+
+    Parameters
+    ----------
+    filename : str
+        The base name of the file where the plot will be saved.
+
+    Returns
+    -------
+    str | None
+        The unique filename where the plot was saved, or None if invalid extension.
+    """
+    try:
+        os.makedirs("acro_artifacts")
+        logger.debug("Directory acro_artifacts created successfully")
+    except FileExistsError:  # pragma: no cover
+        logger.debug("Directory acro_artifacts already exists")
+
+    filename, extension = os.path.splitext(filename)
+    if not extension:  # pragma: no cover
+        logger.info("Please provide a valid file extension")
+        return None
+
+    increment_number = 0
+    while os.path.exists(
+        f"acro_artifacts/{filename}_{increment_number}{extension}"
+    ):  # pragma: no cover
+        increment_number += 1
+    unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+
+    plt.savefig(unique_filename)
+    return unique_filename
+
 class Tables:
     """Creates tabular data.
 
@@ -545,32 +582,20 @@ class Tables:
         self, survival_table, survival_func, filename, status, sdc, command, summary
     ):
         """Create the survival plot according to the status of suppressing."""
-        if self.suppress:
-            survival_table = _rounded_survival_table(survival_table)
-            plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
-        else:  # pragma: no cover
-            plot = survival_func.plot()
+        if self.suppress and status == "fail":
+            logger.warning("Survival plot will not be shown as it is disclosive.")
+            unique_filename = None
+            plot = None
+        else:
+            if self.suppress:
+                survival_table = _rounded_survival_table(survival_table)
+                plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
+            else:  # pragma: no cover
+                plot = survival_func.plot()
 
-        try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
-        except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            unique_filename = _save_plot(filename)
 
-        # create a unique filename with number to avoid overwrite
-        filename, extension = os.path.splitext(filename)
-        if not extension:  # pragma: no cover
-            logger.info("Please provide a valid file extension")
-            return None  # pragma: no cover
-        increment_number = 0
-        while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
-        ):  # pragma: no cover
-            increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
-
-        # save the plot to the acro artifacts directory
-        plt.savefig(unique_filename)
+        output_list = [os.path.normpath(unique_filename)] if unique_filename else []
 
         # record output
         self.results.add(
@@ -581,7 +606,7 @@ class Tables:
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),
-            output=[os.path.normpath(unique_filename)],
+            output=output_list,
         )
         return (plot, unique_filename)
 
@@ -694,6 +719,7 @@ class Tables:
                     "Histogram will not be shown as the %s column is disclosive.",
                     column,
                 )
+                unique_filename = None
             else:  # pragma: no cover
                 data.hist(
                     column=column,
@@ -713,6 +739,7 @@ class Tables:
                     legend=legend,
                     **kwargs,
                 )
+                unique_filename = _save_plot(filename)
         else:
             status = "review"
             data.hist(
@@ -733,6 +760,8 @@ class Tables:
                 legend=legend,
                 **kwargs,
             )
+            unique_filename = _save_plot(filename)
+
         logger.info("status: %s", status)
 
         # create the summary
@@ -744,27 +773,7 @@ class Tables:
             f"The maximum value of the {column} column is: {max_value}"
         )
 
-        # create the acro_artifacts directory to save the plot in it
-        try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
-        except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
-
-        # create a unique filename with number to avoid overwrite
-        filename, extension = os.path.splitext(filename)
-        if not extension:  # pragma: no cover
-            logger.info("Please provide a valid file extension")
-            return None
-        increment_number = 0
-        while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
-        ):  # pragma: no cover
-            increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
-
-        # save the plot to the acro artifacts directory
-        plt.savefig(unique_filename)
+        output_list = [os.path.normpath(unique_filename)] if unique_filename else []
 
         # record output
         self.results.add(
@@ -775,7 +784,7 @@ class Tables:
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),
-            output=[os.path.normpath(unique_filename)],
+            output=output_list,
         )
         return unique_filename
 

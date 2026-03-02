@@ -1079,11 +1079,11 @@ def test_histogram_disclosive(data, acro, caplog):
     """Test a discolsive histogram."""
     filename = os.path.normpath("acro_artifacts/histogram_0.png")
     _ = acro.hist(data, "inc_grants")
-    assert os.path.exists(filename)
+    assert not os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(path=PATH)
     output_0 = results.get_index(0)
-    assert output_0.output == [filename]
+    assert output_0.output == []
     assert (
         "Histogram will not be shown as the inc_grants column is disclosive."
         in caplog.text

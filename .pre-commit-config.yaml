@@ -58,6 +58,6 @@ repos:
     hooks:
       - id: mypy
         args: ["--ignore-missing-imports", "--follow-imports", "skip", "--check-untyped-defs"]
-        additional_dependencies: [types-PyYAML==6.0.12.9,tokenize-rt==3.2.0,pandas-stubs]
+        additional_dependencies: [types-PyYAML==6.0.12.9,tokenize-rt==3.2.0]
         exclude: "stata/.*|docs/.*"
 ...

@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions to this repository are very welcome. Please create an issue before starting any significant work so that we can discuss and understand the changes. If you are interested in contributing, feel free to contact us or create an issue in the [issue tracking system](https://github.com/AI-SDC/ACRO/issues). Alternatively, you may [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the project and submit a [pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork). All contributions must be made under the same license as the rest of the project: [MIT License](../blob/main/LICENSE). New code should be accompanied with appropriate unit tests and documentation; a brief description of the changes made should be added to the top of `CHANGELOG.md`. If this is your first contribution to the repository, please also add your details to `CITATION.cff`. If you are introducing new imports, then these must also be added to `requirements.txt` (in root and docs folders) and `setup.py`. After creating a pull request, the continuous integration tools will automatically run the unit tests, apply the pre-commit checks listed below, and build and deploy the Sphinx documentation (when merged into the main branch.)
+Contributions to this repository are very welcome. Please create an issue before starting any significant work so that we can discuss and understand the changes. If you are interested in contributing, feel free to contact us or create an issue in the [issue tracking system](https://github.com/AI-SDC/ACRO/issues). Alternatively, you may [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the project and submit a [pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork). All contributions must be made under the same license as the rest of the project: [MIT License](../blob/main/LICENSE). New code should be accompanied with appropriate unit tests and documentation; `CHANGELOG.md` is generated locally from PR titles before each release (see [Release Workflow](#release-workflow) below). If this is your first contribution to the repository, please also add your details to `CITATION.cff`. If you are introducing new imports, then these must also be added to `requirements.txt` (in root and docs folders) and `setup.py`. After creating a pull request, the continuous integration tools will automatically run the unit tests, apply the pre-commit checks listed below, and build and deploy the Sphinx documentation (when merged into the main branch.)
 
 ## Pull Request Standards
 
@@ -114,3 +114,41 @@ ci — changes to CI config/scripts
 chore — miscellaneous maintenance tasks
 revert — reverts an earlier commit
 ```
+
+## Release Workflow
+
+`CHANGELOG.md` is generated locally before each release using [git-cliff](https://github.com/orhun/git-cliff). It reads merged PR titles (via squash-merge commit messages) since the last release tag and formats them to match the existing changelog style.
+
+### Install git-cliff
+
+Download the latest binary from the [releases page](https://github.com/orhun/git-cliff/releases) or install via a package manager:
+
+```shell
+# cargo
+cargo install git-cliff
+
+# homebrew (macOS / Linux)
+brew install git-cliff
+```
+
+### Generate the changelog entry
+
+Run the following on `main` immediately before tagging a new release, replacing `X.Y.Z` with the new version:
+
+```shell
+scripts/generate_changelog.sh X.Y.Z
+```
+
+This prepends only the new release block to `CHANGELOG.md`. Review and edit the output as needed (e.g. to add extra context or merge duplicate entries), then commit:
+
+```shell
+git add CHANGELOG.md
+git commit -m "docs: update changelog"
+git tag vX.Y.Z
+```
+
+The configuration lives in `cliff.toml` at the repository root. It automatically:
+
+- Converts `(#NNN)` PR references into markdown links.
+- Skips noise commits (pre-commit auto-fixes, changelog and release-prep commits).
+- Filters out commits that do not follow Conventional Commits (see [Pull Request Titles](#pull-request-titles)).

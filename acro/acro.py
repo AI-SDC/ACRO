@@ -7,6 +7,7 @@ import logging
 import os
 import pathlib
 import warnings
+from typing import Any
 
 import yaml
 
@@ -58,10 +59,10 @@ class ACRO(Tables, Regression):
         """
         Tables.__init__(self, suppress)
         Regression.__init__(self, config)
-        self.config: dict = {}
+        self.config: dict[str, Any] = {}
         self.results: Records = Records()
         self.suppress: bool = suppress
-        path = pathlib.Path(__file__).with_name(config + ".yaml")
+        path: pathlib.Path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
@@ -204,11 +205,11 @@ def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
     dest_path : str
         Name of the folder to save outputs.
     """
-    acro = ACRO()
-    output_id = 0
+    acro: ACRO = ACRO()
+    output_id: int = 0
     # add the files from the folder to an acro obj
     for file in os.listdir(src_path):
-        filename = os.path.join(src_path, file)
+        filename: str = os.path.join(src_path, file)
         acro.custom_output(filename)
         acro.rename_output(f"output_{output_id}", file)
         output_id += 1

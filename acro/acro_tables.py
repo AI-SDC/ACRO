@@ -59,9 +59,6 @@ ZEROS_ARE_DISCLOSIVE: bool = True
 SURVIVAL_THRESHOLD: int = 10
 
 
-import os
-import matplotlib.pyplot as plt
-
 def _save_plot(filename: str) -> str | None:
     """Save the current plot to the acro_artifacts directory with a unique name.
 
@@ -95,6 +92,7 @@ def _save_plot(filename: str) -> str | None:
 
     plt.savefig(unique_filename)
     return unique_filename
+
 
 class Tables:
     """Creates tabular data.

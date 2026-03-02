@@ -43,8 +43,7 @@ $ conda install acro
 
 See the example notebooks for:
 
-* [Python charities dataset](notebooks/test.ipynb)
-* [Python nursery dataset](notebooks/test-nursery.ipynb)
+* [Python nursery dataset](notebooks/acro_demo_2026.ipynb)
 * [R charities dataset](https://ai-sdc.github.io/ACRO/_static/test.nb.html)
 * [R nursery dataset](https://ai-sdc.github.io/ACRO/_static/test-nursery.nb.html)
 

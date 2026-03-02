@@ -8,7 +8,7 @@ import os
 import secrets
 from collections.abc import Callable
 from inspect import stack
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -486,7 +486,7 @@ class Tables:
         """
         logger.debug("surv_func()")
         command: str = utils.get_command("surv_func()", stack())
-        survival_func: DataFrame = sm.SurvfuncRight(
+        survival_func: Any = sm.SurvfuncRight(
             time,
             status,
             entry,
@@ -523,20 +523,21 @@ class Tables:
             )
             return table
         if output == "plot":
-            # cast: survival_plot can return None; this path assumes tuple (mypy)
-            plot, filename = cast(
-                tuple[Any, str],
-                self.survival_plot(
-                    survival_table,
-                    survival_func,
-                    filename,
-                    status,
-                    sdc,
-                    command,
-                    summary,
-                ),
+            plot_result = self.survival_plot(
+                survival_table,
+                survival_func,
+                filename,
+                status,
+                sdc,
+                command,
+                summary,
             )
-            return (plot, filename)
+            if plot_result is None:
+                raise AssertionError(
+                    "plot_result must be set when applying survival plot queries"
+                )
+            plot, output_filename = plot_result
+            return (plot, output_filename)
         return None
 
     def survival_table(  # pylint: disable=too-many-arguments

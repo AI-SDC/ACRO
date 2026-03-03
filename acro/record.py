@@ -58,7 +58,7 @@ def load_output(path: str, output: list[str]) -> list[str] | list[DataFrame]:
     return loaded
 
 
-class Record:  # pylint: disable=too-many-instance-attributes
+class Record:
     """Stores data related to a single output record.
 
     Attributes
@@ -89,7 +89,7 @@ class Record:  # pylint: disable=too-many-instance-attributes
         Time the record was created in ISO format.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         uid: str,
         status: str,
@@ -214,7 +214,7 @@ class Records:
         self.results: dict[str, Record] = {}
         self.output_id: int = 0
 
-    def add(  # pylint: disable=too-many-arguments
+    def add(
         self,
         status: str,
         output_type: str,
@@ -510,9 +510,7 @@ class Records:
             logger.debug("Directory %s created successfully", path)
         except FileExistsError:  # pragma: no cover
             logger.debug("Directory %s already exists", path)
-        with pd.ExcelWriter(  # pylint: disable=abstract-class-instantiated
-            filename, engine="openpyxl"
-        ) as writer:
+        with pd.ExcelWriter(filename, engine="openpyxl") as writer:
             # description sheet
             sheet: list[str] = []
             summary: list[str] = []

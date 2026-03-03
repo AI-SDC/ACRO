@@ -14,8 +14,6 @@ from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
 from acro.acro_tables import _rounded_survival_table, crosstab_with_totals
 from acro.record import Records, load_records
 
-# pylint: disable=redefined-outer-name,too-many-lines
-
 PATH: str = "RES_PYTEST"
 
 

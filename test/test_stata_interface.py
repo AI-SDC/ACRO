@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import acro.stata_config as stata_config  # pylint: disable=consider-using-from-import
+import acro.stata_config as stata_config
 from acro import ACRO
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
@@ -18,9 +18,6 @@ from acro.acro_stata_parser import (
     parse_table_details,
 )
 from acro.acro_tables import AGGFUNC
-
-# pylint: disable=redefined-outer-name
-
 
 # @pytest.fixture
 # def acro() -> ACRO:
@@ -47,7 +44,7 @@ def clean_up(name):
 
 def dummy_acrohandler(
     data, command, varlist, exclusion, exp, weights, options, stata_version
-):  # pylint:disable=too-many-arguments
+):
     """
     Provide an alternative interface that mimics the code in acro.ado.
 
@@ -716,7 +713,6 @@ def test_table_aggcfn(data):
     assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
     # lists for index or columns
-    # pylint: disable=duplicate-code
     correct = (
         "Total\n"
         "------------------------------------------------------------|\n"
@@ -888,7 +884,6 @@ def test_unsupported_formatting_options(data):
         "Alive in 2015  |72  |354  |144  |48 |\n"
         "------------------------------------|\n"
     )
-    # pylint:disable=duplicate-code
     for bad_option in [
         "cellwidth",
         "csepwidth",

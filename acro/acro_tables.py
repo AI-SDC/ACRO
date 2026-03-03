@@ -819,14 +819,14 @@ class Tables:
     ) -> str | None:
         """Create a pie chart from a categorical column.
 
-            Per-category counts are computed using value_counts(). If any
-            category has fewer observations than THRESHOLD, the output is
-            marked as "fail" and the chart is suppressed when
-            suppress=True. Otherwise the chart is produced and marked as
-            "review".
+        Per-category counts are computed using value_counts(). If any
+        category has fewer observations than THRESHOLD, the output is
+        marked as "fail" and the chart is suppressed when
+        suppress=True. Otherwise the chart is produced and marked as
+        "review".
 
-            The chart is saved to acro_artifacts/ with a unique incrementing
-            number appended to avoid overwriting existing files.
+        The chart is saved to acro_artifacts/ with a unique incrementing
+        number appended to avoid overwriting existing files.
 
         Parameters
         ----------

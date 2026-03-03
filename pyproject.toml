@@ -92,7 +92,7 @@ line-length = 88
 target-version = "py310"
 
 lint.select = [
-#  "ANN", # flake8-annotations
+  "ANN", # flake8-annotations
   "ARG", # flake8-unused-arguments
   "B",   # flake8-bugbear
 #  "C4",  # flake8-comprehensions
@@ -133,9 +133,13 @@ exclude = [
 ]
 
 lint.ignore = [
+  "ANN401",
 #  "ANN101", # missing-type-self
 #  "S301",   # unsafe pickle
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"test/*.py" = ["ANN"]
 
 [tool.ruff.lint.pep8-naming]
 extend-ignore-names = ["X", "X_train", "X_predict"]

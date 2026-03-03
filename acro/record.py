@@ -19,7 +19,7 @@ from .version import __version__
 logger = logging.getLogger("acro:records")
 
 
-def load_outcome(outcome: dict) -> DataFrame:
+def load_outcome(outcome: dict[str, Any]) -> DataFrame:
     """Return a DataFrame from an outcome dictionary.
 
     Parameters
@@ -465,7 +465,7 @@ class Records:
         path : str
             Name of a folder to save outputs.
         """
-        outputs: dict = {}
+        outputs: dict[str, Any] = {}
         for key, val in self.results.items():
             outputs[key] = {
                 "uid": val.uid,
@@ -484,7 +484,7 @@ class Records:
             for file in files:
                 outputs[key]["files"].append({"name": file, "sdc": val.sdc})
 
-        results: dict = {"version": __version__, "results": outputs}
+        results: dict[str, str | dict] = {"version": __version__, "results": outputs}
         filename: str = os.path.normpath(f"{path}/results.json")
         try:
             with open(filename, "w", newline="", encoding="utf-8") as handle:
@@ -514,9 +514,9 @@ class Records:
             filename, engine="openpyxl"
         ) as writer:
             # description sheet
-            sheet = []
-            summary = []
-            command = []
+            sheet: list[str] = []
+            summary: list[str] = []
+            command: list[str] = []
             for output_id, output in self.results.items():
                 if output.output_type == "custom":
                     continue  # avoid writing custom outputs
@@ -592,8 +592,8 @@ def load_records(path: str) -> Records:
             raise ValueError("error loading output")
         for key, val in data["results"].items():
             files: list[dict] = val["files"]
-            filenames: list = []
-            sdcs: list = []
+            filenames: list[str] = []
+            sdcs: list[dict] = []
             for file in files:
                 filenames.append(file["name"])
                 sdcs.append(file["sdc"])

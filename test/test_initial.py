@@ -1105,20 +1105,23 @@ def test_histogram_non_disclosive(data, acro):
     shutil.rmtree(PATH)
 
 
-def test_pie_disclosive(data, acro, caplog):
+def test_pie_disclosive(acro, caplog):
     """Test a disclosive pie chart (a category has fewer than threshold observations)."""
     shutil.rmtree("acro_artifacts", ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
-    # inject one rare category (count=1, well below THRESHOLD=10)
-    small = pd.concat(
-        [data["grant_type"], pd.Series(["rare_label"])], ignore_index=True
+
+    df = pd.DataFrame(
+        {"grant_type": (["A"] * 20) + (["B"] * 15) + (["C"] * 12) + (["D"] * 5)}
     )
+
     filename = os.path.normpath("acro_artifacts/pie_0.png")
-    _ = acro.pie(small.to_frame(name="grant_type"), "grant_type", filename="pie.png")
+    _ = acro.pie(df, "grant_type", filename="pie.png")
+
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(path=PATH)
     output_0 = results.get_index(0)
+
     assert output_0.output == [filename]
     assert (
         "Pie chart will not be shown as the grant_type column is disclosive."

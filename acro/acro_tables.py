@@ -781,12 +781,12 @@ class Tables:
 
     def pie(
         self,
-        data,
-        column,
-        filename="pie.png",
+        data: pd.DataFrame,
+        column: str,
+        filename: str = "pie.png",
         **kwargs,
     ):
-        """Create a disclosure-safe pie chart from a categorical column.
+        """Create a pie chart from a categorical column.
 
             Per-category counts are computed using value_counts(). If any
             category has fewer observations than THRESHOLD, the output is
@@ -799,20 +799,20 @@ class Tables:
 
         Parameters
         ----------
-            data : DataFrame
-                The pandas DataFrame holding the data.
-            column : str
-                The column whose category proportions will be plotted.
-            filename : str, default 'pie.png'
-                The name of the file where the chart will be saved.
-            **kwargs
-                Additional keyword arguments forwarded to
-                matplotlib.axes.Axes.pie().
+        data : DataFrame
+            The pandas DataFrame holding the data.
+        column : str
+            The column whose category proportions will be plotted.
+        filename : str, default 'pie.png'
+            The name of the file where the chart will be saved.
+        **kwargs
+            Additional keyword arguments forwarded to
+            matplotlib.axes.Axes.pie().
 
         Returns
         -------
         str
-        The path to the saved pie chart file.
+            The path to the saved pie chart file.
         """
         logger.debug("pie()")
         command: str = utils.get_command("pie()", stack())

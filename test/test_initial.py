@@ -1702,3 +1702,126 @@ def test_write_summary_empty_session():
     assert not os.path.exists(
         os.path.normpath("acro_artifacts/DO_NOT_RELEASE_session_summary.csv")
     )
+
+
+def test_get_crosstab_record_count_with_margins():
+    """Test _get_crosstab_record_count correctly excludes margin rows/columns.
+
+    This tests lines 488-492 of record.py to ensure that "All" row and column
+    are properly excluded when calculating record counts from crosstabs.
+    """
+    records = Records()
+
+    # Create a table with margins (like what pandas crosstab produces)
+    table = pd.DataFrame(
+        [[5, 5, 10], [5, 5, 10], [10, 10, 20]],
+        index=pd.Index([2010, 2011, "All"], name="year"),
+        columns=pd.Index(["A", "B", "All"], name="grant_type")
+    )
+
+    # Call _get_crosstab_record_count
+    count = records._get_crosstab_record_count(table)
+
+    # Should sum only the non-margin cells: 5+5+5+5 = 20
+    # Should NOT include the "All" row or column: [10, 10, 20] from row and [10, 10, 20] from col
+    assert count == 20
+
+
+def test_get_crosstab_record_count_without_margins():
+    """Test _get_crosstab_record_count with a table that has no margins.
+
+    When there is no "All" row or column, should sum all cells normally.
+    """
+    records = Records()
+
+    # Create a table without margins
+    table = pd.DataFrame(
+        [[5, 5], [5, 5]],
+        index=pd.Index([2010, 2011], name="year"),
+        columns=pd.Index(["A", "B"], name="grant_type")
+    )
+
+    count = records._get_crosstab_record_count(table)
+
+    # Should sum all cells: 5+5+5+5 = 20
+    assert count == 20
+
+
+def test_get_crosstab_record_count_with_margin_row_only():
+    """Test _get_crosstab_record_count when only margin row exists.
+
+    This covers the case where "All" is in the index but not in columns.
+    """
+    records = Records()
+
+    # Create a table with margin row but not margin column
+    table = pd.DataFrame(
+        [[5, 5], [5, 5], [10, 10]],
+        index=pd.Index([2010, 2011, "All"], name="year"),
+        columns=pd.Index(["A", "B"], name="grant_type")
+    )
+
+    count = records._get_crosstab_record_count(table)
+
+    # Should exclude "All" row and sum: 5+5+5+5 = 20
+    assert count == 20
+
+
+def test_get_crosstab_record_count_with_margin_column_only():
+    """Test _get_crosstab_record_count when only margin column exists.
+
+    This covers the case where "All" is in columns but not in the index.
+    """
+    records = Records()
+
+    # Create a table with margin column but not margin row
+    table = pd.DataFrame(
+        [[5, 5, 10], [5, 5, 10]],
+        index=pd.Index([2010, 2011], name="year"),
+        columns=pd.Index(["A", "B", "All"], name="grant_type")
+    )
+
+    count = records._get_crosstab_record_count(table)
+
+    # Should exclude "All" column and sum: 5+5+5+5 = 20
+    assert count == 20
+
+
+def test_get_crosstab_record_count_with_nan_values():
+    """Test _get_crosstab_record_count correctly handles NaN values.
+
+    This tests the isna() check when summing cell values (line 493).
+    """
+    records = Records()
+
+    # Create a table with some NaN values (suppressed cells)
+    table = pd.DataFrame(
+        [[np.nan, 5, 5], [5, np.nan, 5], [10, 10, 20]],
+        index=pd.Index([2010, 2011, "All"], name="year"),
+        columns=pd.Index(["A", "B", "C"], name="grant_type")
+    )
+
+    count = records._get_crosstab_record_count(table)
+
+    # Should sum only non-NaN, non-margin cells: 5+5+5+5 = 20
+    assert count == 20
+
+
+def test_get_crosstab_record_count_fallback():
+    """Test _get_crosstab_record_count fallback when cell_sum is 0.
+
+    This tests lines 494-495 where fallback calculation is used.
+    """
+    records = Records()
+
+    # Create a table with all zeros or NaN (simulating all suppressed)
+    table = pd.DataFrame(
+        [[np.nan, np.nan], [np.nan, np.nan]],
+        index=pd.Index([2010, 2011], name="year"),
+        columns=pd.Index(["A", "B"], name="grant_type")
+    )
+
+    count = records._get_crosstab_record_count(table)
+
+    # Should use fallback: table.shape[0] * table.shape[1] = 2 * 2 = 4
+    assert count == 4

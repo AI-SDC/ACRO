@@ -463,15 +463,38 @@ class Records:
                     variables.append(str(table.columns.name))
 
                 try:
-                    total_records += int(table.shape[0] * table.shape[1])
                     if method == "crosstab":
-                        cell_sum = table.values[~pd.isna(table.values)].sum()
-                        if cell_sum > 0:
-                            total_records = int(cell_sum)
+                        total_records = self._get_crosstab_record_count(table)
+                    else:
+                        total_records += int(table.shape[0] * table.shape[1])
                 except (TypeError, ValueError):
                     pass
 
         return variables, total_records
+
+    def _get_crosstab_record_count(self, table: DataFrame) -> int:
+        """Get record count from crosstab, excluding margins.
+
+        Parameters
+        ----------
+        table : DataFrame
+            The crosstab table.
+
+        Returns
+        -------
+        int
+            The record count.
+        """
+        working_table = table.copy()
+        if "All" in working_table.index:
+            working_table = working_table.drop("All", axis=0)
+        if "All" in working_table.columns:
+            working_table = working_table.drop("All", axis=1)
+
+        cell_sum = working_table.values[~pd.isna(working_table.values)].sum()
+        if cell_sum > 0:
+            return int(cell_sum)
+        return int(table.shape[0] * table.shape[1])
 
     def _extract_regression_info(self, output: list) -> tuple[list[str], int]:
         """Extract variables and total records from regression output.

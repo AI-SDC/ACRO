@@ -7,9 +7,10 @@ MIT licenses apply.
 
 import os
 import re
+from typing import Any
 
 import pandas as pd
-import statsmodels.iolib.summary as sm_iolib_summary
+from statsmodels.iolib import summary as sm_iolib_summary
 
 from acro import ACRO, acro_regression, add_constant, stata_config
 from acro.utils import prettify_table_string
@@ -40,7 +41,7 @@ def parse_location_token(token: str, last: int) -> int:
 
     Stata allows f and F for first item  and l/L for last.
     """
-    lookup: dict = {"f": 0, "F": 0, "l": last, "L": last}
+    lookup: dict[str, int] = {"f": 0, "F": 0, "l": last, "L": last}
     if token in ["f", "F", "l", "L"]:
         pos = lookup[token]
     else:
@@ -67,7 +68,7 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
             end = min(pos, last)
 
     else:
-        token: list = raw.split("/")
+        token: list[str] = raw.split("/")
         # first index
         start = parse_location_token(token[0], last)
         if start < 0:
@@ -83,12 +84,12 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     return all_data.iloc[start : end + 1]
 
 
-def find_brace_word(word: str, raw: str):
+def find_brace_word(word: str, raw: str) -> tuple[bool, list[str] | str]:
     """Return contents as a list of strings between '(' following a word and the closing ')'.
 
     First returned value is True/False depending on parsing ok.
     """
-    result = []
+    result: list[str] = []
     idx = raw.find(word)
     if idx == -1:
         return False, f"{word} not found"
@@ -108,7 +109,9 @@ def find_brace_word(word: str, raw: str):
     return True, result
 
 
-def extract_aggfun_values_from_options(contents_found, content, varnames) -> dict:
+def extract_aggfun_values_from_options(
+    contents_found: bool, content: list[str] | str, varnames: list[str]
+) -> dict[str, list[str]]:
     """
     Extract the variables to aggregate, and the aggregation function.
 
@@ -116,17 +119,18 @@ def extract_aggfun_values_from_options(contents_found, content, varnames) -> dic
     ----------
         contents_found:bool
             did the user specify what other put in cells?
-        content: list(str)
-            what did they ask for?
+        content: list(str) or str
+            what did they ask for? (list when found, str error message otherwise)
 
     Returns
     -------
      cell contents: (dictionary)
     """
-    # contents can be variable names or aggregation functions
-    cell_content: dict = {"aggfuncs": list([]), "values": list([])}
-    if contents_found and len(content) > 0:
-        for element in content:
+    # content from find_brace_word is list[str]|str; normalize so iteration is over list (mypy)
+    content_list: list[str] = content if isinstance(content, list) else [content]
+    cell_content: dict[str, list[str]] = {"aggfuncs": [], "values": []}
+    if contents_found and len(content_list) > 0:
+        for element in content_list:
             contents = element.split()
             for word in contents:
                 if word in varnames:
@@ -139,8 +143,8 @@ def extract_aggfun_values_from_options(contents_found, content, varnames) -> dic
 
 
 def parse_table_details(
-    varlist: list, varnames: list, options: str, stata_version: float
-) -> dict:
+    varlist: list[Any], varnames: list[str], options: str, stata_version: float
+) -> dict[str, Any]:
     """
     Parse table details from Stata and return as dictionary.
 
@@ -161,7 +165,7 @@ def parse_table_details(
         defines how things should be interpreted
         because Stata changed syntax of the table commandfor version 17 onwards
     """
-    details: dict = {"errmsg": ""}
+    details: dict[str, Any] = {"errmsg": ""}
 
     # get the two lists of what is wanted in the rows and columns
     if stata_version < 17:
@@ -203,14 +207,14 @@ def parse_table_details(
     return details
 
 
-def get_rows_cols_v16(varlist: list, options: str) -> dict:
+def get_rows_cols_v16(varlist: list[str], options: str) -> dict[str, Any]:
     """Parse stata-16 style table calls.
 
     Note this is not for latest version of stata, syntax here:
     https://www.stata.com/manuals16/rtable.pdf
     >> table rowvar [colvar [supercolvar] [if] [in] [weight] [, options].
     """
-    rows_cols: dict = {"errmsg": "", "rowvars": list([]), "colvars": list([])}
+    rows_cols: dict[str, Any] = {"errmsg": "", "rowvars": [], "colvars": []}
 
     rows_cols["rowvars"] = [varlist.pop(0)]
     rows_cols["colvars"] = list(reversed(varlist))
@@ -226,21 +230,21 @@ def get_rows_cols_v16(varlist: list, options: str) -> dict:
     return rows_cols
 
 
-def stata_details_to_list(mydetails) -> list:
+def stata_details_to_list(mydetails: str | list[Any]) -> list[str]:
     """Split details which can have different formats."""
     if isinstance(mydetails, str):
         return mydetails.split()
     return list(mydetails)
 
 
-def get_rows_cols_v17on(varlist: list) -> dict:
+def get_rows_cols_v17on(varlist: list[Any]) -> dict[str, Any]:
     """
     Get table details for the syntax used by stata_version >= 17.
 
     https://www.stata.com/manuals/tablesintro.pdf
     syntax: table (rowspec) (colspec) [ (tabspec) ] [ if ] [ in ] [ weight ] [, options ].
     """
-    rows_cols: dict = {}
+    rows_cols: dict[str, Any] = {}
     rows_cols["rowvars"] = stata_details_to_list(varlist.pop(0))
     rows_cols["colvars"] = stata_details_to_list(varlist.pop(0))
 
@@ -260,7 +264,7 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     weights: str,
     options: str,
     stata_version: str,
-) -> pd.DataFrame:
+) -> str:
     """
     Run the appropriate command on a pre-existing ACRO object stata_acro.
 
@@ -277,8 +281,8 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     # Sometime_TODO de-abbreviate according to
     # https://www.stata.com/manuals13/u11.pdf#u11.1.3ifexp
 
-    fstata_version = float(stata_version)
-    varlist: list = varlist_as_str.split()
+    fstata_version: float = float(stata_version)
+    varlist: list[str] = varlist_as_str.split()
     # print(varlist)
 
     # data reduction
@@ -325,12 +329,12 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     return outcome
 
 
-def run_session_command(command: str, varlist: list, options: str) -> str:
+def run_session_command(command: str, varlist: list[str], options: str) -> str:
     """Run session commands that are data-independent."""
     outcome = ""
 
     if command == "init":
-        args: dict = {}
+        args: dict[str, Any] = {}
         found, config = find_brace_word("config", options)
         if found:
             assert len(config) == 1, "can only supply one config file name"
@@ -364,7 +368,7 @@ def run_session_command(command: str, varlist: list, options: str) -> str:
     return outcome
 
 
-def add_custom_output(varlist: list) -> str:
+def add_custom_output(varlist: list[str]) -> str:
     """Add a custom output."""
     try:
         the_output = varlist.pop(0)
@@ -381,7 +385,7 @@ def add_custom_output(varlist: list) -> str:
     return outcome
 
 
-def run_output_command(command: str, varlist: list) -> str:
+def run_output_command(command: str, varlist: list[str]) -> str:
     """Run outcome-level commands.
 
     First element of varlist is output affected
@@ -419,9 +423,9 @@ def run_output_command(command: str, varlist: list) -> str:
     return outcome
 
 
-def extract_var_within_parentheses(input_string):
+def extract_var_within_parentheses(input_string: str) -> tuple[str, str]:
     """Extract the words within the first parentheses from a string."""
-    string = ""
+    string: str = ""
     string_match = re.match(r"\((.*?)\)", input_string)
     if string_match:
         string = string_match.group(1).strip()
@@ -429,9 +433,9 @@ def extract_var_within_parentheses(input_string):
     return string, input_string
 
 
-def extract_var_before_parentheses(input_string):
+def extract_var_before_parentheses(input_string: str) -> tuple[str, str]:
     """Extract the words before the first parentheses."""
-    string = ""
+    string: str = ""
     string_match = re.match(r"^(.*?)\(", input_string)
     if string_match:
         string = string_match.group(1).strip()
@@ -439,12 +443,12 @@ def extract_var_before_parentheses(input_string):
     return string, input_string
 
 
-def extract_table_var(input_string):
+def extract_table_var(input_string: str) -> str:
     """Extract the words within the parentheses.
 
     If there are no parentheses the string is returned.
     """
-    string = ""
+    string: str = ""
     # If the string starts with parentheses
     if input_string.startswith("("):
         string, _ = extract_var_within_parentheses(input_string)
@@ -453,13 +457,13 @@ def extract_table_var(input_string):
     return string
 
 
-def extract_colstring_tablestring(input_string):
+def extract_colstring_tablestring(input_string: str) -> tuple[str, str]:
     """Extract the column and the tables variables as a string.
 
     It goes through different options eg. whether the column string is between paranthese or not.
     """
-    colstring = ""
-    tablestring = ""
+    colstring: str = ""
+    tablestring: str = ""
     if input_string.startswith("("):
         colstring, input_string = extract_var_within_parentheses(input_string)
         if input_string:
@@ -476,14 +480,14 @@ def extract_colstring_tablestring(input_string):
     return colstring, tablestring
 
 
-def extract_strings(input_string):
+def extract_strings(input_string: str) -> list[str]:
     """Extract the index, column and the tables variables as a string.
 
     It goes through different options eg. whether the index string is between paranthese or not.
     """
-    rowstring = ""
-    colstring = ""
-    tablestring = ""
+    rowstring: str = ""
+    colstring: str = ""
+    tablestring: str = ""
 
     # If the string doesn’t have parentheses
     if "(" not in input_string:
@@ -506,13 +510,15 @@ def extract_strings(input_string):
     return varlist
 
 
-def creates_datasets(data, details):
+def creates_datasets(
+    data: pd.DataFrame, details: dict[str, Any]
+) -> tuple[dict[str, pd.DataFrame], str]:
     """Return the full dataset if the tables parameter is empty.
 
     Otherwise, it divides the dataset to small dataset each one is the dataset when
     the tables parameter is equal to one of it is unique values.
     """
-    set_of_data = {"Total": data}
+    set_of_data: dict[str, pd.DataFrame] = {"Total": data}
     msg = ""
     # if tables var parameter was assigned, each table will
     # be treated as an exclusion which will be applied to the data.
@@ -539,7 +545,7 @@ def creates_datasets(data, details):
 
 def run_table_command(  # pylint: disable=too-many-locals
     data: pd.DataFrame,
-    varlist: list,
+    varlist: list[Any],
     weights: str,
     options: str,
     stata_version: float,
@@ -625,7 +631,7 @@ def run_table_command(  # pylint: disable=too-many-locals
     return msg + options_str + results
 
 
-def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:
+def run_regression(command: str, data: pd.DataFrame, varlist: list[str]) -> str:
     """Interpret and run appropriate regression command."""
     # get components of formula
     depvar = varlist[0]
@@ -654,8 +660,8 @@ def run_regression(command: str, data: pd.DataFrame, varlist: list) -> str:
 
 
 def get_regr_results(results: sm_iolib_summary.Summary, title: str) -> str:
-    """Translate statsmodels.io.summary object into prettified table."""
-    res_str = title + "\n"
+    """Translate statsmodels fit result into prettified table."""
+    res_str: str = title + "\n"
     for table in acro_regression.get_summary_dataframes(results.summary().tables):
         res_str += prettify_table_string(table, separator=",") + "\n"
         res_str += f"{results.summary().extra_txt}\n"

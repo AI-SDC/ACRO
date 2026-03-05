@@ -11,7 +11,7 @@ import pytest
 import statsmodels.api as sm
 
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
-from acro.acro_tables import _rounded_survival_table
+from acro.acro_tables import _rounded_survival_table, crosstab_with_totals
 from acro.record import Records, load_records
 
 # pylint: disable=redefined-outer-name,too-many-lines
@@ -1111,6 +1111,48 @@ def test_histogram_non_disclosive(data, acro):
     shutil.rmtree(PATH)
 
 
+def test_pie_disclosive(acro, caplog):
+    """Test a disclosive pie chart (a category has fewer than threshold observations)."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+
+    df = pd.DataFrame(
+        {"grant_type": (["A"] * 20) + (["B"] * 15) + (["C"] * 12) + (["D"] * 5)}
+    )
+
+    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    _ = acro.pie(df, "grant_type", filename="pie.png")
+
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+
+    assert output_0.output == [filename]
+    assert (
+        "Pie chart will not be shown as the grant_type column is disclosive."
+        in caplog.text
+    )
+    assert output_0.status == "fail"
+    shutil.rmtree(PATH)
+
+
+def test_pie_non_disclosive(data, acro):
+    """Test a non-disclosive pie chart (all categories meet the threshold)."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    result = acro.pie(data, "grant_type", filename="pie.png")
+    assert os.path.normpath(result) == filename
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "review"
+    shutil.rmtree(PATH)
+
+
 def test_finalise_with_existing_path(data, acro, caplog):
     """Test using a path that already exists when finalising."""
     _ = acro.crosstab(data.year, data.grant_type)
@@ -1205,6 +1247,27 @@ def test_finalise_interactive(data):
     )
     if os.path.isdir(mypath):
         shutil.rmtree(mypath)
+
+
+def test_crosstab_with_totals_raises_when_data_none():
+    """Test that crosstab_with_totals raises AssertionError when data is None."""
+    # When crosstab=False, data is not set from create_dataframe; passing data=None
+    # must raise "data must be set when applying crosstab queries".
+    with pytest.raises(
+        AssertionError, match="data must be set when applying crosstab queries"
+    ):
+        crosstab_with_totals(
+            masks={},
+            aggfunc=None,
+            index=pd.Series([1, 2]),
+            columns=pd.Series([1, 2]),
+            values=None,
+            margins=False,
+            margins_name="All",
+            dropna=True,
+            crosstab=False,
+            data=None,
+        )
 
 
 def test_create_dataframe(data):

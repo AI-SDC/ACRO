@@ -19,7 +19,7 @@ from .version import __version__
 logger = logging.getLogger("acro:records")
 
 
-def load_outcome(outcome: dict) -> DataFrame:
+def load_outcome(outcome: dict[str, Any]) -> DataFrame:
     """Return a DataFrame from an outcome dictionary.
 
     Parameters
@@ -175,7 +175,7 @@ class Record:  # pylint: disable=too-many-instance-attributes
                 if os.path.exists(filename):
                     shutil.copy(filename, path)
                     output.append(Path(filename).name)
-        if self.output_type in ["survival plot", "histogram"]:
+        if self.output_type in ["survival plot", "histogram", "pie chart"]:
             for filename in self.output:
                 if os.path.exists(filename):
                     output.append(Path(filename).name)
@@ -640,7 +640,7 @@ class Records:
         path : str
             Name of a folder to save outputs.
         """
-        outputs: dict = {}
+        outputs: dict[str, Any] = {}
         for key, val in self.results.items():
             outputs[key] = {
                 "uid": val.uid,
@@ -708,9 +708,9 @@ class Records:
                 )
 
             # description sheet
-            sheet = []
-            summary = []
-            command = []
+            sheet: list[str] = []
+            summary: list[str] = []
+            command: list[str] = []
             for output_id, output in self.results.items():
                 if output.output_type == "custom":
                     continue  # avoid writing custom outputs
@@ -786,8 +786,8 @@ def load_records(path: str) -> Records:
             raise ValueError("error loading output")
         for key, val in data["results"].items():
             files: list[dict] = val["files"]
-            filenames: list = []
-            sdcs: list = []
+            filenames: list[str] = []
+            sdcs: list[dict] = []
             for file in files:
                 filenames.append(file["name"])
                 sdcs.append(file["sdc"])

@@ -8,6 +8,7 @@ import os
 import secrets
 from collections.abc import Callable
 from inspect import stack
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -21,7 +22,7 @@ from .record import Records
 logger = logging.getLogger("acro")
 
 
-def mode_aggfunc(values) -> Series:
+def mode_aggfunc(values: Series) -> Series:
     """Calculate the mode or randomly selects one of the modes from a pandas Series.
 
     Parameters
@@ -68,23 +69,23 @@ class Tables:
         Whether to automatically apply suppression.
     """
 
-    def __init__(self, suppress):
-        self.suppress = suppress
+    def __init__(self, suppress: bool) -> None:
+        self.suppress: bool = suppress
         self.results: Records = Records()
 
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals
         self,
-        index,
-        columns,
-        values=None,
-        rownames=None,
-        colnames=None,
-        aggfunc=None,
+        index: Any,
+        columns: Any,
+        values: Any = None,
+        rownames: Any = None,
+        colnames: Any = None,
+        aggfunc: str | list[str] | None = None,
         margins: bool = False,
         margins_name: str = "All",
         dropna: bool = True,
-        normalize=False,
-        show_suppressed=False,
+        normalize: bool | str = False,
+        show_suppressed: bool = False,
     ) -> DataFrame:
         """Compute a simple cross tabulation of two (or more) factors.
 
@@ -175,7 +176,7 @@ class Tables:
             normalize,
         )
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -236,11 +237,11 @@ class Tables:
     def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         data: DataFrame,
-        values=None,
-        index=None,
-        columns=None,
-        aggfunc="mean",
-        fill_value=None,
+        values: Any = None,
+        index: Any = None,
+        columns: Any = None,
+        aggfunc: str | list[str] = "mean",
+        fill_value: Any = None,
         margins: bool = False,
         dropna: bool = True,
         margins_name: str = "All",
@@ -301,8 +302,13 @@ class Tables:
         logger.debug("pivot_table()")
         command: str = utils.get_command("pivot_table()", stack())
 
-        aggfunc = get_aggfuncs(aggfunc)  # convert string(s) to function(s)
-        n_agg: int = 1 if not isinstance(aggfunc, list) else len(aggfunc)
+        # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
+        resolved_aggfunc: (
+            str | Callable[..., Any] | list[str | Callable[..., Any]] | None
+        ) = get_aggfuncs(aggfunc)
+        n_agg: int = (
+            1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
+        )
 
         # requested table
         table: DataFrame = pd.pivot_table(
@@ -310,7 +316,7 @@ class Tables:
             values,
             index,
             columns,
-            aggfunc,
+            resolved_aggfunc,
             fill_value,
             margins,
             dropna,
@@ -328,33 +334,57 @@ class Tables:
         # threshold check
         agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
         t_values = pd.pivot_table(
-            data, values, index, columns, aggfunc=agg, margins=margins
+            data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
         )
         masks["threshold"] = t_values
 
-        if aggfunc is not None:
+        if resolved_aggfunc is not None:
             # check for negative values -- currently unsupported
             agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
             negative = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             if negative.to_numpy().sum() > 0:
                 masks["negative"] = negative
             # p-percent check
             agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
             masks["p-ratio"] = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             # nk values check
             agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
             masks["nk-rule"] = pd.pivot_table(
-                data, values, index, columns, aggfunc=agg, margins=margins
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
             )
             # check for missing values -- currently unsupported
             if CHECK_MISSING_VALUES:
                 agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
                 masks["missing"] = pd.pivot_table(
-                    data, values, index, columns, aggfunc=agg, margins=margins
+                    data,
+                    values,
+                    index,
+                    columns,
+                    aggfunc=agg,
+                    margins=margins,
+                    dropna=dropna,
                 )
 
         # pd.pivot_table returns nan for an empty cell
@@ -365,7 +395,7 @@ class Tables:
             masks[name] = mask
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -379,7 +409,7 @@ class Tables:
                 )
                 table = crosstab_with_totals(
                     masks=masks,
-                    aggfunc=aggfunc,
+                    aggfunc=resolved_aggfunc,
                     index=index,
                     columns=columns,
                     values=values,
@@ -413,16 +443,16 @@ class Tables:
 
     def surv_func(  # pylint: disable=too-many-arguments,too-many-locals
         self,
-        time,
-        status,
-        output,
-        entry=None,
-        title=None,
-        freq_weights=None,
-        exog=None,
-        bw_factor=1.0,
-        filename="kaplan-meier.png",
-    ) -> DataFrame:
+        time: Any,
+        status: Any,
+        output: str,
+        entry: Any = None,
+        title: Any = None,
+        freq_weights: Any = None,
+        exog: Any = None,
+        bw_factor: float = 1.0,
+        filename: str = "kaplan-meier.png",
+    ) -> DataFrame | tuple[Any, str] | None:
         """Estimate the survival function.
 
         Parameters
@@ -456,7 +486,7 @@ class Tables:
         """
         logger.debug("surv_func()")
         command: str = utils.get_command("surv_func()", stack())
-        survival_func: DataFrame = sm.SurvfuncRight(
+        survival_func: Any = sm.SurvfuncRight(
             time,
             status,
             entry,
@@ -480,7 +510,7 @@ class Tables:
         masks["threshold"].insert(3, "num events", t_values, True)
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress)
+        sdc: dict = get_table_sdc(masks, self.suppress, survival_table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -493,15 +523,33 @@ class Tables:
             )
             return table
         if output == "plot":
-            plot, filename = self.survival_plot(
-                survival_table, survival_func, filename, status, sdc, command, summary
+            plot_result = self.survival_plot(
+                survival_table,
+                survival_func,
+                filename,
+                status,
+                sdc,
+                command,
+                summary,
             )
-            return (plot, filename)
+            if plot_result is None:
+                raise AssertionError(
+                    "plot_result must be set when applying survival plot queries"
+                )
+            plot, output_filename = plot_result
+            return (plot, output_filename)
         return None
 
     def survival_table(  # pylint: disable=too-many-arguments
-        self, survival_table, safe_table, status, sdc, command, summary, outcome
-    ):
+        self,
+        survival_table: DataFrame,
+        safe_table: DataFrame,
+        status: str,
+        sdc: dict,
+        command: str,
+        summary: str,
+        outcome: DataFrame,
+    ) -> DataFrame:
         """Create the survival table according to the status of suppressing."""
         if self.suppress:
             survival_table = safe_table
@@ -518,8 +566,15 @@ class Tables:
         return survival_table
 
     def survival_plot(  # pylint: disable=too-many-arguments
-        self, survival_table, survival_func, filename, status, sdc, command, summary
-    ):
+        self,
+        survival_table: DataFrame,
+        survival_func: Any,
+        filename: str,
+        status: str,
+        sdc: dict,
+        command: str,
+        summary: str,
+    ) -> tuple[Any, str] | None:
         """Create the survival plot according to the status of suppressing."""
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
@@ -563,25 +618,25 @@ class Tables:
 
     def hist(  # pylint: disable=too-many-arguments,too-many-locals
         self,
-        data,
-        column,
-        by_val=None,
-        grid=True,
-        xlabelsize=None,
-        xrot=None,
-        ylabelsize=None,
-        yrot=None,
-        axis=None,
-        sharex=False,
-        sharey=False,
-        figsize=None,
-        layout=None,
-        bins=10,
-        backend=None,
-        legend=False,
-        filename="histogram.png",
-        **kwargs,
-    ):
+        data: DataFrame,
+        column: str,
+        by_val: Any = None,
+        grid: bool = True,
+        xlabelsize: int | None = None,
+        xrot: float | None = None,
+        ylabelsize: int | None = None,
+        yrot: float | None = None,
+        axis: Any = None,
+        sharex: bool = False,
+        sharey: bool = False,
+        figsize: tuple[float, float] | None = None,
+        layout: tuple[int, int] | None = None,
+        bins: int | Any = 10,
+        backend: str | None = None,
+        legend: bool = False,
+        filename: str = "histogram.png",
+        **kwargs: Any,
+    ) -> str | None:
         """Create a histogram from a single column.
 
         The dataset and the column's name should be passed to the function as parameters.
@@ -755,19 +810,121 @@ class Tables:
         )
         return unique_filename
 
+    def pie(
+        self,
+        data: pd.DataFrame,
+        column: str,
+        filename: str = "pie.png",
+        **kwargs: Any,
+    ) -> str | None:
+        """Create a pie chart from a categorical column.
+
+        Per-category counts are computed using value_counts(). If any
+        category has fewer observations than THRESHOLD, the output is
+        marked as "fail" and the chart is suppressed when
+        suppress=True. Otherwise the chart is produced and marked as
+        "review".
+
+        The chart is saved to acro_artifacts/ with a unique incrementing
+        number appended to avoid overwriting existing files.
+
+        Parameters
+        ----------
+        data : DataFrame
+            The pandas DataFrame holding the data.
+        column : str
+            The column whose category proportions will be plotted.
+        filename : str, default 'pie.png'
+            The name of the file where the chart will be saved.
+        **kwargs
+            Additional keyword arguments forwarded to
+            matplotlib.axes.Axes.pie().
+
+        Returns
+        -------
+        str
+            The path to the saved pie chart file.
+        """
+        logger.debug("pie()")
+        command: str = utils.get_command("pie()", stack())
+
+        # COMPUTE PRE-CATEGORY COUNTS
+        counts = data[column].value_counts()
+
+        # THRESHOLD CHECK - same as hist() logic
+        threshold_mask = counts < THRESHOLD
+
+        if np.any(threshold_mask):
+            status = "fail"
+            if self.suppress:
+                logger.warning(
+                    "Pie chart will not be shown as the %s column is disclosive.",
+                    column,
+                )
+            else:  # pragma: no cover
+                _, ax = plt.subplots()
+                ax.pie(counts.values, labels=counts.index, **kwargs)
+        else:
+            status = "review"
+            _, ax = plt.subplots()
+            ax.pie(counts.values, labels=counts.index, **kwargs)
+
+        logger.info("status: %s", status)
+
+        # CREATE SUMMARY
+        summary = f"Pie chart of {column}. Categories and counts: {counts.to_dict()}."
+
+        # CREATE acro_artifacts DIRECTORY to save plot in
+        try:
+            os.makedirs("acro_artifacts")
+            logger.debug("Directory acro_artifacts created successfully")
+        except FileExistsError:  # pragma: no cover
+            logger.debug("Directory acro_artifacts already exists")
+
+        # CREATE UNIQUE FILENAME to avoid overwrite
+
+        filename, extension = os.path.splitext(filename)
+        if not extension:  # pragma: no cover
+            logger.info("Please provide a valid file extension")
+            return None
+        increment_number = 0
+
+        while os.path.exists(
+            f"acro_artifacts/{filename}_{increment_number}{extension}"
+        ):  # pragma: no cover
+            increment_number += 1
+        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+
+        # SAVE PLOT to acro_artifacts directory
+        plt.savefig(unique_filename)
+
+        # RECORD OUTPUT
+        self.results.add(
+            status=status,
+            output_type="pie chart",
+            properties={"method": "pie"},
+            sdc={},
+            command=command,
+            summary=summary,
+            outcome=pd.DataFrame(),
+            output=[os.path.normpath(unique_filename)],
+        )
+
+        return unique_filename
+
 
 def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
-    index,
-    columns,
-    values,
-    rownames,
-    colnames,
-    agg_func,
-    margins,
-    margins_name,
-    dropna,
-    normalize,
-):
+    index: Any,
+    columns: Any,
+    values: Any,
+    rownames: Any,
+    colnames: Any,
+    agg_func: str | Callable | list[str | Callable] | None,
+    margins: bool,
+    margins_name: str,
+    dropna: bool,
+    normalize: bool | str,
+) -> dict[str, DataFrame]:
     """Create masks to specify the cells to suppress."""
     # suppression masks to apply based on the following checks
     masks: dict[str, DataFrame] = {}
@@ -890,11 +1047,11 @@ def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
     list[str]
         A comment showing information about the deleted columns and rows.
     """
-    deleted_rows = []
-    deleted_cols = []
+    deleted_rows: list[Any] = []
+    deleted_cols: list[Any] = []
     # define empty columns and rows using boolean masks
-    empty_cols_mask = table.sum(axis=0) == 0
-    empty_rows_mask = table.sum(axis=1) == 0
+    empty_cols_mask: Any = table.sum(axis=0) == 0
+    empty_rows_mask: Any = table.sum(axis=1) == 0
 
     deleted_cols = list(table.columns[empty_cols_mask])
     table = table.loc[:, ~empty_cols_mask]
@@ -902,7 +1059,7 @@ def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
     table = table.loc[~empty_rows_mask, :]
 
     # create a message with the deleted column's names
-    comments = []
+    comments: list[str] = []
     if deleted_cols:
         msg_cols = ", ".join(str(col) for col in deleted_cols)
         comments.append(f"Empty columns: {msg_cols} were deleted.")
@@ -995,7 +1152,7 @@ def get_aggfunc(aggfunc: str | None) -> str | Callable | None:
         The aggregation function to apply.
     """
     logger.debug("get_aggfunc()")
-    func = None
+    func: str | Callable | None = None
     if aggfunc is not None:
         if not isinstance(aggfunc, str):  # pragma: no cover
             raise ValueError(f"aggfunc {aggfunc} must be:{', '.join(AGGFUNC.keys())}")
@@ -1158,6 +1315,107 @@ def agg_values_are_same(vals: Series) -> bool:
     return vals.nunique(dropna=True) == 1
 
 
+def _broadcast_mask_to_multiindex(
+    m: DataFrame, table: DataFrame, top_levels: list
+) -> DataFrame:
+    """Replicate a flat (or single-group) mask across each aggfunc top-level group.
+
+    Parameters
+    ----------
+    m : DataFrame
+        Flat mask with base columns only.
+    table : DataFrame
+        MultiIndex table whose top-level groups define the replication targets.
+    top_levels : list
+        Ordered list of unique top-level values from the table's MultiIndex columns.
+
+    Returns
+    -------
+    DataFrame
+        A mask with MultiIndex columns matching the table's column structure.
+    """
+    frames = []
+    for lvl in top_levels:
+        sub_cols = table[lvl].columns
+        sub_m = m.reindex(index=table.index, columns=sub_cols, fill_value=False)
+        sub_m.columns = pd.MultiIndex.from_product([[lvl], sub_m.columns])
+        frames.append(sub_m)
+    return pd.concat(frames, axis=1)
+
+
+def _align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
+    """Align the columns of mask *m* to match those of *table*.
+
+    Parameters
+    ----------
+    m : DataFrame
+        A single suppression mask.
+    table : DataFrame
+        The output table the mask should match.
+
+    Returns
+    -------
+    DataFrame
+        The mask with columns aligned to the table.
+    """
+    table_nlevels = table.columns.nlevels
+    mask_nlevels = m.columns.nlevels
+
+    if table_nlevels == 2 and mask_nlevels == 2:
+        table_top = table.columns.get_level_values(0).unique().tolist()
+        mask_top = m.columns.get_level_values(0).unique().tolist()
+        if mask_top != table_top:
+            n_base = len(table.columns.get_level_values(1).unique())
+            base_mask = m.iloc[:, :n_base]
+            flat_cols = base_mask.columns.get_level_values(1)
+            base_mask = pd.DataFrame(base_mask.values, index=m.index, columns=flat_cols)
+            m = _broadcast_mask_to_multiindex(base_mask, table, table_top)
+    elif mask_nlevels < table_nlevels:
+        top_levels = table.columns.get_level_values(0).unique().tolist()
+        m = _broadcast_mask_to_multiindex(m, table, top_levels)
+    elif mask_nlevels > table_nlevels:
+        m = m.droplevel(0, axis=1)
+
+    return m
+
+
+def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
+    """Align masks to the table's index and columns.
+
+    Parameters
+    ----------
+    table : DataFrame
+        Table to align masks to.
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks.
+
+    Returns
+    -------
+    dict[str, DataFrame]
+        The aligned masks.
+    """
+    aligned_masks = {}
+    for name, mask in masks.items():
+        m = mask
+
+        # handle index level mismatch
+        if m.index.nlevels > table.index.nlevels:
+            m = m.droplevel(0, axis=0)
+
+        m = _align_mask_columns(m, table)
+
+        # reindex if still necessary
+        if not m.index.equals(table.index) or not m.columns.equals(table.columns):
+            try:
+                m = m.reindex(
+                    index=table.index, columns=table.columns, fill_value=False
+                )
+            except (ValueError, TypeError):  # pragma: no cover
+                logger.warning("Could not reindex mask %s", name)
+        aligned_masks[name] = m
+    return aligned_masks
+
+
 def apply_suppression(
     table: DataFrame, masks: dict[str, DataFrame]
 ) -> tuple[DataFrame, DataFrame]:
@@ -1178,8 +1436,10 @@ def apply_suppression(
         Table with outcomes of suppression checks.
     """
     logger.debug("apply_suppression()")
+    # align masks
+    masks = align_masks(table, masks)
     safe_df = table.copy()
-    outcome_df = DataFrame().reindex_like(table)
+    outcome_df = DataFrame(index=table.index, columns=table.columns)
     outcome_df.fillna("", inplace=True)
     # don't apply suppression if negatives are present
     if "negative" in masks:
@@ -1194,7 +1454,7 @@ def apply_suppression(
         for name, mask in masks.items():
             try:
                 safe_df[mask.values] = np.nan
-                tmp_df = DataFrame().reindex_like(outcome_df)
+                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
                 tmp_df.fillna("", inplace=True)
                 tmp_df[mask.values] = name + "; "
                 outcome_df += tmp_df
@@ -1212,7 +1472,9 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
+def get_table_sdc(
+    masks: dict[str, DataFrame], suppress: bool, table: DataFrame | None = None
+) -> dict[str, Any]:
     """Return the SDC dictionary using the suppression masks.
 
     Parameters
@@ -1221,9 +1483,13 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
         Dictionary of tables specifying suppression masks for application.
     suppress : bool
         Whether suppression has been applied.
+    table : DataFrame, optional
+        The table to align masks to.
     """
+    if table is not None:
+        masks = align_masks(table, masks)
     # summary of cells to be suppressed
-    sdc: dict = {"summary": {"suppressed": suppress}, "cells": {}}
+    sdc: dict[str, Any] = {"summary": {"suppressed": suppress}, "cells": {}}
     sdc["summary"]["negative"] = 0
     sdc["summary"]["missing"] = 0
     sdc["summary"]["threshold"] = 0
@@ -1247,7 +1513,7 @@ def get_table_sdc(masks: dict[str, DataFrame], suppress: bool) -> dict:
     return sdc
 
 
-def get_summary(sdc: dict) -> tuple[str, str]:
+def get_summary(sdc: dict[str, Any]) -> tuple[str, str]:
     """Return the status and summary of the suppression masks.
 
     Parameters
@@ -1314,7 +1580,7 @@ def add_backticks(name: str) -> str:
     return name  # pragma: no cover
 
 
-def _format_label_condition(level_names: list, label: str) -> list[str]:
+def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
     """Format a label into a list of condition strings.
 
     Parameters
@@ -1347,7 +1613,11 @@ def _format_label_condition(level_names: list, label: str) -> list[str]:
 
 
 def _get_cell_query(
-    mask, row_index, col_index, index_level_names, column_level_names
+    mask: DataFrame,
+    row_index: int,
+    col_index: int,
+    index_level_names: list[Any],
+    column_level_names: list[Any],
 ) -> str | None:
     """Generate a query string for a cell if it's marked as true in the mask.
 
@@ -1382,7 +1652,10 @@ def _get_cell_query(
     return " & ".join(parts)
 
 
-def get_queries(masks, aggfunc) -> list[str]:
+def get_queries(
+    masks: dict[str, DataFrame],
+    aggfunc: str | Callable | list[str | Callable] | None,
+) -> list[str]:
     """Return a list of the boolean conditions for each true cell in the suppression masks.
 
     Parameters
@@ -1415,7 +1688,7 @@ def get_queries(masks, aggfunc) -> list[str]:
     return true_cell_queries
 
 
-def create_dataframe(index, columns) -> DataFrame:
+def create_dataframe(index: Any, columns: Any) -> DataFrame:
     """Combine the index and columns in a dataframe and return the dataframe.
 
     Parameters
@@ -1458,7 +1731,9 @@ def create_dataframe(index, columns) -> DataFrame:
     return data
 
 
-def get_index_columns(index, columns, data) -> tuple[list | Series, list | Series]:
+def get_index_columns(
+    index: Any, columns: Any, data: DataFrame
+) -> tuple[list[Any] | Series, list[Any] | Series]:
     """Get the index and columns from the data dataframe.
 
     Parameters
@@ -1496,23 +1771,23 @@ def get_index_columns(index, columns, data) -> tuple[list | Series, list | Serie
 
 
 def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
-    masks,
-    aggfunc,
-    index,
-    columns,
-    values,
-    margins,
-    margins_name,
-    dropna,
-    crosstab,
-    rownames=None,
-    colnames=None,
-    normalize=False,
-    data=None,
-    fill_value=None,
-    observed=False,
-    sort=False,
-) -> DataFrame:
+    masks: dict[str, DataFrame],
+    aggfunc: Any,
+    index: Any,
+    columns: Any,
+    values: Any,
+    margins: bool,
+    margins_name: str,
+    dropna: bool,
+    crosstab: bool,
+    rownames: Any = None,
+    colnames: Any = None,
+    normalize: bool | str = False,
+    data: DataFrame | None = None,
+    fill_value: Any = None,
+    observed: bool = False,
+    sort: bool = False,
+) -> DataFrame | None:
     """Recalculate the crosstab table when margins are true and suppression is true.
 
     Parameters
@@ -1560,7 +1835,8 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     true_cell_queries = get_queries(masks, aggfunc)
     if crosstab:
         data = create_dataframe(index, columns)
-    # apply the queries to the data
+    if data is None:
+        raise AssertionError("data must be set when applying crosstab queries")
     for query in true_cell_queries:
         data = data.query(f"not ({query})")
 
@@ -1631,18 +1907,18 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
 
 
 def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
-    table,
-    aggfunc,
-    index,
-    columns,
-    values,
-    rownames,
-    colnames,
-    margins,
-    margins_name,
-    dropna,
-    normalize,
-) -> DataFrame:
+    table: DataFrame,
+    aggfunc: str | list[str] | None,
+    index: Any,
+    columns: Any,
+    values: Any,
+    rownames: Any,
+    colnames: Any,
+    margins: bool,
+    margins_name: str,
+    dropna: bool,
+    normalize: bool | str,
+) -> DataFrame | None:
     """Recalculate the crosstab table when margins are true and suppression is true.
 
     Parameters
@@ -1757,7 +2033,7 @@ def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
     return table
 
 
-def recalculate_margin(table, margins_name) -> DataFrame:
+def recalculate_margin(table: DataFrame, margins_name: str) -> DataFrame:
     """Recalculate the margins in a table.
 
     Parameters

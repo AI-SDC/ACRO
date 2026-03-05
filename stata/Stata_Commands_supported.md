@@ -1,15 +1,16 @@
 # Stata commands currently supported by ACRO
 We focus on Stata V17 and above as the syntax changed significantly from then, but support for Stata V16 and below is broadly the same.
 
-### This is an ongoing project we want to be driven by researchers' needs
-So **please let us know** if there are commands or things you would like us to support:
-- by emailing sacro.contact@uwe.ac.uk<br>
-- or [adding an issue to github.com/ai-sdc/acro](https://github.com/AI-SDC/ACRO/issues/new/choose)
+**This is an ongoing project we want to be driven by researchers' needs**
+
+So **please let us know** if there are commands or things you would like us to support by:
+
+ - emailing sacro.contact@uwe.ac.uk, or
+
+ - [adding an issue to github.com/ai-sdc/acro](https://github.com/AI-SDC/ACRO/issues/new/choose)
 
 
-**Author** james.smith@uwe.ac.uk
-
-**Last Updated** 11 February 2026
+**Author** james.smith@uwe.ac.uk,     **Last Updated** 26 February 2026
 
 ----
 
@@ -19,7 +20,7 @@ ACRO is designed to provide drop-in replacements for commonly-used Stata command
 
 Most data management is done exactly as before, the difference comes when you issue a _query_ that produces an output you may want to take out of the TRE.
 
-ACRO provides automated checks against risks you should be checking such as: _small group sizes_ , _class disclosure_, _dominance_ and _low residual degrees of freedom_.
+ACRO provides automated checks against risks you should be checking e.g.: _small group sizes_ , _class disclosure_, _dominance_ and _low residual degrees of freedom_.
 
 Researchers are provided with this feedback immediately  so they have the power to choose between:<br>
 - **redesigning** their outputs to reduce risks,
@@ -33,10 +34,64 @@ They key concept is that of an acro _session_ : comparable to doing a day's work
 
 
 ## Caveat
-At present most  acro-assessed outputs are saved and egressed as csv files or image files.
+At present most  acro-assessed outputs are saved as csv files or image files.
 
 - So **we currently assume you will format your results later** e.g.  once  they have been released from the TRE and are producing your publication.
 - We have open issues to support more formatted work - and welcome feedback on that.
+
+
+
+# Simple worked example
+This uses an open-source data set about nursery admissions
+
+### Start Analysis session
+```acro init```
+
+### Load and manipulate data
+
+
+```use "../data/nursery_dataset"``` _ACRO  is not involved in how you do this._
+
+### Make some tables
+
+using the standard Stata `table` commands prefixed by `acro`, for example:
+
+```acro table parents finance```
+_In this example an output is added to the acro session with the feedback that it passes all the relevant checks_
+
+```acro table parents recommend```
+_In this example the feedback attached to the output is that it fails some disclosure checks._
+
+You can either:
+
+- recode  the data if you want: this is manipulation and up to you
+
+- or make a request to override the standard rules:
+
+  ``` acro add_exception "output_1" "Add your reason here" ``` _acro reports the id of each output when they are created._
+
+- or ask acro to automatically suppress any disclosive cells
+   - and update row/column totals if needed
+   - and add an exception message messaged saying it has done that.
+
+    ```acro enable_suppression```
+
+
+    ```acro table parents recommend```
+
+
+### Tidy up and finish the session
+
+```acro print_outputs```
+
+```acro rename_output "output_2" "suppressed table parents by recommend" ```
+
+```acro add_comments "output_0" "table of finance by parents"```
+
+```acro remove_output "output_1"```
+
+```acro finalise "my new stata outputs folder"```
+
 
 ----
 
@@ -63,9 +118,13 @@ At present most  acro-assessed outputs are saved and egressed as csv files or im
 
 ```acro finalise [output_dir] [filetype]```: _wraps up the session, writing the outputs to a named directory (default= "stata_output" ) in json (default) or xlsx format.
 
-Note that **acro will not overwrite your work**, so the name of the directory you pass to _finalise_ must not exist.<br>
-You can: delete old versions manually; provide a new name; or create the name in code - for example including the date/time.<br>
-The acro_demo_2026 do-file (and supporting pdfs) show how to this.
+### Note that acro will not overwrite your work
+
+This means the name of the directory you pass to _finalise_ must not exist.
+
+You can: delete old versions manually; provide a new name; or create the name in code.
+
+The file `acro_demo_2026.do`  (and pdf versions) show how to add the current date and time to folder names in Stata.
 
 
 ----
@@ -76,18 +135,28 @@ For Stata versions V17 and beyond you can make tables of frequencies (or other s
 
 ```acro table (rowvars) (colvars) (tabvars) [if] [in] [,options]```
 
-See Stata's built-in help for details of how to use this, **and there are some simple examples at the end of this document**
+See Stata's built-in help for details of how to use this.
 - You can currently report one or more of the following statistics: _count_ (default, same as frequency), _mean_, _median_, _sum_, _std_, and _mode_.
 
-There are some minor differences, which will be addressed in the next version.<br>
-Currently not supported:
+There are some minor differences, which will be addressed in the next version.
+
+**Currently not supported** are:
+
 - **weights within the options**
+
 - **formatting commands  (see above).**
-- compound manipulation/query commands such creating indicator variables from categorical ones eg.<br>
-    _xi: regress myvar1 i.myvar2 myvar3_<br>
-    As shown in the demo you can achieve the same  effects by doing this in two steps: <br>
-    _xi myvar2_ <br>
-    _regress myvar1 `ds\_I*' myvar2_
+
+- compound manipulation/query commands such as ```xi:``` that create indicator variables from categorical ones on-the-fly.
+
+**Workaround for xi**
+
+   ``` xi: regress myvar1 i.myvar2 myvar3```
+
+Can be broken down into two stages using Stata commands:
+
+```xi i.myvar2```   _creates the binary variables_
+
+ ```regress myvar1 `ds _Imyvar2*' myvar3```
 
 ----
 
@@ -98,137 +167,3 @@ Currently not supported:
 ``` acro logit dependent_var independent_vars [if] [in] ```: _logistic regression_
 
 ``` acro probit dependent_var independent_vars [if] [in]  ```: _probit regression_
-
-
-
-----
-
-
-# Some simple examples of creating tables
-**All of these examples are using the standard Stata syntax with the prefix _acro_**
-
-These examples assume we have a simple data set with:
-- a numerical variable _myvar_,
-- and five categorical variables (_a,b,c,d,e_).
-- **For simplicity** the examples below assume each categorical variable has  2 possible values.
-   - e.g. _a1_ or _a2_.
-
-
-## Simple two-way table of frequencies:
-
-```acro table a b ``` produces
-<div style="display: inline-block">
-
-|  |b1|b2|
-|--|--|--|
-|a1|  |  |
-|a2|  |  |
-</div>
-
- where the cells contain the number of records falling into each subgroup.
-
-
-## Two way table reporting statistics of variable _n_
-
-```acro table a b, statistic(mean myvar)```
-
-produces the table with the shape
-<div style="display: inline-block">
-
-|  |b1|b2|
-|--|--|--|
-|a1|  |  |
-|a2|  |  |
-
-</div>
-
-but now the cells will contain the mean value of _myvar_ in each sub-group.
-See above for aggregation functions we currently support
-
-You can request more than one statistic - but they must refer to the same numerical variable.<br>
-For example: ```acro table a b, statistic(mean myvar) statistic(std myvar)``` <br>
-produces
-
-<div style="display: inline-block">
-
-|  | mean| |std | |
-|---|---|---|---|---|
-|  |b1|b2|b1|b2|
-|a1|  |  |  |  |
-|a2|  |  |  |  |
-
-</div>
-
-## Adding hierarchies and complexity to  tables
-Add row or columns hierarchies by listing variables to group within parentheses.
-
-As above, the cells will contain sub-group counts be default and other statistics on request
-
-```acro table (a b) c``` produces
-<div style="display: inline-block">
-
-
-|   |   |c1 | c2|
-|---|---|---|---|
-|a1 | b1|   |   |
-|   | b2|   |   |
-|a2 | b1|   |   |
-|   | b2|   |   |
-
-</div>
-
-```acro table a (b c)``` produces
-<div style="display: inline-block">
-
-
-|   |b1 |   |b2 |   |
-|---|---|---|---|---|
-|   |c1 |c2 |c1 |c2 |
-|a1 |   |   |   |   |
-|a2 |   |   |   |   |
-
-</div>
-
-and ```acro table (a b) (c d)``` produces
-<div style="display: inline-block">
-
-|   |   |c1 |   |c2 |   |
-|---|---|---|---|---|---|
-|   |   |d1 |d2 |d1 |d2 |
-|a1 |b1 |   |   |   |   |
-|   |b2 |   |   |   |   |
-|a2 |b1 |   |   |   |   |
-|   |b2 |   |   |   |   |
-
-</div>
-
-## Creating multiple related tables
-There may be cases where you want to separate your data out
-- for example if it makes the tables simpler to read
-
-You can do this by providing a third (set of) variables alongside the row and column specifiers.
-
-For examples ```acro table a b c``` produces:
-<div style="display: inline-block">
-
-|c1 |   |   |
-|---|---|---|
-|   |b1 |b2 |
-|a1 |   |   |
-|a2 |   |   |
-
-
-|c2 |   |   |
-|---|---|---|
-|   |b1 |b2 |
-|a1 |   |   |
-|a2 |   |   |
-
-</div>
-
-## Even more complexity ...
-As before, in multiple tables  the rows or columns  could contain hierarchies, and you can specify different statistics to report on.
-
-So you could combine our previous  examples e.g.:<br>
-``` acro table (a b) (c d) e , statistic(mean myvar) statistic(std myvar)```<br>
-and so on.

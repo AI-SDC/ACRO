@@ -1259,12 +1259,14 @@ def test_toggle_suppression():
 
 
 def test_summary_csv_created_with_json(data, acro):
-    """Test that summary.csv is created when finalising to JSON (Issue #224)."""
+    """Test that DO_NOT_RELEASE_session_summary.csv is created when finalising to JSON (Issue #224)."""
     _ = acro.crosstab(data.year, data.grant_type)
     acro.add_exception("output_0", "Let me have it")
     acro.finalise(PATH, "json")
-    summary_path = os.path.normpath(f"{PATH}/summary.csv")
-    assert os.path.exists(summary_path), "summary.csv was not created"
+    summary_path = os.path.normpath(f"{PATH}/DO_NOT_RELEASE_session_summary.csv")
+    assert os.path.exists(summary_path), (
+        "DO_NOT_RELEASE_session_summary.csv was not created"
+    )
     summary_df = pd.read_csv(summary_path)
     assert len(summary_df) == 1
     assert "id" in summary_df.columns
@@ -1306,7 +1308,7 @@ def test_summary_variables_extracted(data):
     _ = acro_obj.crosstab(data.year, data.grant_type)
     acro_obj.add_exception("output_0", "Let me have it")
     acro_obj.finalise(PATH, "json")
-    summary_path = os.path.normpath(f"{PATH}/summary.csv")
+    summary_path = os.path.normpath(f"{PATH}/DO_NOT_RELEASE_session_summary.csv")
     summary_df = pd.read_csv(summary_path)
     variables = summary_df.iloc[0]["variables"]
     assert "year" in variables
@@ -1627,15 +1629,13 @@ def test_extract_table_info_shape_type_error():
     assert total_records == 0
 
 
-def test_write_summary_empty_session(tmp_path):
-    """Test write_summary when there are no outputs (line 595 coverage)."""
+def test_write_summary_empty_session():
+    """Test add_summary_to_results when there are no outputs (line 595 coverage)."""
     records = Records()
 
-    # Create a temp directory for output
-    output_path = str(tmp_path / "empty_summary")
-
-    # Call write_summary with no outputs - should return early without creating file
-    records.write_summary(output_path)
+    records.add_summary_to_results()
 
     # Verify no file was created since summary was empty
-    assert not os.path.exists(os.path.normpath(f"{output_path}/summary.csv"))
+    assert not os.path.exists(
+        os.path.normpath("acro_artifacts/DO_NOT_RELEASE_session_summary.csv")
+    )

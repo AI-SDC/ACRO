@@ -450,13 +450,11 @@ class Records:
 
         for table in output:
             if isinstance(table, DataFrame):
-                # Extract index names
                 if hasattr(table.index, "names") and any(table.index.names):
                     variables.extend(str(n) for n in table.index.names if n is not None)
                 elif table.index.name:
                     variables.append(str(table.index.name))
 
-                # Extract column names
                 if hasattr(table.columns, "names") and any(table.columns.names):
                     variables.extend(
                         str(n) for n in table.columns.names if n is not None
@@ -464,7 +462,6 @@ class Records:
                 elif table.columns.name:
                     variables.append(str(table.columns.name))
 
-                # Calculate total records
                 try:
                     total_records += int(table.shape[0] * table.shape[1])
                     if method == "crosstab":
@@ -549,6 +546,8 @@ class Records:
         """
         rows = []
         for uid, rec in self.results.items():
+            if rec.output_type == "custom":
+                continue
             method = rec.properties.get("method", rec.output_type)
             variables: list[str] = []
             total_records: int = 0
@@ -582,21 +581,28 @@ class Records:
 
         return summary_df
 
-    def write_summary(self, path: str) -> None:
-        """Write the session summary to a CSV file.
+    def add_summary_to_results(self) -> None:
+        """Add the summary DataFrame as a custom output to results.
 
-        Parameters
-        ----------
-        path : str
-            Name of the output folder.
+        This generates a summary of all outputs in the session with metadata
+        about variables, record counts, and differencing risk. The file is
+        marked with a clear warning not to release.
         """
         summary_df = self.generate_summary()
         if summary_df.empty:
             return
-        os.makedirs(path, exist_ok=True)
-        filename = os.path.normpath(f"{path}/summary.csv")
-        summary_df.to_csv(filename, index=False)
-        logger.info("summary written to: %s", filename)
+
+        os.makedirs("acro_artifacts", exist_ok=True)
+        # Use explicit filename to indicate this should not be released
+        summary_path = os.path.normpath(
+            "acro_artifacts/DO_NOT_RELEASE_session_summary.csv"
+        )
+        summary_df.to_csv(summary_path, index=False)
+
+        self.add_custom(
+            summary_path,
+            "⚠️  WARNING: DO NOT RELEASE - Session summary for output checker use only",
+        )
 
     def finalise(self, path: str, ext: str, interactive: bool = False) -> None:
         """Create a results file for checking.
@@ -613,13 +619,13 @@ class Records:
         logger.debug("finalise()")
         if interactive:
             self.validate_outputs()
+        self.add_summary_to_results()
         if ext == "json":
             self.finalise_json(path)
         elif ext == "xlsx":
             self.finalise_excel(path)
         else:
             raise ValueError("Invalid file extension. Options: {json, xlsx}")
-        self.write_summary(path)
         self.write_checksums(path)
         # check if the directory acro_artifacts exists and delete it
         if os.path.exists("acro_artifacts"):
@@ -653,7 +659,19 @@ class Records:
             for file in files:
                 outputs[key]["files"].append({"name": file, "sdc": val.sdc})
 
-        results: dict = {"version": __version__, "results": outputs}
+        # Generate and include session summary for output checkers
+        summary_df = self.generate_summary()
+        session_summary = {
+            "DO_NOT_RELEASE": True,
+            "purpose": "Session summary for output checker use only",
+            "data": json.loads(summary_df.to_json(orient="records")),
+        }
+
+        results: dict = {
+            "version": __version__,
+            "results": outputs,
+            "session_summary": session_summary,
+        }
         filename: str = os.path.normpath(f"{path}/results.json")
         try:
             with open(filename, "w", newline="", encoding="utf-8") as handle:
@@ -703,7 +721,6 @@ class Records:
                 {"Sheet": sheet, "Command": command, "Summary": summary}
             )
             tmp_df.to_excel(writer, sheet_name="description", index=False, startrow=0)
-
             # individual sheets
             for output_id, output in self.results.items():
                 if output.output_type == "custom":

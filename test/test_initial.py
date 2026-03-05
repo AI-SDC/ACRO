@@ -1716,7 +1716,7 @@ def test_get_crosstab_record_count_with_margins():
     table = pd.DataFrame(
         [[5, 5, 10], [5, 5, 10], [10, 10, 20]],
         index=pd.Index([2010, 2011, "All"], name="year"),
-        columns=pd.Index(["A", "B", "All"], name="grant_type")
+        columns=pd.Index(["A", "B", "All"], name="grant_type"),
     )
 
     # Call _get_crosstab_record_count
@@ -1738,7 +1738,7 @@ def test_get_crosstab_record_count_without_margins():
     table = pd.DataFrame(
         [[5, 5], [5, 5]],
         index=pd.Index([2010, 2011], name="year"),
-        columns=pd.Index(["A", "B"], name="grant_type")
+        columns=pd.Index(["A", "B"], name="grant_type"),
     )
 
     count = records._get_crosstab_record_count(table)
@@ -1758,7 +1758,7 @@ def test_get_crosstab_record_count_with_margin_row_only():
     table = pd.DataFrame(
         [[5, 5], [5, 5], [10, 10]],
         index=pd.Index([2010, 2011, "All"], name="year"),
-        columns=pd.Index(["A", "B"], name="grant_type")
+        columns=pd.Index(["A", "B"], name="grant_type"),
     )
 
     count = records._get_crosstab_record_count(table)
@@ -1778,7 +1778,7 @@ def test_get_crosstab_record_count_with_margin_column_only():
     table = pd.DataFrame(
         [[5, 5, 10], [5, 5, 10]],
         index=pd.Index([2010, 2011], name="year"),
-        columns=pd.Index(["A", "B", "All"], name="grant_type")
+        columns=pd.Index(["A", "B", "All"], name="grant_type"),
     )
 
     count = records._get_crosstab_record_count(table)
@@ -1798,7 +1798,7 @@ def test_get_crosstab_record_count_with_nan_values():
     table = pd.DataFrame(
         [[np.nan, 5, 5], [5, np.nan, 5], [10, 10, 20]],
         index=pd.Index([2010, 2011, "All"], name="year"),
-        columns=pd.Index(["A", "B", "C"], name="grant_type")
+        columns=pd.Index(["A", "B", "C"], name="grant_type"),
     )
 
     count = records._get_crosstab_record_count(table)
@@ -1818,7 +1818,7 @@ def test_get_crosstab_record_count_fallback():
     table = pd.DataFrame(
         [[np.nan, np.nan], [np.nan, np.nan]],
         index=pd.Index([2010, 2011], name="year"),
-        columns=pd.Index(["A", "B"], name="grant_type")
+        columns=pd.Index(["A", "B"], name="grant_type"),
     )
 
     count = records._get_crosstab_record_count(table)

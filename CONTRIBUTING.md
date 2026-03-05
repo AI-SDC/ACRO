@@ -1,6 +1,8 @@
 # Contributing
 
-Contributions to this repository are very welcome. Please create an issue before starting any significant work so that we can discuss and understand the changes. If you are interested in contributing, feel free to contact us or create an issue in the [issue tracking system](https://github.com/AI-SDC/ACRO/issues). Alternatively, you may [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the project and submit a [pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork). All contributions must be made under the same license as the rest of the project: [MIT License](../blob/main/LICENSE). New code should be accompanied with appropriate unit tests and documentation; `CHANGELOG.md` is generated from PR titles (see [Changelog](#changelog) below). If this is your first contribution to the repository, please also add your details to `CITATION.cff`. If you are introducing new imports, then these must also be added to `requirements.txt` (in root and docs folders) and `setup.py`. After creating a pull request, the continuous integration tools will automatically run the unit tests, apply the pre-commit checks listed below, and build and deploy the Sphinx documentation (when merged into the main branch.)
+Contributions to this repository are very welcome. Please create an issue before starting any significant work so that we can discuss and understand the changes. If you are interested in contributing, feel free to contact us or create an issue in the [issue tracking system](https://github.com/AI-SDC/ACRO/issues). Alternatively, you may [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the project and submit a [pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork). All contributions must be made under the same license as the rest of the project: [MIT License](../blob/main/LICENSE).
+
+New code should be accompanied with appropriate unit tests and documentation. The `CHANGELOG.md` is generated from PR titles (see [Changelog](#changelog) below). If this is your first contribution to the repository, please also add your details to `CITATION.cff`. If you are introducing new imports, then these must also be added to `requirements.txt` (in root and docs folders) and `setup.py`. After creating a pull request, the continuous integration tools will automatically run the unit tests, apply the pre-commit checks listed below, and build and deploy the Sphinx documentation (when merged into the main branch.)
 
 ## Pull Request Standards
 
@@ -74,6 +76,9 @@ This is a lightweight convention on top of commit messages. It provides a simple
 
 Individual commit messages in branches may follow an unrestricted policy, but **PR titles must follow Conventional Commits**.
 
+Do **not** add issue or PR numbers manually. If you wish to automatically close
+an issue then add the text in a comment.
+
 ### Why We Use Conventional Commit PR Titles
 
 We require PR titles to follow the Conventional Commits format because it:
@@ -117,61 +122,33 @@ revert — reverts an earlier commit
 
 ## Changelog
 
-`CHANGELOG.md` is generated from commit history using [git-cliff](https://github.com/orhun/git-cliff). Entries come from merged PR titles (via squash-merge commit messages) and are formatted to match the existing changelog style.
+The `CHANGELOG.md` is generated from the commit history using [git-cliff](https://github.com/orhun/git-cliff) and assumes conventional commit messages.
 
 ### Generate the changelog
 
-To generate or update the changelog locally:
+#### Install
 
-1. Install git-cliff from the [releases page](https://github.com/orhun/git-cliff/releases) or via a package manager:
-
-   ```shell
-   # cargo
-   cargo install git-cliff
-
-   # homebrew (macOS / Linux)
-   brew install git-cliff
-   ```
-
-2. Run from an up-to-date branch:
-
-   ```shell
-   scripts/generate_changelog.sh
-   ```
-
-3. Review and edit `CHANGELOG.md` as needed, then commit:
-
-   ```shell
-   git add CHANGELOG.md
-   git commit -m "docs: update changelog"
-   ```
-
-The script updates the current top `## Version ...` section by inserting only newly generated entries. Re-running is safe: exact duplicate lines are not inserted again.
-
-### Quick verification (copy/paste)
+We recommend using [uv](https://docs.astral.sh/uv/) to install:
 
 ```shell
-scripts/generate_changelog.sh
-sed -n '1,30p' CHANGELOG.md
-scripts/generate_changelog.sh
+uv tool install git-cliff
 ```
 
-The second run should print: `No new changelog entries to add under the current top version.`
-
-If you were only testing and do not want to keep generated edits:
+However, you may prefer to use pip or obtain it using any of the installation
+methods provided on the official repository.
 
 ```shell
-git restore CHANGELOG.md
+pip install git-cliff
 ```
 
-### Where entries come from
+#### Usage
 
-Entries are derived from **commit messages** on the branch you run from. git-cliff scans commits since the last release tag and keeps those that follow Conventional Commits. It does not use GitHub PR metadata, so it works even when no PR exists yet.
+Example that prepends entries between v0.4.12 and the current HEAD (this can be
+changed to a specific version if desired).
 
-- **No PR yet**: You can run the script on a feature branch before opening or merging a PR. Entries will reflect your commit messages (e.g. issue refs like `#327`). After the PR is squash-merged, running on `main` will pick up the squash commit with the PR number (e.g. `#352`).
-- **Branch matters**: You can run on any branch to preview entries. For correct PR numbers and links in the final changelog, run on up-to-date `main` after PRs are merged.
-- **PR links**: A line gets a PR link like `([#NNN](https://github.com/AI-SDC/ACRO/pull/NNN))` only if the commit message contains `(#NNN)`. If the commit message is `docs: update citation` with no PR reference, the changelog line will have no link.
-- **Squash-merge**: Use "Squash and merge" when merging PRs so the default commit message includes the PR number (e.g. `feat: add X (#123)`). That ensures the changelog entry gets the link.
+```shell
+git cliff v0.4.12..HEAD --config cliff.toml --prepend CHANGELOG.md
+```
 
 ### Configuration
 

@@ -601,7 +601,7 @@ class Records:
 
         self.add_custom(
             summary_path,
-            "⚠️  WARNING: DO NOT RELEASE - Session summary for output checker use only",
+            "WARNING: DO NOT RELEASE - Session summary for output checker use only",
         )
 
     def finalise(self, path: str, ext: str, interactive: bool = False) -> None:

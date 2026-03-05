@@ -1,6 +1,8 @@
 # Contributing
 
-Contributions to this repository are very welcome. Please create an issue before starting any significant work so that we can discuss and understand the changes. If you are interested in contributing, feel free to contact us or create an issue in the [issue tracking system](https://github.com/AI-SDC/ACRO/issues). Alternatively, you may [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the project and submit a [pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork). All contributions must be made under the same license as the rest of the project: [MIT License](../blob/main/LICENSE). New code should be accompanied with appropriate unit tests and documentation; a brief description of the changes made should be added to the top of `CHANGELOG.md`. If this is your first contribution to the repository, please also add your details to `CITATION.cff`. If you are introducing new imports, then these must also be added to `requirements.txt` (in root and docs folders) and `setup.py`. After creating a pull request, the continuous integration tools will automatically run the unit tests, apply the pre-commit checks listed below, and build and deploy the Sphinx documentation (when merged into the main branch.)
+Contributions to this repository are very welcome. Please create an issue before starting any significant work so that we can discuss and understand the changes. If you are interested in contributing, feel free to contact us or create an issue in the [issue tracking system](https://github.com/AI-SDC/ACRO/issues). Alternatively, you may [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the project and submit a [pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork). All contributions must be made under the same license as the rest of the project: [MIT License](../blob/main/LICENSE).
+
+New code should be accompanied with appropriate unit tests and documentation. The `CHANGELOG.md` is generated from PR titles (see [Changelog](#changelog) below). If this is your first contribution to the repository, please also add your details to `CITATION.cff`. If you are introducing new imports, then these must also be added to `requirements.txt` (in root and docs folders) and `setup.py`. After creating a pull request, the continuous integration tools will automatically run the unit tests, apply the pre-commit checks listed below, and build and deploy the Sphinx documentation (when merged into the main branch.)
 
 ## Pull Request Standards
 
@@ -74,6 +76,9 @@ This is a lightweight convention on top of commit messages. It provides a simple
 
 Individual commit messages in branches may follow an unrestricted policy, but **PR titles must follow Conventional Commits**.
 
+Do **not** add issue or PR numbers manually. If you wish to automatically close
+an issue then add the text in a comment.
+
 ### Why We Use Conventional Commit PR Titles
 
 We require PR titles to follow the Conventional Commits format because it:
@@ -114,3 +119,41 @@ ci — changes to CI config/scripts
 chore — miscellaneous maintenance tasks
 revert — reverts an earlier commit
 ```
+
+## Changelog
+
+The `CHANGELOG.md` is generated from the commit history using [git-cliff](https://github.com/orhun/git-cliff) and assumes conventional commit messages.
+
+### Generate the changelog
+
+#### Install
+
+We recommend using [uv](https://docs.astral.sh/uv/) to install:
+
+```shell
+uv tool install git-cliff
+```
+
+However, you may prefer to use pip or obtain it using any of the installation
+methods provided on the official repository.
+
+```shell
+pip install git-cliff
+```
+
+#### Usage
+
+Example that prepends entries between v0.4.12 and the current HEAD (this can be
+changed to a specific version if desired).
+
+```shell
+git cliff v0.4.12..HEAD --config cliff.toml --prepend CHANGELOG.md
+```
+
+### Configuration
+
+The configuration lives in `cliff.toml` at the repository root. It:
+
+- Converts `(#NNN)` in commit messages into markdown PR links.
+- Skips noise commits (pre-commit auto-fixes, changelog and release-prep commits).
+- Filters out commits that do not follow Conventional Commits (see [Pull Request Titles](#pull-request-titles)).

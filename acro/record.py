@@ -452,15 +452,11 @@ class Records:
             if isinstance(table, DataFrame):
                 if hasattr(table.index, "names") and any(table.index.names):
                     variables.extend(str(n) for n in table.index.names if n is not None)
-                elif table.index.name:
-                    variables.append(str(table.index.name))
 
                 if hasattr(table.columns, "names") and any(table.columns.names):
                     variables.extend(
                         str(n) for n in table.columns.names if n is not None
                     )
-                elif table.columns.name:
-                    variables.append(str(table.columns.name))
 
                 try:
                     if method == "crosstab":

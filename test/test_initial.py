@@ -1618,7 +1618,6 @@ def test_generate_summary_with_crosstab(data, acro):
     )
 
 
-
 def test_extract_table_info_shape_type_error():
     """Cover lines 474-475: except (TypeError, ValueError) in _extract_table_info.
 

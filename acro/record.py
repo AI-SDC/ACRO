@@ -430,6 +430,199 @@ class Records:
                 )
                 record.exception = input("")
 
+    def _extract_table_info(self, output: list, method: str) -> tuple[list[str], int]:
+        """Extract variables and total records from table output.
+
+        Parameters
+        ----------
+        output : list
+            The output to extract information from.
+        method : str
+            The method used to generate the output.
+
+        Returns
+        -------
+        tuple[list[str], int]
+            Variables and total record count.
+        """
+        variables: list[str] = []
+        total_records: int = 0
+
+        for table in output:
+            if isinstance(table, DataFrame):
+                if hasattr(table.index, "names") and any(table.index.names):
+                    variables.extend(str(n) for n in table.index.names if n is not None)
+
+                if hasattr(table.columns, "names") and any(table.columns.names):
+                    variables.extend(
+                        str(n) for n in table.columns.names if n is not None
+                    )
+
+                try:
+                    if method == "crosstab":
+                        total_records = self._get_crosstab_record_count(table)
+                    else:
+                        total_records += int(table.shape[0] * table.shape[1])
+                except (TypeError, ValueError):
+                    pass
+
+        return variables, total_records
+
+    def _get_crosstab_record_count(self, table: DataFrame) -> int:
+        """Get record count from crosstab, excluding margins.
+
+        Parameters
+        ----------
+        table : DataFrame
+            The crosstab table.
+
+        Returns
+        -------
+        int
+            The record count.
+        """
+        working_table = table.copy()
+        if "All" in working_table.index:
+            working_table = working_table.drop("All", axis=0)
+        if "All" in working_table.columns:
+            working_table = working_table.drop("All", axis=1)
+
+        cell_sum = working_table.values[~pd.isna(working_table.values)].sum()
+        if cell_sum > 0:
+            return int(cell_sum)
+        return int(table.shape[0] * table.shape[1])
+
+    def _extract_regression_info(self, output: list) -> tuple[list[str], int]:
+        """Extract variables and total records from regression output.
+
+        Parameters
+        ----------
+        output : list
+            The output to extract information from.
+
+        Returns
+        -------
+        tuple[list[str], int]
+            Variables and total record count.
+        """
+        variables: list[str] = []
+        total_records: int = 0
+
+        for table in output:
+            if isinstance(table, DataFrame):
+                for idx in table.index:
+                    idx_str = str(idx)
+                    if "no. observations" in idx_str.lower():
+                        try:
+                            val = table.loc[idx].dropna().iloc[0]
+                            total_records = int(float(val))
+                        except (ValueError, TypeError, IndexError):
+                            pass
+                        break
+
+        return variables, total_records
+
+    def _mark_diff_risk(self, summary_df: DataFrame) -> DataFrame:
+        """Mark outputs with differencing risk.
+
+        Parameters
+        ----------
+        summary_df : DataFrame
+            The summary DataFrame to update.
+
+        Returns
+        -------
+        DataFrame
+            Updated summary DataFrame with diff_risk column.
+        """
+        if summary_df.empty:
+            summary_df["diff_risk"] = pd.Series(dtype=bool)
+        else:
+            summary_df["diff_risk"] = False
+            table_mask = summary_df["type"] == "table"
+            table_outputs = summary_df.loc[table_mask]
+            if not table_outputs.empty:
+                for _, group in table_outputs.groupby("variables"):
+                    if len(group) > 1:
+                        counts = group["total_records"].unique()
+                        if len(counts) > 1:
+                            summary_df.loc[group.index, "diff_risk"] = True
+
+        return summary_df
+
+    def generate_summary(self) -> DataFrame:
+        """Generate a summary DataFrame of all outputs in the session.
+
+        Provides output checkers with a high-level overview of all outputs,
+        including what method was used, what variables are involved, the
+        total record count, and whether there is a differencing risk.
+
+        Returns
+        -------
+        DataFrame
+            Summary of all outputs with columns: id, method, status, type,
+            command, summary, variables, total_records, timestamp, diff_risk.
+        """
+        rows = []
+        for uid, rec in self.results.items():
+            if rec.output_type == "custom":
+                continue
+            method = rec.properties.get("method", rec.output_type)
+            variables: list[str] = []
+            total_records: int = 0
+
+            if rec.output_type == "table":
+                variables, total_records = self._extract_table_info(rec.output, method)
+            elif rec.output_type == "regression":
+                variables, total_records = self._extract_regression_info(rec.output)
+                dof = rec.properties.get("dof")
+                if dof is not None:
+                    variables.append(f"dof={dof}")
+
+            variables_str = "; ".join(variables) if variables else ""
+
+            rows.append(
+                {
+                    "id": uid,
+                    "method": method,
+                    "status": rec.status,
+                    "type": rec.output_type,
+                    "command": rec.command,
+                    "summary": rec.summary,
+                    "variables": variables_str,
+                    "total_records": total_records,
+                    "timestamp": rec.timestamp,
+                }
+            )
+
+        summary_df = DataFrame(rows)
+        summary_df = self._mark_diff_risk(summary_df)
+
+        return summary_df
+
+    def add_summary_to_results(self) -> None:
+        """Add the summary DataFrame as a custom output to results.
+
+        This generates a summary of all outputs in the session with metadata
+        about variables, record counts, and differencing risk. The file is
+        marked with a clear warning not to release.
+        """
+        summary_df = self.generate_summary()
+        if summary_df.empty:
+            return
+
+        os.makedirs("acro_artifacts", exist_ok=True)
+        # Use explicit filename to indicate this should not be released
+        summary_path = os.path.normpath(
+            "acro_artifacts/DO_NOT_RELEASE_session_summary.csv"
+        )
+        summary_df.to_csv(summary_path, index=False)
+
+        self.add_custom(
+            summary_path,
+            "WARNING: DO NOT RELEASE - Session summary for output checker use only",
+        )
+
     def finalise(self, path: str, ext: str, interactive: bool = False) -> None:
         """Create a results file for checking.
 
@@ -445,6 +638,7 @@ class Records:
         logger.debug("finalise()")
         if interactive:
             self.validate_outputs()
+        self.add_summary_to_results()
         if ext == "json":
             self.finalise_json(path)
         elif ext == "xlsx":
@@ -484,7 +678,19 @@ class Records:
             for file in files:
                 outputs[key]["files"].append({"name": file, "sdc": val.sdc})
 
-        results: dict[str, str | dict] = {"version": __version__, "results": outputs}
+        # Generate and include session summary for output checkers
+        summary_df = self.generate_summary()
+        session_summary = {
+            "DO_NOT_RELEASE": True,
+            "purpose": "Session summary for output checker use only",
+            "data": json.loads(summary_df.to_json(orient="records")),
+        }
+
+        results: dict = {
+            "version": __version__,
+            "results": outputs,
+            "session_summary": session_summary,
+        }
         filename: str = os.path.normpath(f"{path}/results.json")
         try:
             with open(filename, "w", newline="", encoding="utf-8") as handle:
@@ -513,6 +719,13 @@ class Records:
         with pd.ExcelWriter(  # pylint: disable=abstract-class-instantiated
             filename, engine="openpyxl"
         ) as writer:
+            # summary sheet
+            summary_df = self.generate_summary()
+            if not summary_df.empty:
+                summary_df.to_excel(
+                    writer, sheet_name="summary", index=False, startrow=0
+                )
+
             # description sheet
             sheet: list[str] = []
             summary: list[str] = []

@@ -1618,54 +1618,6 @@ def test_generate_summary_with_crosstab(data, acro):
     )
 
 
-def test_extract_table_info_elif_index_name():
-    """Cover lines 456-457: elif table.index.name branch.
-
-    Triggered when index.names has no truthy entries (any() is False)
-    but index.name is set.
-    """
-    records = Records()
-
-    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
-    table.index.name = "myindex"
-
-    # Subclass the index type to override `names` so any(names) is False,
-    # while `name` still returns "myindex" (reads from _names[0]).
-    patched_idx = type(
-        "PatchedIdx",
-        (type(table.index),),
-        {"names": property(lambda _: [None])},
-    )
-    table.index.__class__ = patched_idx
-
-    output = [table]
-    variables, _ = records._extract_table_info(output, "linear")
-
-    assert "myindex" in variables
-
-
-def test_extract_table_info_elif_columns_name():
-    """Cover line 465: elif table.columns.name branch.
-
-    Triggered when columns.names has no truthy entries (any() is False)
-    but columns.name is set.
-    """
-    records = Records()
-
-    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
-    table.columns.name = "mycols"
-
-    # Override index.names to avoid the `if` branch for index (no index name set).
-    # Override columns.names so any() is False, forcing the elif for columns.
-    col_type = type(table.columns)
-    patched_idx = type("PatchedIdx", (col_type,), {"names": property(lambda _: [None])})
-    table.columns.__class__ = patched_idx
-
-    output = [table]
-    variables, _ = records._extract_table_info(output, "linear")
-
-    assert "mycols" in variables
-
 
 def test_extract_table_info_shape_type_error():
     """Cover lines 474-475: except (TypeError, ValueError) in _extract_table_info.

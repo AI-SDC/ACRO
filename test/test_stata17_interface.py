@@ -16,6 +16,7 @@ import pytest
 import acro.stata_config as stata_config  # pylint: disable=consider-using-from-import
 from acro import ACRO
 from acro.acro_stata_parser import find_brace_word, parse_and_run, parse_table_details
+from acro.acro_tables import AGGFUNC
 
 # pylint: disable=redefined-outer-name
 
@@ -684,6 +685,23 @@ def test_table_aggcfn(data):
         stata_version="17",
     )
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+
+def test_table_invalid_aggfunc(data):
+    """Test nice message returned when user calls for invalid statistic."""
+    valids = list(AGGFUNC.keys())
+    correct = f"Invalid statistic requested. Supported values are {valids}"
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "survivor year",
+        exclusion="year == 2010",
+        exp="",
+        weights="",
+        options="statistic(foobar inc_activity) nototals",
+        stata_version="17",
+    )
+    assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
 
 def test_table_aggcfns(data):

@@ -430,7 +430,12 @@ class Records:
                 )
                 record.exception = input("")
 
-    def _extract_table_info(self, output: list, method: str) -> tuple[list[str], int]:
+    def _extract_table_info(
+        self,
+        output: list,
+        method: str,  # noqa: ARG002
+        properties: dict,  # noqa: ARG002
+    ) -> tuple[list[str], int]:
         """Extract variables and total records from table output.
 
         Parameters
@@ -439,6 +444,8 @@ class Records:
             The output to extract information from.
         method : str
             The method used to generate the output.
+        properties : dict
+            Properties dictionary (unused but kept for compatibility).
 
         Returns
         -------
@@ -459,38 +466,16 @@ class Records:
                     )
 
                 try:
-                    if method == "crosstab":
-                        total_records = self._get_crosstab_record_count(table)
+                    # Count non-NaN cells for record count
+                    cell_sum = table.values[~pd.isna(table.values)].sum()
+                    if cell_sum > 0:
+                        total_records = int(cell_sum)
                     else:
-                        total_records += int(table.shape[0] * table.shape[1])
+                        total_records = int(table.shape[0] * table.shape[1])
                 except (TypeError, ValueError):
                     pass
 
         return variables, total_records
-
-    def _get_crosstab_record_count(self, table: DataFrame) -> int:
-        """Get record count from crosstab, excluding margins.
-
-        Parameters
-        ----------
-        table : DataFrame
-            The crosstab table.
-
-        Returns
-        -------
-        int
-            The record count.
-        """
-        working_table = table.copy()
-        if "All" in working_table.index:
-            working_table = working_table.drop("All", axis=0)
-        if "All" in working_table.columns:
-            working_table = working_table.drop("All", axis=1)
-
-        cell_sum = working_table.values[~pd.isna(working_table.values)].sum()
-        if cell_sum > 0:
-            return int(cell_sum)
-        return int(table.shape[0] * table.shape[1])
 
     def _extract_regression_info(self, output: list) -> tuple[list[str], int]:
         """Extract variables and total records from regression output.
@@ -544,11 +529,112 @@ class Records:
             if not table_outputs.empty:
                 for _, group in table_outputs.groupby("variables"):
                     if len(group) > 1:
-                        counts = group["total_records"].unique()
-                        if len(counts) > 1:
+                        # Check for different suppression settings
+                        suppressions = group["suppression"].unique()
+                        # Risk if same variables with different suppression settings
+                        if len(suppressions) > 1:
                             summary_df.loc[group.index, "diff_risk"] = True
 
         return summary_df
+
+    def _extract_all_variables(self) -> list[str]:
+        """Extract all unique variables across all outputs.
+
+        Returns
+        -------
+        list[str]
+            Sorted list of unique variable names.
+        """
+        all_variables: set[str] = set()
+
+        for rec in self.results.values():
+            if rec.output_type == "custom":
+                continue
+            variables = self._get_output_variables(rec)
+            all_variables.update(variables)
+
+        return sorted(all_variables)
+
+    def _get_output_variables(self, rec) -> list[str]:
+        """Extract variables from a single record.
+        
+        Parameters
+        ----------
+        rec : Record
+            The record to extract variables from.
+        
+        Returns
+        -------
+        list[str]
+            List of variable names.
+        """
+        method = rec.properties.get("method", rec.output_type)
+        variables: list[str] = []
+
+        if rec.output_type == "table":
+            variables, _ = self._extract_table_info(rec.output, method, rec.properties)
+        elif rec.output_type == "regression":
+            variables, _ = self._extract_regression_info(rec.output)
+            dof = rec.properties.get("dof")
+            if dof is not None:
+                variables.append(f"dof={dof}")
+
+        return variables
+
+
+    def _build_variable_matrix(self, summary_df: DataFrame) -> DataFrame:
+        """Build a variable-output matrix showing variable usage.
+
+        Parameters
+        ----------
+        summary_df : DataFrame
+            The base summary DataFrame.
+
+        Returns
+        -------
+        DataFrame
+            Summary with binary variable columns added.
+        """
+        all_variables = self._extract_all_variables()
+
+        if not all_variables:
+            return summary_df
+
+        # Create binary columns for each variable
+        for var in all_variables:
+            summary_df[var] = summary_df["variables"].apply(
+                lambda vars_str: 1 if var in vars_str.split("; ") else 0
+            )
+
+        return summary_df
+
+    def generate_variable_matrix_table(self) -> DataFrame:
+        """Generate a clean variable-output matrix table for PHS requirements.
+
+        Creates a table with one row per output and one column per variable,
+        plus an output_type column. Binary values indicate variable usage.
+
+        Returns
+        -------
+        DataFrame
+            Variable matrix table with columns: output_type, var1, var2, ...
+        """
+        all_variables = self._extract_all_variables()
+        matrix_rows = []
+
+        for uid, rec in self.results.items():
+            if rec.output_type == "custom":
+                continue
+
+            variables = self._get_output_variables(rec)
+
+            row = {"output_id": uid, "output_type": rec.output_type}
+            for var in all_variables:
+                row[var] = 1 if var in variables else 0
+
+            matrix_rows.append(row)
+
+        return DataFrame(matrix_rows)
 
     def generate_summary(self) -> DataFrame:
         """Generate a summary DataFrame of all outputs in the session.
@@ -561,7 +647,8 @@ class Records:
         -------
         DataFrame
             Summary of all outputs with columns: id, method, status, type,
-            command, summary, variables, total_records, timestamp, diff_risk.
+            command, summary, variables, total_records, suppression,
+            timestamp, diff_risk.
         """
         rows = []
         for uid, rec in self.results.items():
@@ -572,7 +659,9 @@ class Records:
             total_records: int = 0
 
             if rec.output_type == "table":
-                variables, total_records = self._extract_table_info(rec.output, method)
+                variables, total_records = self._extract_table_info(
+                    rec.output, method, rec.properties
+                )
             elif rec.output_type == "regression":
                 variables, total_records = self._extract_regression_info(rec.output)
                 dof = rec.properties.get("dof")
@@ -580,6 +669,10 @@ class Records:
                     variables.append(f"dof={dof}")
 
             variables_str = "; ".join(variables) if variables else ""
+
+            suppression = False
+            if isinstance(rec.sdc, dict) and "summary" in rec.sdc:
+                suppression = rec.sdc["summary"].get("suppressed", False)
 
             rows.append(
                 {
@@ -591,12 +684,14 @@ class Records:
                     "summary": rec.summary,
                     "variables": variables_str,
                     "total_records": total_records,
+                    "suppression": suppression,
                     "timestamp": rec.timestamp,
                 }
             )
 
         summary_df = DataFrame(rows)
         summary_df = self._mark_diff_risk(summary_df)
+        summary_df = self._build_variable_matrix(summary_df)
 
         return summary_df
 

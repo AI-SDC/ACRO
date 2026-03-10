@@ -436,12 +436,6 @@ class Records:
         method: str,  # noqa: ARG002
         properties: dict,  # noqa: ARG002
     ) -> tuple[list[str], int]:
-    def _extract_table_info(
-        self,
-        output: list,
-        method: str,  # noqa: ARG002
-        properties: dict,  # noqa: ARG002
-    ) -> tuple[list[str], int]:
         """Extract variables and total records from table output.
 
         Parameters
@@ -450,8 +444,6 @@ class Records:
             The output to extract information from.
         method : str
             The method used to generate the output.
-        properties : dict
-            Properties dictionary (unused but kept for compatibility).
         properties : dict
             Properties dictionary (unused but kept for compatibility).
 
@@ -478,12 +470,7 @@ class Records:
                     cell_sum = table.values[~pd.isna(table.values)].sum()
                     if cell_sum > 0:
                         total_records = int(cell_sum)
-                    # Count non-NaN cells for record count
-                    cell_sum = table.values[~pd.isna(table.values)].sum()
-                    if cell_sum > 0:
-                        total_records = int(cell_sum)
                     else:
-                        total_records = int(table.shape[0] * table.shape[1])
                         total_records = int(table.shape[0] * table.shape[1])
                 except (TypeError, ValueError):
                     pass
@@ -542,10 +529,6 @@ class Records:
             if not table_outputs.empty:
                 for _, group in table_outputs.groupby("variables"):
                     if len(group) > 1:
-                        # Check for different suppression settings
-                        suppressions = group["suppression"].unique()
-                        # Risk if same variables with different suppression settings
-                        if len(suppressions) > 1:
                         # Check for different suppression settings
                         suppressions = group["suppression"].unique()
                         # Risk if same variables with different suppression settings
@@ -706,7 +689,6 @@ class Records:
                     "variables": variables_str,
                     "total_records": total_records,
                     "suppression": suppression,
-                    "suppression": suppression,
                     "timestamp": rec.timestamp,
                 }
             )
@@ -714,7 +696,8 @@ class Records:
         summary_df = DataFrame(rows)
         summary_df = self._mark_diff_risk(summary_df)
         summary_df = self._build_variable_matrix(summary_df)
-        summary_df = self._build_variable_matrix(summary_df)
+
+        return summary_df
 
         return summary_df
 

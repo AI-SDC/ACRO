@@ -699,8 +699,6 @@ class Records:
 
         return summary_df
 
-        return summary_df
-
     def add_summary_to_results(self) -> None:
         """Add the summary DataFrame as a custom output to results.
 

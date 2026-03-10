@@ -147,7 +147,7 @@ Example that prepends entries between v0.4.12 and the current HEAD (this can be
 changed to a specific version if desired).
 
 ```shell
-git cliff v0.4.12..HEAD --config cliff.toml --prepend CHANGELOG.md
+git-cliff v0.4.12..HEAD --config cliff.toml --prepend CHANGELOG.md
 ```
 
 ### Configuration

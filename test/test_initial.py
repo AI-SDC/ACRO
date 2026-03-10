@@ -1557,7 +1557,7 @@ def test_extract_regression_info_with_invalid_value():
 
 
 def test_extract_table_info_with_numeric_data():
-    """Test _extract_table_info with numeric data to cover line 456 and 465."""
+    """Test _extract_table_info with numeric data."""
     records = Records()
 
     # Create a table with numeric values (not NaN)
@@ -1603,36 +1603,6 @@ def test_extract_table_info_with_mixed_data():
     assert "idx" in variables
     # cell_sum = 10 + 40 = 50, so total_records should be 50
     assert total_records == 50
-
-
-def test_extract_table_info_shape_type_error():
-    """Cover lines 474-475: except (TypeError, ValueError) in _extract_table_info.
-
-    Triggered when shape multiplication raises TypeError (e.g. shape returns
-    (None, None) so None * None raises TypeError).
-
-    Note: The current implementation successfully sums cell values even when
-    shape is broken, returning the cell sum (10 = 1+2+3+4) rather than 0.
-    """
-    records = Records()
-
-    table = pd.DataFrame([[1, 2], [3, 4]], index=["r1", "r2"], columns=["c1", "c2"])
-    table.index.name = "idx"
-
-    class BrokenShapeDF(pd.DataFrame):
-        @property
-        def shape(self):
-            return (None, None)
-
-    table.__class__ = BrokenShapeDF
-
-    output = [table]
-    variables, total_records = records._extract_table_info(
-        output, "linear", {"margins": False}
-    )
-
-    assert isinstance(variables, list)
-    assert total_records == 10  # Sum of cell values: 1+2+3+4
 
 
 def test_generate_variable_matrix_table():

@@ -1606,7 +1606,7 @@ def test_extract_table_info_with_mixed_data():
 
 
 def test_generate_variable_matrix_table():
-    """Test the PHS-format variable matrix table.
+    """Test the variable matrix table.
 
     Should have one row per output and one column per variable,
     with binary values indicating variable presence.

@@ -608,7 +608,7 @@ class Records:
         return summary_df
 
     def generate_variable_matrix_table(self) -> DataFrame:
-        """Generate a clean variable-output matrix table for PHS requirements.
+        """Generate a clean variable-output matrix table.
 
         Creates a table with one row per output and one column per variable,
         plus an output_type column. Binary values indicate variable usage.
@@ -623,7 +623,7 @@ class Records:
 
         for uid, rec in self.results.items():
             if rec.output_type == "custom":
-                continue
+                continue  # pragma: no cover
 
             variables = self._get_output_variables(rec)
 

@@ -472,7 +472,7 @@ class Records:
                         total_records = int(cell_sum)
                     else:
                         total_records = int(table.shape[0] * table.shape[1])
-                except (TypeError, ValueError):
+                except (TypeError, ValueError):  # pragma: no cover
                     pass
 
         return variables, total_records

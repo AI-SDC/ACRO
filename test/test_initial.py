@@ -1610,7 +1610,7 @@ def test_extract_table_info_shape_type_error():
 
     Triggered when shape multiplication raises TypeError (e.g. shape returns
     (None, None) so None * None raises TypeError).
-    
+
     Note: The current implementation successfully sums cell values even when
     shape is broken, returning the cell sum (10 = 1+2+3+4) rather than 0.
     """
@@ -1637,49 +1637,48 @@ def test_extract_table_info_shape_type_error():
 
 def test_generate_variable_matrix_table():
     """Test the PHS-format variable matrix table.
-    
+
     Should have one row per output and one column per variable,
     with binary values indicating variable presence.
     """
     acro_obj = ACRO(suppress=False)
-    
-    data = pd.DataFrame({
-        'year': [2010]*10 + [2011]*10,
-        'grant_type': ['A']*5 + ['B']*5 + ['A']*5 + ['B']*5,
-        'region': ['North']*5 + ['South']*5 + ['North']*5 + ['South']*5,
-    })
-    
-    # Create three outputs with different variable combinations
-    _ = acro_obj.crosstab(data.year, data.grant_type)     
-    _ = acro_obj.crosstab(data.year, data.region)        
-    _ = acro_obj.crosstab(data.grant_type, data.region) 
-    
-    var_matrix = acro_obj.results.generate_variable_matrix_table()
-    
 
-    assert 'output_id' in var_matrix.columns
-    assert 'output_type' in var_matrix.columns
-    assert len(var_matrix) == 3  
-    
-    assert 'year' in var_matrix.columns
-    assert 'grant_type' in var_matrix.columns
-    assert 'region' in var_matrix.columns
-    
+    data = pd.DataFrame(
+        {
+            "year": [2010] * 10 + [2011] * 10,
+            "grant_type": ["A"] * 5 + ["B"] * 5 + ["A"] * 5 + ["B"] * 5,
+            "region": ["North"] * 5 + ["South"] * 5 + ["North"] * 5 + ["South"] * 5,
+        }
+    )
+
+    # Create three outputs with different variable combinations
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    _ = acro_obj.crosstab(data.year, data.region)
+    _ = acro_obj.crosstab(data.grant_type, data.region)
+
+    var_matrix = acro_obj.results.generate_variable_matrix_table()
+
+    assert "output_id" in var_matrix.columns
+    assert "output_type" in var_matrix.columns
+    assert len(var_matrix) == 3
+
+    assert "year" in var_matrix.columns
+    assert "grant_type" in var_matrix.columns
+    assert "region" in var_matrix.columns
 
     for row in var_matrix.itertuples():
         assert row.year in [0, 1]
         assert row.grant_type in [0, 1]
         assert row.region in [0, 1]
-    
 
-    assert var_matrix.iloc[0]['year'] == 1
-    assert var_matrix.iloc[0]['grant_type'] == 1
-    assert var_matrix.iloc[0]['region'] == 0
-    
-    assert var_matrix.iloc[1]['year'] == 1
-    assert var_matrix.iloc[1]['grant_type'] == 0
-    assert var_matrix.iloc[1]['region'] == 1
-    
-    assert var_matrix.iloc[2]['year'] == 0
-    assert var_matrix.iloc[2]['grant_type'] == 1
-    assert var_matrix.iloc[2]['region'] == 1
+    assert var_matrix.iloc[0]["year"] == 1
+    assert var_matrix.iloc[0]["grant_type"] == 1
+    assert var_matrix.iloc[0]["region"] == 0
+
+    assert var_matrix.iloc[1]["year"] == 1
+    assert var_matrix.iloc[1]["grant_type"] == 0
+    assert var_matrix.iloc[1]["region"] == 1
+
+    assert var_matrix.iloc[2]["year"] == 0
+    assert var_matrix.iloc[2]["grant_type"] == 1
+    assert var_matrix.iloc[2]["region"] == 1

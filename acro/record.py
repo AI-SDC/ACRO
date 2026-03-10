@@ -557,12 +557,12 @@ class Records:
 
     def _get_output_variables(self, rec) -> list[str]:
         """Extract variables from a single record.
-        
+
         Parameters
         ----------
         rec : Record
             The record to extract variables from.
-        
+
         Returns
         -------
         list[str]
@@ -580,7 +580,6 @@ class Records:
                 variables.append(f"dof={dof}")
 
         return variables
-
 
     def _build_variable_matrix(self, summary_df: DataFrame) -> DataFrame:
         """Build a variable-output matrix showing variable usage.

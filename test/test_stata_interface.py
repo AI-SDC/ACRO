@@ -782,7 +782,7 @@ def test_table_invalid_aggfunc(data):
         options="contents(foobar inc_activity) nototals",
         stata_version="16",
     )
-    assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
+    assert ret.split() == correct.split()
 
 
 def test_table_invalidvar(data):

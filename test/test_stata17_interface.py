@@ -667,7 +667,7 @@ def test_table_aggcfn(data):
         stata_version="17",
     )
     #    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
-    assert ret == correct, f"got\n{ret}\n expected\n{correct}"
+    assert ret == correct
 
     # pandas does not allows multiple arrays for values
     correct = (
@@ -701,7 +701,7 @@ def test_table_invalid_aggfunc(data):
         options="statistic(foobar inc_activity) nototals",
         stata_version="17",
     )
-    assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
+    assert ret.split() == correct.split()
 
 
 def test_table_aggcfns(data):
@@ -728,7 +728,7 @@ def test_table_aggcfns(data):
         options="statistic(mean sd inc_activity) nototals",
         stata_version="17",
     )
-    assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
+    assert ret.split() == correct.split()
 
 
 def test_stata_probit(data):
@@ -845,7 +845,7 @@ def test_unsupported_formatting_options(data):
         ret = rets[1]
         ret = ret.replace("NaN", "0")
         ret = ret.replace(".0", "")
-        assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+        assert ret.split() == correct.split()
 
 
 def test_stata_finalise(monkeypatch):
@@ -862,7 +862,7 @@ def test_stata_finalise(monkeypatch):
         stata_version="17",
     )
     correct = "outputs and stata_outputs.json written\n"
-    assert ret == correct, f"returned string {ret} should be {correct}\n"
+    assert ret == correct
 
 
 def test_stata_finalise_default_filetype(monkeypatch):
@@ -879,7 +879,7 @@ def test_stata_finalise_default_filetype(monkeypatch):
         stata_version="17",
     )
     correct = "outputs and stata_outputs.json written\n"
-    assert ret == correct, f"returned string {ret} should be {correct}\n"
+    assert ret == correct
 
 
 def test_stata_unknown(data):
@@ -895,7 +895,7 @@ def test_stata_unknown(data):
         stata_version="17",
     )
     correct = "acro command not recognised: foo"
-    assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
+    assert ret == correct
 
 
 # ----Test stata 17 new table command syntax-------------------------------------
@@ -921,7 +921,7 @@ def test_table_stata17(data):
         options="nototals",
         stata_version="17",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == correct.split()
 
 
 def test_table_stata17_1(data):
@@ -956,7 +956,7 @@ def test_table_stata17_1(data):
         options="nototals",
         stata_version="17",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == correct.split()
 
 
 def test_table_stata17_2(data):
@@ -998,9 +998,7 @@ def test_table_stata17_2(data):
         options="nototals",
         stata_version="17",
     )
-    assert ret.split() == ret_1.split() == correct.split(), (
-        f"got\n{ret}\n expected\n{correct}"
-    )
+    assert ret.split() == ret_1.split() == correct.split()
 
 
 def test_table_stata17_3(data):
@@ -1037,7 +1035,7 @@ def test_table_stata17_3(data):
         options="nototals",
         stata_version="17",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == correct.split()
 
 
 def test_table_stata17_4(data):
@@ -1142,7 +1140,7 @@ def test_table_stata17_4(data):
         == ret_3.split()
         == ret_4.split()
         == correct.split()
-    ), f"got\n{ret}\n expected\n{correct}"
+    )
 
 
 def test_one_dimensional_table(data):
@@ -1162,7 +1160,7 @@ def test_one_dimensional_table(data):
         options="nototals",
         stata_version="17",
     )
-    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == correct.split()
 
 
 def test_cleanup():

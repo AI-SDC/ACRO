@@ -544,7 +544,7 @@ def creates_datasets(
     return set_of_data, msg
 
 
-def run_table_command(  # pylint: disable=too-many-locals  #noqa: C901
+def run_table_command(
     data: pd.DataFrame,
     varlist: list[Any],
     weights: str,

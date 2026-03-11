@@ -13,6 +13,7 @@ import pandas as pd
 from statsmodels.iolib import summary as sm_iolib_summary
 
 from acro import ACRO, acro_regression, add_constant, stata_config
+from acro.acro_tables import AGGFUNC
 from acro.utils import prettify_table_string
 
 
@@ -543,7 +544,7 @@ def creates_datasets(
     return set_of_data, msg
 
 
-def run_table_command(  # pylint: disable=too-many-locals
+def run_table_command(
     data: pd.DataFrame,
     varlist: list[Any],
     weights: str,
@@ -561,6 +562,11 @@ def run_table_command(  # pylint: disable=too-many-locals
         return details["errmsg"]
 
     aggfuncs = list(map(lambda x: x.replace("sd", "std"), details["aggfuncs"]))
+    # validate what the user has asked for
+    valids = list(AGGFUNC.keys())
+    if any(item not in valids for item in aggfuncs):
+        return f"Invalid statistic requested. Supported values are {valids}"
+
     # don't pass single aggfunc as a list
     if len(aggfuncs) == 1:
         aggfuncs = aggfuncs[0]

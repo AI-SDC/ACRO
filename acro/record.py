@@ -433,8 +433,6 @@ class Records:
     def _extract_table_info(
         self,
         output: list,
-        method: str,  # noqa: ARG002
-        properties: dict,  # noqa: ARG002
     ) -> tuple[list[str], int]:
         """Extract variables and total records from table output.
 
@@ -442,10 +440,6 @@ class Records:
         ----------
         output : list
             The output to extract information from.
-        method : str
-            The method used to generate the output.
-        properties : dict
-            Properties dictionary (unused but kept for compatibility).
 
         Returns
         -------
@@ -477,7 +471,7 @@ class Records:
 
         return variables, total_records
 
-    def _extract_regression_info(self, output: list) -> tuple[list[str], int]:
+    def _extract_regression_info(self, output: list) -> int:
         """Extract variables and total records from regression output.
 
         Parameters
@@ -487,10 +481,9 @@ class Records:
 
         Returns
         -------
-        tuple[list[str], int]
-            Variables and total record count.
+        int
+            Total record count.
         """
-        variables: list[str] = []
         total_records: int = 0
 
         for table in output:
@@ -505,10 +498,13 @@ class Records:
                             pass
                         break
 
-        return variables, total_records
+        return total_records
 
     def _mark_diff_risk(self, summary_df: DataFrame) -> DataFrame:
         """Mark outputs with differencing risk.
+
+        Differencing risk occurs when multiple tables share the same variables but have different
+        suppression settings. This allows an attacker to infer suppressed values by comparing the outputs.
 
         Parameters
         ----------
@@ -568,13 +564,11 @@ class Records:
         list[str]
             List of variable names.
         """
-        method = rec.properties.get("method", rec.output_type)
         variables: list[str] = []
 
         if rec.output_type == "table":
-            variables, _ = self._extract_table_info(rec.output, method, rec.properties)
+            variables, _ = self._extract_table_info(rec.output)
         elif rec.output_type == "regression":
-            variables, _ = self._extract_regression_info(rec.output)
             dof = rec.properties.get("dof")
             if dof is not None:
                 variables.append(f"dof={dof}")
@@ -648,8 +642,6 @@ class Records:
             Summary of all outputs with columns: id, method, status, type,
             command, summary, variables, total_records, suppression,
             timestamp, diff_risk.
-            command, summary, variables, total_records, suppression,
-            timestamp, diff_risk.
         """
         rows = []
         for uid, rec in self.results.items():
@@ -660,14 +652,9 @@ class Records:
             total_records: int = 0
 
             if rec.output_type == "table":
-                variables, total_records = self._extract_table_info(
-                    rec.output, method, rec.properties
-                )
-                variables, total_records = self._extract_table_info(
-                    rec.output, method, rec.properties
-                )
+                variables, total_records = self._extract_table_info(rec.output)
             elif rec.output_type == "regression":
-                variables, total_records = self._extract_regression_info(rec.output)
+                total_records = self._extract_regression_info(rec.output)
                 dof = rec.properties.get("dof")
                 if dof is not None:
                     variables.append(f"dof={dof}")

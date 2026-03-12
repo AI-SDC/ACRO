@@ -49,7 +49,7 @@ def test_add_backticks():
 
 
 def test_crosstab_with_spaces_in_variable_names(data, acro):
-    """Test crosstab with spaces in column names (Issue #305)."""
+    """Test crosstab with spaces in column names."""
     # Create a test dataframe with a column name containing spaces
     test_data = data.copy()
     test_data["grant type with spaces"] = test_data["grant_type"]
@@ -1322,7 +1322,7 @@ def test_toggle_suppression():
 
 
 def test_summary_csv_created_with_json(data, acro):
-    """Test that DO_NOT_RELEASE_session_summary.csv is created when finalising to JSON (Issue #224)."""
+    """Test that DO_NOT_RELEASE_session_summary.csv is created when finalising to JSON."""
     _ = acro.crosstab(data.year, data.grant_type)
     acro.add_exception("output_0", "Let me have it")
     acro.finalise(PATH, "json")
@@ -1346,7 +1346,7 @@ def test_summary_csv_created_with_json(data, acro):
 
 
 def test_summary_sheet_in_excel(data, acro):
-    """Test that a 'summary' sheet is created in results.xlsx (Issue #224)."""
+    """Test that a 'summary' sheet is created in results.xlsx."""
     _ = acro.crosstab(data.year, data.grant_type)
     _ = acro.pivot_table(
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
@@ -1381,7 +1381,7 @@ def test_summary_variables_extracted(data):
 
 
 def test_summary_differencing_risk(data):
-    """Test that differencing risk is flagged when tables share variables but have different suppression settings (Issue #224)."""
+    """Test that differencing risk is flagged when tables share variables but have different suppression settings."""
     acro_obj = ACRO(suppress=True)
     _ = acro_obj.crosstab(data.year, data.grant_type)
     acro_obj.suppress = False
@@ -1434,9 +1434,7 @@ def test_extract_table_info(data, acro):
     output = acro.results.get_index(0)
 
     # Test extracting info from table output
-    variables, total_records = acro.results._extract_table_info(
-        output.output, "crosstab", output.properties
-    )
+    variables, total_records = acro.results._extract_table_info(output.output)
     assert len(variables) > 0
     assert total_records > 0
     assert "year" in variables or "grant_type" in variables
@@ -1462,10 +1460,9 @@ def test_extract_regression_info():
     obs_output = pd.DataFrame({"Value": [100]}, index=["no. observations"])
 
     output = [reg_output, obs_output]
-    variables, total_records = records._extract_regression_info(output)
+    total_records = records._extract_regression_info(output)
 
     # Should have extracted the observations
-    assert isinstance(variables, list)
     assert total_records == 100
 
 
@@ -1497,33 +1494,12 @@ def test_extract_table_info_with_zero_cell_sum():
     table.columns.name = "cols"
 
     output = [table]
-    variables, total_records = records._extract_table_info(
-        output, "crosstab", {"margins": False}
-    )
+    variables, total_records = records._extract_table_info(output)
 
     # Should extract variables and use shape-based count when cell_sum is 0
     assert "idx" in variables
     assert "cols" in variables
     assert total_records > 0
-
-
-def test_extract_table_info_exception_handling():
-    """Test _extract_table_info exception handling with invalid table."""
-    records = Records()
-
-    # Create a table that will cause TypeError during shape multiplication
-    class InvalidTable:
-        def __init__(self):
-            self.shape = "invalid"  # Non-integer shape to trigger TypeError
-
-    output = [InvalidTable()]
-    variables, total_records = records._extract_table_info(
-        output, "crosstab", {"margins": False}
-    )
-
-    # Should handle exception gracefully
-    assert isinstance(variables, list)
-    assert isinstance(total_records, int)
 
 
 def test_extract_regression_info_with_missing_observations():
@@ -1534,10 +1510,9 @@ def test_extract_regression_info_with_missing_observations():
     obs_output = pd.DataFrame({"Value": [np.nan]}, index=["no. observations"])
 
     output = [obs_output]
-    variables, total_records = records._extract_regression_info(output)
+    total_records = records._extract_regression_info(output)
 
     # Should handle NaN gracefully
-    assert isinstance(variables, list)
     assert total_records == 0
 
 
@@ -1549,10 +1524,9 @@ def test_extract_regression_info_with_invalid_value():
     obs_output = pd.DataFrame({"Value": ["not_a_number"]}, index=["no. observations"])
 
     output = [obs_output]
-    variables, total_records = records._extract_regression_info(output)
+    total_records = records._extract_regression_info(output)
 
     # Should handle ValueError gracefully
-    assert isinstance(variables, list)
     assert total_records == 0
 
 
@@ -1571,9 +1545,7 @@ def test_extract_table_info_with_numeric_data():
 
     output = [table]
     # Test with crosstab method to trigger the cell_sum > 0 path
-    variables, total_records = records._extract_table_info(
-        output, "crosstab", {"margins": False}
-    )
+    variables, total_records = records._extract_table_info(output)
 
     # Should extract variables
     assert "idx" in variables
@@ -1595,9 +1567,7 @@ def test_extract_table_info_with_mixed_data():
     table.index.name = "idx"
 
     output = [table]
-    variables, total_records = records._extract_table_info(
-        output, "crosstab", {"margins": False}
-    )
+    variables, total_records = records._extract_table_info(output)
 
     # Should extract variables
     assert "idx" in variables

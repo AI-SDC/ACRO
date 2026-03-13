@@ -213,6 +213,7 @@ class Tables:
                         colnames=colnames,
                         normalize=normalize,
                     )
+            sdc = get_table_sdc(masks, self.suppress, table)
 
         # record output
 
@@ -422,6 +423,7 @@ class Tables:
                     observed=observed,
                     sort=sort,
                 )
+            sdc = get_table_sdc(masks, self.suppress, table)
         # record output
         self.results.add(
             status=status,
@@ -1364,7 +1366,7 @@ def _align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
     if table_nlevels == 2 and mask_nlevels == 2:
         table_top = table.columns.get_level_values(0).unique().tolist()
         mask_top = m.columns.get_level_values(0).unique().tolist()
-        if mask_top != table_top:
+        if len(mask_top) == 1 and len(table_top) > 1:
             n_base = len(table.columns.get_level_values(1).unique())
             base_mask = m.iloc[:, :n_base]
             flat_cols = base_mask.columns.get_level_values(1)

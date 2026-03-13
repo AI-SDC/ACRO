@@ -49,7 +49,7 @@ def test_add_backticks():
 
 
 def test_crosstab_with_spaces_in_variable_names(data, acro):
-    """Test crosstab with spaces in column names (Issue #305)."""
+    """Test crosstab with spaces in column names."""
     # Create a test dataframe with a column name containing spaces
     test_data = data.copy()
     test_data["grant type with spaces"] = test_data["grant_type"]
@@ -1396,3 +1396,54 @@ def test_align_masks_droplevel():
     assert aligned["multi_col"].index.tolist() == ["r1", "r2"]
     assert aligned["multi_idx"].index.tolist() == ["r1", "r2"]
     assert aligned["multi_idx"].columns.tolist() == ["c1", "c2"]
+
+
+def test_cell_id_alignment_with_margins_and_suppression(data):
+    """Test that cell IDs in SDC results align with final output table structure.
+
+    This test verifies that cell IDs stored in results.json are valid indices
+    for the output table. The key issue in bug was that when pandas removes
+    empty rows/columns, cell positions stored in the mask become invalid.
+    """
+    acro = ACRO(suppress=True)
+    table = acro.crosstab(
+        data.year, data.grant_type, margins=True, show_suppressed=True
+    )
+    output = acro.results.get_index(0)
+
+    for cell_type in output.sdc["cells"]:
+        cells = output.sdc["cells"][cell_type]
+        for row, col in cells:
+            assert row < table.shape[0], (
+                f"Row {row} out of bounds for {cell_type} cell in table shape {table.shape}"
+            )
+            assert col < table.shape[1], (
+                f"Column {col} out of bounds for {cell_type} cell in table shape {table.shape}"
+            )
+
+            value = table.iloc[row, col]
+            if cell_type in ["threshold", "p-ratio", "nk-rule"]:
+                assert pd.isna(value), (
+                    f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
+                )
+
+    # margins=False
+    acro2 = ACRO(suppress=True)
+    table2 = acro2.crosstab(data.year, data.grant_type, margins=False)
+    output2 = acro2.results.get_index(0)
+
+    for cell_type in output2.sdc["cells"]:
+        cells = output2.sdc["cells"][cell_type]
+        for row, col in cells:
+            assert row < table2.shape[0], (
+                f"Row {row} out of boupynds for {cell_type} cell in table shape {table2.shape}"
+            )
+            assert col < table2.shape[1], (
+                f"Column {col} out of bounds for {cell_type} cell in table shape {table2.shape}"
+            )
+
+            value = table2.iloc[row, col]
+            if cell_type in ["threshold", "p-ratio", "nk-rule"]:
+                assert pd.isna(value), (
+                    f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
+                )

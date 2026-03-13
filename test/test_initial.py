@@ -49,7 +49,7 @@ def test_add_backticks():
 
 
 def test_crosstab_with_spaces_in_variable_names(data, acro):
-    """Test crosstab with spaces in column names"""
+    """Test crosstab with spaces in column names."""
     # Create a test dataframe with a column name containing spaces
     test_data = data.copy()
     test_data["grant type with spaces"] = test_data["grant_type"]

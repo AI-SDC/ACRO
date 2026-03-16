@@ -1434,7 +1434,7 @@ def test_cell_id_alignment_with_margins_and_suppression(data):
         cells = output2.sdc["cells"][cell_type]
         for row, col in cells:
             assert row < table2.shape[0], (
-                f"Row {row} out of boupynds for {cell_type} cell in table shape {table2.shape}"
+                f"Row {row} out of bounds for {cell_type} cell in table shape {table2.shape}"
             )
             assert col < table2.shape[1], (
                 f"Column {col} out of bounds for {cell_type} cell in table shape {table2.shape}"

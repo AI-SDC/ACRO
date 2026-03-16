@@ -1,98 +1,115 @@
 # Contributing
 
-Contributions to this repository are very welcome. Please create an issue before starting any significant work so that we can discuss and understand the changes. If you are interested in contributing, feel free to contact us or create an issue in the [issue tracking system](https://github.com/AI-SDC/ACRO/issues). Alternatively, you may [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the project and submit a [pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork). All contributions must be made under the same license as the rest of the project: [MIT License](../blob/main/LICENSE).
+Contributions to this repository are very welcome. If this is your first contribution to the repository, please ensure that you have carefully read and understood the entirety of this contributing guide and our [AI Policy](AI_POLICY.md).
 
-New code should be accompanied with appropriate unit tests and documentation. The `CHANGELOG.md` is generated from PR titles (see [Changelog](#changelog) below). If this is your first contribution to the repository, please also add your details to `CITATION.cff`. If you are introducing new imports, then these must also be added to `requirements.txt` (in root and docs folders) and `setup.py`. After creating a pull request, the continuous integration tools will automatically run the unit tests, apply the pre-commit checks listed below, and build and deploy the Sphinx documentation (when merged into the main branch.)
+Please create an issue before starting any significant work so that we can discuss and understand the changes before you invest time in it. You can contact us directly or use the [issue tracking system](https://github.com/AI-SDC/ACRO/issues). Once agreed, external collaborators should [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the project and submit a [pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork) (PR). If you are a member of the repository team, your changes should be made in a feature branch before opening a PR.
 
 ## Pull Request Standards
 
-All pull requests must meet the following requirements before being accepted:
+All PRs **must** meet the following requirements before being accepted.
 
-- **All prek checks pass** (includes Ruff formatting and linting)
-- **Codecov reports at least 99% statement coverage**
-- **Tests do more than just make sure the lines run, they actually check for desired effects**
+### Provenance and legal
+
+- Contributors assert copyright ownership and release their contribution under the [MIT License](../blob/main/LICENSE).
+- All contributor details are present in `CITATION.cff`. First-time contributors must add themselves.
+- If work is copied from another open source repository, the license must be checked and included.
+
+### Code quality
+
+- The PR is small and addresses a single specific issue.
+- Code is high quality. This includes: small focused functions and modules, no duplication, fully documented, extensive use of type hints, no unused arguments, no more than 3 levels of nesting except in rare justified cases, no bloat.
+- No inline pragmas. If a rule suppression is genuinely necessary, add a per-file setting to `pyproject.toml` to keep the source code clean.
+- New dependencies are added to `pyproject.toml`.
+- All [pre-commit checks](#pre-commit) pass, including automatic formatting and linting. Run [pre-commit](#pre-commit) locally before opening a PR.
+
+### Tests
+
+- All existing tests pass.
+- New code is accompanied by appropriate tests.
+- Code coverage is at least 90% statement coverage.
+- Tests verify real-world effects, not just that lines of code execute.
+- Run the full test suite locally before opening a PR. CI minutes are not unlimited.
+
+### Pull request description
+
+- The PR title follows [Conventional Commits](#pull-request-titles) format.
+- The description is **short**, written in your own words, and explains what changed and why. See the [AI Contributions Policy](AI_CONTRIBUTIONS_POLICY.md) for what this means in practice. AI-generated descriptions are not acceptable.
+- Do not add issue or PR numbers to the title manually. To close an issue automatically, add the closing keyword in a comment instead.
+
+### AI
+
+- Any use of AI tools to assist with code or documentation is disclosed in the opening PR comment, including the specific tool and version. See the [AI Contributions Policy](AI_CONTRIBUTIONS_POLICY.md) for the full requirements.
 
 ## Development
 
-Clone the repository and install the dependencies (within a virtual environment):
+Clone the repository and install the dependencies within a virtual environment:
 
 ```shell
 $ git clone git@github.com:AI-SDC/ACRO.git
 $ cd ACRO
-$ pip install -e .
+$ pip install -e .[test]
 ```
 
-Then to run the tests:
+Run the tests:
 
 ```shell
-$ pip install pytest
-$ pytest .
+$ pytest
 ```
 
 ## Directory Structure
 
-* `acro`: contains ACRO source code.
-* `data`:  contains data files for testing.
-* `docs`: contains [Sphinx](https://www.sphinx-doc.org) documentation.
-* `notebooks`: contains example notebooks.
-* `stata`: contains Stata wrapper code.
-* `test`: contains unit tests.
+| Directory   | Contents                                           |
+| ----------- | -------------------------------------------------- |
+| `acro`      | ACRO source code                                   |
+| `data`      | Data files for testing                             |
+| `docs`      | [Sphinx](https://www.sphinx-doc.org) documentation |
+| `notebooks` | Example notebooks                                  |
+| `stata`     | Stata wrapper code                                 |
+| `test`      | Unit tests                                         |
 
-## Style Guide
+## Pre-commit
 
-Code quality is maintained through [prek](https://prek.j178.dev) hooks that run [Ruff](https://github.com/astral-sh/ruff) (which includes pylint-style checks) along with other formatting and linting tools.
+Code quality is maintained through [pre-commit](https://prek.j178.dev) hooks that run [Ruff](https://github.com/astral-sh/ruff) along with other formatting and linting tools. A `.pre-commit-config.yaml` configuration file is provided to automatically handle:
 
-A [prek](https://prek.j178.dev) configuration [file](../tree/main/.pre-commit-config.yaml) is provided to automatically:
-* Trim trailing whitespace and fix line endings;
-* Check for spelling errors;
-* Check Yaml files;
-* Automatically format and lint with [Ruff](https://github.com/astral-sh/ruff);
+- Trimming trailing whitespace and fixing line endings
+- Spell checking
+- Validating JSON, TOML, YAML, etc., files
+- Formatting and linting with Ruff
+- Checking types with mypy
+- And others
 
-Prek can be setup locally as follows:
-
-```shell
-$ pip install prek
-```
-
-Then to run on all files locally:
+We recommend using [uv](https://docs.astral.sh/uv/) to install prek:
 
 ```shell
-$ prek run -a
+uv tool install prek
 ```
 
-Make any corrections as necessary and re-run before committing the fixes and then pushing.
-
-To install as a hook that executes with every `git commit`:
+However, you may prefer to use pip:
 
 ```shell
-$ prek install
+pip install prek
 ```
+
+Run on all files locally:
+
+```shell
+prek run -a
+```
+
+Optionally, install as a git hook so it runs automatically on every commit:
+
+```shell
+prek install
+```
+
+Make any corrections and re-run before committing.
+
 
 ## Pull Request Titles
 
-Titles for pull requests should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
-
-This is a lightweight convention on top of commit messages. It provides a simple set of rules for creating an explicit, readable, and automation-friendly project history.
-
-Individual commit messages in branches may follow an unrestricted policy, but **PR titles must follow Conventional Commits**.
-
-Do **not** add issue or PR numbers manually. If you wish to automatically close
-an issue then add the text in a comment.
-
-### Why We Use Conventional Commit PR Titles
-
-We require PR titles to follow the Conventional Commits format because it:
-
-- **Enables automatic changelogs** - release notes can be generated from PR titles without manual work.
-- **Clearly communicates intent** - reviewers can immediately see whether a PR is a `feat`, `fix`, `chore`, etc.
-- **Improves git history navigation** - makes it easy to scan and understand changes over time.
-- **Aligns with Semantic Versioning (SemVer)** - structured titles help determine version bumps automatically.
-- **Supports better PR labeling & filtering** - PRs are labeled by type, making them easier to prioritise and review.
-- **Flags breaking changes** - adding `!` (e.g. `feat!:`) automatically marks a PR as a breaking change.
+PR titles **must** follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification. Individual commit messages within a branch are unrestricted, but the PR title is used to generate the changelog and must be correct.
 
 ### Format
-
-The general structure is:
 
 ```text
 <type>[optional scope]: <description>
@@ -104,56 +121,53 @@ Example:
 feat: send an email to the customer when a product is shipped
 ```
 
-Types:
+### Types
 
-```text
-feat — new feature
-fix — bug fix
-docs — documentation changes
-style — formatting/styling (no code logic)
-refactor — code changes without feature/bug impact
-perf — performance improvements
-test — adding/updating tests
-build — changes to build system or dependencies
-ci — changes to CI config/scripts
-chore — miscellaneous maintenance tasks
-revert — reverts an earlier commit
-```
+| Type       | Use for                                          |
+| ---------- | ------------------------------------------------ |
+| `feat`     | New feature                                      |
+| `fix`      | Bug fix                                          |
+| `docs`     | Documentation changes only                       |
+| `style`    | Formatting or styling with no logic change       |
+| `refactor` | Code restructuring without feature or bug impact |
+| `perf`     | Performance improvements                         |
+| `test`     | Adding or updating tests                         |
+| `build`    | Build system or dependency changes               |
+| `ci`       | CI configuration or script changes               |
+| `chore`    | Miscellaneous maintenance                        |
+| `revert`   | Reverting an earlier commit                      |
+
+To flag a breaking change, append `!` to the type: `refactor!: renamed foo() to goo()`.
+
+### Why we use Conventional Commit PR titles
+
+We require PR titles to follow the Conventional Commits format because it:
+
+* Enables automatic changelogs - release notes can be generated from PR titles without manual work.
+* Clearly communicates intent - reviewers can immediately see whether a PR is a `feat`, `fix`, `chore`, etc.
+* Improves git history navigation - makes it easy to scan and understand changes over time.
+* Aligns with Semantic Versioning (SemVer) - structured titles help determine version bumps automatically.
+* Supports better PR labeling and filtering - PRs are labeled by type, making them easier to prioritise and review.
+* Flags breaking changes - adding `!` (e.g. `feat!:`) automatically marks a PR as a breaking change.
 
 ## Changelog
 
-The `CHANGELOG.md` is generated from the commit history using [git-cliff](https://github.com/orhun/git-cliff) and assumes conventional commit messages.
+`CHANGELOG.md` is generated from the commit history using [git-cliff](https://github.com/orhun/git-cliff) and assumes Conventional Commit messages. The configuration lives in `cliff.toml` at the repository root, which converts `(#NNN)` references into markdown PR links and skips noise commits such as pre-commit auto-fixes and release-prep commits.
 
-### Generate the changelog
-
-#### Install
-
-We recommend using [uv](https://docs.astral.sh/uv/) to install:
+### Install git-cliff
 
 ```shell
 uv tool install git-cliff
-```
-
-However, you may prefer to use pip or obtain it using any of the installation
-methods provided on the official repository.
-
-```shell
+# or
 pip install git-cliff
 ```
 
-#### Usage
+### Generate the changelog
 
-Example that prepends entries between v0.4.12 and the current HEAD (this can be
-changed to a specific version if desired).
+Example that prepends entries from a given tag to HEAD:
 
 ```shell
 git-cliff v0.4.12..HEAD --config cliff.toml --prepend CHANGELOG.md
 ```
 
-### Configuration
-
-The configuration lives in `cliff.toml` at the repository root. It:
-
-- Converts `(#NNN)` in commit messages into markdown PR links.
-- Skips noise commits (pre-commit auto-fixes, changelog and release-prep commits).
-- Filters out commits that do not follow Conventional Commits (see [Pull Request Titles](#pull-request-titles)).
+Adjust the tag to match the last release you want to start from.

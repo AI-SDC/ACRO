@@ -152,9 +152,11 @@ We require PR titles to follow the Conventional Commits format because it:
 
 ## Changelog
 
-`CHANGELOG.md` is generated from the commit history using [git-cliff](https://github.com/orhun/git-cliff) and assumes Conventional Commit messages. The configuration lives in `cliff.toml` at the repository root, which converts `(#NNN)` references into markdown PR links and skips noise commits such as pre-commit auto-fixes and release-prep commits.
+Contributors **should not** modify the `CHANGELOG.md` directly. It is generated at release time by a maintainer from the commit history using [git-cliff](https://github.com/orhun/git-cliff). In future this process may be fully-automated. The tool works best when Conventional Commit messages are used. The configuration lives in `cliff.toml` at the repository root, which converts `(#NNN)` references into markdown PR links and skips noise commits such as pre-commit auto-fixes and release-prep commits.
 
 ### Install git-cliff
+
+The maintainer issuing a release should install as follows:
 
 ```shell
 uv tool install git-cliff

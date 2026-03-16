@@ -1,0 +1,87 @@
+{
+    "AuxiliaryInformation": {
+        "checks": [
+            "StatbarnDataCheck"
+        ],
+        "definition": "The risk that external data, when combined with published statistical outputs, will allow inferences or identification of individuals, increasing disclosure risk beyond what the output alone suggests.",
+        "mitigations": [],
+        "prefix_label": "AuxiliaryInformation",
+        "uri": "https://www.w3id.org/statbarnsdc#AuxiliaryInformation"
+    },
+    "ClassDisclosure": {
+        "checks": [
+            "RequiredZeroCheck",
+            "PresenceOfZeroCheck"
+        ],
+        "definition": "The risk that released statistical outputs allow an attacker to infer details about an individual, as a result of their membership of a sensitive category or class who all share the same values  for some variables.",
+        "mitigations": [
+            "Noise",
+            "Suppression"
+        ],
+        "prefix_label": "ClassDisclosure",
+        "uri": "https://www.w3id.org/statbarnsdc#ClassDisclosure"
+    },
+    "Differencing": {
+        "checks": [
+            "PresenceOfLinkedTableCheck"
+        ],
+        "definition": "A risk that combining multiple outputs allows to deduce sensitive information about individuals by analyzing changes or differences between them.",
+        "mitigations": [
+            "Noise",
+            "Suppression"
+        ],
+        "prefix_label": "Differencing",
+        "uri": "https://www.w3id.org/statbarnsdc#Differencing"
+    },
+    "Dominance": {
+        "checks": [
+            "NKCheck",
+            "PQCheck"
+        ],
+        "definition": "The risk that a small number of individuals contribute a disproportionately large share of a cells value, making it easier to identify or infer their data.",
+        "mitigations": [
+            "Noise",
+            "OutlierRemoval",
+            "Rounding",
+            "Suppression"
+        ],
+        "prefix_label": "Dominance",
+        "uri": "https://www.w3id.org/statbarnsdc#Dominance"
+    },
+    "ImplicitTables": {
+        "checks": [
+            "StatbarnDataCheck"
+        ],
+        "definition": "A risk of tables or outputs that allow sensitive information to be inferred indirectly through calculations or combinations of published data.",
+        "mitigations": [],
+        "prefix_label": "ImplicitTables",
+        "uri": "https://www.w3id.org/statbarnsdc#ImplicitTables"
+    },
+    "LowCount": {
+        "checks": [
+            "MinimumThresholdCheck"
+        ],
+        "definition": "The disclosure risk that arises when cells in a table have very few observations, making it easier to identify or infer information about the individuals contributing to those cells.",
+        "mitigations": [
+            "Noise",
+            "Rounding",
+            "Suppression"
+        ],
+        "prefix_label": "LowCount",
+        "uri": "https://www.w3id.org/statbarnsdc#LowCount"
+    },
+    "LowDOF": {
+        "checks": [
+            "MinimumDoFCheck"
+        ],
+        "definition": "The risk that statistical outputs are based on very few independent pieces of information make it easier to deduce individual data or sensitive values.",
+        "mitigations": [
+            "Aggregation",
+            "Noise",
+            "OutlierRemoval",
+            "Suppression"
+        ],
+        "prefix_label": "LowDOF",
+        "uri": "https://www.w3id.org/statbarnsdc#LowDOF"
+    }
+}

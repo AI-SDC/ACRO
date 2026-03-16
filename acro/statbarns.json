@@ -1,0 +1,120 @@
+{
+    "CalculatedRatios": {
+        "definition": "Calculated ratios refer to measures investigating relationship, comparison or relative magnitude between variables. These can includes odds ratios, risk ratios, or hazard ratios.",
+        "prefix_label": "CalculatedRatios",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#AuxiliaryInformation",
+            "https://www.w3id.org/statbarnsdc#Dominance"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#CalculatedRatios"
+    },
+    "Clusters": {
+        "definition": "Statbarn classification that covers output of cluster analysis. Cluster analysis is a statistical technique used to classify or group similar objects or individuals based on their characteristics or attributes. It aims to identify patterns, similarities, or relationships within a dataset by grouping data points into clusters.",
+        "prefix_label": "Clusters",
+        "risks": [],
+        "uri": "https://www.w3id.org/statbarnsdc#Clusters"
+    },
+    "CorrelationCoefficients": {
+        "definition": "Correlation coefficients are statistical measures that quantify the relationship between two or more variables. This includes measures such as regression estimates, as well as single statistics such as Pearson's r, Spearmans's rank correlation coefficient (ρ) and Kendall's rank correlation coefficient (τ).",
+        "prefix_label": "CorrelationCoefficients",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#LowDOF"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#CorrelationCoefficients"
+    },
+    "Endpoints": {
+        "definition": "Minimum and maximum values for a variable.",
+        "prefix_label": "Endpoints",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#ClassDisclosure",
+            "https://www.w3id.org/statbarnsdc#LowCount"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#Endpoints"
+    },
+    "Frequencies": {
+        "definition": "This class covers frequencies ie counts of things, either in tables (most common), in certain graphs such as histograms or bar charts, or single as in a description of the number of survey participants. This also includes frequencies expressed as a proportion of some total.",
+        "prefix_label": "Frequencies",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#ClassDisclosure",
+            "https://www.w3id.org/statbarnsdc#Differencing",
+            "https://www.w3id.org/statbarnsdc#LowCount"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#Frequencies"
+    },
+    "GiniCoefficient": {
+        "definition": "The Gini coefficient is used to summarise inequality within a population. The Lorenz curve is its graphical counterpart.",
+        "prefix_label": "GiniCoefficient",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#LowCount"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#GiniCoefficient"
+    },
+    "HazardSurvivalTables": {
+        "definition": "These are tables used to analyse and model survival or failure times in event-based data and business data. Commonly seen in epidemiology, actuarial science and clinical research among others. These can also underpin visualisations such as Kaplen-Meier.",
+        "prefix_label": "HazardSurvivalTables",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#ImplicitTables",
+            "https://www.w3id.org/statbarnsdc#LowDOF"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#HazardSurvivalTables"
+    },
+    "LinearAggregations": {
+        "definition": "This class covers sums, means, ratios etc.  These are stats that provide a snapshot of the data's characteristics that don't relate to any one data point and instead are calculated with many or all of the points in a data set. This class also includes linear concentration ratios (eg share of the top N observations).",
+        "prefix_label": "LinearAggregations",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#Dominance",
+            "https://www.w3id.org/statbarnsdc#Differencing",
+            "https://www.w3id.org/statbarnsdc#LowCount"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#LinearAggregations"
+    },
+    "LinkedMultilevelTables": {
+        "definition": "Multilevel and linked tables are used to summarize and analyze the relationship between multiple categorical variables. These often analyse nested categorical data in formats such as two or three way contingency tables or hierarchical contingency tables.",
+        "prefix_label": "LinkedMultilevelTables",
+        "risks": [],
+        "uri": "https://www.w3id.org/statbarnsdc#LinkedMultilevelTables"
+    },
+    "Mode": {
+        "definition": "The value or values that occur most frequently in a dataset. It represents the peak or highest point on a distribution's histogram.",
+        "prefix_label": "Mode",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#Differencing",
+            "https://www.w3id.org/statbarnsdc#ClassDisclosure"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#Mode"
+    },
+    "NonLinearConcentrationRatios": {
+        "definition": "Non-linear concentration ratios are statistical measures used to assess degree of concentration or dispersion. The most common of these are the Herfindahl–Hirschman index.",
+        "prefix_label": "NonLinearConcentrationRatios",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#LowCount",
+            "https://www.w3id.org/statbarnsdc#Dominance"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#NonLinearConcentrationRatios"
+    },
+    "Position": {
+        "definition": "Position refers to a statistic that provides information on a central or typical value in a dataset. These include data points such as median, percentiles, or inter-quartile range.",
+        "prefix_label": "Position",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#ClassDisclosure",
+            "https://www.w3id.org/statbarnsdc#LowCount"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#Position"
+    },
+    "Shape": {
+        "definition": "Shape outputs refer to measures that describe or show the characteristics of data distributions. They provide information on elements such as symmetry, peaks and tail behaviour. These comprise standard deviation, skewness, and kurtosis.",
+        "prefix_label": "Shape",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#LowDOF"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#Shape"
+    },
+    "StatisticalHypothesisTests": {
+        "definition": "Statistical tests are used to make inferences and observe differences in data. These involve a wide range of tests including t-tests, p-values, F-tests, or confidence intervals.",
+        "prefix_label": "StatisticalHypothesisTests",
+        "risks": [
+            "https://www.w3id.org/statbarnsdc#LowDOF"
+        ],
+        "uri": "https://www.w3id.org/statbarnsdc#StatisticalHypothesisTests"
+    }
+}

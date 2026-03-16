@@ -1,0 +1,779 @@
+{
+    "AdjustedRSquared": {
+        "definition": "A statistical measure that indicates how well a regression model explains the variability of the dependent variable.",
+        "name": "AdjustedRSquared",
+        "prefix_label": "AdjustedRSquared",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#AdjustedRSquared"
+    },
+    "AlluvialFlow": {
+        "definition": "A type of diagram that visualizes changes in categorical data over time or between stages, showing how groups split, merge, or flow from one category to another.",
+        "name": "AlluvialFlow",
+        "prefix_label": "AlluvialFlow",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#AlluvialFlow"
+    },
+    "AnalysisOfVariance": {
+        "definition": "Also referred to as ANOVA is a statistical method used to compare the means of three or more groups.",
+        "name": "AnalysisOfVariance",
+        "prefix_label": "AnalysisOfVariance",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#AnalysisOfVariance"
+    },
+    "Ancova": {
+        "definition": "Combines ANOVA and regression to compare group means while controlling for one or more continuous covariates.",
+        "name": "Ancova",
+        "prefix_label": "Ancova",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#Ancova"
+    },
+    "BarGraph": {
+        "definition": "A chart that represents categorical data with rectangular bars, where the length of each bar is proportional to the value or frequency of the category.",
+        "name": "BarGraph",
+        "prefix_label": "BarGraph",
+        "statbarn": "LinearAggregations",
+        "uri": "https://www.w3id.org/statbarnsdc#BarGraph"
+    },
+    "BartlettsTestOfSphericity": {
+        "definition": "A statistical test used to check whether a correlation matrix is an identity matrix.",
+        "name": "BartlettsTestOfSphericity",
+        "prefix_label": "BartlettsTestOfSphericity",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#BartlettsTestOfSphericity"
+    },
+    "BetaCoefficient": {
+        "definition": "A standardized regression coefficient that indicates the strength and direction of the relationship between a predictor and the outcome.",
+        "name": "BetaCoefficient",
+        "prefix_label": "BetaCoefficient",
+        "statbarn": "LinearAggregations",
+        "uri": "https://www.w3id.org/statbarnsdc#BetaCoefficient"
+    },
+    "BinaryLogisticRegression": {
+        "definition": "A statistical model used to predict the probability of a binary outcome.",
+        "name": "BinaryLogisticRegression",
+        "prefix_label": "BinaryLogisticRegression",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#BinaryLogisticRegression"
+    },
+    "BoxPlot": {
+        "definition": "A graphical display that summarizes the distribution of a dataset using its minimum, first quartile, median, third quartile, and maximum, often highlighting outliers.",
+        "name": "BoxPlot",
+        "prefix_label": "BoxPlot",
+        "statbarn": "Position",
+        "uri": "https://www.w3id.org/statbarnsdc#BoxPlot"
+    },
+    "BoxsTestOfEqualityOfCovarianceMatrices": {
+        "definition": "Statistical test used to assess whether the covariance matrices of multiple groups are equal.",
+        "name": "BoxsTestOfEqualityOfCovarianceMatrices",
+        "prefix_label": "BoxsTestOfEqualityOfCovarianceMatrices",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#BoxsTestOfEqualityOfCovarianceMatrices"
+    },
+    "CanonicalCorrelation": {
+        "definition": "Measures the relationship between two sets of variables.",
+        "name": "CanonicalCorrelation",
+        "prefix_label": "CanonicalCorrelation",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#CanonicalCorrelation"
+    },
+    "ChiSquaredTest": {
+        "definition": "Statistical test used to determine whether there is a significant association between categorical variables.",
+        "name": "ChiSquaredTest",
+        "prefix_label": "ChiSquaredTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#ChiSquaredTest"
+    },
+    "CochransQTest": {
+        "definition": "Statistical test used to determine whether there are differences in proportions across three or more related groups for binary outcomes.",
+        "name": "CochransQTest",
+        "prefix_label": "CochransQTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#CochransQTest"
+    },
+    "CoefficientOfDetermination": {
+        "definition": "Statistical measure that indicates the proportion of variance in the dependent variable explained by the independent variable(s) in a regression model.",
+        "name": "CoefficientOfDetermination",
+        "prefix_label": "CoefficientOfDetermination",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#CoefficientOfDetermination"
+    },
+    "CohensD": {
+        "definition": "Measure of effect size that quantifies the difference between two group means in terms of standard deviation units.",
+        "name": "CohensD",
+        "prefix_label": "CohensD",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#CohensD"
+    },
+    "CohensKappaCoefficient": {
+        "definition": "Measures the level of agreement between two raters or observers for categorical data, adjusting for agreement occurring by chance.",
+        "name": "CohensKappaCoefficient",
+        "prefix_label": "CohensKappaCoefficient",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#CohensKappaCoefficient"
+    },
+    "ConfidenceIntervals": {
+        "definition": "Range of values, derived from sample data, that likely contain the true population parameter with a specified level of confidence.",
+        "name": "ConfidenceIntervals",
+        "prefix_label": "ConfidenceIntervals",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#ConfidenceIntervals"
+    },
+    "ContrastCoefficients": {
+        "definition": "Numerical weights assigned to group means in ANOVA or regression.",
+        "name": "ContrastCoefficients",
+        "prefix_label": "ContrastCoefficients",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#ContrastCoefficients"
+    },
+    "Covariates": {
+        "definition": "Continuous or categorical variables that are included in a statistical model to account for or control their effect on the outcome variable.",
+        "name": "Covariates",
+        "prefix_label": "Covariates",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#Covariates"
+    },
+    "CoxSnellRSquared": {
+        "definition": "Measure of goodness-of-fit for logistic regression models.",
+        "name": "CoxSnellRSquared",
+        "prefix_label": "CoxSnellRSquared",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#CoxSnellRSquared"
+    },
+    "CramersV": {
+        "definition": "Measure of association between two categorical variables.",
+        "name": "CramersV",
+        "prefix_label": "CramersV",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#CramersV"
+    },
+    "Crosstabs": {
+        "definition": "A tabular method for displaying the frequency distribution of two or more categorical variables.",
+        "name": "Crosstabs",
+        "prefix_label": "Crosstabs",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#Crosstabs"
+    },
+    "DiscriminantFunctionAnalysis": {
+        "definition": "Statistical technique used to classify observations into predefined groups and determine which variables best separate those groups.",
+        "name": "DiscriminantFunctionAnalysis",
+        "prefix_label": "DiscriminantFunctionAnalysis",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#DiscriminantFunctionAnalysis"
+    },
+    "DiscriminantValidity": {
+        "definition": "Extent to which a construct or measurement is truly distinct from other constructs, showing it measures what it is intended to and not something else.",
+        "name": "DiscriminantValidity",
+        "prefix_label": "DiscriminantValidity",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#DiscriminantValidity"
+    },
+    "EigenvaluesScreePlots": {
+        "definition": "Eigenvalues measure the amount of variance explained by each factor, and a scree plot visualizes these values to help decide how many factors to retain.",
+        "name": "EigenvaluesScreePlots",
+        "prefix_label": "EigenvaluesScreePlots",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#EigenvaluesScreePlots"
+    },
+    "EtaSquared": {
+        "definition": "Measure of effect size that indicates the proportion of total variance in a dependent variable explained by an independent variable in ANOVA or similar analyses.",
+        "name": "EtaSquared",
+        "prefix_label": "EtaSquared",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#EtaSquared"
+    },
+    "FactorAnalysis": {
+        "definition": "A statistical method used to identify underlying latent factors that explain the patterns of correlations among observed variables.",
+        "name": "FactorAnalysis",
+        "prefix_label": "FactorAnalysis",
+        "statbarn": "CalculatedRatios",
+        "uri": "https://www.w3id.org/statbarnsdc#FactorAnalysis"
+    },
+    "FreqeuncyTable": {
+        "definition": "This class covers frequencies, i.e, counts of things, either in tables (most common), in certain graphs such as histograms or bar charts, or single as in a description of the number of survey participants. This also includes frequencies expressed as a proportion of some total.",
+        "name": "FreqeuncyTable",
+        "prefix_label": "FreqeuncyTable",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#FreqeuncyTable"
+    },
+    "FriedmanTest": {
+        "definition": "Non-parametric statistical test used to detect differences in treatments across multiple related groups.",
+        "name": "FriedmanTest",
+        "prefix_label": "FriedmanTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#FriedmanTest"
+    },
+    "GeneralLinearModel": {
+        "definition": "Models a continuous outcome as a linear combination of predictor variables.",
+        "name": "GeneralLinearModel",
+        "prefix_label": "GeneralLinearModel",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#GeneralLinearModel"
+    },
+    "GiniCurves": {
+        "definition": "A graphical representation showing the cumulative proportion of the population against the cumulative proportion of the resource.",
+        "name": "GiniCurves",
+        "prefix_label": "GiniCurves",
+        "statbarn": "GiniCoefficient",
+        "uri": "https://www.w3id.org/statbarnsdc#GiniCurves"
+    },
+    "HazardRatio": {
+        "definition": "A measure used in survival analysis that compares the hazard (event rate) between two groups over time.",
+        "name": "HazardRatio",
+        "prefix_label": "HazardRatio",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#HazardRatio"
+    },
+    "HazardTables": {
+        "definition": "Tables that summarize the hazard (event) rates over time.",
+        "name": "HazardTables",
+        "prefix_label": "HazardTables",
+        "statbarn": "HazardSurvivalTables",
+        "uri": "https://www.w3id.org/statbarnsdc#HazardTables"
+    },
+    "Heatmap": {
+        "definition": "A graphical representation of data where values are displayed as colors in a matrix or grid.",
+        "name": "Heatmap",
+        "prefix_label": "Heatmap",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#Heatmap"
+    },
+    "HerfindahlHirschmanIndex": {
+        "definition": "A measure of concentration calculated by summing the squares of the shares of all elements.",
+        "name": "HerfindahlHirschmanIndex",
+        "prefix_label": "HerfindahlHirschmanIndex",
+        "statbarn": "NonLinearConcentrationRatios",
+        "uri": "https://www.w3id.org/statbarnsdc#HerfindahlHirschmanIndex"
+    },
+    "Histogram": {
+        "definition": "A graphical representation of a dataset that displays the frequency of values within consecutive intervals.",
+        "name": "Histogram",
+        "prefix_label": "Histogram",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#Histogram"
+    },
+    "HomogeneityOfRegression": {
+        "definition": "An assumption in ANCOVA stating that the relationship (slope) between the covariate and the dependent variable is the same across all groups.",
+        "name": "HomogeneityOfRegression",
+        "prefix_label": "HomogeneityOfRegression",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#HomogeneityOfRegression"
+    },
+    "HomogeneityOfVariance": {
+        "definition": "An assumption in statistical tests (like ANOVA) that the variances of the dependent variable are equal across all groups or samples being compared.",
+        "name": "HomogeneityOfVariance",
+        "prefix_label": "HomogeneityOfVariance",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#HomogeneityOfVariance"
+    },
+    "HomogeneityOfVarianceCovarianceMatrices": {
+        "definition": "An assumption in multivariate analyses (like MANOVA) that the variance and covariance structure of the dependent variables is equal across all groups.",
+        "name": "HomogeneityOfVarianceCovarianceMatrices",
+        "prefix_label": "HomogeneityOfVarianceCovarianceMatrices",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#HomogeneityOfVarianceCovarianceMatrices"
+    },
+    "HosmerLemeshowTest": {
+        "definition": "Statistical test used in logistic regression to assess the goodness-of-fit of the model by comparing observed and predicted event probabilities across subgroups.",
+        "name": "HosmerLemeshowTest",
+        "prefix_label": "HosmerLemeshowTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#HosmerLemeshowTest"
+    },
+    "IndependentTtests": {
+        "definition": "Statistical test used to compare the means of two independent groups to determine if there is a significant difference between them.",
+        "name": "IndependentTtests",
+        "prefix_label": "IndependentTtests",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#IndependentTtests"
+    },
+    "InterquartileRange": {
+        "definition": "The range between the first quartile and third quartile of a dataset.",
+        "name": "InterquartileRange",
+        "prefix_label": "InterquartileRange",
+        "statbarn": "Position",
+        "uri": "https://www.w3id.org/statbarnsdc#InterquartileRange"
+    },
+    "KaiserMeyerOlkinTest": {
+        "definition": "A measure of sampling adequacy for factor analysis, indicating whether the data are suitable for detecting underlying factors.",
+        "name": "KaiserMeyerOlkinTest",
+        "prefix_label": "KaiserMeyerOlkinTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#KaiserMeyerOlkinTest"
+    },
+    "KaplanMeier": {
+        "definition": "A statistical method used in survival analysis to estimate the probability of survival over time.",
+        "name": "KaplanMeier",
+        "prefix_label": "KaplanMeier",
+        "statbarn": "HazardSurvivalTables",
+        "uri": "https://www.w3id.org/statbarnsdc#KaplanMeier"
+    },
+    "KappaMeasureOfAgreement": {
+        "definition": "A statistic that quantifies the agreement between two raters or observers for categorical data, adjusting for chance agreement.",
+        "name": "KappaMeasureOfAgreement",
+        "prefix_label": "KappaMeasureOfAgreement",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#KappaMeasureOfAgreement"
+    },
+    "KendallsRank": {
+        "definition": "A measure of strength and direction of association between two ranked variables.",
+        "name": "KendallsRank",
+        "prefix_label": "KendallsRank",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#KendallsRank"
+    },
+    "KernelEstimates": {
+        "definition": "Estimate the probability density function or distribution.",
+        "name": "KernelEstimates",
+        "prefix_label": "KernelEstimates",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#KernelEstimates"
+    },
+    "Kolmogorov-SmirnovTest": {
+        "definition": "A statistical test used to compare a sample distribution with a reference probability distribution or to compare two sample distributions, assessing whether they differ significantly.",
+        "name": "Kolmogorov-SmirnovTest",
+        "prefix_label": "Kolmogorov-SmirnovTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#Kolmogorov-SmirnovTest"
+    },
+    "Kruskal-WallisTest": {
+        "definition": "A non-parametric statistical test used to compare the medians of three or more independent groups to determine if they come from the same distribution.",
+        "name": "Kruskal-WallisTest",
+        "prefix_label": "Kruskal-WallisTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#Kruskal-WallisTest"
+    },
+    "Kurtosis": {
+        "definition": "A statistical measure that describes the “tailedness” or peakedness of a data distribution.",
+        "name": "Kurtosis",
+        "prefix_label": "Kurtosis",
+        "statbarn": "Shape",
+        "uri": "https://www.w3id.org/statbarnsdc#Kurtosis"
+    },
+    "Lambda": {
+        "definition": "A measure of association for categorical variables, indicating the proportional reduction in error when predicting the dependent variable using the independent variable.",
+        "name": "Lambda",
+        "prefix_label": "Lambda",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#Lambda"
+    },
+    "LevenesTest": {
+        "definition": "A statistical test used to assess the equality of variances (homogeneity of variance) across two or more groups.",
+        "name": "LevenesTest",
+        "prefix_label": "LevenesTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#LevenesTest"
+    },
+    "LineGraph": {
+        "definition": "A chart that connects data points with lines to show trends, patterns, or changes of a variable over a continuous scale.",
+        "name": "LineGraph",
+        "prefix_label": "LineGraph",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#LineGraph"
+    },
+    "LinearRegressionCoefficients": {
+        "definition": "Numerical values in a linear regression model that quantify the effect of each predictor variable on the outcome.",
+        "name": "LinearRegressionCoefficients",
+        "prefix_label": "LinearRegressionCoefficients",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#LinearRegressionCoefficients"
+    },
+    "LogLinearForHigherOrderTables": {
+        "definition": "A statistical model used to analyze the relationships among three or more categorical variables.",
+        "name": "LogLinearForHigherOrderTables",
+        "prefix_label": "LogLinearForHigherOrderTables",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#LogLinearForHigherOrderTables"
+    },
+    "LogisticRegression": {
+        "definition": "A statistical model used to predict the probability of a binary or categorical outcome.",
+        "name": "LogisticRegression",
+        "prefix_label": "LogisticRegression",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#LogisticRegression"
+    },
+    "Logit": {
+        "definition": "Used as the link function in logistic regression.",
+        "name": "Logit",
+        "prefix_label": "Logit",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#Logit"
+    },
+    "LongitudinalEstimation": {
+        "definition": "A statistical method used to analyze data collected from the same subjects over time",
+        "name": "LongitudinalEstimation",
+        "prefix_label": "LongitudinalEstimation",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#LongitudinalEstimation"
+    },
+    "MahalanobisDistance": {
+        "definition": "A measure of the distance between a point and a distribution.",
+        "name": "MahalanobisDistance",
+        "prefix_label": "MahalanobisDistance",
+        "statbarn": "Shape",
+        "uri": "https://www.w3id.org/statbarnsdc#MahalanobisDistance"
+    },
+    "Mancova": {
+        "definition": "A statistical technique that extends MANOVA by including covariates.",
+        "name": "Mancova",
+        "prefix_label": "Mancova",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#Mancova"
+    },
+    "MannWhitneyUTest": {
+        "definition": "A non-parametric test used to compare differences between two independent groups on an ordinal or continuous outcome when the data do not assume a normal distribution.",
+        "name": "MannWhitneyUTest",
+        "prefix_label": "MannWhitneyUTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#MannWhitneyUTest"
+    },
+    "MauchlySphericityTest": {
+        "definition": "A statistical test used in repeated-measures ANOVA to assess whether the variances of the differences between all combinations of related groups are equal.",
+        "name": "MauchlySphericityTest",
+        "prefix_label": "MauchlySphericityTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#MauchlySphericityTest"
+    },
+    "Maximum": {
+        "definition": "The highest observed or recorded values of outcome.",
+        "name": "Maximum",
+        "prefix_label": "Maximum",
+        "statbarn": "Endpoints",
+        "uri": "https://www.w3id.org/statbarnsdc#Maximum"
+    },
+    "McNemarsTest": {
+        "definition": "A statistical test used to analyze paired nominal data, typically to determine whether there is a significant change or difference in proportions for two related groups.",
+        "name": "McNemarsTest",
+        "prefix_label": "McNemarsTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#McNemarsTest"
+    },
+    "Mean": {
+        "definition": "The arithmetic average of a set of values, calculated by summing all values and dividing by their count.",
+        "name": "Mean",
+        "prefix_label": "Mean",
+        "statbarn": "LinearAggregations",
+        "uri": "https://www.w3id.org/statbarnsdc#Mean"
+    },
+    "MeanPlots": {
+        "definition": "Graphs that display the average values of a variable for different groups or conditions.",
+        "name": "MeanPlots",
+        "prefix_label": "MeanPlots",
+        "statbarn": "LinearAggregations",
+        "uri": "https://www.w3id.org/statbarnsdc#MeanPlots"
+    },
+    "Median": {
+        "definition": "The middle value of a dataset when the values are arranged in order, dividing the data into two equal halves.",
+        "name": "Median",
+        "prefix_label": "Median",
+        "statbarn": "Position",
+        "uri": "https://www.w3id.org/statbarnsdc#Median"
+    },
+    "Minimum": {
+        "definition": "The lowest observed or recorded values of outcome.",
+        "name": "Minimum",
+        "prefix_label": "Minimum",
+        "statbarn": "Endpoints",
+        "uri": "https://www.w3id.org/statbarnsdc#Minimum"
+    },
+    "MultinomialLogit": {
+        "definition": "A statistical model used to predict outcomes where the dependent variable has more than two discrete categories.",
+        "name": "MultinomialLogit",
+        "prefix_label": "MultinomialLogit",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#MultinomialLogit"
+    },
+    "MultipleRegression": {
+        "definition": "A statistical method that models the relationship between one continuous dependent variable and two or more independent variables.",
+        "name": "MultipleRegression",
+        "prefix_label": "MultipleRegression",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#MultipleRegression"
+    },
+    "MultivariateAnalysisOfVariance": {
+        "definition": "Also referred to as MANOVA, is a statistical technique that tests for differences across groups on two or more dependent variables simultaneously.",
+        "name": "MultivariateAnalysisOfVariance",
+        "prefix_label": "MultivariateAnalysisOfVariance",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#MultivariateAnalysisOfVariance"
+    },
+    "NagelkerkeRSquared": {
+        "definition": "A pseudo R-squared measure for logistic regression.",
+        "name": "NagelkerkeRSquared",
+        "prefix_label": "NagelkerkeRSquared",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#NagelkerkeRSquared"
+    },
+    "OddRatios": {
+        "definition": "A measure of association that quantifies how the odds of an event occurring change with exposure to a predictor.",
+        "name": "OddRatios",
+        "prefix_label": "OddRatios",
+        "statbarn": "CalculatedRatios",
+        "uri": "https://www.w3id.org/statbarnsdc#OddRatios"
+    },
+    "OmnibusTestsOfModelCoefficients": {
+        "definition": "Statistical tests that assess whether a set of predictors, taken together, significantly improves the fit of a model compared to a null model with no predictors.",
+        "name": "OmnibusTestsOfModelCoefficients",
+        "prefix_label": "OmnibusTestsOfModelCoefficients",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#OmnibusTestsOfModelCoefficients"
+    },
+    "PairedTtests": {
+        "definition": "Statistical test used to compare the means of two related or matched groups to determine if there is a significant difference between them.",
+        "name": "PairedTtests",
+        "prefix_label": "PairedTtests",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#PairedTtests"
+    },
+    "PanelDataModels": {
+        "definition": "Statistical models designed to analyze data that follow the same units over time for both cross-sectional and time-series variation.",
+        "name": "PanelDataModels",
+        "prefix_label": "PanelDataModels",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#PanelDataModels"
+    },
+    "ParallelAnalysis": {
+        "definition": "A technique in factor analysis or principal component analysis used to determine the number of factors or components to retain by comparing the observed eigenvalues with those obtained from randomly generated data.",
+        "name": "ParallelAnalysis",
+        "prefix_label": "ParallelAnalysis",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#ParallelAnalysis"
+    },
+    "PartialCorrelationCoefficients": {
+        "definition": "Measures the relationship between two variables while controlling the effect of one or more additional variables.",
+        "name": "PartialCorrelationCoefficients",
+        "prefix_label": "PartialCorrelationCoefficients",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#PartialCorrelationCoefficients"
+    },
+    "PartialEtaSquared": {
+        "definition": "A measure of effect size in ANOVA that indicates the proportion of variance in the dependent variable explained by an independent variable, after controlling for other variables.",
+        "name": "PartialEtaSquared",
+        "prefix_label": "PartialEtaSquared",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#PartialEtaSquared"
+    },
+    "PearsonsProductMomentCorrelationCoefficient": {
+        "definition": "Statistic that measures the strength and direction of the linear relationship between two continuous variables.",
+        "name": "PearsonsProductMomentCorrelationCoefficient",
+        "prefix_label": "PearsonsProductMomentCorrelationCoefficient",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#PearsonsProductMomentCorrelationCoefficient"
+    },
+    "PearsonsR": {
+        "definition": "A statistic that quantifies the strength and direction of the linear relationship between two continuous variables.",
+        "name": "PearsonsR",
+        "prefix_label": "PearsonsR",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#PearsonsR"
+    },
+    "PhiCoefficient": {
+        "definition": "A measure of association between two binary variables.",
+        "name": "PhiCoefficient",
+        "prefix_label": "PhiCoefficient",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#PhiCoefficient"
+    },
+    "PieChart": {
+        "definition": "A circular chart that represents proportions of a whole by dividing the circle into slices corresponding to the relative sizes of categories.",
+        "name": "PieChart",
+        "prefix_label": "PieChart",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#PieChart"
+    },
+    "PrevalenceRatio": {
+        "definition": "A measure that compares the proportion of individuals with a condition in an exposed group to that in an unexposed group.",
+        "name": "PrevalenceRatio",
+        "prefix_label": "PrevalenceRatio",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#PrevalenceRatio"
+    },
+    "PrincipalComponentAnalysis": {
+        "definition": "A dimensionality reduction technique that transforms correlated variables into a smaller set of uncorrelated components while retaining most of the original variance.",
+        "name": "PrincipalComponentAnalysis",
+        "prefix_label": "PrincipalComponentAnalysis",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#PrincipalComponentAnalysis"
+    },
+    "Probit": {
+        "definition": "A regression model used to predict the probability of a binary outcome by applying the inverse standard normal cumulative distribution function.",
+        "name": "Probit",
+        "prefix_label": "Probit",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#Probit"
+    },
+    "PseudoRSquared": {
+        "definition": "Measure used in models like logistic regression to indicate the proportion of variation in the dependent variable explained by the model.",
+        "name": "PseudoRSquared",
+        "prefix_label": "PseudoRSquared",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#PseudoRSquared"
+    },
+    "Quartiles": {
+        "definition": "Values that divide a dataset into four equal parts.",
+        "name": "Quartiles",
+        "prefix_label": "Quartiles",
+        "statbarn": "Position",
+        "uri": "https://www.w3id.org/statbarnsdc#Quartiles"
+    },
+    "RSquared": {
+        "definition": "Statistical measure that indicates the proportion of variance in the dependent variable explained by the independent variable(s) in a regression model.",
+        "name": "RSquared",
+        "prefix_label": "RSquared",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#RSquared"
+    },
+    "Range": {
+        "definition": "The difference between the maximum and minimum values of a dataset, summarising the dispersion of the data.",
+        "name": "Range",
+        "prefix_label": "Range",
+        "statbarn": "Endpoints",
+        "uri": "https://www.w3id.org/statbarnsdc#Range"
+    },
+    "RiskRatios": {
+        "definition": "A measure that compares the probability of an event occurring in an exposed group to the probability in an unexposed group.",
+        "name": "RiskRatios",
+        "prefix_label": "RiskRatios",
+        "statbarn": "CalculatedRatios",
+        "uri": "https://www.w3id.org/statbarnsdc#RiskRatios"
+    },
+    "ScatterGraph": {
+        "definition": "Also referred to as scatter plot, a chart that displays individual data points on a two-dimensional plane, showing the relationship or correlation between two continuous variables.",
+        "name": "ScatterGraph",
+        "prefix_label": "ScatterGraph",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#ScatterGraph"
+    },
+    "SimpleConcentrationRatio": {
+        "definition": "A measure that quantifies the dominance or contribution of the largest values or components in a dataset.",
+        "name": "SimpleConcentrationRatio",
+        "prefix_label": "SimpleConcentrationRatio",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#SimpleConcentrationRatio"
+    },
+    "Skewness": {
+        "definition": "A statistical measure that describes the asymmetry of a data distribution around its mean.",
+        "name": "Skewness",
+        "prefix_label": "Skewness",
+        "statbarn": "Shape",
+        "uri": "https://www.w3id.org/statbarnsdc#Skewness"
+    },
+    "SmoothedHistogram": {
+        "definition": "A visualization of a dataset’s distribution where raw histogram counts are smoothed to show a continuous approximation of the underlying probability density.",
+        "name": "SmoothedHistogram",
+        "prefix_label": "SmoothedHistogram",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#SmoothedHistogram"
+    },
+    "SpearmansRankCorrelationCoefficient": {
+        "definition": "Non-parametric measure that assesses the strength and direction of the monotonic relationship between two ranked or ordinal variables.",
+        "name": "SpearmansRankCorrelationCoefficient",
+        "prefix_label": "SpearmansRankCorrelationCoefficient",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#SpearmansRankCorrelationCoefficient"
+    },
+    "StandardDeviation": {
+        "definition": "A measure of how spread out or dispersed the values in a dataset are from the mean.",
+        "name": "StandardDeviation",
+        "prefix_label": "StandardDeviation",
+        "statbarn": "Shape",
+        "uri": "https://www.w3id.org/statbarnsdc#StandardDeviation"
+    },
+    "StandardisedRegressionCoefficients": {
+        "definition": "Regression coefficients that have been rescaled to have unit variance, allowing the comparison of the relative strength of different predictors in a regression model.",
+        "name": "StandardisedRegressionCoefficients",
+        "prefix_label": "StandardisedRegressionCoefficients",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#StandardisedRegressionCoefficients"
+    },
+    "StructuralEquationModelling": {
+        "definition": "A multivariate statistical technique that analyzes complex relationships among observed and latent variables, combining factor analysis and multiple regression into a single model.",
+        "name": "StructuralEquationModelling",
+        "prefix_label": "StructuralEquationModelling",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#StructuralEquationModelling"
+    },
+    "Sum": {
+        "definition": "The total obtained by adding together all the values.",
+        "name": "Sum",
+        "prefix_label": "Sum",
+        "statbarn": "LinearAggregations",
+        "uri": "https://www.w3id.org/statbarnsdc#Sum"
+    },
+    "SurvivalTables": {
+        "definition": "Tables that show the probability of survival at different time intervals",
+        "name": "SurvivalTables",
+        "prefix_label": "SurvivalTables",
+        "statbarn": "HazardSurvivalTables",
+        "uri": "https://www.w3id.org/statbarnsdc#SurvivalTables"
+    },
+    "ThreeStageLeastSquares": {
+        "definition": "An econometric method that estimates systems of simultaneous equations by combining Two-Stage Least Squares (2SLS) with seemingly unrelated regression.",
+        "name": "ThreeStageLeastSquares",
+        "prefix_label": "ThreeStageLeastSquares",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#ThreeStageLeastSquares"
+    },
+    "TrimmedMean": {
+        "definition": "A measure of central tendency calculated by removing a specified percentage of the smallest and largest values from a dataset and then computing the mean of the remaining values.",
+        "name": "TrimmedMean",
+        "prefix_label": "TrimmedMean",
+        "statbarn": "LinearAggregations",
+        "uri": "https://www.w3id.org/statbarnsdc#TrimmedMean"
+    },
+    "TukeysHonestySignificantDifferenceTest": {
+        "definition": "A post-hoc analysis used after ANOVA to compare all possible pairs of group means and determine which differences are statistically significant.",
+        "name": "TukeysHonestySignificantDifferenceTest",
+        "prefix_label": "TukeysHonestySignificantDifferenceTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#TukeysHonestySignificantDifferenceTest"
+    },
+    "TwoStageLeastSquares": {
+        "definition": "An econometric method used to estimate parameters in simultaneous equations models.",
+        "name": "TwoStageLeastSquares",
+        "prefix_label": "TwoStageLeastSquares",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#TwoStageLeastSquares"
+    },
+    "TwoWayAnalysisOfVariance": {
+        "definition": "Two-Way ANOVA is a statistical technique that examines the effect of two independent factors on a continuous dependent variable.",
+        "name": "TwoWayAnalysisOfVariance",
+        "prefix_label": "TwoWayAnalysisOfVariance",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#TwoWayAnalysisOfVariance"
+    },
+    "VarianceCovarianceMatrix": {
+        "definition": "A square matrix that displays the variances of variables along the diagonal and the covariances between variables in the off-diagonal elements.",
+        "name": "VarianceCovarianceMatrix",
+        "prefix_label": "VarianceCovarianceMatrix",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#VarianceCovarianceMatrix"
+    },
+    "WaterfallChart": {
+        "definition": "A type of chart that visualizes how an initial value is affected by sequential positive and negative changes.",
+        "name": "WaterfallChart",
+        "prefix_label": "WaterfallChart",
+        "statbarn": "Frequencies",
+        "uri": "https://www.w3id.org/statbarnsdc#WaterfallChart"
+    },
+    "WilcoxonSignedRankTest": {
+        "definition": "A non-parametric test used to compare two related or paired samples to assess whether their population mean ranks differ, often as an alternative to the paired t-test when data are not normally distributed.",
+        "name": "WilcoxonSignedRankTest",
+        "prefix_label": "WilcoxonSignedRankTest",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#WilcoxonSignedRankTest"
+    },
+    "WilksLambda": {
+        "definition": "A statistic used in multivariate analysis (like MANOVA) to test whether group means on a combination of dependent variables are equal, with smaller values indicating greater differences between groups.",
+        "name": "WilksLambda",
+        "prefix_label": "WilksLambda",
+        "statbarn": "StatisticalHypothesisTests",
+        "uri": "https://www.w3id.org/statbarnsdc#WilksLambda"
+    },
+    "ZeroOrderCorrelation": {
+        "definition": "A simple bivariate correlation between two variables",
+        "name": "ZeroOrderCorrelation",
+        "prefix_label": "ZeroOrderCorrelation",
+        "statbarn": "CorrelationCoefficients",
+        "uri": "https://www.w3id.org/statbarnsdc#ZeroOrderCorrelation"
+    }
+}

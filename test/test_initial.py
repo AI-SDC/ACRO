@@ -49,8 +49,7 @@ def test_add_backticks():
 
 
 def test_crosstab_with_spaces_in_variable_names(data, acro):
-    """Test crosstab with spaces in column names."""
-    # Create a test dataframe with a column name containing spaces
+    """Testing crosstab with spaces in column names."""
     test_data = data.copy()
     test_data["grant type with spaces"] = test_data["grant_type"]
     test_data["year of study"] = test_data["year"]
@@ -1205,10 +1204,9 @@ def test_finalise_non_interactive(data):
 
 
 def test_finalise_interactive(data):
-    """Test finalise_interactive.
+    """Test interactive version of finalising acro.
 
-    Test that interactive version of finalising acro
-    leaves exceptions as they should be disclosive table.
+    Leaves exceptions as they should be disclosive table.
     """
     acro = ACRO(suppress=False)
     _ = acro.crosstab(data.year, data.grant_type)
@@ -1399,11 +1397,10 @@ def test_align_masks_droplevel():
 
 
 def test_cell_id_alignment_with_margins_and_suppression(data):
-    """Test that cell IDs in SDC results align with final output table structure.
+    """Verify cell IDs in results.json are valid table indices.
 
-    This test verifies that cell IDs stored in results.json are valid indices
-    for the output table. The key issue in bug was that when pandas removes
-    empty rows/columns, cell positions stored in the mask become invalid.
+    The key issue in bug was that when pandas removes empty rows/columns,
+    cell positions stored in the mask become invalid.
     """
     acro = ACRO(suppress=True)
     table = acro.crosstab(

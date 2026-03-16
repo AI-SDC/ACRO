@@ -1205,10 +1205,9 @@ def test_finalise_non_interactive(data):
 
 
 def test_finalise_interactive(data):
-    """Test finalise_interactive.
+    """Test interactive version of finalising acro.
 
-    Test that interactive version of finalising acro
-    leaves exceptions as they should be disclosive table.
+    Leaves exceptions as they should be disclosive table.
     """
     acro = ACRO(suppress=False)
     _ = acro.crosstab(data.year, data.grant_type)
@@ -1396,3 +1395,53 @@ def test_align_masks_droplevel():
     assert aligned["multi_col"].index.tolist() == ["r1", "r2"]
     assert aligned["multi_idx"].index.tolist() == ["r1", "r2"]
     assert aligned["multi_idx"].columns.tolist() == ["c1", "c2"]
+
+
+def test_cell_id_alignment_with_margins_and_suppression(data):
+    """Verify cell IDs in results.json are valid table indices.
+
+    The key issue in bug was that when pandas removes empty rows/columns,
+    cell positions stored in the mask become invalid.
+    """
+    acro = ACRO(suppress=True)
+    table = acro.crosstab(
+        data.year, data.grant_type, margins=True, show_suppressed=True
+    )
+    output = acro.results.get_index(0)
+
+    for cell_type in output.sdc["cells"]:
+        cells = output.sdc["cells"][cell_type]
+        for row, col in cells:
+            assert row < table.shape[0], (
+                f"Row {row} out of bounds for {cell_type} cell in table shape {table.shape}"
+            )
+            assert col < table.shape[1], (
+                f"Column {col} out of bounds for {cell_type} cell in table shape {table.shape}"
+            )
+
+            value = table.iloc[row, col]
+            if cell_type in ["threshold", "p-ratio", "nk-rule"]:
+                assert pd.isna(value), (
+                    f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
+                )
+
+    # margins=False
+    acro2 = ACRO(suppress=True)
+    table2 = acro2.crosstab(data.year, data.grant_type, margins=False)
+    output2 = acro2.results.get_index(0)
+
+    for cell_type in output2.sdc["cells"]:
+        cells = output2.sdc["cells"][cell_type]
+        for row, col in cells:
+            assert row < table2.shape[0], (
+                f"Row {row} out of bounds for {cell_type} cell in table shape {table2.shape}"
+            )
+            assert col < table2.shape[1], (
+                f"Column {col} out of bounds for {cell_type} cell in table shape {table2.shape}"
+            )
+
+            value = table2.iloc[row, col]
+            if cell_type in ["threshold", "p-ratio", "nk-rule"]:
+                assert pd.isna(value), (
+                    f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
+                )

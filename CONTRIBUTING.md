@@ -20,7 +20,7 @@ All PRs **must** meet the following requirements before being accepted.
 - Code is high quality. This includes: small focused functions and modules, no duplication, fully documented, extensive use of type hints, no unused arguments, no more than 3 levels of nesting except in rare justified cases, no bloat.
 - No inline pragmas. If a rule suppression is genuinely necessary, add a per-file setting to `pyproject.toml` to keep the source code clean.
 - New dependencies are added to `pyproject.toml`.
-- All [pre-commit checks](#pre-commit) pass, including automatic formatting and linting. Run [pre-commit](#pre-commit) locally before opening a PR.
+- All [pre-commit checks](#pre-commit) pass, including automatic formatting and linting. Run pre-commit/prek locally before opening a PR.
 
 ### Tests
 
@@ -33,12 +33,12 @@ All PRs **must** meet the following requirements before being accepted.
 ### Pull request description
 
 - The PR title follows [Conventional Commits](#pull-request-titles) format.
-- The description is **short**, written in your own words, and explains what changed and why. See the [AI Contributions Policy](AI_CONTRIBUTIONS_POLICY.md) for what this means in practice. AI-generated descriptions are not acceptable.
+- The description is **short**, written in your own words, and explains what changed and why. See the [AI Policy](AI_POLICY.md) for what this means in practice. AI-generated descriptions are not acceptable.
 - Do not add issue or PR numbers to the title manually. To close an issue automatically, add the closing keyword in a comment instead.
 
 ### AI
 
-- Any use of AI tools to assist with code or documentation is disclosed in the opening PR comment, including the specific tool and version. See the [AI Contributions Policy](AI_CONTRIBUTIONS_POLICY.md) for the full requirements.
+- Any use of AI tools to assist with code or documentation is disclosed in the opening PR comment, including the specific tool and version. See the [AI Policy](AI_POLICY.md) for the full requirements.
 
 ## Development
 

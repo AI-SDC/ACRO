@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import acro.stata_config as stata_config  # pylint: disable=consider-using-from-import
+import acro.stata_config as stata_config
 from acro import ACRO
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
@@ -17,9 +17,7 @@ from acro.acro_stata_parser import (
     parse_and_run,
     parse_table_details,
 )
-
-# pylint: disable=redefined-outer-name
-
+from acro.acro_tables import AGGFUNC
 
 # @pytest.fixture
 # def acro() -> ACRO:
@@ -46,7 +44,7 @@ def clean_up(name):
 
 def dummy_acrohandler(
     data, command, varlist, exclusion, exp, weights, options, stata_version
-):  # pylint:disable=too-many-arguments
+):
     """
     Provide an alternative interface that mimics the code in acro.ado.
 
@@ -715,7 +713,6 @@ def test_table_aggcfn(data):
     assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
     # lists for index or columns
-    # pylint: disable=duplicate-code
     correct = (
         "Total\n"
         "------------------------------------------------------------|\n"
@@ -765,6 +762,23 @@ def test_table_aggcfn(data):
         stata_version="16",
     )
     assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
+
+
+def test_table_invalid_aggfunc(data):
+    """Test nice message returned when user calls for invalid statistic."""
+    valids = list(AGGFUNC.keys())
+    correct = f"Invalid statistic requested. Supported values are {valids}"
+    ret = dummy_acrohandler(
+        data,
+        "table",
+        "survivor year",
+        exclusion="year == 2010",
+        exp="",
+        weights="",
+        options="contents(foobar inc_activity) nototals",
+        stata_version="16",
+    )
+    assert ret.split() == correct.split()
 
 
 def test_table_invalidvar(data):
@@ -870,7 +884,6 @@ def test_unsupported_formatting_options(data):
         "Alive in 2015  |72  |354  |144  |48 |\n"
         "------------------------------------|\n"
     )
-    # pylint:disable=duplicate-code
     for bad_option in [
         "cellwidth",
         "csepwidth",

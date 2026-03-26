@@ -256,7 +256,7 @@ def get_rows_cols_v17on(varlist: list[Any]) -> dict[str, Any]:
     return rows_cols
 
 
-def parse_and_run(  # pylint: disable=too-many-arguments
+def parse_and_run(
     mydata: pd.DataFrame,
     command: str,
     varlist_as_str: str,
@@ -398,9 +398,7 @@ def run_output_command(command: str, varlist: list[str]) -> str:
         return "syntax error: please pass the name of the output to be changed"
 
     # safety- rest of commands need an existing output to work on
-    if (  # pylint:disable=consider-iterating-dictionary
-        the_output not in stata_config.stata_acro.results.results.keys()
-    ):
+    if the_output not in stata_config.stata_acro.results.results:
         return f"no output with name  {the_output} in current acro session.\n"
 
     if command == "remove_output":

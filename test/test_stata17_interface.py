@@ -1,11 +1,5 @@
 """Unit tests for the stata 17 interface."""
 
-# The pylint skip file is to skip the error of R0801: Similar lines in 2 files. As the
-# file  this file and the file test_stata_interface.py have a lot of similarities.
-# That is because we are testing the same functions for different versions of Stata.
-
-# pylint: skip-file
-
 import copy
 import os
 import shutil
@@ -13,13 +7,10 @@ import shutil
 import pandas as pd
 import pytest
 
-import acro.stata_config as stata_config  # pylint: disable=consider-using-from-import
+import acro.stata_config as stata_config
 from acro import ACRO
 from acro.acro_stata_parser import find_brace_word, parse_and_run, parse_table_details
 from acro.acro_tables import AGGFUNC
-
-# pylint: disable=redefined-outer-name
-
 
 # @pytest.fixture
 # def acro() -> ACRO:
@@ -46,7 +37,7 @@ def clean_up(name):
 
 def dummy_acrohandler(
     data, command, varlist, exclusion, exp, weights, options, stata_version
-):  # pylint:disable=too-many-arguments
+):
     """
     Provide an alternative interface that mimics the code in acro.ado.
 
@@ -635,7 +626,6 @@ def test_table_aggcfn(data):
     assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
     # lists for index or columns
-    # pylint: disable=duplicate-code
     correct = (
         "Total\n"
         "------------------------------------------------------------|\n"
@@ -818,7 +808,6 @@ def test_unsupported_formatting_options(data):
         "Alive in 2015  |72  |354  |144  |48 |\n"
         "------------------------------------|\n"
     )
-    # pylint:disable=duplicate-code
     for bad_option in [
         "cellwidth",
         "csepwidth",

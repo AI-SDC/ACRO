@@ -1414,7 +1414,11 @@ def test_summary_regression_metadata(data, acro):
     assert row["method"] == "ols"
     assert row["type"] == "regression"
     assert row["total_records"] > 0
-    assert "dof=" in row["variables"]
+    variables = row["variables"]
+    assert "inc_activity" in variables
+    assert "inc_grants" in variables
+    assert "inc_donations" in variables
+    assert "total_costs" in variables
 
 
 def test_summary_empty_session():

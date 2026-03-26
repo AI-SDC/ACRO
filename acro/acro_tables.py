@@ -1,5 +1,6 @@
 """ACRO: Tables functions."""
 
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import logging
@@ -72,7 +73,7 @@ class Tables:
         self.suppress: bool = suppress
         self.results: Records = Records()
 
-    def crosstab(
+    def crosstab(  # pylint: disable=too-many-arguments,too-many-locals  # noqa: C901
         self,
         index: Any,
         columns: Any,
@@ -212,14 +213,29 @@ class Tables:
                         colnames=colnames,
                         normalize=normalize,
                     )
-            sdc = get_table_sdc(masks, self.suppress, table)
+
+        vars_used: list[str] = []
+        if isinstance(index, pd.Series):
+            vars_used.append(index.name)
+        elif isinstance(index, list):
+            for var in index:
+                if isinstance(var, pd.Series):
+                    vars_used.append(var.name)
+        if isinstance(columns, pd.Series):
+            vars_used.append(columns.name)
+        elif isinstance(columns, list):
+            for var in columns:
+                if isinstance(var, pd.Series):
+                    vars_used.append(var.name)
+        if values is not None and isinstance(values, pd.Series):
+            vars_used.append(values.name)
 
         # record output
 
         self.results.add(
             status=status,
             output_type="table",
-            properties={"method": "crosstab"},
+            properties={"method": "crosstab", "variables": vars_used},
             sdc=sdc,
             command=command,
             summary=summary,
@@ -234,7 +250,7 @@ class Tables:
             )
         return table
 
-    def pivot_table(
+    def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals  # noqa: C901
         self,
         data: DataFrame,
         values: Any = None,
@@ -422,12 +438,27 @@ class Tables:
                     observed=observed,
                     sort=sort,
                 )
-            sdc = get_table_sdc(masks, self.suppress, table)
+
+        vars_used: list[str] = []
+        if isinstance(index, list):
+            vars_used.extend(index)
+        elif index is not None:
+            vars_used.append(index)
+        if isinstance(columns, list):
+            vars_used.extend(columns)
+        elif columns is not None:
+            vars_used.append(columns)
+        if isinstance(values, list):
+            vars_used.extend(values)
+        elif values is not None:
+            vars_used.append(values)
+        vars_used = [str(v) for v in vars_used]
+
         # record output
         self.results.add(
             status=status,
             output_type="table",
-            properties={"method": "pivot_table"},
+            properties={"method": "pivot_table", "variables": vars_used},
             sdc=sdc,
             command=command,
             summary=summary,
@@ -442,7 +473,7 @@ class Tables:
             )
         return table
 
-    def surv_func(
+    def surv_func(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         time: Any,
         status: Any,
@@ -541,7 +572,7 @@ class Tables:
             return (plot, output_filename)
         return None
 
-    def survival_table(
+    def survival_table(  # pylint: disable=too-many-arguments
         self,
         survival_table: DataFrame,
         safe_table: DataFrame,
@@ -566,7 +597,7 @@ class Tables:
         )
         return survival_table
 
-    def survival_plot(
+    def survival_plot(  # pylint: disable=too-many-arguments
         self,
         survival_table: DataFrame,
         survival_func: Any,
@@ -617,7 +648,7 @@ class Tables:
         )
         return (plot, unique_filename)
 
-    def hist(
+    def hist(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         data: DataFrame,
         column: str,
@@ -914,7 +945,7 @@ class Tables:
         return unique_filename
 
 
-def create_crosstab_masks(
+def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
     index: Any,
     columns: Any,
     values: Any,
@@ -1365,7 +1396,7 @@ def _align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
     if table_nlevels == 2 and mask_nlevels == 2:
         table_top = table.columns.get_level_values(0).unique().tolist()
         mask_top = m.columns.get_level_values(0).unique().tolist()
-        if len(mask_top) == 1 and len(table_top) > 1:
+        if mask_top != table_top:
             n_base = len(table.columns.get_level_values(1).unique())
             base_mask = m.iloc[:, :n_base]
             flat_cols = base_mask.columns.get_level_values(1)
@@ -1771,7 +1802,7 @@ def get_index_columns(
     return index_new, columns_new
 
 
-def crosstab_with_totals(
+def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     masks: dict[str, DataFrame],
     aggfunc: Any,
     index: Any,
@@ -1907,7 +1938,7 @@ def crosstab_with_totals(
     return table
 
 
-def manual_crossstab_with_totals(
+def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
     table: DataFrame,
     aggfunc: str | list[str] | None,
     index: Any,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import warnings
 from inspect import stack
 from typing import Any
@@ -20,6 +21,119 @@ from . import utils
 from .record import Records
 
 logger = logging.getLogger("acro")
+
+
+def _get_endog_exog_variables(endog: ArrayLike, exog: ArrayLike) -> list[str]:
+    """Extract variable names from endog and exog arguments.
+
+    Parameters
+    ----------
+    endog : array_like
+        The dependent variable (Series or array).
+    exog : array_like
+        The independent variables (DataFrame, Series, or array).
+
+    Returns
+    -------
+    list[str]
+        List of variable names: [dependent, independent1, independent2, ...].
+    """
+    variables: list[str] = []
+
+    if hasattr(endog, "name") and endog.name is not None:
+        variables.append(str(endog.name))
+    if hasattr(exog, "columns"):
+        for col in exog.columns:
+            if str(col) != "const":
+                variables.append(str(col))
+    elif hasattr(exog, "name") and exog.name is not None:
+        variables.append(str(exog.name))
+    return variables
+
+
+def _split_formula_terms(text: str, delimiters: str = "+") -> list[str]:
+    """Split a formula string on delimiters, but only outside parentheses.
+
+    Parameters
+    ----------
+    text : str
+        The string to split.
+    delimiters : str
+        Characters to split on (e.g., '+' or ':*').
+
+    Returns
+    -------
+    list[str]
+        The split terms.
+    """
+    terms: list[str] = []
+    depth = 0
+    current: list[str] = []
+    for char in text:
+        if char == "(":
+            depth += 1
+            current.append(char)
+        elif char == ")":
+            depth -= 1
+            current.append(char)
+        elif char in delimiters and depth == 0:
+            terms.append("".join(current))
+            current = []
+        else:
+            current.append(char)
+    terms.append("".join(current))
+    return terms
+
+
+def _get_formula_variables(formula: str) -> list[str]:  # noqa: C901
+    """Extract variable names from an formula string.
+
+    Parses formulas like 'y ~ x1 + x2 + x3' to extract variable names.
+    Handles interaction terms (x1:x2), polynomial terms I(x^2), and
+    categorical terms C(x), respecting parentheses nesting.
+
+    Parameters
+    ----------
+    formula : str
+        An R-style formula string, e.g., 'y ~ x1 + x2'.
+
+    Returns
+    -------
+    list[str]
+        List of variable names: [dependent, independent1, independent2, ...].
+    """
+    variables: list[str] = []
+    parts = formula.split("~")
+    if len(parts) != 2:
+        return variables
+    dep_var = parts[0].strip()
+    if dep_var:
+        variables.append(dep_var)
+    rhs = parts[1].strip()
+    terms = _split_formula_terms(rhs, "+")
+    for term in terms:
+        term = term.strip()
+        if not term or term == "1":
+            continue
+        sub_terms = _split_formula_terms(term, ":*")
+        for sub in sub_terms:
+            sub = sub.strip()
+            if not sub or sub == "1":
+                continue
+            sub = re.sub(r"^[IC]\(", "", sub)
+            sub = re.sub(r"\)$", "", sub)
+            sub = re.sub(r"\^\d+$", "", sub)
+            while sub.startswith("(") and sub.endswith(")"):
+                sub = sub[1:-1]
+            sub = sub.strip()
+            if "+" in sub:
+                for inner in _split_formula_terms(sub, "+"):
+                    inner = inner.strip()
+                    if inner and inner not in variables:
+                        variables.append(inner)
+            elif sub and sub not in variables:
+                variables.append(sub)
+    return variables
 
 
 class Regression:
@@ -73,10 +187,11 @@ class Regression:
         results = model.fit()
         status, summary, dof = self.__check_model_dof("ols", model)
         tables: list[SimpleTable] = results.summary().tables
+        vars_used = _get_endog_exog_variables(endog, exog)
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "ols", "dof": dof},
+            properties={"method": "ols", "dof": dof, "variables": vars_used},
             sdc={},
             command=command,
             summary=summary,
@@ -85,7 +200,7 @@ class Regression:
         )
         return results
 
-    def olsr(
+    def olsr(  # pylint: disable=keyword-arg-before-vararg
         self,
         formula: str,
         data: Any,
@@ -144,10 +259,11 @@ class Regression:
         results = model.fit()
         status, summary, dof = self.__check_model_dof("olsr", model)
         tables: list[SimpleTable] = results.summary().tables
+        vars_used = _get_formula_variables(formula)
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "olsr", "dof": dof},
+            properties={"method": "olsr", "dof": dof, "variables": vars_used},
             sdc={},
             command=command,
             summary=summary,
@@ -193,10 +309,11 @@ class Regression:
         results = model.fit()
         status, summary, dof = self.__check_model_dof("logit", model)
         tables: list[SimpleTable] = results.summary().tables
+        vars_used = _get_endog_exog_variables(endog, exog)
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "logit", "dof": dof},
+            properties={"method": "logit", "dof": dof, "variables": vars_used},
             sdc={},
             command=command,
             summary=summary,
@@ -205,7 +322,7 @@ class Regression:
         )
         return results
 
-    def logitr(
+    def logitr(  # pylint: disable=keyword-arg-before-vararg
         self,
         formula: str,
         data: Any,
@@ -264,10 +381,11 @@ class Regression:
         results = model.fit()
         status, summary, dof = self.__check_model_dof("logitr", model)
         tables: list[SimpleTable] = results.summary().tables
+        vars_used = _get_formula_variables(formula)
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "logitr", "dof": dof},
+            properties={"method": "logitr", "dof": dof, "variables": vars_used},
             sdc={},
             command=command,
             summary=summary,
@@ -313,10 +431,11 @@ class Regression:
         results = model.fit()
         status, summary, dof = self.__check_model_dof("probit", model)
         tables: list[SimpleTable] = results.summary().tables
+        vars_used = _get_endog_exog_variables(endog, exog)
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "probit", "dof": dof},
+            properties={"method": "probit", "dof": dof, "variables": vars_used},
             sdc={},
             command=command,
             summary=summary,
@@ -325,7 +444,7 @@ class Regression:
         )
         return results
 
-    def probitr(
+    def probitr(  # pylint: disable=keyword-arg-before-vararg
         self,
         formula: str,
         data: Any,
@@ -384,10 +503,11 @@ class Regression:
         results = model.fit()
         status, summary, dof = self.__check_model_dof("probitr", model)
         tables: list[SimpleTable] = results.summary().tables
+        vars_used = _get_formula_variables(formula)
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "probitr", "dof": dof},
+            properties={"method": "probitr", "dof": dof, "variables": vars_used},
             sdc={},
             command=command,
             summary=summary,

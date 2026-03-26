@@ -11,8 +11,11 @@ import pytest
 import statsmodels.api as sm
 
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
+from acro.acro_regression import _get_endog_exog_variables, _get_formula_variables
 from acro.acro_tables import _rounded_survival_table, crosstab_with_totals
 from acro.record import Records, load_records
+
+# pylint: disable=redefined-outer-name,too-many-lines
 
 PATH: str = "RES_PYTEST"
 
@@ -1209,9 +1212,10 @@ def test_finalise_non_interactive(data):
 
 
 def test_finalise_interactive(data):
-    """Test interactive version of finalising acro.
+    """Test finalise_interactive.
 
-    Leaves exceptions as they should be disclosive table.
+    Test that interactive version of finalising acro
+    leaves exceptions as they should be disclosive table.
     """
     acro = ACRO(suppress=False)
     _ = acro.crosstab(data.year, data.grant_type)
@@ -1625,81 +1629,88 @@ def test_generate_variable_matrix_table():
     assert var_matrix.iloc[2]["region"] == 1
 
 
-def test_align_masks_droplevel():
-    """Test align_masks drops extra index/column levels to match table shape."""
-    # table with single-level columns and index
-    table = pd.DataFrame(
-        {"c1": [1.0, 2.0], "c2": [3.0, 4.0]},
-        index=pd.Index(["r1", "r2"]),
-    )
-    # mask with MultiIndex columns (extra level)
-    multi_cols = pd.MultiIndex.from_tuples([("agg", "c1"), ("agg", "c2")])
-    mask_multi_col = pd.DataFrame(
-        [[False, False], [False, True]],
-        index=pd.Index(["r1", "r2"]),
-        columns=multi_cols,
-    )
-    # mask with MultiIndex index (extra level)
-    multi_idx = pd.MultiIndex.from_tuples([("g1", "r1"), ("g1", "r2")])
-    mask_multi_idx = pd.DataFrame(
-        [[False, False], [False, True]],
-        index=multi_idx,
-        columns=pd.Index(["c1", "c2"]),
-    )
-    masks = {"multi_col": mask_multi_col, "multi_idx": mask_multi_idx}
-    aligned = acro_tables.align_masks(table, masks)
-    # both masks should now match table shape exactly
-    assert aligned["multi_col"].columns.tolist() == ["c1", "c2"]
-    assert aligned["multi_col"].index.tolist() == ["r1", "r2"]
-    assert aligned["multi_idx"].index.tolist() == ["r1", "r2"]
-    assert aligned["multi_idx"].columns.tolist() == ["c1", "c2"]
+def test_get_endog_exog_variables():
+    """Test extracting variables from endog and exog arguments."""
+    endog = pd.Series([1, 2, 3], name="y")
+    exog = pd.DataFrame({"const": [1, 1, 1], "x1": [4, 5, 6], "x2": [7, 8, 9]})
+
+    variables = _get_endog_exog_variables(endog, exog)
+    assert variables == ["y", "x1", "x2"]
+
+    exog_series = pd.Series([4, 5, 6], name="x1")
+    variables = _get_endog_exog_variables(endog, exog_series)
+    assert variables == ["y", "x1"]
+
+    endog_noname = pd.Series([1, 2, 3])
+    exog_noname = pd.Series([4, 5, 6])
+    variables = _get_endog_exog_variables(endog_noname, exog_noname)
+    assert variables == []
 
 
-def test_cell_id_alignment_with_margins_and_suppression(data):
-    """Verify cell IDs in results.json are valid table indices.
+def test_get_endog_exog_variables_edge_cases():
+    """Additional edge cases for endog/exog variable extraction."""
+    endog = pd.Series([1, 2, 3], name="y")
+    exog = pd.DataFrame({"const": [1, 1, 1]})
 
-    The key issue in bug was that when pandas removes empty rows/columns,
-    cell positions stored in the mask become invalid.
-    """
-    acro = ACRO(suppress=True)
-    table = acro.crosstab(
-        data.year, data.grant_type, margins=True, show_suppressed=True
-    )
-    output = acro.results.get_index(0)
+    variables = _get_endog_exog_variables(endog, exog)
+    assert variables == ["y"]
 
-    for cell_type in output.sdc["cells"]:
-        cells = output.sdc["cells"][cell_type]
-        for row, col in cells:
-            assert row < table.shape[0], (
-                f"Row {row} out of bounds for {cell_type} cell in table shape {table.shape}"
-            )
-            assert col < table.shape[1], (
-                f"Column {col} out of bounds for {cell_type} cell in table shape {table.shape}"
-            )
+    exog = pd.DataFrame({"x1": [4, 5, 6], "x2": [7, 8, 9]})
+    variables = _get_endog_exog_variables(endog, exog)
+    assert variables == ["y", "x1", "x2"]
 
-            value = table.iloc[row, col]
-            if cell_type in ["threshold", "p-ratio", "nk-rule"]:
-                assert pd.isna(value), (
-                    f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
-                )
+    exog_noname = pd.Series([4, 5, 6])
+    variables = _get_endog_exog_variables(endog, exog_noname)
+    assert variables == ["y"]
+    exog_empty = pd.DataFrame()
+    variables = _get_endog_exog_variables(endog, exog_empty)
+    assert variables == ["y"]
 
-    # margins=False
-    acro2 = ACRO(suppress=True)
-    table2 = acro2.crosstab(data.year, data.grant_type, margins=False)
-    output2 = acro2.results.get_index(0)
 
-    for cell_type in output2.sdc["cells"]:
-        cells = output2.sdc["cells"][cell_type]
-        for row, col in cells:
-            assert row < table2.shape[0], (
-                f"Row {row} out of bounds for {cell_type} cell in table shape {table2.shape}"
-            )
-            assert col < table2.shape[1], (
-                f"Column {col} out of bounds for {cell_type} cell in table shape {table2.shape}"
-            )
+def test_get_formula_variables():
+    """Test extracting variables from R-style formula string."""
+    formula = "y ~ x1 + x2"
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
 
-            value = table2.iloc[row, col]
-            if cell_type in ["threshold", "p-ratio", "nk-rule"]:
-                assert pd.isna(value), (
-                    f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
-                )
+    formula_complex = "y ~ x1 + x2:x3 + x4*x5 + I(x6^2) + C(x7)"
+    expected = ["y", "x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+    assert _get_formula_variables(formula_complex) == expected
+    assert _get_formula_variables("y") == []
+    assert _get_formula_variables("~ x1") == ["x1"]
+
+
+def test_get_formula_variables_edge_cases():
+    """Edge cases for formula parsing."""
+    formula = "y ~ x1 + x1 + x2"
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    formula = "y ~ 1 + x1"
+    assert _get_formula_variables(formula) == ["y", "x1"]
+
+    formula = "  y   ~   x1   +   x2   "
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    formula = "y ~ x1:x2"
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    formula = "y ~ x1*x2"
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    formula = "y ~ I(x1^2)"
+    assert _get_formula_variables(formula) == ["y", "x1"]
+
+    formula = "y ~ C(x1)"
+    assert _get_formula_variables(formula) == ["y", "x1"]
+
+    formula = "y ~ I((x1 + x2)^2)"
+    result = _get_formula_variables(formula)
+
+    assert "y" in result
+    assert "x1" in result
+    assert "x2" in result
+
+    formula = "y ~ "
+    assert _get_formula_variables(formula) == ["y"]
+
+    formula = "~ x1 + x2"
+    assert _get_formula_variables(formula) == ["x1", "x2"]

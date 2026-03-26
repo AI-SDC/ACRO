@@ -58,7 +58,7 @@ def load_output(path: str, output: list[str]) -> list[str] | list[DataFrame]:
     return loaded
 
 
-class Record:
+class Record:  # pylint: disable=too-many-instance-attributes
     """Stores data related to a single output record.
 
     Attributes
@@ -89,7 +89,7 @@ class Record:
         Time the record was created in ISO format.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         uid: str,
         status: str,
@@ -214,7 +214,7 @@ class Records:
         self.results: dict[str, Record] = {}
         self.output_id: int = 0
 
-    def add(
+    def add(  # pylint: disable=too-many-arguments
         self,
         status: str,
         output_type: str,
@@ -444,7 +444,7 @@ class Records:
         Returns
         -------
         tuple[list[str], int]
-            Variables and total record count.
+            A sorted, deduplicated list of variables and the total record count.
         """
         variables: list[str] = []
         total_records: int = 0
@@ -469,7 +469,7 @@ class Records:
                 except (TypeError, ValueError):  # pragma: no cover
                     pass
 
-        return variables, total_records
+        return sorted(list(set(variables))), total_records
 
     def _extract_regression_info(self, output: list) -> int:
         """Extract variables and total records from regression output.
@@ -488,15 +488,25 @@ class Records:
 
         for table in output:
             if isinstance(table, DataFrame):
-                for idx in table.index:
-                    idx_str = str(idx)
-                    if "no. observations" in idx_str.lower():
+                search_targets = [str(idx).lower() for idx in table.index]
+                for i, target in enumerate(search_targets):
+                    if "no. observations" in target:
                         try:
-                            val = table.loc[idx].dropna().iloc[0]
+                            val = table.iloc[i].dropna().iloc[0]
                             total_records = int(float(val))
+                            return total_records
                         except (ValueError, TypeError, IndexError):
                             pass
-                        break
+
+                col_targets = [str(col).lower() for col in table.columns]
+                for i, target in enumerate(col_targets):
+                    if "no. observations" in target:
+                        try:
+                            val_str = table.columns[i + 1]
+                            total_records = int(float(val_str))
+                            return total_records
+                        except (ValueError, TypeError, IndexError):
+                            pass
 
         return total_records
 
@@ -566,13 +576,12 @@ class Records:
         """
         variables: list[str] = []
 
-        if rec.output_type == "table":
+        if "variables" in rec.properties:
+            variables = [str(v) for v in rec.properties["variables"]]
+        elif rec.output_type == "table":
             variables, _ = self._extract_table_info(rec.output)
         elif rec.output_type == "regression":
-            dof = rec.properties.get("dof")
-            if dof is not None:
-                variables.append(f"dof={dof}")
-
+            variables = self._extract_regression_variables(rec.output)
         return variables
 
     def _build_variable_matrix(self, summary_df: DataFrame) -> DataFrame:
@@ -629,6 +638,33 @@ class Records:
 
         return DataFrame(matrix_rows)
 
+    def _extract_regression_variables(self, output: list) -> list[str]:
+        """Extract dependent and independent variable names from regression output.
+
+        Parameters
+        ----------
+        output : list
+            The regression output DataFrames.
+
+        Returns
+        -------
+        list[str]
+            Dependent variable followed by independent variables.
+        """
+        variables: list[str] = []
+        if len(output) < 2:
+            return variables
+        table0, table1 = output[0], output[1]
+        if isinstance(table0, DataFrame) and len(table0.columns) > 0:
+            dep_var = str(table0.columns[0])
+            variables.append(dep_var)
+        if isinstance(table1, DataFrame):
+            for name in table1.index:
+                name_str = str(name)
+                if name_str not in ("const", "Intercept"):
+                    variables.append(name_str)
+        return variables
+
     def generate_summary(self) -> DataFrame:
         """Generate a summary DataFrame of all outputs in the session.
 
@@ -639,8 +675,8 @@ class Records:
         Returns
         -------
         DataFrame
-            Summary of all outputs with columns: id, method, status, type,
-            command, summary, variables, total_records, suppression,
+            Summary of all outputs with columns: id, method, variables, status, type,
+            command, summary, total_records, suppression,
             timestamp, diff_risk.
         """
         rows = []
@@ -648,16 +684,13 @@ class Records:
             if rec.output_type == "custom":
                 continue
             method = rec.properties.get("method", rec.output_type)
-            variables: list[str] = []
+            variables: list[str] = self._get_output_variables(rec)
             total_records: int = 0
 
             if rec.output_type == "table":
-                variables, total_records = self._extract_table_info(rec.output)
+                _, total_records = self._extract_table_info(rec.output)
             elif rec.output_type == "regression":
                 total_records = self._extract_regression_info(rec.output)
-                dof = rec.properties.get("dof")
-                if dof is not None:
-                    variables.append(f"dof={dof}")
 
             variables_str = "; ".join(variables) if variables else ""
 
@@ -669,11 +702,11 @@ class Records:
                 {
                     "id": uid,
                     "method": method,
+                    "variables": variables_str,
                     "status": rec.status,
                     "type": rec.output_type,
                     "command": rec.command,
                     "summary": rec.summary,
-                    "variables": variables_str,
                     "total_records": total_records,
                     "suppression": suppression,
                     "timestamp": rec.timestamp,

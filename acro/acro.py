@@ -11,7 +11,7 @@ from typing import Any
 
 import yaml
 
-from . import acro_tables
+from . import acro_tables, checks
 from .acro_regression import Regression
 from .acro_tables import Tables
 from .record import Records
@@ -20,16 +20,6 @@ from .version import __version__
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("acro")
 warnings.simplefilter(action="ignore", category=FutureWarning)
-
-
-CHECK_TO_METHOD: dict = {
-    "MinimumDoFCheck": {
-        "method": Regression.__check_model_dof,
-        "args": {"name", "model"},
-        "kwargs": None,
-        "returns": {"status", "summary", "DoF"},
-    }
-}
 
 
 class ACRO(Tables, Regression):
@@ -89,47 +79,8 @@ class ACRO(Tables, Regression):
         # set globals for survival analysis
         acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
 
-        with open("statbarns.json") as handle:
-            self.statbarns = json.loads(handle.read())
-        with open("analyses.json") as handle:
-            self.analyses = json.loads(handle.read())
-        with open("risks.json") as handle:
-            self.risks = json.loads(handle.read())
-        self.check_to_method: dict = CHECK_TO_METHOD
-
-    def get_sdc_for_analysis(self, statname: str) -> dict | str:
-        """Get list of sdc tokens to run for a given analysis.
-
-        Returns
-        -------
-        dict of sdc terms to be saved
-
-        Parameter
-        ---------
-        analysis | str
-            prefix label for a statbarnsdc analysis type
-        """
-        if statname not in self.analyses.keys():
-            return "don't have ontology information for this analysis"
-        statbarn = self.analyses.get(statname)
-
-        sdc_dict: dict = {
-            "analysis_uri": self.analyses[statname]["uri"],
-            "statbarn": self.analyses[statname]["statbarn"],
-            "statbarn_uri": self.statbarns[statbarn]["uri"],
-            "risks": self.statbarns[statbarn]["risks"],
-            "checks_needed": [],
-            "common_mitigations": [],
-        }
-        for risk in sdc_dict["risks"]:
-            checks = self.risks[risk]["checks"]
-            sdc_dict["checks_needed"].extend(checks)
-            mitigations = self.risks[risk]["mitigations"]
-            sdc_dict["common_mitigations"].extend(mitigations)
-
-        # TODOcommon mitigations - remove ones where count != len risks
-
-        return sdc_dict
+        # make object to handle all the ontology-driven checking
+        self.sdc_checks = checks.SDCChecks(self.config)
 
     def finalise(
         self, path: str = "outputs", ext: str = "json", interactive: bool = False

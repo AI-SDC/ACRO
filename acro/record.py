@@ -73,6 +73,8 @@ class Record:  # pylint: disable=too-many-instance-attributes
         Dictionary containing structured output data.
     sdc : dict
         Dictionary containing SDC results.
+    fair : dict
+        Dictionary containing FAIR description of SDC process
     command : str
         String representation of the operation performed.
     summary : str
@@ -96,6 +98,7 @@ class Record:  # pylint: disable=too-many-instance-attributes
         output_type: str,
         properties: dict,
         sdc: dict,
+        fair: dict,
         command: str,
         summary: str,
         outcome: DataFrame,
@@ -116,6 +119,8 @@ class Record:  # pylint: disable=too-many-instance-attributes
             Dictionary containing structured output data.
         sdc : dict
             Dictionary containing SDC results.
+        fair : dict
+            Dictionary containing FAIR description of SDC process
         command : str
             String representation of the operation performed.
         summary : str
@@ -132,6 +137,7 @@ class Record:  # pylint: disable=too-many-instance-attributes
         self.output_type: str = output_type
         self.properties: dict = properties
         self.sdc: dict = sdc
+        self.fair = fair
         self.command: str = command
         self.summary: str = summary
         self.outcome: DataFrame = outcome
@@ -196,6 +202,7 @@ class Record:  # pylint: disable=too-many-instance-attributes
             f"type: {self.output_type}\n"
             f"properties: {self.properties}\n"
             f"sdc: {self.sdc}\n"
+            f"fair: {self.fair}\n"
             f"command: {self.command}\n"
             f"summary: {self.summary}\n"
             f"outcome: {self.outcome}\n"
@@ -220,6 +227,7 @@ class Records:
         output_type: str,
         properties: dict,
         sdc: dict,
+        fair: dict,
         command: str,
         summary: str,
         outcome: DataFrame,
@@ -238,6 +246,8 @@ class Records:
             Dictionary containing structured output data.
         sdc : dict
             Dictionary containing SDC results.
+        fair : dict
+            Dictionary containing FAIR description of analysis
         command : str
             String representation of the operation performed.
         summary : str
@@ -255,6 +265,7 @@ class Records:
             output_type=output_type,
             properties=properties,
             sdc=sdc,
+            fair=fair,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -339,6 +350,7 @@ class Records:
                 output_type="custom",
                 properties={},
                 sdc={},
+                fair={},
                 command="custom",
                 summary="review",
                 outcome=DataFrame(),
@@ -603,6 +615,7 @@ def load_records(path: str) -> Records:
                 output_type=val["type"],
                 properties=val["properties"],
                 sdc=sdcs[0],
+                fair=val["fair"],
                 command=val["command"],
                 summary=val["summary"],
                 outcome=load_outcome(val["outcome"]),

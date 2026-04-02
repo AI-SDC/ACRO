@@ -117,6 +117,7 @@ class Tables:
             when margins is True.
         dropna : bool, default True
             Do not include columns whose entries are all NaN.
+            THIS IS FORCED TO BE FALSE for SDC reasons
         normalize : bool, {'all', 'index', 'columns'}, or {0,1}, default False
             Normalize by dividing all values by the sum of values.
             - If passed 'all' or `True`, will normalize over all values.
@@ -145,36 +146,31 @@ class Tables:
         # convert [list of] string to [list of] function
         agg_func = get_aggfuncs(aggfunc)
 
+        # save list and dict to reduce clutter
+        # enforce dropna=False for SDC reasons
+        args = (index, columns)
+        kwargs = {
+            "values": values,
+            "rownames": rownames,
+            "colnames": colnames,
+            "aggfunc": aggfunc,
+            "margins": margins,
+            "margins_name": margins_name,
+            "dropna": False,
+            "normalize": normalize,
+        }
+        suppression_args = {"show_suppressed": show_suppressed}
+
         # requested table
-        table: DataFrame = pd.crosstab(
-            index,
-            columns,
-            values,
-            rownames,
-            colnames,
-            agg_func,
-            margins,
-            margins_name,
-            dropna,
-            normalize,
-        )
+        table: DataFrame = pd.crosstab(*args, **kwargs, **suppression_args)
+
         comments: list[str] = []
         # do not delete empty rows and columns from table if the aggfunc is mode
         if agg_func is not mode_aggfunc:
             # delete empty rows and columns from table
             table, comments = delete_empty_rows_columns(table)
-        masks = create_crosstab_masks(
-            index,
-            columns,
-            values,
-            rownames,
-            colnames,
-            agg_func,
-            margins,
-            margins_name,
-            dropna,
-            normalize,
-        )
+        masks = create_crosstab_masks(*args, **kwargs)
+
         # build the sdc dictionary
         sdc: dict = get_table_sdc(masks, self.suppress, table)
         # get the status and summary
@@ -213,7 +209,7 @@ class Tables:
                         colnames=colnames,
                         normalize=normalize,
                     )
-
+        fair: dict = {}  # TODO
         # record output
 
         self.results.add(
@@ -221,6 +217,7 @@ class Tables:
             output_type="table",
             properties={"method": "crosstab"},
             sdc=sdc,
+            fair=fair,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -423,11 +420,14 @@ class Tables:
                     sort=sort,
                 )
         # record output
+        fair: dict = {}  # TODO
+
         self.results.add(
             status=status,
             output_type="table",
             properties={"method": "pivot_table"},
             sdc=sdc,
+            fair=fair,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -553,11 +553,15 @@ class Tables:
         """Create the survival table according to the status of suppressing."""
         if self.suppress:
             survival_table = safe_table
+
+        fair: dict = {}  # TODO
+
         self.results.add(
             status=status,
             output_type="table",
             properties={"method": "surv_func"},
             sdc=sdc,
+            fair=fair,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -604,11 +608,14 @@ class Tables:
         plt.savefig(unique_filename)
 
         # record output
+        fair: dict = {}  # TODO
+
         self.results.add(
             status=status,
             output_type="survival plot",
             properties={"method": "surv_func"},
             sdc=sdc,
+            fair=fair,
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),
@@ -798,11 +805,14 @@ class Tables:
         plt.savefig(unique_filename)
 
         # record output
+        fair: dict = {}  # TODO
+
         self.results.add(
             status=status,
             output_type="histogram",
             properties={"method": "histogram"},
             sdc={},
+            fair=fair,
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),
@@ -899,11 +909,13 @@ class Tables:
         plt.savefig(unique_filename)
 
         # RECORD OUTPUT
+        fair: dict = {}  # TODO
         self.results.add(
             status=status,
             output_type="pie chart",
             properties={"method": "pie"},
             sdc={},
+            fair=fair,
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),

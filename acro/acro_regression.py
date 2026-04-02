@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import warnings
 from inspect import stack
 from typing import Any
 
@@ -17,6 +16,7 @@ from statsmodels.iolib.table import SimpleTable
 from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 from . import utils
+from .checks import SDCChecks
 from .record import Records
 
 logger = logging.getLogger("acro")
@@ -30,6 +30,7 @@ class Regression:
     ) -> None:  # _config: unused; ACRO sets self.config (Ruff ARG002)
         self.config: dict[str, Any] = {}
         self.results: Records = Records()
+        self.sdc_checks = SDCChecks({})
 
     def ols(
         self,
@@ -69,19 +70,26 @@ class Regression:
         """
         logger.debug("ols()")
         command: str = utils.get_command("ols()", stack())
+
         model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("ols", model)
+
+        analysis_name = "GeneralLinearModel"
+        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+            analysis_name, model
+        )
+
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=status,
             output_type="regression",
             properties={"method": "ols", "dof": dof},
-            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
+            sdc={},
+            fair=sdc_dict,
         )
         return results
 
@@ -142,17 +150,23 @@ class Regression:
             **kwargs,
         )
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("olsr", model)
+
+        analysis_name = "GeneralLinearModel"
+        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+            analysis_name, model
+        )
+
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=status,
             output_type="regression",
             properties={"method": "olsr", "dof": dof},
-            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
+            sdc={},
+            fair=sdc_dict,
         )
         return results
 
@@ -191,17 +205,23 @@ class Regression:
         command: str = utils.get_command("logit()", stack())
         model = sm.Logit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("logit", model)
+
+        analysis_name = "Logit"
+        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+            analysis_name, model
+        )
+
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=status,
             output_type="regression",
             properties={"method": "logit", "dof": dof},
-            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
+            sdc={},
+            fair=sdc_dict,
         )
         return results
 
@@ -262,17 +282,24 @@ class Regression:
             **kwargs,
         )
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("logitr", model)
+
+        analysis_name = "Logit"
+        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+            analysis_name, model
+        )
+
+        # status, summary, dof = checks.check_model_dof(self.config,"logitr", model)
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=status,
             output_type="regression",
             properties={"method": "logitr", "dof": dof},
-            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
+            sdc={},
+            fair=sdc_dict,
         )
         return results
 
@@ -311,17 +338,23 @@ class Regression:
         command: str = utils.get_command("probit()", stack())
         model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("probit", model)
+
+        analysis_name = "Probit"
+        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+            analysis_name, model
+        )
+
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=status,
             output_type="regression",
             properties={"method": "probit", "dof": dof},
-            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
+            sdc={},
+            fair=sdc_dict,
         )
         return results
 
@@ -382,50 +415,26 @@ class Regression:
             **kwargs,
         )
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("probitr", model)
+
+        analysis_name = "Probit"
+        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+            analysis_name, model
+        )
+
+        # status, summary, dof = checks.check_model_dof(self.config,"probitr", model)
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=status,
             output_type="regression",
             properties={"method": "probitr", "dof": dof},
-            sdc={},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
+            sdc={},
+            fair=sdc_dict,
         )
         return results
-
-    def __check_model_dof(self, name: str, model: Any) -> tuple[str, str, float]:
-        """Check model DOF.
-
-        Parameters
-        ----------
-        name : str
-            The name of the model.
-        model
-            A statsmodels model.
-
-        Returns
-        -------
-        str
-            Status: {"review", "fail", "pass"}.
-        str
-            Summary of the check.
-        float
-            The degrees of freedom.
-        """
-        status = "fail"
-        dof: int = model.df_resid
-        threshold: int = self.config["safe_dof_threshold"]
-        if dof < threshold:
-            summary = f"fail; dof={dof} < {threshold}"
-            warnings.warn(f"Unsafe {name}: {summary}", stacklevel=8)
-        else:
-            status = "pass"
-            summary = f"pass; dof={dof} >= {threshold}"
-        logger.info("%s() outcome: %s", name, summary)
-        return status, summary, float(dof)
 
 
 def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:

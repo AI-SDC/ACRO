@@ -60,12 +60,14 @@ class ACRO(Tables, Regression):
         Tables.__init__(self, suppress)
         Regression.__init__(self, config)
         self.config: dict[str, Any] = {}
-        self.results: Records = Records()
         self.suppress: bool = suppress
         path: pathlib.Path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
+        self.results: Records = Records(
+            blocked_extensions=self.config.get("blocked_extensions", [])
+        )
         logger.info("version: %s", __version__)
         logger.info("config: %s", self.config)
         logger.info("automatic suppression: %s", self.suppress)
@@ -78,6 +80,10 @@ class ACRO(Tables, Regression):
         acro_tables.ZEROS_ARE_DISCLOSIVE = self.config["zeros_are_disclosive"]
         # set globals for survival analysis
         acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
+        # set globals for blocked file extensions
+        acro_tables.BLOCKED_EXTENSIONS = [
+            ext.lower() for ext in self.config.get("blocked_extensions", [])
+        ]
 
     def finalise(
         self, path: str = "outputs", ext: str = "json", interactive: bool = False
@@ -138,7 +144,7 @@ class ACRO(Tables, Regression):
         """
         return self.results.print()
 
-    def custom_output(self, filename: str, comment: str = "") -> None:
+    def custom_output(self, filename: str, comment: str = "") -> bool:
         """Add an unsupported output to the results dictionary.
 
         Parameters
@@ -147,8 +153,13 @@ class ACRO(Tables, Regression):
             The name of the file that will be added to the list of the outputs.
         comment : str
             An optional comment.
+
+        Returns
+        -------
+        bool
+            False if the file extension is blocked, True otherwise.
         """
-        self.results.add_custom(filename, comment)
+        return self.results.add_custom(filename, comment)
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

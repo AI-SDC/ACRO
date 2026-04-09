@@ -505,6 +505,32 @@ def test_custom_output(acro):
     shutil.rmtree(PATH)
 
 
+def test_blocked_extension(acro, tmp_path):
+    """Test that blocked file extensions are rejected in custom output."""
+    # create temporary files with blocked extensions
+    svg_file = tmp_path / "test.svg"
+    svg_file.write_text("<svg></svg>")
+    gph_file = tmp_path / "test.gph"
+    gph_file.write_text("data")
+
+    # blocked extensions should be rejected
+    acro.custom_output(str(svg_file))
+    acro.custom_output(str(gph_file))
+    assert len(acro.results.results) == 0
+
+    # allowed extensions should be accepted
+    txt_file = tmp_path / "test.txt"
+    txt_file.write_text("hello")
+    acro.custom_output(str(txt_file))
+    assert len(acro.results.results) == 1
+
+    # case-insensitive check
+    svg_upper = tmp_path / "test.SVG"
+    svg_upper.write_text("<svg></svg>")
+    acro.custom_output(str(svg_upper))
+    assert len(acro.results.results) == 1
+
+
 def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with negative values."""
     acro_tables.CHECK_MISSING_VALUES = True

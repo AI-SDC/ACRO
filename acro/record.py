@@ -209,10 +209,19 @@ class Record:
 class Records:
     """Stores data related to a collection of output records."""
 
-    def __init__(self) -> None:
-        """Construct a new object for storing multiple records."""
+    def __init__(self, blocked_extensions: list[str] | None = None) -> None:
+        """Construct a new object for storing multiple records.
+
+        Parameters
+        ----------
+        blocked_extensions : list[str] | None, default None
+            File extensions that are not allowed in custom outputs.
+        """
         self.results: dict[str, Record] = {}
         self.output_id: int = 0
+        self.blocked_extensions: list[str] = [
+            ext.lower() for ext in (blocked_extensions or [])
+        ]
 
     def add(
         self,
@@ -322,7 +331,7 @@ class Records:
         key = list(self.results.keys())[index]
         return self.results[key]
 
-    def add_custom(self, filename: str, comment: str | None = None) -> None:
+    def add_custom(self, filename: str, comment: str | None = None) -> bool:
         """Add an unsupported output to the results dictionary.
 
         Parameters
@@ -331,7 +340,20 @@ class Records:
             The name of the file that will be added to the list of the outputs.
         comment : str | None, default None
             An optional comment.
+
+        Returns
+        -------
+        bool
+            False if the file extension is blocked, True otherwise.
         """
+        _, ext = os.path.splitext(filename)
+        if ext.lower() in self.blocked_extensions:
+            logger.warning(
+                "Blocked file extension %s. Files with extension %s are not allowed.",
+                filename,
+                ext,
+            )
+            return False
         if os.path.exists(filename):
             output = Record(
                 uid=f"output_{self.output_id}",
@@ -352,6 +374,7 @@ class Records:
             logger.info(
                 "WARNING: Unable to add %s because the file does not exist", filename
             )  # pragma: no cover
+        return True
 
     def rename(self, old: str, new: str) -> None:
         """Rename an output.

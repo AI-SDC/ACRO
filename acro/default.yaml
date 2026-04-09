@@ -29,4 +29,13 @@ survival_safe_threshold: 10
 
 # consider zeros to be disclosive
 zeros_are_disclosive: True
+
+################################################################################
+# Blocked file extensions                                                      #
+################################################################################
+# File extensions that are not allowed in custom outputs or plots.
+# Extensions are case-insensitive and must include the leading dot.
+blocked_extensions:
+  - .svg
+  - .gph
 ...

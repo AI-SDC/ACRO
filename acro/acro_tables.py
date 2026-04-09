@@ -58,6 +58,9 @@ ZEROS_ARE_DISCLOSIVE: bool = True
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
 
+# blocked file extensions for outputs
+BLOCKED_EXTENSIONS: list[str] = []
+
 
 class Tables:
     """Creates tabular data.
@@ -594,6 +597,13 @@ class Tables:
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
             return None  # pragma: no cover
+        if extension.lower() in BLOCKED_EXTENSIONS:
+            logger.warning(
+                "Blocked file extension %s. Files with extension %s are not allowed.",
+                extension,
+                extension,
+            )
+            return None
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
@@ -788,6 +798,13 @@ class Tables:
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
             return None
+        if extension.lower() in BLOCKED_EXTENSIONS:
+            logger.warning(
+                "Blocked file extension %s. Files with extension %s are not allowed.",
+                extension,
+                extension,
+            )
+            return None
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
@@ -887,6 +904,13 @@ class Tables:
         filename, extension = os.path.splitext(filename)
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
+            return None
+        if extension.lower() in BLOCKED_EXTENSIONS:
+            logger.warning(
+                "Blocked file extension %s. Files with extension %s are not allowed.",
+                extension,
+                extension,
+            )
             return None
         increment_number = 0
 

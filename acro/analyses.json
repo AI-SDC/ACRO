@@ -188,12 +188,12 @@
         "statbarn": "CalculatedRatios",
         "uri": "https://www.w3id.org/statbarnsdc#FactorAnalysis"
     },
-    "FreqeuncyTable": {
+    "FrequencyTable": {
         "definition": "This class covers frequencies, i.e, counts of things, either in tables (most common), in certain graphs such as histograms or bar charts, or single as in a description of the number of survey participants. This also includes frequencies expressed as a proportion of some total.",
-        "name": "FreqeuncyTable",
-        "prefix_label": "FreqeuncyTable",
+        "name": "FrequencyTable",
+        "prefix_label": "FrequencyTable",
         "statbarn": "Frequencies",
-        "uri": "https://www.w3id.org/statbarnsdc#FreqeuncyTable"
+        "uri": "https://www.w3id.org/statbarnsdc#FrequencyTable"
     },
     "FriedmanTest": {
         "definition": "Non-parametric statistical test used to detect differences in treatments across multiple related groups.",

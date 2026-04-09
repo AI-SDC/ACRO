@@ -75,7 +75,7 @@ class Regression:
         results = model.fit()
 
         analysis_name = "GeneralLinearModel"
-        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
 
@@ -83,13 +83,13 @@ class Regression:
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "ols", "dof": dof},
+            properties={"method": "ols", "dof": outcome["MinimumDoFCheck"]},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
             sdc={},
-            fair=sdc_dict,
+            fair=fair_dict,
         )
         return results
 
@@ -152,7 +152,7 @@ class Regression:
         results = model.fit()
 
         analysis_name = "GeneralLinearModel"
-        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
 
@@ -160,13 +160,13 @@ class Regression:
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "olsr", "dof": dof},
+            properties={"method": "olsr", "dof": outcome["MinimumDoFCheck"]},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
             sdc={},
-            fair=sdc_dict,
+            fair=fair_dict,
         )
         return results
 
@@ -207,7 +207,7 @@ class Regression:
         results = model.fit()
 
         analysis_name = "Logit"
-        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
 
@@ -215,13 +215,13 @@ class Regression:
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "logit", "dof": dof},
+            properties={"method": "logit", "dof": outcome["MinimumDoFCheck"]},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
             sdc={},
-            fair=sdc_dict,
+            fair=fair_dict,
         )
         return results
 
@@ -284,7 +284,7 @@ class Regression:
         results = model.fit()
 
         analysis_name = "Logit"
-        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
 
@@ -293,13 +293,13 @@ class Regression:
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "logitr", "dof": dof},
+            properties={"method": "logitr", "dof": outcome["MinimumDoFCheck"]},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
             sdc={},
-            fair=sdc_dict,
+            fair=fair_dict,
         )
         return results
 
@@ -340,7 +340,7 @@ class Regression:
         results = model.fit()
 
         analysis_name = "Probit"
-        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
 
@@ -348,13 +348,13 @@ class Regression:
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "probit", "dof": dof},
+            properties={"method": "probit", "dof": outcome["MinimumDoFCheck"]},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
             sdc={},
-            fair=sdc_dict,
+            fair=fair_dict,
         )
         return results
 
@@ -417,7 +417,7 @@ class Regression:
         results = model.fit()
 
         analysis_name = "Probit"
-        status, summary, dof, sdc_dict = self.sdc_checks.run_checks_for_analysis(
+        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
 
@@ -426,13 +426,13 @@ class Regression:
         self.results.add(
             status=status,
             output_type="regression",
-            properties={"method": "probitr", "dof": dof},
+            properties={"method": "probitr", "dof": outcome["MinimumDoFCheck"]},
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
             sdc={},
-            fair=sdc_dict,
+            fair=fair_dict,
         )
         return results
 

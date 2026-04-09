@@ -17,6 +17,7 @@ from matplotlib import pyplot as plt
 from pandas import DataFrame, Series
 
 from . import utils
+from .checks import SDCChecks
 from .record import Records
 
 logger = logging.getLogger("acro")
@@ -48,6 +49,18 @@ AGGFUNC: dict[str, str | Callable] = {
     "mode": mode_aggfunc,
 }
 
+AGGFUNC_TO_TYPE: dict[str, str] = {
+    "count": "FrequencyTable",
+    "mode": "Mode",
+    "median": "Median",
+    "mean": "Mean",
+    "std": "StandardDeviation",
+    "sum": "Sum",
+    "min": "Minimum",
+    "max": "Maximum",
+}
+
+
 # aggregation function parameters
 THRESHOLD: int = 10
 SAFE_PRATIO_P: float = 0.1
@@ -72,8 +85,9 @@ class Tables:
     def __init__(self, suppress: bool) -> None:
         self.suppress: bool = suppress
         self.results: Records = Records()
+        self.sdc_checks = SDCChecks({})
 
-    def crosstab(  # pylint: disable=too-many-arguments,too-many-locals
+    def crosstab(  # pylint: disable=too-many-arguments,too-many-locals,too-complex
         self,
         index: Any,
         columns: Any,
@@ -91,9 +105,6 @@ class Tables:
 
         By default, computes a frequency table of the factors unless an array of
         values and an aggregation function are passed.
-
-        To provide consistent behaviour with different aggregation functions,
-        'empty' rows or columns -i.e. that  are all NaN or 0 (count,sum) are removed.
 
         Parameters
         ----------
@@ -144,10 +155,9 @@ class Tables:
                 )
 
         # convert [list of] string to [list of] function
-        agg_func = get_aggfuncs(aggfunc)
+        # agg_func = get_aggfuncs(aggfunc)
 
         # save list and dict to reduce clutter
-        # enforce dropna=False for SDC reasons
         args = (index, columns)
         kwargs = {
             "values": values,
@@ -156,79 +166,111 @@ class Tables:
             "aggfunc": aggfunc,
             "margins": margins,
             "margins_name": margins_name,
-            "dropna": False,
+            "dropna": dropna,
             "normalize": normalize,
         }
-        suppression_args = {"show_suppressed": show_suppressed}
+        # enforce dropna=False for SDC reasons
+        kwargs["dropna"] = False
 
-        # requested table
-        table: DataFrame = pd.crosstab(*args, **kwargs, **suppression_args)
+        _ = show_suppressed
+        # suppression_args = {"show_suppressed": show_suppressed}
 
-        comments: list[str] = []
-        # do not delete empty rows and columns from table if the aggfunc is mode
-        if agg_func is not mode_aggfunc:
-            # delete empty rows and columns from table
-            table, comments = delete_empty_rows_columns(table)
-        masks = create_crosstab_masks(*args, **kwargs)
+        ## requested table
+        table: DataFrame = pd.crosstab(*args, **kwargs)
 
-        # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress, table)
-        # get the status and summary
-        status, summary = get_summary(sdc)
-        # apply the suppression
+        ## get names of Aggregation Functions- sole case first
+        analysis_names: list[str] = []
+
+        if aggfunc is None:
+            analysis_names.append(AGGFUNC_TO_TYPE.get("count", "missing"))
+        if isinstance(aggfunc, str):
+            analysis_names.append(AGGFUNC_TO_TYPE.get(aggfunc, "missing"))
+        if isinstance(aggfunc, list):
+            for i in aggfunc:
+                analysis_names.append(AGGFUNC_TO_TYPE.get(i, "missing"))
+
+        ## run the checks and get the masks
+        allmasks: dict[str, DataFrame] = {}
+        fair_dicts: dict[str, dict] = {}
+        statuses: dict[str, str] = {}
+        summaries: dict[str, str] = {}
+
+        model: dict[str, Any] = {"args": args, "kwargs": kwargs}
+
+        for analysis in analysis_names:
+            logger.info(f"running checks for {analysis_names[0]}")
+            status, summary, masks, fair_dict = self.sdc_checks.run_checks_for_analysis(
+                analysis_names[0], model
+            )
+            logger.info(f"status for {analysis}: {status}")
+            logger.info(f"summary for {analysis}: {summary}")
+            summaries[analysis] = summary
+            statuses[analysis] = status
+            allmasks[analysis] = masks
+            print("TODO should check if there are duplicate keys with different values")
+            fair_dicts[analysis] = fair_dict
+
+        ## Debugging print out
+        debug_print = False
+        if debug_print:
+            print("\n====start acro.crosstab print statement=====")
+
+            print("\n== statuses==\n")
+            for key, val in statuses.items():
+                print(f" {key} : {val}")
+
+            print("\n== summaries==\n")
+            for key, val in summaries.items():
+                print(f" {key} : {val}")
+
+            print("\n== allmasks==\n")
+            for name, mask in allmasks.items():
+                print(f"\nMask for {name}")
+                for key, val in mask.items():
+                    print(f"{key} \n{val}")
+
+            print("\n== fair_dicts==\n")
+            for key, val in fair_dicts.items():
+                if isinstance(val, dict):
+                    for key2, val2 in val.items():
+                        print(f" {key2} : {val2}")
+                else:
+                    print(f" {key} : {val}")
+
+            print("====end acro.crosstab print statement=====\n")
+
+        ## summarise
+        sdc_details: dict = get_table_sdc(masks)
+        if "fail" in statuses:
+            overall_status = "fail"
+        elif "review" in statuses:
+            overall_status = "review"
+        else:
+            overall_status = "pass"
+        summary = "".join(summaries)
+
+        # # apply the suppression
         safe_table, outcome = apply_suppression(table, masks)
         if self.suppress:
             table = safe_table
-            if margins:
-                if show_suppressed:
-                    table = manual_crossstab_with_totals(
-                        table,
-                        aggfunc,
-                        index,
-                        columns,
-                        values,
-                        rownames,
-                        colnames,
-                        margins,
-                        margins_name,
-                        dropna,
-                        normalize,
-                    )
-                else:
-                    table = crosstab_with_totals(
-                        masks=masks,
-                        aggfunc=agg_func,
-                        index=index,
-                        columns=columns,
-                        values=values,
-                        margins=margins,
-                        margins_name=margins_name,
-                        dropna=dropna,
-                        crosstab=True,
-                        rownames=rownames,
-                        colnames=colnames,
-                        normalize=normalize,
-                    )
-        fair: dict = {}  # TODO
-        # record output
-
-        self.results.add(
-            status=status,
-            output_type="table",
-            properties={"method": "crosstab"},
-            sdc=sdc,
-            fair=fair,
-            command=command,
-            summary=summary,
-            outcome=outcome,
-            output=[table],
-            comments=comments,
-        )
-        if self.suppress:
             justadded = f"output_{self.results.output_id - 1}"
             self.results.add_exception(
                 justadded, "Suppression automatically applied where needed"
             )
+        # record output
+        self.results.add(
+            status=overall_status,
+            output_type="table",
+            properties={"method": "crosstab"},
+            sdc=sdc_details,
+            fair=fair_dicts,
+            command=command,
+            summary=summary,
+            outcome=outcome,
+            output=[table],
+            comments=[],
+        )
+
         return table
 
     def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
@@ -392,7 +434,7 @@ class Tables:
             masks[name] = mask
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress, table)
+        sdc: dict = get_table_sdc_old(masks, self.suppress, table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -510,7 +552,7 @@ class Tables:
         masks["threshold"].insert(3, "num events", t_values, True)
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress, survival_table)
+        sdc: dict = get_table_sdc_old(masks, self.suppress, survival_table)
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
@@ -1484,7 +1526,7 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
-def get_table_sdc(
+def get_table_sdc_old(
     masks: dict[str, DataFrame], suppress: bool, table: DataFrame | None = None
 ) -> dict[str, Any]:
     """Return the SDC dictionary using the suppression masks.
@@ -1517,6 +1559,28 @@ def get_table_sdc(
     sdc["cells"]["p-ratio"] = []
     sdc["cells"]["nk-rule"] = []
     sdc["cells"]["all-values-are-same"] = []
+    for name, mask in masks.items():
+        true_positions = np.column_stack(np.where(mask.values))
+        for pos in true_positions:
+            row_index, col_index = pos
+            sdc["cells"][name].append([int(row_index), int(col_index)])
+    return sdc
+
+
+def get_table_sdc(masks: dict[str, DataFrame]) -> dict[str, Any]:
+    """Return the SDC dictionary using the suppression masks.
+
+    Parameters
+    ----------
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+    """
+    # summary of number of cells to be suppressed
+    sdc: dict[str, Any] = {"summary": {}, "cells": {}}
+    for name, mask in masks.items():
+        sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
+        sdc["cells"][name] = []
+    # positions of cells to be suppressed
     for name, mask in masks.items():
         true_positions = np.column_stack(np.where(mask.values))
         for pos in true_positions:

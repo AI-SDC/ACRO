@@ -531,6 +531,35 @@ def test_blocked_extension(acro, tmp_path):
     assert len(acro.results.results) == 1
 
 
+def test_blocked_extension_hist(data, acro):
+    """Test that blocked file extensions are rejected for histograms."""
+    result = acro.hist(data, "inc_grants", bins=1, filename="hist.svg")
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
+def test_blocked_extension_pie(data, acro):
+    """Test that blocked file extensions are rejected for pie charts."""
+    result = acro.pie(data, "grant_type", filename="pie.svg")
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
+def test_blocked_extension_survival(acro):
+    """Test that blocked file extensions are rejected for survival plots."""
+    result = acro.survival_plot(
+        survival_table=pd.DataFrame(),
+        survival_func=None,
+        filename="surv.svg",
+        status="pass",
+        sdc={},
+        command="test",
+        summary="test",
+    )
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
 def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with negative values."""
     acro_tables.CHECK_MISSING_VALUES = True

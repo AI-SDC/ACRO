@@ -580,6 +580,14 @@ class Tables:
         summary: str,
     ) -> tuple[Any, str] | None:
         """Create the survival plot according to the status of suppressing."""
+        _, extension = os.path.splitext(filename)
+        if extension.lower() in BLOCKED_EXTENSIONS:
+            logger.warning(
+                "Blocked file extension %s. Files with extension %s are not allowed.",
+                extension,
+                extension,
+            )
+            return None
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
             plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
@@ -597,13 +605,6 @@ class Tables:
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
             return None  # pragma: no cover
-        if extension.lower() in BLOCKED_EXTENSIONS:
-            logger.warning(
-                "Blocked file extension %s. Files with extension %s are not allowed.",
-                extension,
-                extension,
-            )
-            return None
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
@@ -712,6 +713,14 @@ class Tables:
             The name of the file where the histogram is saved.
         """
         logger.debug("hist()")
+        _, extension = os.path.splitext(filename)
+        if extension.lower() in BLOCKED_EXTENSIONS:
+            logger.warning(
+                "Blocked file extension %s. Files with extension %s are not allowed.",
+                extension,
+                extension,
+            )
+            return None
         command: str = utils.get_command("hist()", stack())
 
         if isinstance(data, list):  # pragma: no cover
@@ -798,13 +807,6 @@ class Tables:
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
             return None
-        if extension.lower() in BLOCKED_EXTENSIONS:
-            logger.warning(
-                "Blocked file extension %s. Files with extension %s are not allowed.",
-                extension,
-                extension,
-            )
-            return None
         increment_number = 0
         while os.path.exists(
             f"acro_artifacts/{filename}_{increment_number}{extension}"
@@ -864,6 +866,14 @@ class Tables:
             The path to the saved pie chart file.
         """
         logger.debug("pie()")
+        _, extension = os.path.splitext(filename)
+        if extension.lower() in BLOCKED_EXTENSIONS:
+            logger.warning(
+                "Blocked file extension %s. Files with extension %s are not allowed.",
+                extension,
+                extension,
+            )
+            return None
         command: str = utils.get_command("pie()", stack())
 
         # COMPUTE PRE-CATEGORY COUNTS
@@ -904,13 +914,6 @@ class Tables:
         filename, extension = os.path.splitext(filename)
         if not extension:  # pragma: no cover
             logger.info("Please provide a valid file extension")
-            return None
-        if extension.lower() in BLOCKED_EXTENSIONS:
-            logger.warning(
-                "Blocked file extension %s. Files with extension %s are not allowed.",
-                extension,
-                extension,
-            )
             return None
         increment_number = 0
 

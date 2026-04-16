@@ -19,25 +19,17 @@ from pandas import DataFrame, Series
 from . import utils
 from .checks import SDCChecks
 from .record import Records
+from .aggregationfunctions import agg_mode, agg_values_are_same
+from .aggregationfunctions import agg_negative,agg_missing
+from .aggregationfunctions import agg_p_percent, agg_nk, agg_threshold
+
+
+
 
 logger = logging.getLogger("acro")
 
 
-def mode_aggfunc(values: Series) -> Series:
-    """Calculate the mode or randomly selects one of the modes from a pandas Series.
 
-    Parameters
-    ----------
-    values : Series
-        A pandas Series for which to calculate the mode.
-
-    Returns
-    -------
-    Series
-        The mode. If multiple modes, randomly selects and returns one of the modes.
-    """
-    modes = values.mode()
-    return secrets.choice(modes)
 
 
 AGGFUNC: dict[str, str | Callable] = {
@@ -46,7 +38,7 @@ AGGFUNC: dict[str, str | Callable] = {
     "sum": "sum",
     "std": "std",
     "count": "count",
-    "mode": mode_aggfunc,
+    "mode": agg_mode,
 }
 
 AGGFUNC_TO_TYPE: dict[str, str] = {
@@ -198,16 +190,16 @@ class Tables:
         model: dict[str, Any] = {"args": args, "kwargs": kwargs}
 
         for analysis in analysis_names:
-            logger.info(f"running checks for {analysis_names[0]}")
+            logger.debug(f"running checks for {analysis_names[0]}")
             status, summary, masks, fair_dict = self.sdc_checks.run_checks_for_analysis(
                 analysis_names[0], model
             )
-            logger.info(f"status for {analysis}: {status}")
-            logger.info(f"summary for {analysis}: {summary}")
+            #logger.debug(f"status for {analysis}: {status}")
+            #logger.ddebug(f"summary for {analysis}: {summary}")
             summaries[analysis] = summary
             statuses[analysis] = status
             allmasks[analysis] = masks
-            print("TODO should check if there are duplicate keys with different values")
+            #print("TODO should check if there are duplicate keys with different values")
             fair_dicts[analysis] = fair_dict
 
         ## Debugging print out
@@ -252,7 +244,10 @@ class Tables:
         # # apply the suppression
         safe_table, outcome = apply_suppression(table, masks)
         if self.suppress:
-            table = safe_table
+            if kwargs["margins"]:
+                table= recalculate_margin(safe_table,kwargs["margins_name"])
+            else:
+                table = safe_table
             justadded = f"output_{self.results.output_id - 1}"
             self.results.add_exception(
                 justadded, "Suppression automatically applied where needed"
@@ -1253,120 +1248,6 @@ def get_aggfuncs(
     raise ValueError("aggfuncs must be: either str or list[str]")  # pragma: no cover
 
 
-def agg_negative(vals: Series) -> bool:
-    """Return whether any values are negative.
-
-    Parameters
-    ----------
-    vals : Series
-        Series to check for negative values.
-
-    Returns
-    -------
-    bool
-        Whether a negative value was found.
-    """
-    return vals.min() < 0
-
-
-def agg_missing(vals: Series) -> bool:
-    """Return whether any values are missing.
-
-    Parameters
-    ----------
-    vals : Series
-        Series to check for missing values.
-
-    Returns
-    -------
-    bool
-        Whether a missing value was found.
-    """
-    return vals.isna().sum() != 0
-
-
-def agg_p_percent(vals: Series) -> bool:
-    """Return whether the p percent rule is violated.
-
-    That is, the uncertainty (as a fraction) of the estimate that the second
-    highest respondent can make of the highest value. Assuming there are n
-    items in the series, they are first sorted in descending order and then we
-    calculate the value p = (sum - N-2 highest values)/highest value. If all
-    values are 0, returns 1.
-
-    Parameters
-    ----------
-    vals : Series
-        Series to calculate the p percent value.
-
-    Returns
-    -------
-    bool
-        whether the p percent rule is violated.
-    """
-    assert isinstance(vals, Series), "vals is not a pandas series"
-    sorted_vals = vals.sort_values(ascending=False)
-    total: float = sorted_vals.sum()
-    if total <= 0.0 or vals.size <= 1:
-        logger.debug("not calculating ppercent due to small size")
-        return bool(ZEROS_ARE_DISCLOSIVE)
-    sub_total = total - sorted_vals.iloc[0] - sorted_vals.iloc[1]
-    p_val: float = sub_total / sorted_vals.iloc[0] if total > 0 else 1
-    return p_val < SAFE_PRATIO_P
-
-
-def agg_nk(vals: Series) -> bool:
-    """Return whether the top n items account for more than k percent of the total.
-
-    Parameters
-    ----------
-    vals : Series
-        Series to calculate the nk value.
-
-    Returns
-    -------
-    bool
-        Whether the nk rule is violated.
-    """
-    total: float = vals.sum()
-    if total > 0:
-        sorted_vals = vals.sort_values(ascending=False)
-        n_total = sorted_vals.iloc[0:SAFE_NK_N].sum()
-        return (n_total / total) > SAFE_NK_K
-    return False
-
-
-def agg_threshold(vals: Series) -> bool:
-    """Return whether the number of contributors is below a threshold.
-
-    Parameters
-    ----------
-    vals : Series
-        Series to calculate the p percent value.
-
-    Returns
-    -------
-    bool
-        Whether the threshold rule is violated.
-    """
-    return vals.count() < THRESHOLD
-
-
-def agg_values_are_same(vals: Series) -> bool:
-    """Return whether all observations having the same value.
-
-    Parameters
-    ----------
-    vals : Series
-        Series to calculate if all the values are the same.
-
-    Returns
-    -------
-    bool
-        Whether the values are the same.
-    """
-    # the observations are not the same
-    return vals.nunique(dropna=True) == 1
 
 
 def _broadcast_mask_to_multiindex(
@@ -2040,7 +1921,7 @@ def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
         )
         return None
     if aggfunc is None or aggfunc == "sum" or aggfunc == "count":
-        table = recalculate_margin(table, margins_name)
+        table = recalculate_count_margins(table, margins_name)
 
     elif aggfunc == "mean":
         count_table = pd.crosstab(
@@ -2063,7 +1944,7 @@ def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
         if count_table.index.is_numeric():  # pragma: no cover
             count_table = count_table.sort_index(axis=1)
         # recalculate the margins considering the nan values
-        count_table = recalculate_margin(count_table, margins_name)
+        count_table = recalculate_count_margins(count_table, margins_name)
         # multiply the table by the count table
         table[margins_name] = 1
         table.loc[margins_name, :] = 1
@@ -2109,8 +1990,8 @@ def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
     return table
 
 
-def recalculate_margin(table: DataFrame, margins_name: str) -> DataFrame:
-    """Recalculate the margins in a table.
+def recalculate_count_margins(table: DataFrame, margins_name: str) -> DataFrame:
+    """Recalculate the margins in a table of counts.
 
     Parameters
     ----------

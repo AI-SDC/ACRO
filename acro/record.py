@@ -426,7 +426,7 @@ class Records:
         outputs: str = ""
         for _, record in self.results.items():
             outputs += str(record) + "\n"
-        print(outputs)
+        #print(outputs)
         return outputs
 
     def validate_outputs(self) -> None:
@@ -491,6 +491,7 @@ class Records:
                 "timestamp": val.timestamp,
                 "comments": val.comments,
                 "exception": val.exception,
+                "fair": val.fair
             }
             files: list[str] = val.serialize_output(path)
             for file in files:

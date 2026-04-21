@@ -211,13 +211,7 @@ class Records:
     """Stores data related to a collection of output records."""
 
     def __init__(self, blocked_extensions: list[str] | None = None) -> None:
-        """Construct a new object for storing multiple records.
-
-        Parameters
-        ----------
-        blocked_extensions : list[str] | None, default None
-            File extensions that are not allowed in custom outputs.
-        """
+        """Construct a new object for storing multiple records."""
         self.results: dict[str, Record] = {}
         self.output_id: int = 0
         self.blocked_extensions: list[str] = [

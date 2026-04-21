@@ -963,6 +963,69 @@ def test_stata_unknown(data):
     assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
 
 
+def test_stata_acro_init_with_mitigation_and_round_base(data):
+    """Init parses mitigation and round_base options."""
+    stata_config.stata_acro = "empty"
+    ret = dummy_acrohandler(
+        data,
+        command="init",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="mitigation(round) round_base(7)",
+        stata_version="17",
+    )
+    assert ret == "acro analysis session created\n"
+    assert isinstance(stata_config.stata_acro, ACRO)
+    assert stata_config.stata_acro.mitigation == "round"
+    assert stata_config.stata_acro.round_base == 7
+
+
+def test_stata_acro_enable_rounding(data):
+    """Enable_rounding stata command toggles mitigation to round."""
+    stata_config.stata_acro = "empty"
+    dummy_acrohandler(
+        data,
+        command="init",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    ret = dummy_acrohandler(
+        data,
+        "enable_rounding",
+        varlist="10",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    assert ret == "rounding toggled on for subsequent commands"
+    assert stata_config.stata_acro.mitigation == "round"
+    assert stata_config.stata_acro.round_base == 10
+
+
+def test_stata_acro_disable_rounding(data):
+    """Disable_rounding stata command clears the round mitigation."""
+    ret = dummy_acrohandler(
+        data,
+        "disable_rounding",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    assert ret == "rounding toggled off for subsequent commands"
+    assert stata_config.stata_acro.mitigation == "none"
+
+
 def test_cleanup():
     """Remove files created during tests."""
     names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]

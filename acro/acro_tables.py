@@ -122,15 +122,7 @@ class Tables:
 
     @property
     def suppress(self) -> bool:
-        """
-        Backward-compatible boolean view of the mitigation strategy.
-
-        Reading returns ``True`` iff ``mitigation == "suppress"``. Assigning
-        ``True`` sets mitigation to ``"suppress"``; assigning ``False`` clears
-        mitigation to ``"none"`` only when it was ``"suppress"`` - if rounding
-        is currently active, a ``UserWarning`` is emitted and mitigation is left
-        unchanged (to avoid silently disabling rounding).
-        """
+        """Return True iff the active mitigation strategy is 'suppress'."""
         return self._mitigation == "suppress"
 
     @suppress.setter
@@ -1616,24 +1608,7 @@ def apply_suppression(
 
 
 def round_table(table: DataFrame, base: int) -> DataFrame:
-    """
-    Round every numeric cell of a table to the nearest multiple of ``base``.
-
-    NaN values are preserved. Non-numeric columns are returned unchanged.
-
-    Parameters
-    ----------
-    table : DataFrame
-        The table to round.
-    base : int
-        The rounding base. If not a positive integer the table is returned unchanged.
-
-    Returns
-    -------
-    DataFrame
-        A copy of the table with numeric values rounded to the nearest multiple
-        of ``base``.
-    """
+    """Round numeric cells to the nearest multiple of ``base`` (NaNs preserved)."""
     logger.debug("round_table(base=%s)", base)
     if base is None or base <= 0:
         return table.copy()

@@ -14,6 +14,7 @@ from typing import Any
 import pandas as pd
 from pandas import DataFrame
 
+from .utils import is_blocked_extension
 from .version import __version__
 
 logger = logging.getLogger("acro:records")
@@ -346,13 +347,7 @@ class Records:
         bool
             False if the file extension is blocked, True otherwise.
         """
-        _, ext = os.path.splitext(filename)
-        if ext.lower() in self.blocked_extensions:
-            logger.warning(
-                "Blocked file extension %s. Files with extension %s are not allowed.",
-                filename,
-                ext,
-            )
+        if is_blocked_extension(filename, self.blocked_extensions):
             return False
         if os.path.exists(filename):
             output = Record(

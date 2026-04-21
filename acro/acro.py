@@ -80,10 +80,6 @@ class ACRO(Tables, Regression):
         acro_tables.ZEROS_ARE_DISCLOSIVE = self.config["zeros_are_disclosive"]
         # set globals for survival analysis
         acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
-        # set globals for blocked file extensions
-        acro_tables.BLOCKED_EXTENSIONS = [
-            ext.lower() for ext in self.config.get("blocked_extensions", [])
-        ]
 
     def finalise(
         self, path: str = "outputs", ext: str = "json", interactive: bool = False

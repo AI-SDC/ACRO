@@ -58,9 +58,6 @@ ZEROS_ARE_DISCLOSIVE: bool = True
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
 
-# blocked file extensions for outputs
-BLOCKED_EXTENSIONS: list[str] = []
-
 
 class Tables:
     """Creates tabular data.
@@ -580,13 +577,7 @@ class Tables:
         summary: str,
     ) -> tuple[Any, str] | None:
         """Create the survival plot according to the status of suppressing."""
-        _, extension = os.path.splitext(filename)
-        if extension.lower() in BLOCKED_EXTENSIONS:
-            logger.warning(
-                "Blocked file extension %s. Files with extension %s are not allowed.",
-                extension,
-                extension,
-            )
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
             return None
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
@@ -713,13 +704,7 @@ class Tables:
             The name of the file where the histogram is saved.
         """
         logger.debug("hist()")
-        _, extension = os.path.splitext(filename)
-        if extension.lower() in BLOCKED_EXTENSIONS:
-            logger.warning(
-                "Blocked file extension %s. Files with extension %s are not allowed.",
-                extension,
-                extension,
-            )
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
             return None
         command: str = utils.get_command("hist()", stack())
 
@@ -866,13 +851,7 @@ class Tables:
             The path to the saved pie chart file.
         """
         logger.debug("pie()")
-        _, extension = os.path.splitext(filename)
-        if extension.lower() in BLOCKED_EXTENSIONS:
-            logger.warning(
-                "Blocked file extension %s. Files with extension %s are not allowed.",
-                extension,
-                extension,
-            )
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
             return None
         command: str = utils.get_command("pie()", stack())
 

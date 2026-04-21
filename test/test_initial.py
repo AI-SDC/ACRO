@@ -1615,3 +1615,20 @@ def test_rounded_summary_reports_negative_values(data):
     acro.crosstab(data.year, data.grant_type, values=data.inc_grants, aggfunc="mean")
     output = acro.results.get_index(0)
     assert "negative values found" in output.summary
+
+
+def test_rounded_summary_reports_missing_values():
+    """_rounded_summary emits a missing-values note when the check fires."""
+    sdc_summary = {
+        "mitigation": "round",
+        "round_base": 5,
+        "threshold": 0,
+        "p-ratio": 0,
+        "nk-rule": 0,
+        "all-values-are-same": 0,
+        "negative": 0,
+        "missing": 2,
+    }
+    status, summary = acro_tables._rounded_summary(sdc_summary)
+    assert status == "review"
+    assert "missing values found" in summary

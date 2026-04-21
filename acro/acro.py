@@ -220,7 +220,8 @@ class ACRO(Tables, Regression):
         self.suppress = False
 
     def enable_rounding(self, base: int | None = None) -> None:
-        """Turn rounding on during a session.
+        """
+        Turn rounding on during a session.
 
         Parameters
         ----------

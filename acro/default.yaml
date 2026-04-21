@@ -29,4 +29,7 @@ survival_safe_threshold: 10
 
 # consider zeros to be disclosive
 zeros_are_disclosive: True
+
+# default rounding base for the 'round' mitigation strategy on tables
+safe_round_base: 5
 ...

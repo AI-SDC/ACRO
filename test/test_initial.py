@@ -1443,3 +1443,175 @@ def test_cell_id_alignment_with_margins_and_suppression(data):
                 assert pd.isna(value), (
                     f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
                 )
+
+
+def _rounded_cells(table: pd.DataFrame) -> np.ndarray:
+    """Return the non-NaN numeric values of a table as a flat numpy array."""
+    numeric = table.select_dtypes(include=["number"]).to_numpy().ravel()
+    return numeric[~np.isnan(numeric)]
+
+
+def test_crosstab_with_rounding_base_5(data):
+    """Crosstab with mitigation='round' rounds every cell to nearest 5."""
+    acro = ACRO(mitigation="round")
+    table = acro.crosstab(data.year, data.grant_type)
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    output = acro.results.get_index(0)
+    assert output.status == "review"
+    assert "rounded to nearest 5" in output.summary
+    assert output.properties["mitigation"] == "round"
+    assert output.properties["round_base"] == 5
+
+
+def test_crosstab_with_rounding_base_10(data):
+    """Crosstab with round_base=10 rounds every cell to nearest 10."""
+    acro = ACRO(mitigation="round", round_base=10)
+    table = acro.crosstab(data.year, data.grant_type)
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 10 == 0)
+    output = acro.results.get_index(0)
+    assert "rounded to nearest 10" in output.summary
+
+
+def test_pivot_table_with_rounding(data):
+    """Pivot_table with mitigation='round' rounds every cell."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.pivot_table(
+        data, index="year", columns="grant_type", values="inc_grants", aggfunc="count"
+    )
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    output = acro.results.get_index(0)
+    assert output.properties["mitigation"] == "round"
+    assert output.properties["round_base"] == 5
+
+
+def test_rounding_with_margins_raises_crosstab(data):
+    """Crosstab raises ValueError when margins=True and mitigation='round'."""
+    acro = ACRO(mitigation="round")
+    with pytest.raises(ValueError, match="margins=True is not allowed"):
+        acro.crosstab(data.year, data.grant_type, margins=True)
+
+
+def test_rounding_with_margins_raises_pivot_table(data):
+    """Pivot_table raises ValueError when margins=True and mitigation='round'."""
+    acro = ACRO(mitigation="round")
+    with pytest.raises(ValueError, match="margins=True is not allowed"):
+        acro.pivot_table(
+            data,
+            index="year",
+            columns="grant_type",
+            values="inc_grants",
+            aggfunc="count",
+            margins=True,
+        )
+
+
+def test_suppress_backward_compat():
+    """The suppress property stays in sync with mitigation."""
+    acro = ACRO(suppress=True)
+    assert acro.mitigation == "suppress"
+    assert acro.suppress is True
+    acro.suppress = False
+    assert acro.mitigation == "none"
+    assert acro.suppress is False
+    acro.suppress = True
+    assert acro.mitigation == "suppress"
+
+
+def test_enable_rounding_disable_rounding():
+    """Enable_rounding / disable_rounding toggle the mitigation field."""
+    acro = ACRO()
+    assert acro.mitigation == "none"
+    acro.enable_rounding(base=10)
+    assert acro.mitigation == "round"
+    assert acro.round_base == 10
+    acro.disable_rounding()
+    assert acro.mitigation == "none"
+
+
+def test_round_base_loaded_from_config():
+    """Round_base is picked up from the yaml config by default."""
+    acro = ACRO()
+    assert acro.round_base == 5
+
+
+def test_round_preserves_nan():
+    """Rounding a table with NaN cells preserves the NaN."""
+    table = pd.DataFrame({"a": [3.0, np.nan, 11.0], "b": [7.0, 2.0, np.nan]})
+    rounded = acro_tables.round_table(table, base=5)
+    assert pd.isna(rounded.loc[1, "a"])
+    assert pd.isna(rounded.loc[2, "b"])
+    assert rounded.loc[0, "a"] == 5
+    assert rounded.loc[2, "a"] == 10
+    assert rounded.loc[0, "b"] == 5
+    assert rounded.loc[1, "b"] == 0
+
+
+def test_round_base_rejects_non_positive():
+    """Setting round_base to zero or negative raises ValueError."""
+    acro = ACRO()
+    with pytest.raises(ValueError, match="positive integer"):
+        acro.round_base = 0
+    with pytest.raises(ValueError, match="positive integer"):
+        acro.round_base = -3
+
+
+def test_suppress_false_while_rounding_is_noop():
+    """Setting suppress=False while rounding is active warns and is a no-op."""
+    acro = ACRO(mitigation="round")
+    with pytest.warns(UserWarning, match="disable_rounding"):
+        acro.suppress = False
+    assert acro.mitigation == "round"
+    with pytest.warns(UserWarning, match="disable_rounding"):
+        acro.disable_suppression()
+    assert acro.mitigation == "round"
+
+
+def test_rounding_records_underlying_disclosure_risk(data):
+    """The sdc audit record still flags threshold violations when rounding."""
+    acro = ACRO(mitigation="round", round_base=5)
+    acro.crosstab(data.year, data.grant_type)
+    output = acro.results.get_index(0)
+    assert output.sdc["summary"]["threshold"] > 0
+    assert output.sdc["summary"]["mitigation"] == "round"
+    assert output.sdc["summary"]["round_base"] == 5
+    assert "rounded to nearest 5" in output.summary
+    assert "threshold:" in output.summary
+    values = _rounded_cells(output.output[0])
+    assert np.all(values % 5 == 0)
+
+
+def test_round_base_passed_to_constructor():
+    """ACRO(round_base=...) overrides the yaml default."""
+    acro = ACRO(round_base=7)
+    assert acro.round_base == 7
+
+
+def test_mitigation_setter_rejects_invalid_value():
+    """Setting mitigation to an unknown value raises ValueError."""
+    acro = ACRO()
+    with pytest.raises(ValueError, match="mitigation must be one of"):
+        acro.mitigation = "obfuscate"
+
+
+def test_round_table_noop_when_base_non_positive():
+    """Round_table returns an unchanged copy when base is 0 or negative."""
+    table = pd.DataFrame({"a": [3.2, 4.7], "b": [11.0, 9.0]})
+    zero = acro_tables.round_table(table, base=0)
+    assert (zero.to_numpy() == table.to_numpy()).all()
+    negative = acro_tables.round_table(table, base=-5)
+    assert (negative.to_numpy() == table.to_numpy()).all()
+
+
+def test_rounded_summary_reports_negative_values(data):
+    """The rounded summary surfaces negative and missing check results."""
+    data.loc[0:10, "inc_grants"] = -10
+    acro = ACRO(mitigation="round", round_base=5)
+    acro.crosstab(data.year, data.grant_type, values=data.inc_grants, aggfunc="mean")
+    output = acro.results.get_index(0)
+    assert "negative values found" in output.summary

@@ -27,6 +27,23 @@ The suppress option lets you control whether disclosive outputs are automaticall
 
 After initialising the ACRO object the TRE risk appetite will be displayed on the screen to show you the default parameters for the disclosure tests defined by the TRE.
 
+#### Mitigation strategies: `suppress` vs `round`
+ACRO offers two automatic disclosure-control strategies for tables (`crosstab` and `pivot_table`):
+- **`suppress`** (default behaviour of `acro.suppress = True`): individual cells that fail a disclosure check are replaced with `NaN`. Adds highly targeted uncertainty.
+- **`round`**: all cell values are rounded to the nearest `round_base` (default 5). Spreads small amounts of uncertainty across the entire table rather than concentrating it on a few cells.
+
+```python
+acro = ACRO(mitigation="round", round_base=5)
+# or on an existing session:
+acro.enable_rounding(base=5)
+# to stop:
+acro.disable_rounding()
+```
+
+Row and column totals (`margins=True`) are **not allowed** when rounding is active — rounded inner cells would not add up to rounded totals, and the mismatch is a known disclosure attack vector. Passing `margins=True` while `mitigation == "round"` raises a `ValueError`.
+
+The audit record (the `sdc` dictionary attached to each output) still contains the full, unrounded disclosure-check results, so output checkers can see the underlying risk even though the released table shows rounded values.
+
 ### Step 2: Producing your outputs with the acro prefix
 All the commands for producing analyses will automatically add the output to the acro object you created in step 1.
 

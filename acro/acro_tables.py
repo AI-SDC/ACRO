@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import secrets
+import warnings
 from collections.abc import Callable
 from inspect import stack
 from typing import Any
@@ -58,19 +59,135 @@ ZEROS_ARE_DISCLOSIVE: bool = True
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
 
+# default base for the 'round' mitigation strategy
+SAFE_ROUND_BASE: int = 5
+
+# allowed values for the mitigation field
+_ALLOWED_MITIGATIONS: frozenset[str] = frozenset({"none", "suppress", "round"})
+
 
 class Tables:
     """Creates tabular data.
 
     Attributes
     ----------
+    mitigation : str
+        The disclosure-control strategy applied to outputs, one of ``"none"``,
+        ``"suppress"``, ``"round"``.
+    round_base : int
+        The base to round to when ``mitigation == "round"``. Must be a positive integer.
     suppress : bool
-        Whether to automatically apply suppression.
+        Backward-compatible alias. ``True`` is equivalent to ``mitigation == "suppress"``.
     """
 
-    def __init__(self, suppress: bool) -> None:
-        self.suppress: bool = suppress
+    def __init__(
+        self,
+        suppress: bool = False,
+        mitigation: str | None = None,
+        round_base: int | None = None,
+    ) -> None:
+        self._mitigation: str = "none"
+        self._round_base: int = SAFE_ROUND_BASE
+        if round_base is not None:
+            self.round_base = round_base
+        if mitigation is None:
+            mitigation = "suppress" if suppress else "none"
+        self.mitigation = mitigation
         self.results: Records = Records()
+
+    @property
+    def mitigation(self) -> str:
+        """Return the current mitigation strategy."""
+        return self._mitigation
+
+    @mitigation.setter
+    def mitigation(self, value: str) -> None:
+        if value not in _ALLOWED_MITIGATIONS:
+            msg = (
+                f"mitigation must be one of {sorted(_ALLOWED_MITIGATIONS)}, "
+                f"got {value!r}"
+            )
+            raise ValueError(msg)
+        self._mitigation = value
+
+    @property
+    def round_base(self) -> int:
+        """Return the base used by the ``round`` mitigation strategy."""
+        return self._round_base
+
+    @round_base.setter
+    def round_base(self, value: int) -> None:
+        if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+            msg = "round_base must be a positive integer"
+            raise ValueError(msg)
+        self._round_base = value
+
+    @property
+    def suppress(self) -> bool:
+        """Backward-compatible boolean view of the mitigation strategy.
+
+        Reading returns ``True`` iff ``mitigation == "suppress"``. Assigning
+        ``True`` sets mitigation to ``"suppress"``; assigning ``False`` clears
+        mitigation to ``"none"`` only when it was ``"suppress"`` - if rounding
+        is currently active, a ``UserWarning`` is emitted and mitigation is left
+        unchanged (to avoid silently disabling rounding).
+        """
+        return self._mitigation == "suppress"
+
+    @suppress.setter
+    def suppress(self, value: bool) -> None:
+        if value:
+            self._mitigation = "suppress"
+        elif self._mitigation == "suppress":
+            self._mitigation = "none"
+        elif self._mitigation == "round":
+            warnings.warn(
+                "Setting suppress=False had no effect because mitigation is "
+                "currently 'round'. Use disable_rounding() to turn off rounding.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+    def _record_table_output(
+        self,
+        method: str,
+        status: str,
+        sdc: dict,
+        command: str,
+        summary: str,
+        outcome: DataFrame,
+        table: DataFrame,
+        comments: list[str],
+    ) -> None:
+        """Record a table output and attach any mitigation exception note."""
+        properties: dict[str, Any] = {
+            "method": method,
+            "mitigation": self._mitigation,
+        }
+        if self._mitigation == "round":
+            properties["round_base"] = self._round_base
+        self.results.add(
+            status=status,
+            output_type="table",
+            properties=properties,
+            sdc=sdc,
+            command=command,
+            summary=summary,
+            outcome=outcome,
+            output=[table],
+            comments=comments,
+        )
+        if self._mitigation == "suppress":
+            just_added = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                just_added, "Suppression automatically applied where needed"
+            )
+        elif self._mitigation == "round":
+            just_added = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                just_added,
+                f"Rounding automatically applied to nearest {self._round_base}",
+            )
 
     def crosstab(
         self,
@@ -140,6 +257,12 @@ class Tables:
                     "you must also specify a single values column "
                     "to aggregate over."
                 )
+        if margins and self._mitigation == "round":
+            raise ValueError(
+                "margins=True is not allowed when mitigation='round'; "
+                "rounded totals would not add up and constitute a disclosure "
+                "attack vector"
+            )
 
         # convert [list of] string to [list of] function
         agg_func = get_aggfuncs(aggfunc)
@@ -175,12 +298,18 @@ class Tables:
             normalize,
         )
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress, table)
+        sdc: dict = get_table_sdc(
+            masks,
+            self.suppress,
+            table,
+            mitigation=self._mitigation,
+            round_base=self._round_base,
+        )
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
         safe_table, outcome = apply_suppression(table, masks)
-        if self.suppress:
+        if self._mitigation == "suppress":
             table = safe_table
             if margins:
                 if show_suppressed:
@@ -212,26 +341,26 @@ class Tables:
                         colnames=colnames,
                         normalize=normalize,
                     )
-            sdc = get_table_sdc(masks, self.suppress, table)
+            sdc = get_table_sdc(
+                masks,
+                self.suppress,
+                table,
+                mitigation=self._mitigation,
+                round_base=self._round_base,
+            )
+        elif self._mitigation == "round":
+            table = round_table(table, self._round_base)
 
-        # record output
-
-        self.results.add(
+        self._record_table_output(
+            method="crosstab",
             status=status,
-            output_type="table",
-            properties={"method": "crosstab"},
             sdc=sdc,
             command=command,
             summary=summary,
             outcome=outcome,
-            output=[table],
+            table=table,
             comments=comments,
         )
-        if self.suppress:
-            justadded = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                justadded, "Suppression automatically applied where needed"
-            )
         return table
 
     def pivot_table(
@@ -301,6 +430,13 @@ class Tables:
         """
         logger.debug("pivot_table()")
         command: str = utils.get_command("pivot_table()", stack())
+
+        if margins and self._mitigation == "round":
+            raise ValueError(
+                "margins=True is not allowed when mitigation='round'; "
+                "rounded totals would not add up and constitute a disclosure "
+                "attack vector"
+            )
 
         # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
         resolved_aggfunc: (
@@ -395,12 +531,18 @@ class Tables:
             masks[name] = mask
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress, table)
+        sdc: dict = get_table_sdc(
+            masks,
+            self.suppress,
+            table,
+            mitigation=self._mitigation,
+            round_base=self._round_base,
+        )
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
         safe_table, outcome = apply_suppression(table, masks)
-        if self.suppress:
+        if self._mitigation == "suppress":
             table = safe_table
             if margins:
                 logger.info(
@@ -422,24 +564,25 @@ class Tables:
                     observed=observed,
                     sort=sort,
                 )
-            sdc = get_table_sdc(masks, self.suppress, table)
-        # record output
-        self.results.add(
+            sdc = get_table_sdc(
+                masks,
+                self.suppress,
+                table,
+                mitigation=self._mitigation,
+                round_base=self._round_base,
+            )
+        elif self._mitigation == "round":
+            table = round_table(table, self._round_base)
+        self._record_table_output(
+            method="pivot_table",
             status=status,
-            output_type="table",
-            properties={"method": "pivot_table"},
             sdc=sdc,
             command=command,
             summary=summary,
             outcome=outcome,
-            output=[table],
+            table=table,
             comments=comments,
         )
-        if self.suppress:
-            justadded = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                justadded, "Suppression automatically applied where needed"
-            )
         return table
 
     def surv_func(
@@ -1473,8 +1616,41 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
+def round_table(table: DataFrame, base: int) -> DataFrame:
+    """Round every numeric cell of a table to the nearest multiple of ``base``.
+
+    NaN values are preserved. Non-numeric columns are returned unchanged.
+
+    Parameters
+    ----------
+    table : DataFrame
+        The table to round.
+    base : int
+        The rounding base. If not a positive integer the table is returned unchanged.
+
+    Returns
+    -------
+    DataFrame
+        A copy of the table with numeric values rounded to the nearest multiple
+        of ``base``.
+    """
+    logger.debug("round_table(base=%s)", base)
+    if base is None or base <= 0:
+        return table.copy()
+    numeric = table.select_dtypes(include=["number"])
+    rounded = (numeric / base).round() * base
+    result = table.copy()
+    result[numeric.columns] = rounded
+    return result
+
+
 def get_table_sdc(
-    masks: dict[str, DataFrame], suppress: bool, table: DataFrame | None = None
+    masks: dict[str, DataFrame],
+    suppress: bool,
+    table: DataFrame | None = None,
+    *,
+    mitigation: str | None = None,
+    round_base: int = 0,
 ) -> dict[str, Any]:
     """Return the SDC dictionary using the suppression masks.
 
@@ -1483,14 +1659,29 @@ def get_table_sdc(
     masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
     suppress : bool
-        Whether suppression has been applied.
+        Whether suppression has been applied (legacy flag, kept for
+        back-compat). When ``mitigation`` is provided it takes precedence.
     table : DataFrame, optional
         The table to align masks to.
+    mitigation : str, optional
+        The mitigation strategy applied to the output, one of ``"none"``,
+        ``"suppress"``, ``"round"``. If ``None``, derived from ``suppress``.
+    round_base : int, default 0
+        The base used when ``mitigation == "round"``; ignored otherwise.
     """
+    if mitigation is None:
+        mitigation = "suppress" if suppress else "none"
     if table is not None:
         masks = align_masks(table, masks)
     # summary of cells to be suppressed
-    sdc: dict[str, Any] = {"summary": {"suppressed": suppress}, "cells": {}}
+    sdc: dict[str, Any] = {
+        "summary": {
+            "suppressed": mitigation == "suppress",
+            "mitigation": mitigation,
+            "round_base": round_base if mitigation == "round" else 0,
+        },
+        "cells": {},
+    }
     sdc["summary"]["negative"] = 0
     sdc["summary"]["missing"] = 0
     sdc["summary"]["threshold"] = 0
@@ -1514,6 +1705,21 @@ def get_table_sdc(
     return sdc
 
 
+def _rounded_summary(sdc_summary: dict[str, Any]) -> tuple[str, str]:
+    """Build the status/summary for a rounded output."""
+    status = "review"
+    summary = f"rounded to nearest {sdc_summary.get('round_base', 0)}; "
+    for name in ("threshold", "p-ratio", "nk-rule", "all-values-are-same"):
+        count = sdc_summary.get(name, 0)
+        if count > 0:
+            summary += f"{name}: {count} cells rounded; "
+    if sdc_summary.get("negative", 0) > 0:
+        summary += "negative values found; "
+    if sdc_summary.get("missing", 0) > 0:
+        summary += "missing values found; "
+    return status, f"{status}; {summary}"
+
+
 def get_summary(sdc: dict[str, Any]) -> tuple[str, str]:
     """Return the status and summary of the suppression masks.
 
@@ -1532,6 +1738,13 @@ def get_summary(sdc: dict[str, Any]) -> tuple[str, str]:
     status: str = "pass"
     summary: str = ""
     sdc_summary = sdc["summary"]
+    mitigation: str = sdc_summary.get(
+        "mitigation", "suppress" if sdc_summary.get("suppressed") else "none"
+    )
+    if mitigation == "round":
+        status, summary = _rounded_summary(sdc_summary)
+        logger.info("get_summary(): %s", summary)
+        return status, summary
     sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
     if sdc_summary["negative"] > 0:
         summary += "negative values found"

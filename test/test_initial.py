@@ -1220,7 +1220,7 @@ def test_histogram_explicit_bins_no_leak():
 
 
 def test_histogram_nan_handling():
-    """NaNs are dropped before SDC math; all-NaN column returns None."""
+    """Drop NaNs before SDC math; all-NaN column returns None."""
     shutil.rmtree("acro_artifacts", ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     np.random.seed(5)
@@ -1230,6 +1230,24 @@ def test_histogram_nan_handling():
     _ = a.hist(df, "val", bins=5)
     output = a.results.get_index(0)
     assert sum(output.sdc["counts"]) == 15
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+
+
+def test_histogram_by_val_unnamed_series():
+    """Accept an unnamed pd.Series as by_val without breaking by_val_detail keys."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(6)
+    wages = np.concatenate(
+        [np.random.uniform(5.0, 10.0, size=30), np.random.uniform(4.0, 10.0, size=30)]
+    )
+    df = pd.DataFrame({"wage": wages})
+    grouper = pd.Series(["M"] * 30 + ["F"] * 30)  # no .name set
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "wage", by_val=grouper, bins=6)
+    output = a.results.get_index(0)
+    assert "by_val" in output.sdc["by_val_detail"]
+    assert set(output.sdc["by_val_detail"]["by_val"]) == {"M", "F"}
     shutil.rmtree("acro_artifacts", ignore_errors=True)
 
 

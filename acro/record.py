@@ -516,11 +516,11 @@ class Records:
             summary: list[str] = []
             command: list[str] = []
             for output_id, output in self.results.items():
-                if output.output_type == "custom":
-                    continue  # avoid writing custom outputs
                 sheet.append(output_id)
                 command.append(output.command)
                 summary.append(output.summary)
+                if output.output_type == "custom":
+                    output.serialize_output(path)
             tmp_df = pd.DataFrame(
                 {"Sheet": sheet, "Command": command, "Summary": summary}
             )
@@ -528,7 +528,7 @@ class Records:
             # individual sheets
             for output_id, output in self.results.items():
                 if output.output_type == "custom":
-                    continue  # avoid writing custom outputs
+                    continue  # custom files are copied and listed in the description sheet
                 # command and summary
                 start = 0
                 tmp_df = pd.DataFrame(

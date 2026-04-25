@@ -352,7 +352,7 @@ def test_finalise_excel(data, acro):
     """Finalise excel test."""
     _ = acro.crosstab(data.year, data.grant_type)
     acro.add_exception("output_0", "Let me have it")
-    with open("foo.txt", "w") as file:
+    with open("foo.txt", "w", encoding="utf-8") as file:
         file.write("Your text goes here")
     acro.custom_output("foo.txt")
 
@@ -360,10 +360,16 @@ def test_finalise_excel(data, acro):
     output_0 = results.get_index(0)
     filename = os.path.normpath(f"{PATH}/results.xlsx")
     load_data = pd.read_excel(filename, sheet_name=output_0.uid)
+    description = pd.read_excel(filename, sheet_name="description")
     correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
     assert load_data.iloc[0, 0] == "Command"
     assert load_data.iloc[0, 1] == correct_cell
+    assert os.path.exists(os.path.normpath(f"{PATH}/foo.txt"))
+    assert "output_1" in description["Sheet"].values
+    assert "custom" in description["Command"].values
+    assert "review" in description["Summary"].values
     shutil.rmtree(PATH)
+    os.remove("foo.txt")
 
 
 def test_output_removal(data, acro, monkeypatch):

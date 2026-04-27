@@ -5,6 +5,7 @@ Jim Smith 2023 @james.smith@uwe.ac.uk
 MIT licenses apply.
 """
 
+import logging
 import os
 import re
 from typing import Any
@@ -14,7 +15,9 @@ from statsmodels.iolib import summary as sm_iolib_summary
 
 from acro import ACRO, acro_regression, add_constant, stata_config
 from acro.acro_tables import AGGFUNC
-from acro.utils import prettify_table_string
+from acro.utils import ALLOWED_MITIGATIONS, prettify_table_string
+
+logger = logging.getLogger("acro")
 
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
@@ -345,11 +348,28 @@ def _parse_init_options(options: str) -> dict[str, Any]:
     found, mitigation = find_brace_word("mitigation", options)
     if found:
         assert len(mitigation) == 1, "can only supply one mitigation value"
-        args["mitigation"] = mitigation[0]
+        proposed = mitigation[0]
+        if proposed in ALLOWED_MITIGATIONS:
+            args["mitigation"] = proposed
+        else:
+            logger.info(
+                "Sorry, I don't recognise the mitigation %r. "
+                "It should be one of %s. Proceeding with no mitigation.",
+                proposed,
+                sorted(ALLOWED_MITIGATIONS),
+            )
+            args["mitigation"] = "none"
     found, round_base = find_brace_word("round_base", options)
     if found:
         assert len(round_base) == 1, "can only supply one round_base value"
-        args["round_base"] = int(round_base[0])
+        try:
+            args["round_base"] = int(round_base[0])
+        except (TypeError, ValueError):
+            logger.info(
+                "round_base value %r is not an integer; "
+                "falling back to the default round_base from the config.",
+                round_base[0],
+            )
     return args
 
 
@@ -370,7 +390,15 @@ def run_session_command(command: str, varlist: list[str], options: str) -> str:
     elif command == "enable_rounding":
         base_arg: int | None = None
         if varlist:
-            base_arg = int(varlist[0])
+            try:
+                base_arg = int(varlist[0])
+            except (TypeError, ValueError):
+                logger.info(
+                    "rounding base %r is not an integer; "
+                    "turning rounding on with the default base.",
+                    varlist[0],
+                )
+                base_arg = None
         stata_config.stata_acro.enable_rounding(base_arg)
         outcome = "rounding toggled on for subsequent commands"
     elif command == "disable_rounding":

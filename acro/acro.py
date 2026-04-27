@@ -79,6 +79,11 @@ class ACRO(Tables, Regression):
         """
         Tables.__init__(self, suppress=suppress, mitigation=mitigation)
         Regression.__init__(self, config)
+        # Tables and Regression each construct their own ``self.results`` so
+        # they can be used standalone; in the combined ACRO object we want a
+        # single shared Records instance regardless of init order, so make
+        # that explicit here.
+        self.results: Records = Records()
         self.config: dict[str, Any] = {}
         path: pathlib.Path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)

@@ -9,6 +9,11 @@ import pandas as pd
 
 logger = logging.getLogger("acro")
 
+# Allowed values for the disclosure-control ``mitigation`` field.
+# Lives here so both :mod:`acro.acro_tables` and :mod:`acro.acro_stata_parser`
+# can share a single source of truth.
+ALLOWED_MITIGATIONS: frozenset[str] = frozenset({"none", "suppress", "round"})
+
 
 def get_command(default: str, stack_list: list[FrameInfo]) -> str:
     """Return the calling source line as a string.

@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import os
 import secrets
-import warnings
 from collections.abc import Callable
 from inspect import stack
 from typing import Any
@@ -18,6 +17,7 @@ from pandas import DataFrame, Series
 
 from . import utils
 from .record import Records
+from .utils import ALLOWED_MITIGATIONS
 
 logger = logging.getLogger("acro")
 
@@ -62,8 +62,8 @@ SURVIVAL_THRESHOLD: int = 10
 # default base for the 'round' mitigation strategy
 SAFE_ROUND_BASE: int = 5
 
-# allowed values for the mitigation field
-_ALLOWED_MITIGATIONS: frozenset[str] = frozenset({"none", "suppress", "round"})
+# Re-export so existing callers that imported from this module keep working.
+_ALLOWED_MITIGATIONS = ALLOWED_MITIGATIONS
 
 
 class Tables:
@@ -100,12 +100,17 @@ class Tables:
 
     @mitigation.setter
     def mitigation(self, value: str) -> None:
-        if value not in _ALLOWED_MITIGATIONS:
-            msg = (
-                f"mitigation must be one of {sorted(_ALLOWED_MITIGATIONS)}, "
-                f"got {value!r}"
+        if value not in ALLOWED_MITIGATIONS:
+            logger.info(
+                "Sorry, I don't recognise the mitigation %r. "
+                "It should be one of %s. You can turn them on later using "
+                "enable_suppression() or enable_rounding(). "
+                "For now I am proceeding with no mitigation.",
+                value,
+                sorted(ALLOWED_MITIGATIONS),
             )
-            raise ValueError(msg)
+            self._mitigation = "none"
+            return
         self._mitigation = value
 
     @property
@@ -116,8 +121,14 @@ class Tables:
     @round_base.setter
     def round_base(self, value: int) -> None:
         if not isinstance(value, int) or isinstance(value, bool) or value < 1:
-            msg = "round_base must be a positive integer"
-            raise ValueError(msg)
+            logger.info(
+                "round_base must be a positive integer, got %r. "
+                "Falling back to the default value of %d.",
+                value,
+                SAFE_ROUND_BASE,
+            )
+            self._round_base = SAFE_ROUND_BASE
+            return
         self._round_base = value
 
     @property
@@ -132,11 +143,9 @@ class Tables:
         elif self._mitigation == "suppress":
             self._mitigation = "none"
         elif self._mitigation == "round":
-            warnings.warn(
+            logger.info(
                 "Setting suppress=False had no effect because mitigation is "
-                "currently 'round'. Use disable_rounding() to turn off rounding.",
-                UserWarning,
-                stacklevel=2,
+                "currently 'round'. Use disable_rounding() to turn off rounding."
             )
 
     def _record_table_output(
@@ -248,12 +257,12 @@ class Tables:
                     "you must also specify a single values column "
                     "to aggregate over."
                 )
-        if margins and self._mitigation == "round":
-            raise ValueError(
-                "margins=True is not allowed when mitigation='round'; "
-                "rounded totals would not add up and constitute a disclosure "
-                "attack vector"
-            )
+        # When rounding, compute the table without margins first and then
+        # derive margins from the rounded cells (so the inner cells add up
+        # to the displayed totals). See append_rounded_margins() / Jim
+        # Smith's review on PR #381.
+        recompute_margins = margins and self._mitigation == "round"
+        pandas_margins = False if recompute_margins else margins
 
         # convert [list of] string to [list of] function
         agg_func = get_aggfuncs(aggfunc)
@@ -266,7 +275,7 @@ class Tables:
             rownames,
             colnames,
             agg_func,
-            margins,
+            pandas_margins,
             margins_name,
             dropna,
             normalize,
@@ -341,6 +350,10 @@ class Tables:
             )
         elif self._mitigation == "round":
             table = round_table(table, self._round_base)
+            if recompute_margins:
+                table = append_rounded_margins(
+                    table, agg_func, margins_name, self._round_base
+                )
 
         self._record_table_output(
             method="crosstab",
@@ -422,12 +435,11 @@ class Tables:
         logger.debug("pivot_table()")
         command: str = utils.get_command("pivot_table()", stack())
 
-        if margins and self._mitigation == "round":
-            raise ValueError(
-                "margins=True is not allowed when mitigation='round'; "
-                "rounded totals would not add up and constitute a disclosure "
-                "attack vector"
-            )
+        # When rounding, compute the table without pandas-managed margins
+        # and re-derive them from the rounded cells; see append_rounded_margins()
+        # / Jim Smith's review on PR #381.
+        recompute_margins = margins and self._mitigation == "round"
+        pandas_margins = False if recompute_margins else margins
 
         # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
         resolved_aggfunc: (
@@ -445,7 +457,7 @@ class Tables:
             columns,
             resolved_aggfunc,
             fill_value,
-            margins,
+            pandas_margins,
             dropna,
             margins_name,
             observed,
@@ -564,6 +576,10 @@ class Tables:
             )
         elif self._mitigation == "round":
             table = round_table(table, self._round_base)
+            if recompute_margins:
+                table = append_rounded_margins(
+                    table, resolved_aggfunc, margins_name, self._round_base
+                )
         self._record_table_output(
             method="pivot_table",
             status=status,
@@ -1617,6 +1633,90 @@ def round_table(table: DataFrame, base: int) -> DataFrame:
     result = table.copy()
     result[numeric.columns] = rounded
     return result
+
+
+def _aggfunc_name(aggfunc: Any) -> str | None:
+    """Return a string name for an aggfunc value, or None if not derivable."""
+    if isinstance(aggfunc, str):
+        return aggfunc
+    if callable(aggfunc) and hasattr(aggfunc, "__name__"):
+        return aggfunc.__name__
+    return None
+
+
+def append_rounded_margins(
+    rounded_table: DataFrame,
+    aggfunc: Any,
+    margins_name: str,
+    base: int,
+) -> DataFrame:
+    """Append row/column/grand-total margins to a pre-rounded table.
+
+    Following Jim Smith's review on PR #381: once cells have been rounded,
+    margins are computed by aggregating the rounded cells (so rounded inner
+    cells add up to the displayed totals) and then rounded again to ``base``
+    so the whole output respects the rounding base.
+
+    Conceptually this is the same as the "synthetic-data" approach Jim
+    described - exploding the rounded table into one record per cell and
+    re-running ``pd.crosstab(margins=True)`` - but implemented directly on
+    the rounded DataFrame to keep it simple. We currently support single-
+    level row and column indices; multi-level or list-of-aggfunc tables fall
+    back to returning the table without margins.
+    """
+    if isinstance(aggfunc, list):
+        logger.info(
+            "Cannot add margins to a rounded table when multiple aggregation "
+            "functions were requested; returning the table without margins."
+        )
+        return rounded_table
+    if rounded_table.index.nlevels > 1 or rounded_table.columns.nlevels > 1:
+        logger.info(
+            "Margin recomputation for hierarchical row/column indexes is not "
+            "yet supported under rounding; returning the table without margins."
+        )
+        return rounded_table
+
+    name = _aggfunc_name(aggfunc)
+    if aggfunc is None or name in (None, "count", "sum", "mode_aggfunc"):
+        agg_method = "sum"
+    elif name == "mean":
+        agg_method = "mean"
+    elif name == "median":
+        agg_method = "median"
+    else:
+        logger.info(
+            "Margin recomputation for aggfunc %r is not supported under "
+            "rounding; returning the table without margins.",
+            name,
+        )
+        return rounded_table
+
+    numeric = rounded_table.select_dtypes(include=["number"])
+    if agg_method == "sum":
+        row_margin = numeric.sum(axis=1, skipna=True)
+        col_margin = numeric.sum(axis=0, skipna=True)
+        grand = float(numeric.to_numpy(dtype=float, na_value=0.0).sum())
+    elif agg_method == "mean":
+        row_margin = numeric.mean(axis=1, skipna=True)
+        col_margin = numeric.mean(axis=0, skipna=True)
+        grand = float(numeric.stack().mean())
+    else:  # median
+        row_margin = numeric.median(axis=1, skipna=True)
+        col_margin = numeric.median(axis=0, skipna=True)
+        grand = float(numeric.stack().median())
+
+    if base and base > 0:
+        row_margin = (row_margin / base).round() * base
+        col_margin = (col_margin / base).round() * base
+        grand = round(grand / base) * base
+
+    table = rounded_table.copy()
+    table[margins_name] = row_margin
+    new_row = col_margin.reindex(table.columns)
+    new_row[margins_name] = grand
+    table.loc[margins_name] = new_row
+    return table
 
 
 def get_table_sdc(

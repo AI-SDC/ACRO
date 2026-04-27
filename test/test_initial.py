@@ -1,6 +1,7 @@
 """Unit tests."""
 
 import json
+import logging
 import os
 import shutil
 from unittest.mock import patch
@@ -1490,25 +1491,41 @@ def test_pivot_table_with_rounding(data):
     assert output.properties["round_base"] == 5
 
 
-def test_rounding_with_margins_raises_crosstab(data):
-    """Crosstab raises ValueError when margins=True and mitigation='round'."""
-    acro = ACRO(mitigation="round")
-    with pytest.raises(ValueError, match="margins=True is not allowed"):
-        acro.crosstab(data.year, data.grant_type, margins=True)
+def test_rounding_with_margins_crosstab_recomputes_totals(data):
+    """Crosstab with margins=True under rounding recomputes margins from rounded cells."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.crosstab(data.year, data.grant_type, margins=True)
+    # margins row/column are present and named "All"
+    assert "All" in table.columns
+    assert "All" in table.index
+    # every cell (including margins) is a multiple of the round base
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    # the recomputed row margin equals the sum of the rounded inner cells
+    inner_cols = [c for c in table.columns if c != "All"]
+    inner_rows = [r for r in table.index if r != "All"]
+    for row in inner_rows:
+        expected = (table.loc[row, inner_cols].sum() / 5).round() * 5
+        assert table.loc[row, "All"] == expected
 
 
-def test_rounding_with_margins_raises_pivot_table(data):
-    """Pivot_table raises ValueError when margins=True and mitigation='round'."""
-    acro = ACRO(mitigation="round")
-    with pytest.raises(ValueError, match="margins=True is not allowed"):
-        acro.pivot_table(
-            data,
-            index="year",
-            columns="grant_type",
-            values="inc_grants",
-            aggfunc="count",
-            margins=True,
-        )
+def test_rounding_with_margins_pivot_table_recomputes_totals(data):
+    """Pivot_table with margins=True under rounding recomputes margins from rounded cells."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.pivot_table(
+        data,
+        index="year",
+        columns="grant_type",
+        values="inc_grants",
+        aggfunc="count",
+        margins=True,
+    )
+    assert "All" in table.columns
+    assert "All" in table.index
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
 
 
 def test_suppress_backward_compat():
@@ -1552,24 +1569,33 @@ def test_round_preserves_nan():
     assert rounded.loc[1, "b"] == 0
 
 
-def test_round_base_rejects_non_positive():
-    """Setting round_base to zero or negative raises ValueError."""
+def test_round_base_rejects_non_positive(caplog):
+    """Setting round_base to zero or negative logs a message and falls back to default."""
     acro = ACRO()
-    with pytest.raises(ValueError, match="positive integer"):
+    default = acro.round_base
+    with caplog.at_level(logging.INFO, logger="acro"):
         acro.round_base = 0
-    with pytest.raises(ValueError, match="positive integer"):
+    assert acro.round_base == default
+    assert "positive integer" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="acro"):
         acro.round_base = -3
+    assert acro.round_base == default
+    assert "positive integer" in caplog.text
 
 
-def test_suppress_false_while_rounding_is_noop():
-    """Setting suppress=False while rounding is active warns and is a no-op."""
+def test_suppress_false_while_rounding_is_noop(caplog):
+    """Setting suppress=False while rounding is active logs a message and is a no-op."""
     acro = ACRO(mitigation="round")
-    with pytest.warns(UserWarning, match="disable_rounding"):
+    with caplog.at_level(logging.INFO, logger="acro"):
         acro.suppress = False
     assert acro.mitigation == "round"
-    with pytest.warns(UserWarning, match="disable_rounding"):
+    assert "disable_rounding" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="acro"):
         acro.disable_suppression()
     assert acro.mitigation == "round"
+    assert "disable_rounding" in caplog.text
 
 
 def test_rounding_records_underlying_disclosure_risk(data):
@@ -1592,11 +1618,13 @@ def test_round_base_passed_to_constructor():
     assert acro.round_base == 7
 
 
-def test_mitigation_setter_rejects_invalid_value():
-    """Setting mitigation to an unknown value raises ValueError."""
+def test_mitigation_setter_rejects_invalid_value(caplog):
+    """Setting mitigation to an unknown value logs a message and falls back to 'none'."""
     acro = ACRO()
-    with pytest.raises(ValueError, match="mitigation must be one of"):
+    with caplog.at_level(logging.INFO, logger="acro"):
         acro.mitigation = "obfuscate"
+    assert acro.mitigation == "none"
+    assert "obfuscate" in caplog.text
 
 
 def test_round_table_noop_when_base_non_positive():

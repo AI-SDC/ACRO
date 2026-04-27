@@ -1,6 +1,7 @@
 """Unit tests for the stata interface."""
 
 import copy
+import logging
 import os
 import shutil
 
@@ -1024,6 +1025,76 @@ def test_stata_acro_disable_rounding(data):
     )
     assert ret == "rounding toggled off for subsequent commands"
     assert stata_config.stata_acro.mitigation == "none"
+
+
+def test_stata_acro_init_invalid_mitigation(data, caplog):
+    """Init with an unrecognised mitigation falls back to 'none' with a log message."""
+    stata_config.stata_acro = "empty"
+    with caplog.at_level(logging.INFO, logger="acro"):
+        ret = dummy_acrohandler(
+            data,
+            command="init",
+            varlist="",
+            exclusion="",
+            exp="",
+            weights="",
+            options="mitigation(obfuscate)",
+            stata_version="17",
+        )
+    assert ret == "acro analysis session created\n"
+    assert stata_config.stata_acro.mitigation == "none"
+    assert "obfuscate" in caplog.text
+
+
+def test_stata_acro_init_invalid_round_base(data, caplog):
+    """Init with a non-integer round_base logs a message and uses the default."""
+    stata_config.stata_acro = "empty"
+    with caplog.at_level(logging.INFO, logger="acro"):
+        ret = dummy_acrohandler(
+            data,
+            command="init",
+            varlist="",
+            exclusion="",
+            exp="",
+            weights="",
+            options="mitigation(round) round_base(notanumber)",
+            stata_version="17",
+        )
+    assert ret == "acro analysis session created\n"
+    assert stata_config.stata_acro.mitigation == "round"
+    assert stata_config.stata_acro.round_base == 5
+    assert "notanumber" in caplog.text
+
+
+def test_stata_acro_enable_rounding_invalid_base(data, caplog):
+    """Enable_rounding with a non-integer base logs a message and uses the default."""
+    stata_config.stata_acro = "empty"
+    dummy_acrohandler(
+        data,
+        command="init",
+        varlist="",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    default_base = stata_config.stata_acro.round_base
+    with caplog.at_level(logging.INFO, logger="acro"):
+        ret = dummy_acrohandler(
+            data,
+            "enable_rounding",
+            varlist="banana",
+            exclusion="",
+            exp="",
+            weights="",
+            options="",
+            stata_version="17",
+        )
+    assert ret == "rounding toggled on for subsequent commands"
+    assert stata_config.stata_acro.mitigation == "round"
+    assert stata_config.stata_acro.round_base == default_base
+    assert "banana" in caplog.text
 
 
 def test_cleanup():

@@ -1660,3 +1660,79 @@ def test_rounded_summary_reports_missing_values():
     status, summary = acro_tables._rounded_summary(sdc_summary)
     assert status == "review"
     assert "missing values found" in summary
+
+
+def _simple_rounded_table() -> pd.DataFrame:
+    """Return a small pre-rounded numeric table for margin tests."""
+    return pd.DataFrame(
+        {"a": [5.0, 10.0, 15.0], "b": [10.0, 5.0, 20.0]},
+        index=["r1", "r2", "r3"],
+    )
+
+
+def test_aggfunc_name_extracts_callable_name():
+    """_aggfunc_name returns __name__ for callables and None for opaque values."""
+    assert acro_tables._aggfunc_name("mean") == "mean"
+    assert acro_tables._aggfunc_name(acro_tables.mode_aggfunc) == "mode_aggfunc"
+    assert acro_tables._aggfunc_name(object()) is None
+
+
+def test_append_rounded_margins_list_aggfunc_skips_margins(caplog):
+    """A list of aggfuncs falls back to no margins with a log message."""
+    table = _simple_rounded_table()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, ["sum", "mean"], "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "multiple aggregation" in caplog.text
+
+
+def test_append_rounded_margins_multilevel_index_skips_margins(caplog):
+    """A hierarchical row index falls back to no margins."""
+    idx = pd.MultiIndex.from_tuples([("a", 1), ("a", 2), ("b", 1)])
+    table = pd.DataFrame({"x": [5.0, 10.0, 15.0], "y": [10.0, 5.0, 20.0]}, index=idx)
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, None, "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "hierarchical" in caplog.text
+
+
+def test_append_rounded_margins_multilevel_columns_skips_margins(caplog):
+    """A hierarchical column index falls back to no margins."""
+    cols = pd.MultiIndex.from_tuples([("g", "x"), ("g", "y")])
+    table = pd.DataFrame([[5.0, 10.0], [10.0, 5.0]], columns=cols)
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, None, "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "hierarchical" in caplog.text
+
+
+def test_append_rounded_margins_unsupported_aggfunc_skips_margins(caplog):
+    """An aggfunc we don't know how to recompute margins for is skipped."""
+    table = _simple_rounded_table()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, "std", "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "'std'" in caplog.text
+
+
+def test_append_rounded_margins_mean_uses_mean_of_rounded_cells():
+    """Mean aggfunc derives margins from the mean of rounded cells, then rounds them."""
+    table = _simple_rounded_table()
+    result = acro_tables.append_rounded_margins(table, "mean", "All", 5)
+    # mean of row r1 = mean(5, 10) = 7.5; pandas Series.round uses banker's
+    # rounding so 7.5/5=1.5 -> 2 -> 10.
+    assert result.loc["r1", "All"] == 10
+    # mean of column a = mean(5, 10, 15) = 10
+    assert result.loc["All", "a"] == 10
+    values = _rounded_cells(result)
+    assert np.all(values % 5 == 0)
+
+
+def test_append_rounded_margins_median_uses_median_of_rounded_cells():
+    """Median aggfunc derives margins from the median of rounded cells."""
+    table = _simple_rounded_table()
+    result = acro_tables.append_rounded_margins(table, "median", "All", 5)
+    # median of column a = median(5, 10, 15) = 10
+    assert result.loc["All", "a"] == 10
+    values = _rounded_cells(result)
+    assert np.all(values % 5 == 0)

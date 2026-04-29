@@ -1693,18 +1693,9 @@ def append_rounded_margins(
         return rounded_table
 
     numeric = rounded_table.select_dtypes(include=["number"])
-    if agg_method == "sum":
-        row_margin = numeric.sum(axis=1, skipna=True)
-        col_margin = numeric.sum(axis=0, skipna=True)
-        grand = float(numeric.to_numpy(dtype=float, na_value=0.0).sum())
-    elif agg_method == "mean":
-        row_margin = numeric.mean(axis=1, skipna=True)
-        col_margin = numeric.mean(axis=0, skipna=True)
-        grand = float(numeric.stack().mean())
-    else:  # median
-        row_margin = numeric.median(axis=1, skipna=True)
-        col_margin = numeric.median(axis=0, skipna=True)
-        grand = float(numeric.stack().median())
+    row_margin = getattr(numeric, agg_method)(axis=1, skipna=True)
+    col_margin = getattr(numeric, agg_method)(axis=0, skipna=True)
+    grand = float(getattr(numeric.stack(), agg_method)())
 
     if base and base > 0:
         row_margin = (row_margin / base).round() * base

@@ -40,7 +40,7 @@ acro.enable_rounding(base=5)
 acro.disable_rounding()
 ```
 
-Row and column totals (`margins=True`) are **not allowed** when rounding is active — rounded inner cells would not add up to rounded totals, and the mismatch is a known disclosure attack vector. Passing `margins=True` while `mitigation == "round"` raises a `ValueError`.
+Row and column totals (`margins=True`) are supported under rounding. To avoid the "rounded inner cells don't add up to the displayed totals" mismatch (a known disclosure attack vector), the margins are recomputed from the *rounded* inner cells and then re-rounded to `round_base`, so what the researcher sees is internally consistent. A small set of cases (list-of-aggfunc tables, multi-level row/column indexes, and aggfuncs other than `sum`/`mean`/`median`) currently fall back to returning the table without margins and log a message explaining why.
 
 The audit record (the `sdc` dictionary attached to each output) still contains the full, unrounded disclosure-check results, so output checkers can see the underlying risk even though the released table shows rounded values.
 

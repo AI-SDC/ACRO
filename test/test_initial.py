@@ -1455,10 +1455,7 @@ def _rounded_cells(table: pd.DataFrame) -> np.ndarray:
 def _assert_rounded_margins_consistent(
     table: pd.DataFrame, base: int, margins_name: str = "All"
 ) -> None:
-    """Assert every margin equals the rounded sum of the rounded inner cells.
-
-    Checks row totals, column totals, and the grand total along both axes.
-    """
+    """Assert margins equal rounded sums of inner cells across both axes."""
     inner_cols = [c for c in table.columns if c != margins_name]
     inner_rows = [r for r in table.index if r != margins_name]
     # row margins: sum across inner columns, re-rounded

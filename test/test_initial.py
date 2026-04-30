@@ -12,6 +12,7 @@ import statsmodels.api as sm
 
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
 from acro.acro_tables import _rounded_survival_table, crosstab_with_totals
+from acro.constants import ARTIFACTS_DIR
 from acro.record import Records, load_records
 
 PATH: str = "RES_PYTEST"
@@ -705,7 +706,7 @@ def test_surv_func(acro):
         assert "cells suppressed" in output.summary
 
     # plot
-    filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/kaplan-meier_0.png")
     _ = acro.surv_func(data.futime, data.death, output="plot")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "I need this")
@@ -1075,7 +1076,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
 
 def test_histogram_disclosive(data, acro, caplog):
     """Test a discolsive histogram."""
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
     _ = acro.hist(data, "inc_grants")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
@@ -1092,7 +1093,7 @@ def test_histogram_disclosive(data, acro, caplog):
 
 def test_histogram_non_disclosive(data, acro):
     """Test a non disclosive histogram."""
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
     _ = acro.hist(data, "inc_grants", bins=1)
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
@@ -1105,14 +1106,14 @@ def test_histogram_non_disclosive(data, acro):
 
 def test_pie_disclosive(acro, caplog):
     """Test a disclosive pie chart (a category has fewer than threshold observations)."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
 
     df = pd.DataFrame(
         {"grant_type": (["A"] * 20) + (["B"] * 15) + (["C"] * 12) + (["D"] * 5)}
     )
 
-    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/pie_0.png")
     _ = acro.pie(df, "grant_type", filename="pie.png")
 
     assert os.path.exists(filename)
@@ -1131,9 +1132,9 @@ def test_pie_disclosive(acro, caplog):
 
 def test_pie_non_disclosive(data, acro):
     """Test a non-disclosive pie chart (all categories meet the threshold)."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
-    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/pie_0.png")
     result = acro.pie(data, "grant_type", filename="pie.png")
     assert os.path.normpath(result) == filename
     assert os.path.exists(filename)

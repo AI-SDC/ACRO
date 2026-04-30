@@ -1570,6 +1570,18 @@ def test_enable_rounding_disable_rounding():
     assert acro.mitigation == "none"
 
 
+def test_disable_rounding_does_not_restore_prior_suppress():
+    """Disable_rounding always falls back to 'none', not to prior suppress=True."""
+    acro = ACRO(suppress=True)
+    assert acro.mitigation == "suppress"
+    acro.enable_rounding()
+    assert acro.mitigation == "round"
+    acro.disable_rounding()
+    # documented behaviour: prior suppress state is not restored
+    assert acro.mitigation == "none"
+    assert acro.suppress is False
+
+
 def test_round_base_loaded_from_config():
     """Round_base is picked up from the yaml config by default."""
     acro = ACRO()

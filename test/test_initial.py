@@ -1452,6 +1452,30 @@ def _rounded_cells(table: pd.DataFrame) -> np.ndarray:
     return numeric[~np.isnan(numeric)]
 
 
+def _assert_rounded_margins_consistent(
+    table: pd.DataFrame, base: int, margins_name: str = "All"
+) -> None:
+    """Assert every margin equals the rounded sum of the rounded inner cells.
+
+    Checks row totals, column totals, and the grand total along both axes.
+    """
+    inner_cols = [c for c in table.columns if c != margins_name]
+    inner_rows = [r for r in table.index if r != margins_name]
+    # row margins: sum across inner columns, re-rounded
+    for row in inner_rows:
+        expected = (table.loc[row, inner_cols].sum() / base).round() * base
+        assert table.loc[row, margins_name] == expected
+    # column margins: sum across inner rows, re-rounded
+    for col in inner_cols:
+        expected = (table.loc[inner_rows, col].sum() / base).round() * base
+        assert table.loc[margins_name, col] == expected
+    # grand total: rounded sum of the column margins == rounded sum of the row margins
+    grand_from_cols = (table.loc[margins_name, inner_cols].sum() / base).round() * base
+    grand_from_rows = (table.loc[inner_rows, margins_name].sum() / base).round() * base
+    assert table.loc[margins_name, margins_name] == grand_from_cols
+    assert table.loc[margins_name, margins_name] == grand_from_rows
+
+
 def test_crosstab_with_rounding_base_5(data):
     """Crosstab with mitigation='round' rounds every cell to nearest 5."""
     acro = ACRO(mitigation="round")
@@ -1502,12 +1526,8 @@ def test_rounding_with_margins_crosstab_recomputes_totals(data):
     values = _rounded_cells(table)
     assert values.size > 0
     assert np.all(values % 5 == 0)
-    # the recomputed row margin equals the sum of the rounded inner cells
-    inner_cols = [c for c in table.columns if c != "All"]
-    inner_rows = [r for r in table.index if r != "All"]
-    for row in inner_rows:
-        expected = (table.loc[row, inner_cols].sum() / 5).round() * 5
-        assert table.loc[row, "All"] == expected
+    # row totals, column totals, and the grand total are all consistent
+    _assert_rounded_margins_consistent(table, base=5)
 
 
 def test_rounding_with_margins_pivot_table_recomputes_totals(data):

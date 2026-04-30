@@ -1546,6 +1546,8 @@ def test_rounding_with_margins_pivot_table_recomputes_totals(data):
     values = _rounded_cells(table)
     assert values.size > 0
     assert np.all(values % 5 == 0)
+    # row totals, column totals, and the grand total are all consistent
+    _assert_rounded_margins_consistent(table, base=5)
 
 
 def test_suppress_backward_compat():

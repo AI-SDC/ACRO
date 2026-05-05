@@ -578,6 +578,8 @@ class Tables:
         summary: str,
     ) -> tuple[Any, str] | None:
         """Create the survival plot according to the status of suppressing."""
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
             plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
@@ -703,6 +705,8 @@ class Tables:
             The name of the file where the histogram is saved.
         """
         logger.debug("hist()")
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         command: str = utils.get_command("hist()", stack())
 
         if isinstance(data, list):  # pragma: no cover
@@ -848,6 +852,8 @@ class Tables:
             The path to the saved pie chart file.
         """
         logger.debug("pie()")
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         command: str = utils.get_command("pie()", stack())
 
         # COMPUTE PRE-CATEGORY COUNTS

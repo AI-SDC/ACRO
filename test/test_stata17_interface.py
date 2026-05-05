@@ -472,7 +472,7 @@ def test_stata_custom_output_invalid():
         options="nototals",
         stata_version="17",
     )
-    correct = "Warning: .gph files may not be exported as they contain data."
+    correct = "Warning: .gph files are not allowed and cannot be exported."
     assert ret == correct, f" we got : {ret}\nexpected:{correct}"
     newres = stata_config.stata_acro.results.__dict__
     assert newres == previous, (

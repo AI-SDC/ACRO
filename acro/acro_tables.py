@@ -16,6 +16,7 @@ from matplotlib import pyplot as plt
 from pandas import DataFrame, Series
 
 from . import utils
+from .constants import ARTIFACTS_DIR
 from .record import Records
 
 logger = logging.getLogger("acro")
@@ -586,10 +587,10 @@ class Tables:
             plot = survival_func.plot()
 
         try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
+            os.makedirs(ARTIFACTS_DIR)
+            logger.debug("Directory %s created successfully", ARTIFACTS_DIR)
         except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            logger.debug("Directory %s already exists", ARTIFACTS_DIR)
 
         # create a unique filename with number to avoid overwrite
         filename, extension = os.path.splitext(filename)
@@ -598,10 +599,10 @@ class Tables:
             return None  # pragma: no cover
         increment_number = 0
         while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
+            f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
         ):  # pragma: no cover
             increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+        unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
 
         # save the plot to the acro artifacts directory
         plt.savefig(unique_filename)
@@ -780,12 +781,12 @@ class Tables:
             f"The maximum value of the {column} column is: {max_value}"
         )
 
-        # create the acro_artifacts directory to save the plot in it
+        # create the artifacts directory to save the plot in it
         try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
+            os.makedirs(ARTIFACTS_DIR)
+            logger.debug("Directory %s created successfully", ARTIFACTS_DIR)
         except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            logger.debug("Directory %s already exists", ARTIFACTS_DIR)
 
         # create a unique filename with number to avoid overwrite
         filename, extension = os.path.splitext(filename)
@@ -794,10 +795,10 @@ class Tables:
             return None
         increment_number = 0
         while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
+            f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
         ):  # pragma: no cover
             increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+        unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
 
         # save the plot to the acro artifacts directory
         plt.savefig(unique_filename)
@@ -830,7 +831,7 @@ class Tables:
         suppress=True. Otherwise the chart is produced and marked as
         "review".
 
-        The chart is saved to acro_artifacts/ with a unique incrementing
+        The chart is saved to the artifacts directory with a unique incrementing
         number appended to avoid overwriting existing files.
 
         Parameters
@@ -881,12 +882,12 @@ class Tables:
         # CREATE SUMMARY
         summary = f"Pie chart of {column}. Categories and counts: {counts.to_dict()}."
 
-        # CREATE acro_artifacts DIRECTORY to save plot in
+        # CREATE artifacts DIRECTORY to save plot in
         try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
+            os.makedirs(ARTIFACTS_DIR)
+            logger.debug("Directory %s created successfully", ARTIFACTS_DIR)
         except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            logger.debug("Directory %s already exists", ARTIFACTS_DIR)
 
         # CREATE UNIQUE FILENAME to avoid overwrite
 
@@ -897,12 +898,12 @@ class Tables:
         increment_number = 0
 
         while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
+            f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
         ):  # pragma: no cover
             increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+        unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
 
-        # SAVE PLOT to acro_artifacts directory
+        # SAVE PLOT to artifacts directory
         plt.savefig(unique_filename)
 
         # RECORD OUTPUT

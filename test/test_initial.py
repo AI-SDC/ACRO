@@ -1,6 +1,7 @@
 """Unit tests."""
 
 import json
+import logging
 import os
 import shutil
 from unittest.mock import patch
@@ -1499,3 +1500,326 @@ def test_cell_id_alignment_with_margins_and_suppression(data):
                 assert pd.isna(value), (
                     f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
                 )
+
+
+def _rounded_cells(table: pd.DataFrame) -> np.ndarray:
+    """Return the non-NaN numeric values of a table as a flat numpy array."""
+    numeric = table.select_dtypes(include=["number"]).to_numpy().ravel()
+    return numeric[~np.isnan(numeric)]
+
+
+def _assert_rounded_margins_consistent(
+    table: pd.DataFrame, base: int, margins_name: str = "All"
+) -> None:
+    """Assert margins equal rounded sums of inner cells across both axes."""
+    inner_cols = [c for c in table.columns if c != margins_name]
+    inner_rows = [r for r in table.index if r != margins_name]
+    # row margins: sum across inner columns, re-rounded
+    for row in inner_rows:
+        expected = (table.loc[row, inner_cols].sum() / base).round() * base
+        assert table.loc[row, margins_name] == expected
+    # column margins: sum across inner rows, re-rounded
+    for col in inner_cols:
+        expected = (table.loc[inner_rows, col].sum() / base).round() * base
+        assert table.loc[margins_name, col] == expected
+    # grand total: rounded sum of the column margins == rounded sum of the row margins
+    grand_from_cols = (table.loc[margins_name, inner_cols].sum() / base).round() * base
+    grand_from_rows = (table.loc[inner_rows, margins_name].sum() / base).round() * base
+    assert table.loc[margins_name, margins_name] == grand_from_cols
+    assert table.loc[margins_name, margins_name] == grand_from_rows
+
+
+def test_crosstab_with_rounding_base_5(data):
+    """Crosstab with mitigation='round' rounds every cell to nearest 5."""
+    acro = ACRO(mitigation="round")
+    table = acro.crosstab(data.year, data.grant_type)
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    output = acro.results.get_index(0)
+    assert output.status == "review"
+    assert "rounded to nearest 5" in output.summary
+    assert output.properties["mitigation"] == "round"
+    assert output.properties["round_base"] == 5
+
+
+def test_crosstab_with_rounding_base_10(data):
+    """Crosstab with round_base=10 rounds every cell to nearest 10."""
+    acro = ACRO(mitigation="round", round_base=10)
+    table = acro.crosstab(data.year, data.grant_type)
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 10 == 0)
+    output = acro.results.get_index(0)
+    assert "rounded to nearest 10" in output.summary
+
+
+def test_pivot_table_with_rounding(data):
+    """Pivot_table with mitigation='round' rounds every cell."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.pivot_table(
+        data, index="year", columns="grant_type", values="inc_grants", aggfunc="count"
+    )
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    output = acro.results.get_index(0)
+    assert output.properties["mitigation"] == "round"
+    assert output.properties["round_base"] == 5
+
+
+def test_rounding_with_margins_crosstab_recomputes_totals(data):
+    """Crosstab with margins=True under rounding recomputes margins from rounded cells."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.crosstab(data.year, data.grant_type, margins=True)
+    # margins row/column are present and named "All"
+    assert "All" in table.columns
+    assert "All" in table.index
+    # every cell (including margins) is a multiple of the round base
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    # row totals, column totals, and the grand total are all consistent
+    _assert_rounded_margins_consistent(table, base=5)
+
+
+def test_rounding_with_margins_pivot_table_recomputes_totals(data):
+    """Pivot_table with margins=True under rounding recomputes margins from rounded cells."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.pivot_table(
+        data,
+        index="year",
+        columns="grant_type",
+        values="inc_grants",
+        aggfunc="count",
+        margins=True,
+    )
+    assert "All" in table.columns
+    assert "All" in table.index
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    # row totals, column totals, and the grand total are all consistent
+    _assert_rounded_margins_consistent(table, base=5)
+
+
+def test_suppress_backward_compat():
+    """The suppress property stays in sync with mitigation."""
+    acro = ACRO(suppress=True)
+    assert acro.mitigation == "suppress"
+    assert acro.suppress is True
+    acro.suppress = False
+    assert acro.mitigation == "none"
+    assert acro.suppress is False
+    acro.suppress = True
+    assert acro.mitigation == "suppress"
+
+
+def test_enable_rounding_disable_rounding():
+    """Enable_rounding / disable_rounding toggle the mitigation field."""
+    acro = ACRO()
+    assert acro.mitigation == "none"
+    acro.enable_rounding(base=10)
+    assert acro.mitigation == "round"
+    assert acro.round_base == 10
+    acro.disable_rounding()
+    assert acro.mitigation == "none"
+
+
+def test_disable_rounding_does_not_restore_prior_suppress():
+    """Disable_rounding always falls back to 'none', not to prior suppress=True."""
+    acro = ACRO(suppress=True)
+    assert acro.mitigation == "suppress"
+    acro.enable_rounding()
+    assert acro.mitigation == "round"
+    acro.disable_rounding()
+    # documented behaviour: prior suppress state is not restored
+    assert acro.mitigation == "none"
+    assert acro.suppress is False
+
+
+def test_round_base_loaded_from_config():
+    """Round_base is picked up from the yaml config by default."""
+    acro = ACRO()
+    assert acro.round_base == 5
+
+
+def test_round_preserves_nan():
+    """Rounding a table with NaN cells preserves the NaN."""
+    table = pd.DataFrame({"a": [3.0, np.nan, 11.0], "b": [7.0, 2.0, np.nan]})
+    rounded = acro_tables.round_table(table, base=5)
+    assert pd.isna(rounded.loc[1, "a"])
+    assert pd.isna(rounded.loc[2, "b"])
+    assert rounded.loc[0, "a"] == 5
+    assert rounded.loc[2, "a"] == 10
+    assert rounded.loc[0, "b"] == 5
+    assert rounded.loc[1, "b"] == 0
+
+
+def test_round_base_rejects_non_positive(caplog):
+    """Setting round_base to zero or negative logs a message and falls back to default."""
+    acro = ACRO()
+    default = acro.round_base
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.round_base = 0
+    assert acro.round_base == default
+    assert "positive integer" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.round_base = -3
+    assert acro.round_base == default
+    assert "positive integer" in caplog.text
+
+
+def test_suppress_false_while_rounding_is_noop(caplog):
+    """Setting suppress=False while rounding is active logs a message and is a no-op."""
+    acro = ACRO(mitigation="round")
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.suppress = False
+    assert acro.mitigation == "round"
+    assert "disable_rounding" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.disable_suppression()
+    assert acro.mitigation == "round"
+    assert "disable_rounding" in caplog.text
+
+
+def test_rounding_records_underlying_disclosure_risk(data):
+    """The sdc audit record still flags threshold violations when rounding."""
+    acro = ACRO(mitigation="round", round_base=5)
+    acro.crosstab(data.year, data.grant_type)
+    output = acro.results.get_index(0)
+    assert output.sdc["summary"]["threshold"] > 0
+    assert output.sdc["summary"]["mitigation"] == "round"
+    assert output.sdc["summary"]["round_base"] == 5
+    assert "rounded to nearest 5" in output.summary
+    assert "threshold:" in output.summary
+    values = _rounded_cells(output.output[0])
+    assert np.all(values % 5 == 0)
+
+
+def test_round_base_passed_to_constructor():
+    """ACRO(round_base=...) overrides the yaml default."""
+    acro = ACRO(round_base=7)
+    assert acro.round_base == 7
+
+
+def test_mitigation_setter_rejects_invalid_value(caplog):
+    """Setting mitigation to an unknown value logs a message and falls back to 'none'."""
+    acro = ACRO()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.mitigation = "obfuscate"
+    assert acro.mitigation == "none"
+    assert "obfuscate" in caplog.text
+
+
+def test_round_table_noop_when_base_non_positive():
+    """Round_table returns an unchanged copy when base is 0 or negative."""
+    table = pd.DataFrame({"a": [3.2, 4.7], "b": [11.0, 9.0]})
+    zero = acro_tables.round_table(table, base=0)
+    assert (zero.to_numpy() == table.to_numpy()).all()
+    negative = acro_tables.round_table(table, base=-5)
+    assert (negative.to_numpy() == table.to_numpy()).all()
+
+
+def test_rounded_summary_reports_negative_values(data):
+    """The rounded summary surfaces negative and missing check results."""
+    data.loc[0:10, "inc_grants"] = -10
+    acro = ACRO(mitigation="round", round_base=5)
+    acro.crosstab(data.year, data.grant_type, values=data.inc_grants, aggfunc="mean")
+    output = acro.results.get_index(0)
+    assert "negative values found" in output.summary
+
+
+def test_rounded_summary_reports_missing_values():
+    """_rounded_summary emits a missing-values note when the check fires."""
+    sdc_summary = {
+        "mitigation": "round",
+        "round_base": 5,
+        "threshold": 0,
+        "p-ratio": 0,
+        "nk-rule": 0,
+        "all-values-are-same": 0,
+        "negative": 0,
+        "missing": 2,
+    }
+    status, summary = acro_tables._rounded_summary(sdc_summary)
+    assert status == "review"
+    assert "missing values found" in summary
+
+
+def _simple_rounded_table() -> pd.DataFrame:
+    """Return a small pre-rounded numeric table for margin tests."""
+    return pd.DataFrame(
+        {"a": [5.0, 10.0, 15.0], "b": [10.0, 5.0, 20.0]},
+        index=["r1", "r2", "r3"],
+    )
+
+
+def test_aggfunc_name_extracts_callable_name():
+    """_aggfunc_name returns __name__ for callables and None for opaque values."""
+    assert acro_tables._aggfunc_name("mean") == "mean"
+    assert acro_tables._aggfunc_name(acro_tables.mode_aggfunc) == "mode_aggfunc"
+    assert acro_tables._aggfunc_name(object()) is None
+
+
+def test_append_rounded_margins_list_aggfunc_skips_margins(caplog):
+    """A list of aggfuncs falls back to no margins with a log message."""
+    table = _simple_rounded_table()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, ["sum", "mean"], "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "multiple aggregation" in caplog.text
+
+
+def test_append_rounded_margins_multilevel_index_skips_margins(caplog):
+    """A hierarchical row index falls back to no margins."""
+    idx = pd.MultiIndex.from_tuples([("a", 1), ("a", 2), ("b", 1)])
+    table = pd.DataFrame({"x": [5.0, 10.0, 15.0], "y": [10.0, 5.0, 20.0]}, index=idx)
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, None, "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "hierarchical" in caplog.text
+
+
+def test_append_rounded_margins_multilevel_columns_skips_margins(caplog):
+    """A hierarchical column index falls back to no margins."""
+    cols = pd.MultiIndex.from_tuples([("g", "x"), ("g", "y")])
+    table = pd.DataFrame([[5.0, 10.0], [10.0, 5.0]], columns=cols)
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, None, "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "hierarchical" in caplog.text
+
+
+def test_append_rounded_margins_unsupported_aggfunc_skips_margins(caplog):
+    """An aggfunc we don't know how to recompute margins for is skipped."""
+    table = _simple_rounded_table()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, "std", "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "'std'" in caplog.text
+
+
+def test_append_rounded_margins_mean_uses_mean_of_rounded_cells():
+    """Mean aggfunc derives margins from the mean of rounded cells, then rounds them."""
+    table = _simple_rounded_table()
+    result = acro_tables.append_rounded_margins(table, "mean", "All", 5)
+    # mean of row r1 = mean(5, 10) = 7.5; pandas Series.round uses banker's
+    # rounding so 7.5/5=1.5 -> 2 -> 10.
+    assert result.loc["r1", "All"] == 10
+    # mean of column a = mean(5, 10, 15) = 10
+    assert result.loc["All", "a"] == 10
+    values = _rounded_cells(result)
+    assert np.all(values % 5 == 0)
+
+
+def test_append_rounded_margins_median_uses_median_of_rounded_cells():
+    """Median aggfunc derives margins from the median of rounded cells."""
+    table = _simple_rounded_table()
+    result = acro_tables.append_rounded_margins(table, "median", "All", 5)
+    # median of column a = median(5, 10, 15) = 10
+    assert result.loc["All", "a"] == 10
+    values = _rounded_cells(result)
+    assert np.all(values % 5 == 0)

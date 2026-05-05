@@ -89,6 +89,12 @@ class ACRO(Tables, Regression):
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
+        # Preserve the user-requested suppress value alongside the yaml config.
+        # Tables.suppress is now a property derived from the live mitigation, so
+        # it can drift over a session (enable_rounding flips mitigation away from
+        # 'suppress'). Recording the original ask here keeps it available for
+        # callers that need to re-enforce suppression for disclosive outputs.
+        self.config["suppress"] = suppress
         # set globals needed for aggregation functions
         acro_tables.THRESHOLD = self.config["safe_threshold"]
         acro_tables.SAFE_PRATIO_P = self.config["safe_pratio_p"]

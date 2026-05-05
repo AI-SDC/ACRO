@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from inspect import FrameInfo, getframeinfo
 
 import pandas as pd
@@ -13,6 +14,19 @@ logger = logging.getLogger("acro")
 # Lives here so both :mod:`acro.acro_tables` and :mod:`acro.acro_stata_parser`
 # can share a single source of truth.
 ALLOWED_MITIGATIONS: frozenset[str] = frozenset({"none", "suppress", "round"})
+
+
+def is_blocked_extension(filename: str, blocked_extensions: list[str]) -> bool:
+    """Return True and log a warning if the file's extension is blocked."""
+    _, ext = os.path.splitext(filename)
+    if ext.lower() in blocked_extensions:
+        logger.warning(
+            "Blocked file extension %s. Files with extension %s are not allowed.",
+            filename,
+            ext,
+        )
+        return True
+    return False
 
 
 def get_command(default: str, stack_list: list[FrameInfo]) -> str:

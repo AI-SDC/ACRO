@@ -428,12 +428,10 @@ def add_custom_output(varlist: list[str]) -> str:
     except IndexError:
         return "syntax error: please pass the name of the output to be added"
 
-    # .gph extension contain data
-    _, file_extension = os.path.splitext(the_output)
-    if file_extension == ".gph":
-        return "Warning: .gph files may not be exported as they contain data."
     comment_str = " ".join(varlist)
-    stata_config.stata_acro.custom_output(the_output, comment_str)
+    if not stata_config.stata_acro.custom_output(the_output, comment_str):
+        _, ext = os.path.splitext(the_output)
+        return f"Warning: {ext} files are not allowed and cannot be exported."
     outcome = f"file {the_output} with comment {comment_str} added to session."
     return outcome
 

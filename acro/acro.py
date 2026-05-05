@@ -79,16 +79,18 @@ class ACRO(Tables, Regression):
         """
         Tables.__init__(self, suppress=suppress, mitigation=mitigation)
         Regression.__init__(self, config)
-        # Tables and Regression each construct their own ``self.results`` so
-        # they can be used standalone; in the combined ACRO object we want a
-        # single shared Records instance regardless of init order, so make
-        # that explicit here.
-        self.results: Records = Records()
         self.config: dict[str, Any] = {}
         path: pathlib.Path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
+        # Tables and Regression each construct their own ``self.results`` so
+        # they can be used standalone; in the combined ACRO object we want a
+        # single shared Records instance regardless of init order, so make
+        # that explicit here.
+        self.results: Records = Records(
+            blocked_extensions=self.config.get("blocked_extensions", [])
+        )
         # Preserve the user-requested suppress value alongside the yaml config.
         # Tables.suppress is now a property derived from the live mitigation, so
         # it can drift over a session (enable_rounding flips mitigation away from
@@ -174,7 +176,7 @@ class ACRO(Tables, Regression):
         """
         return self.results.print()
 
-    def custom_output(self, filename: str, comment: str = "") -> None:
+    def custom_output(self, filename: str, comment: str = "") -> bool:
         """Add an unsupported output to the results dictionary.
 
         Parameters
@@ -183,8 +185,13 @@ class ACRO(Tables, Regression):
             The name of the file that will be added to the list of the outputs.
         comment : str
             An optional comment.
+
+        Returns
+        -------
+        bool
+            False if the file extension is blocked, True otherwise.
         """
-        self.results.add_custom(filename, comment)
+        return self.results.add_custom(filename, comment)
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

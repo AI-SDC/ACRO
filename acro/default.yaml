@@ -32,4 +32,13 @@ zeros_are_disclosive: True
 
 # default rounding base for the 'round' mitigation strategy on tables
 safe_round_base: 5
+
+################################################################################
+# Blocked file extensions                                                      #
+################################################################################
+# File extensions that are not allowed in custom outputs or plots.
+# Extensions are case-insensitive and must include the leading dot.
+blocked_extensions:
+  - .svg
+  - .gph
 ...

@@ -853,6 +853,13 @@ class Tables:
             The histogram.
         str
             The name of the file where the histogram is saved.
+
+        Notes
+        -----
+        When ``zeros_are_disclosive`` is set to ``False`` in the config, empty
+        bins (count == 0) are excluded from the disclosure threshold check.
+        This avoids flagging histograms as disclosive solely because outliers
+        in a wide-spread column produced empty tail bins.
         """
         logger.debug("hist()")
         if utils.is_blocked_extension(filename, self.results.blocked_extensions):
@@ -870,8 +877,16 @@ class Tables:
             data[column], bins, range=(data[column].min(), data[column].max())
         )
 
-        # threshold check
+        # threshold check; empty bins are excluded when zeros_are_disclosive is False
         threshold_mask = freq < THRESHOLD
+        if not ZEROS_ARE_DISCLOSIVE:
+            empty_bins = freq == 0
+            threshold_mask &= ~empty_bins
+            if np.any(empty_bins):
+                logger.debug(
+                    "%d empty bin(s) excluded from threshold check",
+                    int(np.sum(empty_bins)),
+                )
 
         # plot the histogram
         if np.any(threshold_mask):  # the column is disclosive

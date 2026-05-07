@@ -6,6 +6,10 @@ import os
 import shutil
 from unittest.mock import patch
 
+import matplotlib as mpl
+
+mpl.use("Agg")
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -1157,6 +1161,59 @@ def test_histogram_non_disclosive(data, acro):
     output_0 = results.get_index(0)
     assert output_0.output == [filename]
     assert output_0.status == "review"
+    shutil.rmtree(PATH)
+
+
+def test_histogram_zeros_not_disclosive(acro):
+    """Empty tail bins do not flag a histogram when zeros_are_disclosive=False."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    # 100 obs at each of 6 distinct values spanning [0, 10]; with bins=20, the
+    # only sub-threshold bins are the empty ones between the populated values.
+    df = pd.DataFrame({"x": np.repeat([0.0, 1.0, 2.0, 3.0, 5.0, 10.0], 100)})
+    acro_tables.ZEROS_ARE_DISCLOSIVE = False
+    try:
+        _ = acro.hist(df, "x", bins=20)
+    finally:
+        acro_tables.ZEROS_ARE_DISCLOSIVE = True
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "review"
+    shutil.rmtree(PATH)
+
+
+def test_histogram_zeros_disclosive_default(acro, caplog):
+    """Empty bins remain disclosive under the default zeros_are_disclosive=True."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    df = pd.DataFrame({"x": np.repeat([0.0, 1.0, 2.0, 3.0, 5.0, 10.0], 100)})
+    _ = acro.hist(df, "x", bins=20)
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "fail"
+    assert "Histogram will not be shown as the x column is disclosive." in caplog.text
+    shutil.rmtree(PATH)
+
+
+def test_histogram_nonempty_below_threshold_still_disclosive(acro):
+    """A non-empty bin below threshold remains disclosive even when zeros are not."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    # bins=2 over [0, 5]: one bin has 100 obs, the other has 5 (non-empty, < THRESHOLD).
+    df = pd.DataFrame({"x": np.r_[np.repeat(0.0, 100), np.repeat(5.0, 5)]})
+    acro_tables.ZEROS_ARE_DISCLOSIVE = False
+    try:
+        _ = acro.hist(df, "x", bins=2)
+    finally:
+        acro_tables.ZEROS_ARE_DISCLOSIVE = True
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.status == "fail"
     shutil.rmtree(PATH)
 
 

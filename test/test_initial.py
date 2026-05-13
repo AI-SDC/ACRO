@@ -1154,7 +1154,11 @@ def test_histogram_disclosive(data, acro, caplog):
 def test_histogram_non_disclosive(data, acro):
     """Test a non disclosive histogram."""
     filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
-    _ = acro.hist(data, "inc_grants", bins=1)
+    # Bracket explicit bin edges outside the data extremes so extreme-value-leak
+    # cannot fire on the real-world min/max of inc_grants.
+    low = float(data["inc_grants"].min()) - 1.0
+    high = float(data["inc_grants"].max()) + 1.0
+    _ = acro.hist(data, "inc_grants", bins=[low, high])
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(path=PATH)
@@ -1162,6 +1166,164 @@ def test_histogram_non_disclosive(data, acro):
     assert output_0.output == [filename]
     assert output_0.status == "review"
     shutil.rmtree(PATH)
+
+
+def _make_wage_df(extra_low_count: int = 0) -> pd.DataFrame:
+    """Build a synthetic wage DataFrame with controllable low-end mass."""
+    np.random.seed(0)
+    low = np.random.uniform(0.0, 10.0, size=extra_low_count) if extra_low_count else []
+    mid = np.random.uniform(10.0, 90.0, size=10)
+    high = np.random.uniform(90.0, 100.0, size=15)
+    return pd.DataFrame({"wage": np.concatenate([low, mid, high])})
+
+
+def test_histogram_interior_threshold_only():
+    """Interior bins fail threshold but edge bins meet it."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(0)
+    low = np.random.uniform(0.0, 10.0, size=15)
+    high = np.random.uniform(90.0, 100.0, size=15)
+    interior = np.linspace(15.0, 85.0, 10)
+    df = pd.DataFrame({"val": np.concatenate([low, interior, high])})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "val", bins=10)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["edge-bin"] == 0
+    assert output.sdc["summary"]["threshold"] > 0
+    assert "edge-bin" not in output.summary
+    assert "threshold:" in output.summary
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_edge_bin_only():
+    """First bin falls below threshold; interior + last bins pass."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    # First bin [0,10): 5 rows. Bins 1..9 each get 10 rows evenly.
+    low = np.linspace(1.0, 9.0, 5)
+    interior = np.repeat(np.arange(15.0, 100.0, 10.0), 10)
+    df = pd.DataFrame({"val": np.concatenate([low, interior])})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "val", bins=10)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["edge-bin"] == 1
+    assert output.sdc["bins"]["edge-bin"] == [0]
+    assert "edge-bin:" in output.summary
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_by_val_range_mismatch():
+    """Stratified histogram where subgroups have different ranges."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(2)
+    male_wages = np.random.uniform(5.0, 10.0, size=30)
+    female_wages = np.random.uniform(4.0, 10.0, size=30)
+    df = pd.DataFrame(
+        {
+            "sex": ["M"] * 30 + ["F"] * 30,
+            "wage": np.concatenate([male_wages, female_wages]),
+        }
+    )
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "wage", by_val="sex", bins=6)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["by-val-range-mismatch"] is True
+    assert "by-val-range-mismatch:" in output.summary
+    assert "sex" in output.sdc["by_val_detail"]
+    assert set(output.sdc["by_val_detail"]["sex"]) == {"M", "F"}
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_extreme_value_leak():
+    """A single individual holds the minimum; leftmost edge reveals them."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(3)
+    rest = np.random.uniform(5.0, 10.0, size=50)
+    df = pd.DataFrame({"wage": np.concatenate([[1.0], rest])})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "wage", bins=10)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["extreme-value-leak"] >= 1
+    assert output.sdc["min_count"] == 1
+    assert "extreme-value-leak:" in output.summary
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_explicit_bins_no_leak():
+    """User-supplied bin edges that don't coincide with data extremes don't leak."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    # Data in [4.5, 10]; bin edges [4, 6, 8, 10.5] bracket away from the extremes.
+    # Each bin gets at least 10 rows.
+    values = np.concatenate(
+        [
+            np.linspace(4.5, 5.9, 10),
+            np.linspace(6.0, 7.9, 15),
+            np.linspace(8.0, 10.0, 12),
+        ]
+    )
+    df = pd.DataFrame({"val": values})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "val", bins=[4.0, 6.0, 8.0, 10.5])
+    output = a.results.get_index(0)
+    assert output.status == "review"
+    assert output.sdc["summary"]["extreme-value-leak"] == 0
+    assert output.sdc["summary"]["edge-bin"] == 0
+    assert output.sdc["summary"]["threshold"] == 0
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_nan_handling():
+    """Drop NaNs before SDC math; all-NaN column returns None."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(5)
+    valid = np.random.uniform(0.0, 100.0, size=15)
+    df = pd.DataFrame({"val": np.concatenate([valid, [np.nan] * 5])})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "val", bins=5)
+    output = a.results.get_index(0)
+    assert sum(output.sdc["counts"]) == 15
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_by_val_unnamed_series():
+    """Accept an unnamed pd.Series as by_val without breaking by_val_detail keys."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(6)
+    wages = np.concatenate(
+        [np.random.uniform(5.0, 10.0, size=30), np.random.uniform(4.0, 10.0, size=30)]
+    )
+    df = pd.DataFrame({"wage": wages})
+    grouper = pd.Series(["M"] * 30 + ["F"] * 30)  # no .name set
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "wage", by_val=grouper, bins=6)
+    output = a.results.get_index(0)
+    assert "by_val" in output.sdc["by_val_detail"]
+    assert set(output.sdc["by_val_detail"]["by_val"]) == {"M", "F"}
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_integer_column_extreme_leak():
+    """Integer-valued column with a single maximum trips extreme-value-leak."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    df = pd.DataFrame({"age": [20] * 30 + [65]})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "age", bins=10)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["extreme-value-leak"] >= 1
+    assert output.sdc["max_count"] == 1
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
 
 
 def test_histogram_zeros_not_disclosive(acro):

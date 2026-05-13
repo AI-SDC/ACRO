@@ -873,50 +873,51 @@ class Tables:
             )
             return None
 
-        freq, _ = np.histogram(
-            data[column], bins, range=(data[column].min(), data[column].max())
+        col_series = data[column].dropna()
+        if col_series.empty:  # pragma: no cover
+            logger.warning("Column %s is empty after dropping NaN.", column)
+            self.results.add(
+                status="fail",
+                output_type="histogram",
+                properties={"method": "histogram"},
+                sdc={},
+                command=command,
+                summary="fail; empty column after dropping NaN",
+                outcome=pd.DataFrame(),
+                output=[],
+            )
+            return None
+
+        col_min = float(col_series.min())
+        col_max = float(col_series.max())
+        masks, bin_edges, freq, left_count, right_count = _build_histogram_masks(
+            col_series, bins, col_min, col_max
         )
+        by_val, mismatch, sub_stats = _analyse_by_val_ranges(data, column, by_val)
 
-        # threshold check; empty bins are excluded when zeros_are_disclosive is False
-        threshold_mask = freq < THRESHOLD
-        if not ZEROS_ARE_DISCLOSIVE:
-            empty_bins = freq == 0
-            threshold_mask &= ~empty_bins
-            if np.any(empty_bins):
-                logger.debug(
-                    "%d empty bin(s) excluded from threshold check",
-                    int(np.sum(empty_bins)),
-                )
+        sdc = get_histogram_sdc(
+            masks,
+            self.suppress,
+            bin_edges,
+            freq,
+            col_min,
+            col_max,
+            left_count,
+            right_count,
+            mismatch,
+            sub_stats,
+        )
+        status, summary = get_histogram_summary(sdc, column, col_min, col_max)
+        outcome = build_histogram_outcome(bin_edges, freq, masks)
+        logger.info("status: %s", status)
 
-        # plot the histogram
-        if np.any(threshold_mask):  # the column is disclosive
-            status = "fail"
-            if self.suppress:
-                logger.warning(
-                    "Histogram will not be shown as the %s column is disclosive.",
-                    column,
-                )
-            else:  # pragma: no cover
-                data.hist(
-                    column=column,
-                    by=by_val,
-                    grid=grid,
-                    xlabelsize=xlabelsize,
-                    xrot=xrot,
-                    ylabelsize=ylabelsize,
-                    yrot=yrot,
-                    ax=axis,
-                    sharex=sharex,
-                    sharey=sharey,
-                    figsize=figsize,
-                    layout=layout,
-                    bins=bins,
-                    backend=backend,
-                    legend=legend,
-                    **kwargs,
-                )
-        else:
-            status = "review"
+        # plot the histogram (skip when suppressed and disclosive)
+        if status == "fail" and self.suppress:
+            logger.warning(
+                "Histogram will not be shown as the %s column is disclosive.",
+                column,
+            )
+        else:  # pragma: no cover
             data.hist(
                 column=column,
                 by=by_val,
@@ -935,16 +936,6 @@ class Tables:
                 legend=legend,
                 **kwargs,
             )
-        logger.info("status: %s", status)
-
-        # create the summary
-        min_value = data[column].min()
-        max_value = data[column].max()
-        summary = (
-            f"Please check the minimum and the maximum values. "
-            f"The minimum value of the {column} column is: {min_value}. "
-            f"The maximum value of the {column} column is: {max_value}"
-        )
 
         # create the artifacts directory to save the plot in it
         try:
@@ -973,10 +964,10 @@ class Tables:
             status=status,
             output_type="histogram",
             properties={"method": "histogram"},
-            sdc={},
+            sdc=sdc,
             command=command,
             summary=summary,
-            outcome=pd.DataFrame(),
+            outcome=outcome,
             output=[os.path.normpath(unique_filename)],
         )
         return unique_filename
@@ -1862,6 +1853,171 @@ def get_summary(sdc: dict[str, Any]) -> tuple[str, str]:
         summary = status
     logger.info("get_summary(): %s", summary)
     return status, summary
+
+
+def _python_scalar(value: Any) -> Any:
+    """Cast a numpy scalar to its Python equivalent for JSON serialisation."""
+    return value.item() if hasattr(value, "item") else value
+
+
+def _build_histogram_masks(
+    col_series: Series,
+    bins: int | Any,
+    col_min: float,
+    col_max: float,
+) -> tuple[dict[str, np.ndarray], np.ndarray, np.ndarray, int, int]:
+    """Compute histogram frequencies, edges, and the three per-bin risk masks."""
+    if isinstance(bins, int):
+        freq, bin_edges = np.histogram(col_series, bins, range=(col_min, col_max))
+    else:
+        freq, bin_edges = np.histogram(col_series, bins)
+
+    threshold_mask = freq < THRESHOLD
+    if not ZEROS_ARE_DISCLOSIVE:
+        empty_bins = freq == 0
+        threshold_mask &= ~empty_bins
+        if np.any(empty_bins):
+            logger.debug(
+                "%d empty bin(s) excluded from threshold check",
+                int(np.sum(empty_bins)),
+            )
+    masks: dict[str, np.ndarray] = {"threshold": threshold_mask}
+
+    edge_mask = np.zeros_like(freq, dtype=bool)
+    edge_mask[0] = freq[0] < THRESHOLD
+    edge_mask[-1] = freq[-1] < THRESHOLD
+    masks["edge-bin"] = edge_mask
+
+    left_count = int((col_series == col_min).sum())
+    right_count = int((col_series == col_max).sum())
+    leak_mask = np.zeros_like(freq, dtype=bool)
+    if bin_edges[0] == col_min and left_count < THRESHOLD:
+        leak_mask[0] = True
+    if bin_edges[-1] == col_max and right_count < THRESHOLD:
+        leak_mask[-1] = True
+    masks["extreme-value-leak"] = leak_mask
+
+    return masks, bin_edges, freq, left_count, right_count
+
+
+def _analyse_by_val_ranges(
+    data: DataFrame, column: str, by_val: Any
+) -> tuple[Any, bool, DataFrame | None]:
+    """Compute per-subgroup min/max/count and whether ranges disagree."""
+    if by_val is None:
+        return by_val, False, None
+    if isinstance(by_val, pd.Series) and by_val.name is None:
+        by_val = by_val.rename("by_val")
+    sub_stats = (
+        data.groupby(by_val)[column]
+        .agg(["min", "max", "count"])
+        .dropna(subset=["min", "max"])
+    )
+    mismatch = bool(sub_stats["min"].nunique() > 1 or sub_stats["max"].nunique() > 1)
+    return by_val, mismatch, sub_stats
+
+
+def get_histogram_sdc(
+    masks: dict[str, np.ndarray],
+    suppress: bool,
+    bin_edges: np.ndarray,
+    freq: np.ndarray,
+    col_min: float,
+    col_max: float,
+    left_count: int,
+    right_count: int,
+    mismatch: bool,
+    sub_stats: DataFrame | None,
+) -> dict[str, Any]:
+    """Build the SDC dict for a histogram output.
+
+    When ``by_val`` is set, ``bin_edges``, ``counts``, and bin-indexed masks
+    describe the pooled aggregate across all subgroups; per-subgroup leak is
+    captured in ``by-val-range-mismatch`` and ``by_val_detail``.
+    """
+    sdc: dict[str, Any] = {
+        "summary": {
+            "suppressed": bool(suppress),
+            "threshold": int(masks["threshold"].sum()),
+            "edge-bin": int(masks["edge-bin"].sum()),
+            "extreme-value-leak": int(masks["extreme-value-leak"].sum()),
+            "by-val-range-mismatch": bool(mismatch),
+        },
+        "bins": {
+            "threshold": [int(i) for i in np.where(masks["threshold"])[0]],
+            "edge-bin": [int(i) for i in np.where(masks["edge-bin"])[0]],
+            "extreme-value-leak": [
+                int(i) for i in np.where(masks["extreme-value-leak"])[0]
+            ],
+        },
+        "bin_edges": [float(e) for e in bin_edges],
+        "counts": [int(c) for c in freq],
+        "column_min": float(col_min),
+        "column_max": float(col_max),
+        "min_count": int(left_count),
+        "max_count": int(right_count),
+        "by_val_detail": {},
+    }
+    if sub_stats is not None and not sub_stats.empty:
+        raw = sub_stats.reset_index().to_dict(orient="list")
+        sdc["by_val_detail"] = {
+            str(key): [_python_scalar(v) for v in values] for key, values in raw.items()
+        }
+    return sdc
+
+
+def get_histogram_summary(
+    sdc: dict[str, Any], column: str, col_min: float, col_max: float
+) -> tuple[str, str]:
+    """Return status and summary for a histogram's SDC dict."""
+    status = "review"
+    summary = ""
+    s = sdc["summary"]
+    sup = "suppressed" if s["suppressed"] else "may need suppressing"
+
+    if s["edge-bin"] > 0:
+        summary += f"edge-bin: {s['edge-bin']} edge bin(s) below threshold {sup}; "
+        status = "fail"
+    if s["threshold"] > 0:
+        summary += f"threshold: {s['threshold']} bins {sup}; "
+        status = "fail"
+    if s["extreme-value-leak"] > 0:
+        summary += (
+            f"extreme-value-leak: {s['extreme-value-leak']} edge(s) reveal exact "
+            f"min/max (min count={sdc['min_count']}, max count={sdc['max_count']}); "
+        )
+        status = "fail"
+    if s["by-val-range-mismatch"]:
+        summary += (
+            "by-val-range-mismatch: subgroup x-ranges differ "
+            "(aggregate counts shown; per-subgroup ranges in by_val_detail); "
+        )
+        status = "fail"
+
+    summary += f"min={col_min}, max={col_max} for column {column}"
+    summary = f"{status}; {summary}"
+    logger.info("get_histogram_summary(): %s", summary)
+    return status, summary
+
+
+def build_histogram_outcome(
+    bin_edges: np.ndarray, freq: np.ndarray, masks: dict[str, np.ndarray]
+) -> DataFrame:
+    """Return a per-bin outcome DataFrame labelling each bin with the checks it failed."""
+    order = ["threshold", "edge-bin", "extreme-value-leak"]
+    rows = []
+    for i, count in enumerate(freq):
+        failed = [name for name in order if masks[name][i]]
+        rows.append(
+            {
+                "bin_index": int(i),
+                "bin_left": float(bin_edges[i]),
+                "bin_right": float(bin_edges[i + 1]),
+                "count": int(count),
+                "checks_failed": "; ".join(failed) if failed else "ok",
+            }
+        )
+    return DataFrame(rows)
 
 
 def add_backticks(name: str) -> str:

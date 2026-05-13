@@ -16,7 +16,9 @@ from matplotlib import pyplot as plt
 from pandas import DataFrame, Series
 
 from . import utils
+from .constants import ARTIFACTS_DIR
 from .record import Records
+from .utils import ALLOWED_MITIGATIONS
 
 logger = logging.getLogger("acro")
 
@@ -58,19 +60,135 @@ ZEROS_ARE_DISCLOSIVE: bool = True
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
 
+# default base for the 'round' mitigation strategy
+SAFE_ROUND_BASE: int = 5
+
+# Re-export so existing callers that imported from this module keep working.
+_ALLOWED_MITIGATIONS = ALLOWED_MITIGATIONS
+
 
 class Tables:
     """Creates tabular data.
 
     Attributes
     ----------
+    mitigation : str
+        The disclosure-control strategy applied to outputs, one of ``"none"``,
+        ``"suppress"``, ``"round"``.
+    round_base : int
+        The base to round to when ``mitigation == "round"``. Must be a positive integer.
     suppress : bool
-        Whether to automatically apply suppression.
+        Backward-compatible alias. ``True`` is equivalent to ``mitigation == "suppress"``.
     """
 
-    def __init__(self, suppress: bool) -> None:
-        self.suppress: bool = suppress
+    def __init__(
+        self,
+        suppress: bool = False,
+        mitigation: str | None = None,
+    ) -> None:
+        """Initialise a Tables instance with the chosen mitigation strategy."""
+        self._mitigation: str = "none"
+        self._round_base: int = SAFE_ROUND_BASE
+        if mitigation is None:
+            mitigation = "suppress" if suppress else "none"
+        self.mitigation = mitigation
         self.results: Records = Records()
+
+    @property
+    def mitigation(self) -> str:
+        """Return the current mitigation strategy."""
+        return self._mitigation
+
+    @mitigation.setter
+    def mitigation(self, value: str) -> None:
+        if value not in ALLOWED_MITIGATIONS:
+            logger.info(
+                "Sorry, I don't recognise the mitigation %r. "
+                "It should be one of %s. You can turn them on later using "
+                "enable_suppression() or enable_rounding(). "
+                "For now I am proceeding with no mitigation.",
+                value,
+                sorted(ALLOWED_MITIGATIONS),
+            )
+            self._mitigation = "none"
+            return
+        self._mitigation = value
+
+    @property
+    def round_base(self) -> int:
+        """Return the base used by the ``round`` mitigation strategy."""
+        return self._round_base
+
+    @round_base.setter
+    def round_base(self, value: int) -> None:
+        if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+            logger.info(
+                "round_base must be a positive integer, got %r. "
+                "Falling back to the default value of %d.",
+                value,
+                SAFE_ROUND_BASE,
+            )
+            self._round_base = SAFE_ROUND_BASE
+            return
+        self._round_base = value
+
+    @property
+    def suppress(self) -> bool:
+        """Return True iff the active mitigation strategy is 'suppress'."""
+        return self._mitigation == "suppress"
+
+    @suppress.setter
+    def suppress(self, value: bool) -> None:
+        if value:
+            self._mitigation = "suppress"
+        elif self._mitigation == "suppress":
+            self._mitigation = "none"
+        elif self._mitigation == "round":
+            logger.info(
+                "Setting suppress=False had no effect because mitigation is "
+                "currently 'round'. Use disable_rounding() to turn off rounding."
+            )
+
+    def _record_table_output(
+        self,
+        method: str,
+        status: str,
+        sdc: dict,
+        command: str,
+        summary: str,
+        outcome: DataFrame,
+        table: DataFrame,
+        comments: list[str],
+    ) -> None:
+        """Record a table output and attach any mitigation exception note."""
+        properties: dict[str, Any] = {
+            "method": method,
+            "mitigation": self._mitigation,
+        }
+        if self._mitigation == "round":
+            properties["round_base"] = self._round_base
+        self.results.add(
+            status=status,
+            output_type="table",
+            properties=properties,
+            sdc=sdc,
+            command=command,
+            summary=summary,
+            outcome=outcome,
+            output=[table],
+            comments=comments,
+        )
+        if self._mitigation == "suppress":
+            just_added = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                just_added, "Suppression automatically applied where needed"
+            )
+        elif self._mitigation == "round":
+            just_added = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                just_added,
+                f"Rounding automatically applied to nearest {self._round_base}",
+            )
 
     def crosstab(
         self,
@@ -140,6 +258,12 @@ class Tables:
                     "you must also specify a single values column "
                     "to aggregate over."
                 )
+        # When rounding, compute the table without margins first and then
+        # derive margins from the rounded cells (so the inner cells add up
+        # to the displayed totals). See append_rounded_margins() / Jim
+        # Smith's review on PR #381.
+        recompute_margins = margins and self._mitigation == "round"
+        pandas_margins = False if recompute_margins else margins
 
         # convert [list of] string to [list of] function
         agg_func = get_aggfuncs(aggfunc)
@@ -152,7 +276,7 @@ class Tables:
             rownames,
             colnames,
             agg_func,
-            margins,
+            pandas_margins,
             margins_name,
             dropna,
             normalize,
@@ -175,12 +299,18 @@ class Tables:
             normalize,
         )
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress, table)
+        sdc: dict = get_table_sdc(
+            masks,
+            self.suppress,
+            table,
+            mitigation=self._mitigation,
+            round_base=self._round_base,
+        )
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
         safe_table, outcome = apply_suppression(table, masks)
-        if self.suppress:
+        if self._mitigation == "suppress":
             table = safe_table
             if margins:
                 if show_suppressed:
@@ -212,26 +342,30 @@ class Tables:
                         colnames=colnames,
                         normalize=normalize,
                     )
-            sdc = get_table_sdc(masks, self.suppress, table)
+            sdc = get_table_sdc(
+                masks,
+                self.suppress,
+                table,
+                mitigation=self._mitigation,
+                round_base=self._round_base,
+            )
+        elif self._mitigation == "round":
+            table = round_table(table, self._round_base)
+            if recompute_margins:
+                table = append_rounded_margins(
+                    table, agg_func, margins_name, self._round_base
+                )
 
-        # record output
-
-        self.results.add(
+        self._record_table_output(
+            method="crosstab",
             status=status,
-            output_type="table",
-            properties={"method": "crosstab"},
             sdc=sdc,
             command=command,
             summary=summary,
             outcome=outcome,
-            output=[table],
+            table=table,
             comments=comments,
         )
-        if self.suppress:
-            justadded = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                justadded, "Suppression automatically applied where needed"
-            )
         return table
 
     def pivot_table(
@@ -302,6 +436,12 @@ class Tables:
         logger.debug("pivot_table()")
         command: str = utils.get_command("pivot_table()", stack())
 
+        # When rounding, compute the table without pandas-managed margins
+        # and re-derive them from the rounded cells; see append_rounded_margins()
+        # / Jim Smith's review on PR #381.
+        recompute_margins = margins and self._mitigation == "round"
+        pandas_margins = False if recompute_margins else margins
+
         # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
         resolved_aggfunc: (
             str | Callable[..., Any] | list[str | Callable[..., Any]] | None
@@ -318,7 +458,7 @@ class Tables:
             columns,
             resolved_aggfunc,
             fill_value,
-            margins,
+            pandas_margins,
             dropna,
             margins_name,
             observed,
@@ -395,12 +535,18 @@ class Tables:
             masks[name] = mask
 
         # build the sdc dictionary
-        sdc: dict = get_table_sdc(masks, self.suppress, table)
+        sdc: dict = get_table_sdc(
+            masks,
+            self.suppress,
+            table,
+            mitigation=self._mitigation,
+            round_base=self._round_base,
+        )
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
         safe_table, outcome = apply_suppression(table, masks)
-        if self.suppress:
+        if self._mitigation == "suppress":
             table = safe_table
             if margins:
                 logger.info(
@@ -422,24 +568,29 @@ class Tables:
                     observed=observed,
                     sort=sort,
                 )
-            sdc = get_table_sdc(masks, self.suppress, table)
-        # record output
-        self.results.add(
+            sdc = get_table_sdc(
+                masks,
+                self.suppress,
+                table,
+                mitigation=self._mitigation,
+                round_base=self._round_base,
+            )
+        elif self._mitigation == "round":
+            table = round_table(table, self._round_base)
+            if recompute_margins:
+                table = append_rounded_margins(
+                    table, resolved_aggfunc, margins_name, self._round_base
+                )
+        self._record_table_output(
+            method="pivot_table",
             status=status,
-            output_type="table",
-            properties={"method": "pivot_table"},
             sdc=sdc,
             command=command,
             summary=summary,
             outcome=outcome,
-            output=[table],
+            table=table,
             comments=comments,
         )
-        if self.suppress:
-            justadded = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                justadded, "Suppression automatically applied where needed"
-            )
         return table
 
     def surv_func(
@@ -577,6 +728,8 @@ class Tables:
         summary: str,
     ) -> tuple[Any, str] | None:
         """Create the survival plot according to the status of suppressing."""
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
             plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
@@ -584,10 +737,10 @@ class Tables:
             plot = survival_func.plot()
 
         try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
+            os.makedirs(ARTIFACTS_DIR)
+            logger.debug("Directory %s created successfully", ARTIFACTS_DIR)
         except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            logger.debug("Directory %s already exists", ARTIFACTS_DIR)
 
         # create a unique filename with number to avoid overwrite
         filename, extension = os.path.splitext(filename)
@@ -596,10 +749,10 @@ class Tables:
             return None  # pragma: no cover
         increment_number = 0
         while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
+            f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
         ):  # pragma: no cover
             increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+        unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
 
         # save the plot to the acro artifacts directory
         plt.savefig(unique_filename)
@@ -700,8 +853,17 @@ class Tables:
             The histogram.
         str
             The name of the file where the histogram is saved.
+
+        Notes
+        -----
+        When ``zeros_are_disclosive`` is set to ``False`` in the config, empty
+        bins (count == 0) are excluded from the disclosure threshold check.
+        This avoids flagging histograms as disclosive solely because outliers
+        in a wide-spread column produced empty tail bins.
         """
         logger.debug("hist()")
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         command: str = utils.get_command("hist()", stack())
 
         if isinstance(data, list):  # pragma: no cover
@@ -775,12 +937,12 @@ class Tables:
                 **kwargs,
             )
 
-        # create the acro_artifacts directory to save the plot in it
+        # create the artifacts directory to save the plot in it
         try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
+            os.makedirs(ARTIFACTS_DIR)
+            logger.debug("Directory %s created successfully", ARTIFACTS_DIR)
         except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            logger.debug("Directory %s already exists", ARTIFACTS_DIR)
 
         # create a unique filename with number to avoid overwrite
         filename, extension = os.path.splitext(filename)
@@ -789,10 +951,10 @@ class Tables:
             return None
         increment_number = 0
         while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
+            f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
         ):  # pragma: no cover
             increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+        unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
 
         # save the plot to the acro artifacts directory
         plt.savefig(unique_filename)
@@ -825,7 +987,7 @@ class Tables:
         suppress=True. Otherwise the chart is produced and marked as
         "review".
 
-        The chart is saved to acro_artifacts/ with a unique incrementing
+        The chart is saved to the artifacts directory with a unique incrementing
         number appended to avoid overwriting existing files.
 
         Parameters
@@ -846,6 +1008,8 @@ class Tables:
             The path to the saved pie chart file.
         """
         logger.debug("pie()")
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         command: str = utils.get_command("pie()", stack())
 
         # COMPUTE PRE-CATEGORY COUNTS
@@ -874,12 +1038,12 @@ class Tables:
         # CREATE SUMMARY
         summary = f"Pie chart of {column}. Categories and counts: {counts.to_dict()}."
 
-        # CREATE acro_artifacts DIRECTORY to save plot in
+        # CREATE artifacts DIRECTORY to save plot in
         try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
+            os.makedirs(ARTIFACTS_DIR)
+            logger.debug("Directory %s created successfully", ARTIFACTS_DIR)
         except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
+            logger.debug("Directory %s already exists", ARTIFACTS_DIR)
 
         # CREATE UNIQUE FILENAME to avoid overwrite
 
@@ -890,12 +1054,12 @@ class Tables:
         increment_number = 0
 
         while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
+            f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
         ):  # pragma: no cover
             increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
+        unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
 
-        # SAVE PLOT to acro_artifacts directory
+        # SAVE PLOT to artifacts directory
         plt.savefig(unique_filename)
 
         # RECORD OUTPUT
@@ -1472,8 +1636,100 @@ def apply_suppression(
     return safe_df, outcome_df
 
 
+def round_table(table: DataFrame, base: int) -> DataFrame:
+    """Round numeric cells to the nearest multiple of ``base`` (NaNs preserved)."""
+    logger.debug("round_table(base=%s)", base)
+    if base is None or base <= 0:
+        return table.copy()
+    numeric = table.select_dtypes(include=["number"])
+    rounded = (numeric / base).round() * base
+    result = table.copy()
+    result[numeric.columns] = rounded
+    return result
+
+
+def _aggfunc_name(aggfunc: Any) -> str | None:
+    """Return a string name for an aggfunc value, or None if not derivable."""
+    if isinstance(aggfunc, str):
+        return aggfunc
+    if callable(aggfunc) and hasattr(aggfunc, "__name__"):
+        return aggfunc.__name__
+    return None
+
+
+def append_rounded_margins(
+    rounded_table: DataFrame,
+    aggfunc: Any,
+    margins_name: str,
+    base: int,
+) -> DataFrame:
+    """Append row/column/grand-total margins to a pre-rounded table.
+
+    Following Jim Smith's review on PR #381: once cells have been rounded,
+    margins are computed by aggregating the rounded cells (so rounded inner
+    cells add up to the displayed totals) and then rounded again to ``base``
+    so the whole output respects the rounding base.
+
+    Conceptually this is the same as the "synthetic-data" approach Jim
+    described - exploding the rounded table into one record per cell and
+    re-running ``pd.crosstab(margins=True)`` - but implemented directly on
+    the rounded DataFrame to keep it simple. We currently support single-
+    level row and column indices; multi-level or list-of-aggfunc tables fall
+    back to returning the table without margins.
+    """
+    if isinstance(aggfunc, list):
+        logger.info(
+            "Cannot add margins to a rounded table when multiple aggregation "
+            "functions were requested; returning the table without margins."
+        )
+        return rounded_table
+    if rounded_table.index.nlevels > 1 or rounded_table.columns.nlevels > 1:
+        logger.info(
+            "Margin recomputation for hierarchical row/column indexes is not "
+            "yet supported under rounding; returning the table without margins."
+        )
+        return rounded_table
+
+    name = _aggfunc_name(aggfunc)
+    if aggfunc is None or name in (None, "count", "sum", "mode_aggfunc"):
+        agg_method = "sum"
+    elif name == "mean":
+        agg_method = "mean"
+    elif name == "median":
+        agg_method = "median"
+    else:
+        logger.info(
+            "Margin recomputation for aggfunc %r is not supported under "
+            "rounding; returning the table without margins.",
+            name,
+        )
+        return rounded_table
+
+    numeric = rounded_table.select_dtypes(include=["number"])
+    row_margin = getattr(numeric, agg_method)(axis=1, skipna=True)
+    col_margin = getattr(numeric, agg_method)(axis=0, skipna=True)
+    grand = float(getattr(numeric.stack(), agg_method)())
+
+    if base and base > 0:
+        row_margin = (row_margin / base).round() * base
+        col_margin = (col_margin / base).round() * base
+        grand = round(grand / base) * base
+
+    table = rounded_table.copy()
+    table[margins_name] = row_margin
+    new_row = col_margin.reindex(table.columns)
+    new_row[margins_name] = grand
+    table.loc[margins_name] = new_row
+    return table
+
+
 def get_table_sdc(
-    masks: dict[str, DataFrame], suppress: bool, table: DataFrame | None = None
+    masks: dict[str, DataFrame],
+    suppress: bool,
+    table: DataFrame | None = None,
+    *,
+    mitigation: str | None = None,
+    round_base: int = 0,
 ) -> dict[str, Any]:
     """Return the SDC dictionary using the suppression masks.
 
@@ -1482,14 +1738,29 @@ def get_table_sdc(
     masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
     suppress : bool
-        Whether suppression has been applied.
+        Whether suppression has been applied (legacy flag, kept for
+        back-compat). When ``mitigation`` is provided it takes precedence.
     table : DataFrame, optional
         The table to align masks to.
+    mitigation : str, optional
+        The mitigation strategy applied to the output, one of ``"none"``,
+        ``"suppress"``, ``"round"``. If ``None``, derived from ``suppress``.
+    round_base : int, default 0
+        The base used when ``mitigation == "round"``; ignored otherwise.
     """
+    if mitigation is None:
+        mitigation = "suppress" if suppress else "none"
     if table is not None:
         masks = align_masks(table, masks)
     # summary of cells to be suppressed
-    sdc: dict[str, Any] = {"summary": {"suppressed": suppress}, "cells": {}}
+    sdc: dict[str, Any] = {
+        "summary": {
+            "suppressed": mitigation == "suppress",
+            "mitigation": mitigation,
+            "round_base": round_base if mitigation == "round" else 0,
+        },
+        "cells": {},
+    }
     sdc["summary"]["negative"] = 0
     sdc["summary"]["missing"] = 0
     sdc["summary"]["threshold"] = 0
@@ -1513,6 +1784,21 @@ def get_table_sdc(
     return sdc
 
 
+def _rounded_summary(sdc_summary: dict[str, Any]) -> tuple[str, str]:
+    """Build the status/summary for a rounded output."""
+    status = "review"
+    summary = f"rounded to nearest {sdc_summary.get('round_base', 0)}; "
+    for name in ("threshold", "p-ratio", "nk-rule", "all-values-are-same"):
+        count = sdc_summary.get(name, 0)
+        if count > 0:
+            summary += f"{name}: {count} cells rounded; "
+    if sdc_summary.get("negative", 0) > 0:
+        summary += "negative values found; "
+    if sdc_summary.get("missing", 0) > 0:
+        summary += "missing values found; "
+    return status, f"{status}; {summary}"
+
+
 def get_summary(sdc: dict[str, Any]) -> tuple[str, str]:
     """Return the status and summary of the suppression masks.
 
@@ -1531,6 +1817,13 @@ def get_summary(sdc: dict[str, Any]) -> tuple[str, str]:
     status: str = "pass"
     summary: str = ""
     sdc_summary = sdc["summary"]
+    mitigation: str = sdc_summary.get(
+        "mitigation", "suppress" if sdc_summary.get("suppressed") else "none"
+    )
+    if mitigation == "round":
+        status, summary = _rounded_summary(sdc_summary)
+        logger.info("get_summary(): %s", summary)
+        return status, summary
     sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
     if sdc_summary["negative"] > 0:
         summary += "negative values found"
@@ -1579,7 +1872,16 @@ def _build_histogram_masks(
     else:
         freq, bin_edges = np.histogram(col_series, bins)
 
-    masks: dict[str, np.ndarray] = {"threshold": freq < THRESHOLD}
+    threshold_mask = freq < THRESHOLD
+    if not ZEROS_ARE_DISCLOSIVE:
+        empty_bins = freq == 0
+        threshold_mask &= ~empty_bins
+        if np.any(empty_bins):
+            logger.debug(
+                "%d empty bin(s) excluded from threshold check",
+                int(np.sum(empty_bins)),
+            )
+    masks: dict[str, np.ndarray] = {"threshold": threshold_mask}
 
     edge_mask = np.zeros_like(freq, dtype=bool)
     edge_mask[0] = freq[0] < THRESHOLD

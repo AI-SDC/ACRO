@@ -1,9 +1,14 @@
 """Unit tests."""
 
 import json
+import logging
 import os
 import shutil
 from unittest.mock import patch
+
+import matplotlib as mpl
+
+mpl.use("Agg")
 
 import numpy as np
 import pandas as pd
@@ -12,6 +17,7 @@ import statsmodels.api as sm
 
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
 from acro.acro_tables import _rounded_survival_table, crosstab_with_totals
+from acro.constants import ARTIFACTS_DIR
 from acro.record import Records, load_records
 
 PATH: str = "RES_PYTEST"
@@ -505,6 +511,61 @@ def test_custom_output(acro):
     shutil.rmtree(PATH)
 
 
+def test_blocked_extension(acro, tmp_path):
+    """Test that blocked file extensions are rejected in custom output."""
+    # create temporary files with blocked extensions
+    svg_file = tmp_path / "test.svg"
+    svg_file.write_text("<svg></svg>")
+    gph_file = tmp_path / "test.gph"
+    gph_file.write_text("data")
+
+    # blocked extensions should be rejected
+    acro.custom_output(str(svg_file))
+    acro.custom_output(str(gph_file))
+    assert len(acro.results.results) == 0
+
+    # allowed extensions should be accepted
+    txt_file = tmp_path / "test.txt"
+    txt_file.write_text("hello")
+    acro.custom_output(str(txt_file))
+    assert len(acro.results.results) == 1
+
+    # case-insensitive check
+    svg_upper = tmp_path / "test.SVG"
+    svg_upper.write_text("<svg></svg>")
+    acro.custom_output(str(svg_upper))
+    assert len(acro.results.results) == 1
+
+
+def test_blocked_extension_hist(data, acro):
+    """Test that blocked file extensions are rejected for histograms."""
+    result = acro.hist(data, "inc_grants", bins=1, filename="hist.svg")
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
+def test_blocked_extension_pie(data, acro):
+    """Test that blocked file extensions are rejected for pie charts."""
+    result = acro.pie(data, "grant_type", filename="pie.svg")
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
+def test_blocked_extension_survival(acro):
+    """Test that blocked file extensions are rejected for survival plots."""
+    result = acro.survival_plot(
+        survival_table=pd.DataFrame(),
+        survival_func=None,
+        filename="surv.svg",
+        status="pass",
+        sdc={},
+        command="test",
+        summary="test",
+    )
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
 def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with negative values."""
     acro_tables.CHECK_MISSING_VALUES = True
@@ -705,7 +766,7 @@ def test_surv_func(acro):
         assert "cells suppressed" in output.summary
 
     # plot
-    filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/kaplan-meier_0.png")
     _ = acro.surv_func(data.futime, data.death, output="plot")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "I need this")
@@ -1075,7 +1136,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
 
 def test_histogram_disclosive(data, acro, caplog):
     """Test a discolsive histogram."""
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
     _ = acro.hist(data, "inc_grants")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
@@ -1092,7 +1153,7 @@ def test_histogram_disclosive(data, acro, caplog):
 
 def test_histogram_non_disclosive(data, acro):
     """Test a non disclosive histogram."""
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
     # Bracket explicit bin edges outside the data extremes so extreme-value-leak
     # cannot fire on the real-world min/max of inc_grants.
     low = float(data["inc_grants"].min()) - 1.0
@@ -1118,7 +1179,7 @@ def _make_wage_df(extra_low_count: int = 0) -> pd.DataFrame:
 
 def test_histogram_interior_threshold_only():
     """Interior bins fail threshold but edge bins meet it."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     np.random.seed(0)
     low = np.random.uniform(0.0, 10.0, size=15)
@@ -1133,12 +1194,12 @@ def test_histogram_interior_threshold_only():
     assert output.sdc["summary"]["threshold"] > 0
     assert "edge-bin" not in output.summary
     assert "threshold:" in output.summary
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
 
 
 def test_histogram_edge_bin_only():
     """First bin falls below threshold; interior + last bins pass."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     # First bin [0,10): 5 rows. Bins 1..9 each get 10 rows evenly.
     low = np.linspace(1.0, 9.0, 5)
@@ -1151,12 +1212,12 @@ def test_histogram_edge_bin_only():
     assert output.sdc["summary"]["edge-bin"] == 1
     assert output.sdc["bins"]["edge-bin"] == [0]
     assert "edge-bin:" in output.summary
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
 
 
 def test_histogram_by_val_range_mismatch():
     """Stratified histogram where subgroups have different ranges."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     np.random.seed(2)
     male_wages = np.random.uniform(5.0, 10.0, size=30)
@@ -1175,12 +1236,12 @@ def test_histogram_by_val_range_mismatch():
     assert "by-val-range-mismatch:" in output.summary
     assert "sex" in output.sdc["by_val_detail"]
     assert set(output.sdc["by_val_detail"]["sex"]) == {"M", "F"}
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
 
 
 def test_histogram_extreme_value_leak():
     """A single individual holds the minimum; leftmost edge reveals them."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     np.random.seed(3)
     rest = np.random.uniform(5.0, 10.0, size=50)
@@ -1192,12 +1253,12 @@ def test_histogram_extreme_value_leak():
     assert output.sdc["summary"]["extreme-value-leak"] >= 1
     assert output.sdc["min_count"] == 1
     assert "extreme-value-leak:" in output.summary
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
 
 
 def test_histogram_explicit_bins_no_leak():
     """User-supplied bin edges that don't coincide with data extremes don't leak."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     # Data in [4.5, 10]; bin edges [4, 6, 8, 10.5] bracket away from the extremes.
     # Each bin gets at least 10 rows.
@@ -1216,12 +1277,12 @@ def test_histogram_explicit_bins_no_leak():
     assert output.sdc["summary"]["extreme-value-leak"] == 0
     assert output.sdc["summary"]["edge-bin"] == 0
     assert output.sdc["summary"]["threshold"] == 0
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
 
 
 def test_histogram_nan_handling():
     """Drop NaNs before SDC math; all-NaN column returns None."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     np.random.seed(5)
     valid = np.random.uniform(0.0, 100.0, size=15)
@@ -1230,12 +1291,12 @@ def test_histogram_nan_handling():
     _ = a.hist(df, "val", bins=5)
     output = a.results.get_index(0)
     assert sum(output.sdc["counts"]) == 15
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
 
 
 def test_histogram_by_val_unnamed_series():
     """Accept an unnamed pd.Series as by_val without breaking by_val_detail keys."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     np.random.seed(6)
     wages = np.concatenate(
@@ -1248,12 +1309,12 @@ def test_histogram_by_val_unnamed_series():
     output = a.results.get_index(0)
     assert "by_val" in output.sdc["by_val_detail"]
     assert set(output.sdc["by_val_detail"]["by_val"]) == {"M", "F"}
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
 
 
 def test_histogram_integer_column_extreme_leak():
     """Integer-valued column with a single maximum trips extreme-value-leak."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
     df = pd.DataFrame({"age": [20] * 30 + [65]})
     a = ACRO(suppress=False)
@@ -1262,19 +1323,72 @@ def test_histogram_integer_column_extreme_leak():
     assert output.status == "fail"
     assert output.sdc["summary"]["extreme-value-leak"] >= 1
     assert output.sdc["max_count"] == 1
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_zeros_not_disclosive(acro):
+    """Empty tail bins do not flag a histogram when zeros_are_disclosive=False."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    # 100 obs at each of 6 distinct values spanning [0, 10]; with bins=20, the
+    # only sub-threshold bins are the empty ones between the populated values.
+    df = pd.DataFrame({"x": np.repeat([0.0, 1.0, 2.0, 3.0, 5.0, 10.0], 100)})
+    acro_tables.ZEROS_ARE_DISCLOSIVE = False
+    try:
+        _ = acro.hist(df, "x", bins=20)
+    finally:
+        acro_tables.ZEROS_ARE_DISCLOSIVE = True
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "review"
+    shutil.rmtree(PATH)
+
+
+def test_histogram_zeros_disclosive_default(acro, caplog):
+    """Empty bins remain disclosive under the default zeros_are_disclosive=True."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    df = pd.DataFrame({"x": np.repeat([0.0, 1.0, 2.0, 3.0, 5.0, 10.0], 100)})
+    _ = acro.hist(df, "x", bins=20)
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "fail"
+    assert "Histogram will not be shown as the x column is disclosive." in caplog.text
+    shutil.rmtree(PATH)
+
+
+def test_histogram_nonempty_below_threshold_still_disclosive(acro):
+    """A non-empty bin below threshold remains disclosive even when zeros are not."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    # bins=2 over [0, 5]: one bin has 100 obs, the other has 5 (non-empty, < THRESHOLD).
+    df = pd.DataFrame({"x": np.r_[np.repeat(0.0, 100), np.repeat(5.0, 5)]})
+    acro_tables.ZEROS_ARE_DISCLOSIVE = False
+    try:
+        _ = acro.hist(df, "x", bins=2)
+    finally:
+        acro_tables.ZEROS_ARE_DISCLOSIVE = True
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.status == "fail"
+    shutil.rmtree(PATH)
 
 
 def test_pie_disclosive(acro, caplog):
     """Test a disclosive pie chart (a category has fewer than threshold observations)."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
 
     df = pd.DataFrame(
         {"grant_type": (["A"] * 20) + (["B"] * 15) + (["C"] * 12) + (["D"] * 5)}
     )
 
-    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/pie_0.png")
     _ = acro.pie(df, "grant_type", filename="pie.png")
 
     assert os.path.exists(filename)
@@ -1293,9 +1407,9 @@ def test_pie_disclosive(acro, caplog):
 
 def test_pie_non_disclosive(data, acro):
     """Test a non-disclosive pie chart (all categories meet the threshold)."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
-    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/pie_0.png")
     result = acro.pie(data, "grant_type", filename="pie.png")
     assert os.path.normpath(result) == filename
     assert os.path.exists(filename)
@@ -1605,3 +1719,326 @@ def test_cell_id_alignment_with_margins_and_suppression(data):
                 assert pd.isna(value), (
                     f"Cell at ({row}, {col}) in {cell_type} should be NaN but is {value}"
                 )
+
+
+def _rounded_cells(table: pd.DataFrame) -> np.ndarray:
+    """Return the non-NaN numeric values of a table as a flat numpy array."""
+    numeric = table.select_dtypes(include=["number"]).to_numpy().ravel()
+    return numeric[~np.isnan(numeric)]
+
+
+def _assert_rounded_margins_consistent(
+    table: pd.DataFrame, base: int, margins_name: str = "All"
+) -> None:
+    """Assert margins equal rounded sums of inner cells across both axes."""
+    inner_cols = [c for c in table.columns if c != margins_name]
+    inner_rows = [r for r in table.index if r != margins_name]
+    # row margins: sum across inner columns, re-rounded
+    for row in inner_rows:
+        expected = (table.loc[row, inner_cols].sum() / base).round() * base
+        assert table.loc[row, margins_name] == expected
+    # column margins: sum across inner rows, re-rounded
+    for col in inner_cols:
+        expected = (table.loc[inner_rows, col].sum() / base).round() * base
+        assert table.loc[margins_name, col] == expected
+    # grand total: rounded sum of the column margins == rounded sum of the row margins
+    grand_from_cols = (table.loc[margins_name, inner_cols].sum() / base).round() * base
+    grand_from_rows = (table.loc[inner_rows, margins_name].sum() / base).round() * base
+    assert table.loc[margins_name, margins_name] == grand_from_cols
+    assert table.loc[margins_name, margins_name] == grand_from_rows
+
+
+def test_crosstab_with_rounding_base_5(data):
+    """Crosstab with mitigation='round' rounds every cell to nearest 5."""
+    acro = ACRO(mitigation="round")
+    table = acro.crosstab(data.year, data.grant_type)
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    output = acro.results.get_index(0)
+    assert output.status == "review"
+    assert "rounded to nearest 5" in output.summary
+    assert output.properties["mitigation"] == "round"
+    assert output.properties["round_base"] == 5
+
+
+def test_crosstab_with_rounding_base_10(data):
+    """Crosstab with round_base=10 rounds every cell to nearest 10."""
+    acro = ACRO(mitigation="round", round_base=10)
+    table = acro.crosstab(data.year, data.grant_type)
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 10 == 0)
+    output = acro.results.get_index(0)
+    assert "rounded to nearest 10" in output.summary
+
+
+def test_pivot_table_with_rounding(data):
+    """Pivot_table with mitigation='round' rounds every cell."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.pivot_table(
+        data, index="year", columns="grant_type", values="inc_grants", aggfunc="count"
+    )
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    output = acro.results.get_index(0)
+    assert output.properties["mitigation"] == "round"
+    assert output.properties["round_base"] == 5
+
+
+def test_rounding_with_margins_crosstab_recomputes_totals(data):
+    """Crosstab with margins=True under rounding recomputes margins from rounded cells."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.crosstab(data.year, data.grant_type, margins=True)
+    # margins row/column are present and named "All"
+    assert "All" in table.columns
+    assert "All" in table.index
+    # every cell (including margins) is a multiple of the round base
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    # row totals, column totals, and the grand total are all consistent
+    _assert_rounded_margins_consistent(table, base=5)
+
+
+def test_rounding_with_margins_pivot_table_recomputes_totals(data):
+    """Pivot_table with margins=True under rounding recomputes margins from rounded cells."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.pivot_table(
+        data,
+        index="year",
+        columns="grant_type",
+        values="inc_grants",
+        aggfunc="count",
+        margins=True,
+    )
+    assert "All" in table.columns
+    assert "All" in table.index
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    # row totals, column totals, and the grand total are all consistent
+    _assert_rounded_margins_consistent(table, base=5)
+
+
+def test_suppress_backward_compat():
+    """The suppress property stays in sync with mitigation."""
+    acro = ACRO(suppress=True)
+    assert acro.mitigation == "suppress"
+    assert acro.suppress is True
+    acro.suppress = False
+    assert acro.mitigation == "none"
+    assert acro.suppress is False
+    acro.suppress = True
+    assert acro.mitigation == "suppress"
+
+
+def test_enable_rounding_disable_rounding():
+    """Enable_rounding / disable_rounding toggle the mitigation field."""
+    acro = ACRO()
+    assert acro.mitigation == "none"
+    acro.enable_rounding(base=10)
+    assert acro.mitigation == "round"
+    assert acro.round_base == 10
+    acro.disable_rounding()
+    assert acro.mitigation == "none"
+
+
+def test_disable_rounding_does_not_restore_prior_suppress():
+    """Disable_rounding always falls back to 'none', not to prior suppress=True."""
+    acro = ACRO(suppress=True)
+    assert acro.mitigation == "suppress"
+    acro.enable_rounding()
+    assert acro.mitigation == "round"
+    acro.disable_rounding()
+    # documented behaviour: prior suppress state is not restored
+    assert acro.mitigation == "none"
+    assert acro.suppress is False
+
+
+def test_round_base_loaded_from_config():
+    """Round_base is picked up from the yaml config by default."""
+    acro = ACRO()
+    assert acro.round_base == 5
+
+
+def test_round_preserves_nan():
+    """Rounding a table with NaN cells preserves the NaN."""
+    table = pd.DataFrame({"a": [3.0, np.nan, 11.0], "b": [7.0, 2.0, np.nan]})
+    rounded = acro_tables.round_table(table, base=5)
+    assert pd.isna(rounded.loc[1, "a"])
+    assert pd.isna(rounded.loc[2, "b"])
+    assert rounded.loc[0, "a"] == 5
+    assert rounded.loc[2, "a"] == 10
+    assert rounded.loc[0, "b"] == 5
+    assert rounded.loc[1, "b"] == 0
+
+
+def test_round_base_rejects_non_positive(caplog):
+    """Setting round_base to zero or negative logs a message and falls back to default."""
+    acro = ACRO()
+    default = acro.round_base
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.round_base = 0
+    assert acro.round_base == default
+    assert "positive integer" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.round_base = -3
+    assert acro.round_base == default
+    assert "positive integer" in caplog.text
+
+
+def test_suppress_false_while_rounding_is_noop(caplog):
+    """Setting suppress=False while rounding is active logs a message and is a no-op."""
+    acro = ACRO(mitigation="round")
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.suppress = False
+    assert acro.mitigation == "round"
+    assert "disable_rounding" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.disable_suppression()
+    assert acro.mitigation == "round"
+    assert "disable_rounding" in caplog.text
+
+
+def test_rounding_records_underlying_disclosure_risk(data):
+    """The sdc audit record still flags threshold violations when rounding."""
+    acro = ACRO(mitigation="round", round_base=5)
+    acro.crosstab(data.year, data.grant_type)
+    output = acro.results.get_index(0)
+    assert output.sdc["summary"]["threshold"] > 0
+    assert output.sdc["summary"]["mitigation"] == "round"
+    assert output.sdc["summary"]["round_base"] == 5
+    assert "rounded to nearest 5" in output.summary
+    assert "threshold:" in output.summary
+    values = _rounded_cells(output.output[0])
+    assert np.all(values % 5 == 0)
+
+
+def test_round_base_passed_to_constructor():
+    """ACRO(round_base=...) overrides the yaml default."""
+    acro = ACRO(round_base=7)
+    assert acro.round_base == 7
+
+
+def test_mitigation_setter_rejects_invalid_value(caplog):
+    """Setting mitigation to an unknown value logs a message and falls back to 'none'."""
+    acro = ACRO()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.mitigation = "obfuscate"
+    assert acro.mitigation == "none"
+    assert "obfuscate" in caplog.text
+
+
+def test_round_table_noop_when_base_non_positive():
+    """Round_table returns an unchanged copy when base is 0 or negative."""
+    table = pd.DataFrame({"a": [3.2, 4.7], "b": [11.0, 9.0]})
+    zero = acro_tables.round_table(table, base=0)
+    assert (zero.to_numpy() == table.to_numpy()).all()
+    negative = acro_tables.round_table(table, base=-5)
+    assert (negative.to_numpy() == table.to_numpy()).all()
+
+
+def test_rounded_summary_reports_negative_values(data):
+    """The rounded summary surfaces negative and missing check results."""
+    data.loc[0:10, "inc_grants"] = -10
+    acro = ACRO(mitigation="round", round_base=5)
+    acro.crosstab(data.year, data.grant_type, values=data.inc_grants, aggfunc="mean")
+    output = acro.results.get_index(0)
+    assert "negative values found" in output.summary
+
+
+def test_rounded_summary_reports_missing_values():
+    """_rounded_summary emits a missing-values note when the check fires."""
+    sdc_summary = {
+        "mitigation": "round",
+        "round_base": 5,
+        "threshold": 0,
+        "p-ratio": 0,
+        "nk-rule": 0,
+        "all-values-are-same": 0,
+        "negative": 0,
+        "missing": 2,
+    }
+    status, summary = acro_tables._rounded_summary(sdc_summary)
+    assert status == "review"
+    assert "missing values found" in summary
+
+
+def _simple_rounded_table() -> pd.DataFrame:
+    """Return a small pre-rounded numeric table for margin tests."""
+    return pd.DataFrame(
+        {"a": [5.0, 10.0, 15.0], "b": [10.0, 5.0, 20.0]},
+        index=["r1", "r2", "r3"],
+    )
+
+
+def test_aggfunc_name_extracts_callable_name():
+    """_aggfunc_name returns __name__ for callables and None for opaque values."""
+    assert acro_tables._aggfunc_name("mean") == "mean"
+    assert acro_tables._aggfunc_name(acro_tables.mode_aggfunc) == "mode_aggfunc"
+    assert acro_tables._aggfunc_name(object()) is None
+
+
+def test_append_rounded_margins_list_aggfunc_skips_margins(caplog):
+    """A list of aggfuncs falls back to no margins with a log message."""
+    table = _simple_rounded_table()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, ["sum", "mean"], "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "multiple aggregation" in caplog.text
+
+
+def test_append_rounded_margins_multilevel_index_skips_margins(caplog):
+    """A hierarchical row index falls back to no margins."""
+    idx = pd.MultiIndex.from_tuples([("a", 1), ("a", 2), ("b", 1)])
+    table = pd.DataFrame({"x": [5.0, 10.0, 15.0], "y": [10.0, 5.0, 20.0]}, index=idx)
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, None, "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "hierarchical" in caplog.text
+
+
+def test_append_rounded_margins_multilevel_columns_skips_margins(caplog):
+    """A hierarchical column index falls back to no margins."""
+    cols = pd.MultiIndex.from_tuples([("g", "x"), ("g", "y")])
+    table = pd.DataFrame([[5.0, 10.0], [10.0, 5.0]], columns=cols)
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, None, "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "hierarchical" in caplog.text
+
+
+def test_append_rounded_margins_unsupported_aggfunc_skips_margins(caplog):
+    """An aggfunc we don't know how to recompute margins for is skipped."""
+    table = _simple_rounded_table()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        result = acro_tables.append_rounded_margins(table, "std", "All", 5)
+    pd.testing.assert_frame_equal(result, table)
+    assert "'std'" in caplog.text
+
+
+def test_append_rounded_margins_mean_uses_mean_of_rounded_cells():
+    """Mean aggfunc derives margins from the mean of rounded cells, then rounds them."""
+    table = _simple_rounded_table()
+    result = acro_tables.append_rounded_margins(table, "mean", "All", 5)
+    # mean of row r1 = mean(5, 10) = 7.5; pandas Series.round uses banker's
+    # rounding so 7.5/5=1.5 -> 2 -> 10.
+    assert result.loc["r1", "All"] == 10
+    # mean of column a = mean(5, 10, 15) = 10
+    assert result.loc["All", "a"] == 10
+    values = _rounded_cells(result)
+    assert np.all(values % 5 == 0)
+
+
+def test_append_rounded_margins_median_uses_median_of_rounded_cells():
+    """Median aggfunc derives margins from the median of rounded cells."""
+    table = _simple_rounded_table()
+    result = acro_tables.append_rounded_margins(table, "median", "All", 5)
+    # median of column a = median(5, 10, 15) = 10
+    assert result.loc["All", "a"] == 10
+    values = _rounded_cells(result)
+    assert np.all(values % 5 == 0)

@@ -14,6 +14,8 @@ from typing import Any
 import pandas as pd
 from pandas import DataFrame
 
+from .constants import ARTIFACTS_DIR
+from .utils import is_blocked_extension
 from .version import __version__
 
 logger = logging.getLogger("acro:records")
@@ -209,10 +211,13 @@ class Record:
 class Records:
     """Stores data related to a collection of output records."""
 
-    def __init__(self) -> None:
+    def __init__(self, blocked_extensions: list[str] | None = None) -> None:
         """Construct a new object for storing multiple records."""
         self.results: dict[str, Record] = {}
         self.output_id: int = 0
+        self.blocked_extensions: list[str] = [
+            ext.lower() for ext in (blocked_extensions or [])
+        ]
 
     def add(
         self,
@@ -322,7 +327,7 @@ class Records:
         key = list(self.results.keys())[index]
         return self.results[key]
 
-    def add_custom(self, filename: str, comment: str | None = None) -> None:
+    def add_custom(self, filename: str, comment: str | None = None) -> bool:
         """Add an unsupported output to the results dictionary.
 
         Parameters
@@ -331,7 +336,14 @@ class Records:
             The name of the file that will be added to the list of the outputs.
         comment : str | None, default None
             An optional comment.
+
+        Returns
+        -------
+        bool
+            False if the file extension is blocked, True otherwise.
         """
+        if is_blocked_extension(filename, self.blocked_extensions):
+            return False
         if os.path.exists(filename):
             output = Record(
                 uid=f"output_{self.output_id}",
@@ -352,6 +364,7 @@ class Records:
             logger.info(
                 "WARNING: Unable to add %s because the file does not exist", filename
             )  # pragma: no cover
+        return True
 
     def rename(self, old: str, new: str) -> None:
         """Rename an output.
@@ -452,9 +465,9 @@ class Records:
         else:
             raise ValueError("Invalid file extension. Options: {json, xlsx}")
         self.write_checksums(path)
-        # check if the directory acro_artifacts exists and delete it
-        if os.path.exists("acro_artifacts"):
-            shutil.rmtree("acro_artifacts")
+        # check if the artifacts directory exists and delete it
+        if os.path.exists(ARTIFACTS_DIR):
+            shutil.rmtree(ARTIFACTS_DIR)
         logger.info("outputs written to: %s", path)
 
     def finalise_json(self, path: str) -> None:

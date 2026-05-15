@@ -16,6 +16,10 @@ import pytest
 import statsmodels.api as sm
 
 from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
+from acro.acro_regression import (
+    _get_endog_exog_variables,
+    _get_formula_variables,
+)
 from acro.acro_tables import _rounded_survival_table, crosstab_with_totals
 from acro.constants import ARTIFACTS_DIR
 from acro.record import Records, load_records
@@ -614,10 +618,12 @@ def test_add_to_acro(data, monkeypatch):
     src_path = "test_add_to_acro"
     dest_path = "sdc_results"
     file_path = "crosstab.pkl"
-    if not os.path.exists(src_path):  # pragma no cover
-        table.to_pickle(file_path)
-        os.mkdir(src_path)
-        shutil.move(file_path, src_path, copy_function=shutil.copytree)
+    if os.path.exists(src_path):
+        shutil.rmtree(src_path)
+    os.mkdir(src_path)
+    table.to_pickle(os.path.join(src_path, file_path))
+    if os.path.exists(dest_path):
+        shutil.rmtree(dest_path)
     # add exception to the output
     exception = ["I want it"]
     monkeypatch.setattr("builtins.input", lambda _: exception.pop(0))
@@ -2042,3 +2048,519 @@ def test_append_rounded_margins_median_uses_median_of_rounded_cells():
     assert result.loc["All", "a"] == 10
     values = _rounded_cells(result)
     assert np.all(values % 5 == 0)
+
+
+def test_summary_csv_created_with_json(data, acro):
+    """Test that DO_NOT_RELEASE_session_summary.csv is created when finalising to JSON."""
+    path = "RES_SUMMARY_JSON"
+    shutil.rmtree(path, ignore_errors=True)
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
+    acro.finalise(path, "json")
+    summary_path = os.path.normpath(f"{path}/DO_NOT_RELEASE_session_summary.csv")
+    assert os.path.exists(summary_path), (
+        "DO_NOT_RELEASE_session_summary.csv was not created"
+    )
+    summary_df = pd.read_csv(summary_path)
+    assert len(summary_df) == 1
+    assert "id" in summary_df.columns
+    assert "method" in summary_df.columns
+    assert "variables" in summary_df.columns
+    assert "total_records" in summary_df.columns
+    assert "suppression" in summary_df.columns
+    assert "diff_risk" in summary_df.columns
+    # check values
+    assert summary_df.iloc[0]["id"] == "output_0"
+    assert summary_df.iloc[0]["method"] == "crosstab"
+    assert summary_df.iloc[0]["total_records"] > 0
+    shutil.rmtree(path, ignore_errors=True)
+
+
+def test_summary_sheet_in_excel(data, acro):
+    """Test that a 'summary' sheet is created in results.xlsx."""
+    path = "RES_SUMMARY_XLSX"
+    shutil.rmtree(path, ignore_errors=True)
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.pivot_table(
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+    )
+    acro.add_exception("output_0", "Let me have it")
+    acro.add_exception("output_1", "I need this")
+    acro.finalise(path, "xlsx")
+    filename = os.path.normpath(f"{path}/results.xlsx")
+    xl = pd.ExcelFile(filename)
+    assert "summary" in xl.sheet_names, "'summary' sheet not found in Excel"
+    summary_df = pd.read_excel(filename, sheet_name="summary")
+    xl.close()
+    assert len(summary_df) == 2
+    methods = summary_df["method"].tolist()
+    assert "crosstab" in methods
+    assert "pivot_table" in methods
+    shutil.rmtree(path, ignore_errors=True)
+
+
+def test_summary_variables_extracted(data):
+    """Test that variable names are correctly extracted into the summary."""
+    path = "RES_SUMMARY_VARS"
+    shutil.rmtree(path, ignore_errors=True)
+    acro_obj = ACRO(suppress=False)
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    acro_obj.add_exception("output_0", "Let me have it")
+    acro_obj.finalise(path, "json")
+    summary_path = os.path.normpath(f"{path}/DO_NOT_RELEASE_session_summary.csv")
+    summary_df = pd.read_csv(summary_path)
+    variables = summary_df.iloc[0]["variables"]
+    assert "year" in variables
+    assert "grant_type" in variables
+    shutil.rmtree(path, ignore_errors=True)
+
+
+def test_summary_differencing_risk(data):
+    """Test that differencing risk is flagged when tables share variables but have different suppression settings."""
+    acro_obj = ACRO(suppress=True)
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    acro_obj.suppress = False
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    acro_obj.add_exception("output_0", "Let me have it")
+    acro_obj.add_exception("output_1", "I need this")
+
+    summary_df = acro_obj.results.generate_summary()
+
+    assert summary_df.iloc[0]["variables"] == summary_df.iloc[1]["variables"]
+
+    assert summary_df.iloc[0]["suppression"]
+    assert not summary_df.iloc[1]["suppression"]
+
+    assert summary_df.iloc[0]["diff_risk"]
+    assert summary_df.iloc[1]["diff_risk"]
+
+
+def test_summary_regression_metadata(data, acro):
+    """Test that regression outputs are correctly captured in the summary."""
+    new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    new_df = new_df.dropna()
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    _ = acro.ols(endog, exog)
+    summary_df = acro.results.generate_summary()
+    assert len(summary_df) == 1
+    row = summary_df.iloc[0]
+    assert row["method"] == "ols"
+    assert row["type"] == "regression"
+    assert row["total_records"] > 0
+    variables = row["variables"]
+    assert "inc_activity" in variables
+    assert "inc_grants" in variables
+    assert "inc_donations" in variables
+    assert "total_costs" in variables
+
+
+def test_summary_empty_session():
+    """Test that summary handles an empty session gracefully."""
+    acro_obj = ACRO(suppress=False)
+    summary_df = acro_obj.results.generate_summary()
+    assert summary_df.empty
+    assert "diff_risk" in summary_df.columns
+
+
+def test_extract_table_info(data, acro):
+    """Test the _extract_table_info helper method."""
+    acro.crosstab(data.year, data.grant_type)
+    output = acro.results.get_index(0)
+
+    variables, total_records = acro.results._extract_table_info(output.output)
+    assert len(variables) > 0
+    assert total_records > 0
+    assert "year" in variables or "grant_type" in variables
+
+
+def test_extract_regression_info():
+    """Test the _extract_regression_info helper method with sample data."""
+    records = Records()
+
+    reg_output = pd.DataFrame(
+        {
+            "coef": [1.0, 2.0],
+            "std err": [0.1, 0.2],
+            "t": [10.0, 10.0],
+            "P>|t|": [0.0, 0.0],
+        },
+        index=["const", "x1"],
+    )
+
+    obs_output = pd.DataFrame({"Value": [100]}, index=["no. observations"])
+
+    output = [reg_output, obs_output]
+    total_records = records._extract_regression_info(output)
+
+    assert total_records == 100
+
+
+def test_extract_regression_info_column_search():
+    """Test _extract_regression_info column-based search path."""
+    records = Records()
+
+    df = pd.DataFrame(columns=["no. observations", "500"])
+    assert records._extract_regression_info([df]) == 500
+
+
+def test_extract_regression_variables():
+    """Test _extract_regression_variables extracts dep and indep variable names."""
+    records = Records()
+
+    table0 = pd.DataFrame(
+        {"inc_activity": ["OLS", "2024-01-01"]}, index=["Model", "Date"]
+    )
+
+    table1 = pd.DataFrame(
+        {"coef": [0.5, 1.2, 3.4, 0.8], "std err": [0.1, 0.2, 0.3, 0.4]},
+        index=["const", "inc_grants", "inc_donations", "total_costs"],
+    )
+
+    result = records._extract_regression_variables([table0, table1])
+    assert result[0] == "inc_activity"
+    assert "inc_grants" in result
+    assert "inc_donations" in result
+    assert "total_costs" in result
+    assert "const" not in result
+
+    table1_intercept = pd.DataFrame(
+        {"coef": [0.5, 1.0]},
+        index=["Intercept", "x1"],
+    )
+    result2 = records._extract_regression_variables([table0, table1_intercept])
+    assert "Intercept" not in result2
+    assert "x1" in result2
+
+    assert records._extract_regression_variables([]) == []
+
+    assert records._extract_regression_variables([table0]) == []
+
+    result3 = records._extract_regression_variables(["not a df", "also not a df"])
+    assert result3 == []
+
+
+def test_mark_diff_risk(data, acro):
+    """Test the _mark_diff_risk helper method."""
+    # Create two crosstabs with same variables but different data
+    acro.crosstab(data.year, data.grant_type)
+    acro.crosstab(data.year, data.grant_type)
+
+    summary_df = acro.results.generate_summary()
+
+    assert "diff_risk" in summary_df.columns
+
+    assert all(isinstance(x, (bool, type(pd.NA))) for x in summary_df["diff_risk"])
+
+
+def test_extract_table_info_with_zero_cell_sum():
+    """Test _extract_table_info when cell_sum equals 0."""
+    records = Records()
+
+    table = pd.DataFrame(
+        [[np.nan, np.nan], [np.nan, np.nan]],
+        index=["row1", "row2"],
+        columns=["col1", "col2"],
+    )
+    table.index.name = "idx"
+    table.columns.name = "cols"
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output)
+
+    assert "idx" in variables
+    assert "cols" in variables
+    assert total_records > 0
+
+
+def test_extract_regression_info_with_missing_observations():
+    """Test _extract_regression_info when observation value is NaN."""
+    records = Records()
+
+    # Create regression output with no. observations but NaN value
+    obs_output = pd.DataFrame({"Value": [np.nan]}, index=["no. observations"])
+
+    output = [obs_output]
+    total_records = records._extract_regression_info(output)
+
+    assert total_records == 0
+
+
+def test_extract_regression_info_with_invalid_value():
+    """Test _extract_regression_info when observation value is non-numeric."""
+    records = Records()
+
+    obs_output = pd.DataFrame({"Value": ["not_a_number"]}, index=["no. observations"])
+
+    output = [obs_output]
+    total_records = records._extract_regression_info(output)
+
+    assert total_records == 0
+
+
+def test_extract_table_info_with_numeric_data():
+    """Test _extract_table_info with numeric data."""
+    records = Records()
+
+    table = pd.DataFrame(
+        [[10, 20], [30, 40]],
+        index=["row1", "row2"],
+        columns=["col1", "col2"],
+    )
+    table.index.name = "idx"
+    table.columns.name = "cols"
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output)
+
+    assert "idx" in variables
+    assert "cols" in variables
+    assert total_records == 100
+
+
+def test_extract_table_info_with_mixed_data():
+    """Test _extract_table_info with mixed NaN and numeric data."""
+    records = Records()
+
+    # Create a table with some NaN and some numeric values
+    table = pd.DataFrame(
+        [[10, np.nan], [np.nan, 40]],
+        index=["row1", "row2"],
+        columns=["col1", "col2"],
+    )
+    table.index.name = "idx"
+
+    output = [table]
+    variables, total_records = records._extract_table_info(output)
+
+    assert "idx" in variables
+    assert total_records == 50
+
+
+def test_generate_variable_matrix_table():
+    """Test the variable matrix table.
+
+    Should have one row per output and one column per variable,
+    with binary values indicating variable presence.
+    """
+    acro_obj = ACRO(suppress=False)
+
+    data = pd.DataFrame(
+        {
+            "year": [2010] * 10 + [2011] * 10,
+            "grant_type": ["A"] * 5 + ["B"] * 5 + ["A"] * 5 + ["B"] * 5,
+            "region": ["North"] * 5 + ["South"] * 5 + ["North"] * 5 + ["South"] * 5,
+        }
+    )
+
+    # Create three outputs with different variable combinations
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    _ = acro_obj.crosstab(data.year, data.region)
+    _ = acro_obj.crosstab(data.grant_type, data.region)
+
+    var_matrix = acro_obj.results.generate_variable_matrix_table()
+
+    assert "output_id" in var_matrix.columns
+    assert "output_type" in var_matrix.columns
+    assert len(var_matrix) == 3
+
+    assert "year" in var_matrix.columns
+    assert "grant_type" in var_matrix.columns
+    assert "region" in var_matrix.columns
+
+    for row in var_matrix.itertuples():
+        assert row.year in [0, 1]
+        assert row.grant_type in [0, 1]
+        assert row.region in [0, 1]
+
+    assert var_matrix.iloc[0]["year"] == 1
+    assert var_matrix.iloc[0]["grant_type"] == 1
+    assert var_matrix.iloc[0]["region"] == 0
+
+    assert var_matrix.iloc[1]["year"] == 1
+    assert var_matrix.iloc[1]["grant_type"] == 0
+    assert var_matrix.iloc[1]["region"] == 1
+
+    assert var_matrix.iloc[2]["year"] == 0
+    assert var_matrix.iloc[2]["grant_type"] == 1
+    assert var_matrix.iloc[2]["region"] == 1
+
+
+def test_get_endog_exog_variables():
+    """Test extracting variables from endog and exog arguments."""
+    # Use pandas objects with names
+    endog = pd.Series([1, 2, 3], name="y")
+    exog = pd.DataFrame({"const": [1, 1, 1], "x1": [4, 5, 6], "x2": [7, 8, 9]})
+
+    variables = _get_endog_exog_variables(endog, exog)
+    assert variables == ["y", "x1", "x2"]
+
+    # Use single series for exog
+    exog_series = pd.Series([4, 5, 6], name="x1")
+    variables = _get_endog_exog_variables(endog, exog_series)
+    assert variables == ["y", "x1"]
+
+    # Missing names
+    endog_noname = pd.Series([1, 2, 3])
+    exog_noname = pd.Series([4, 5, 6])
+    variables = _get_endog_exog_variables(endog_noname, exog_noname)
+    assert variables == []
+
+
+def test_get_endog_exog_variables_edge_cases():
+    """Additional edge cases for endog/exog variable extraction."""
+    # DataFrame with only constant column
+    endog = pd.Series([1, 2, 3], name="y")
+    exog = pd.DataFrame({"const": [1, 1, 1]})
+
+    variables = _get_endog_exog_variables(endog, exog)
+    assert variables == ["y"]
+
+    exog = pd.DataFrame({"x1": [4, 5, 6], "x2": [7, 8, 9]})
+    variables = _get_endog_exog_variables(endog, exog)
+    assert variables == ["y", "x1", "x2"]
+
+    exog_noname = pd.Series([4, 5, 6])
+    variables = _get_endog_exog_variables(endog, exog_noname)
+    assert variables == ["y"]
+
+    exog_empty = pd.DataFrame()
+    variables = _get_endog_exog_variables(endog, exog_empty)
+    assert variables == ["y"]
+
+
+def test_get_formula_variables():
+    """Test extracting variables from R-style formula string."""
+    formula = "y ~ x1 + x2"
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    # Complex formula with interactions and transformations
+    formula_complex = "y ~ x1 + x2:x3 + x4*x5 + I(x6^2) + C(x7)"
+    expected = ["y", "x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+    assert _get_formula_variables(formula_complex) == expected
+
+    # Invalid missing parts
+    assert _get_formula_variables("y") == []
+    assert _get_formula_variables("~ x1") == ["x1"]
+
+
+def test_get_formula_variables_edge_cases():
+    """Edge cases for formula parsing."""
+    # Duplicate variables should not appear twice
+    formula = "y ~ x1 + x1 + x2"
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    # Constant term should be ignored
+    formula = "y ~ 1 + x1"
+    assert _get_formula_variables(formula) == ["y", "x1"]
+
+    # Extra whitespace
+    formula = "  y   ~   x1   +   x2   "
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    # Interaction only
+    formula = "y ~ x1:x2"
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    # Multiplicative interaction
+    formula = "y ~ x1*x2"
+    assert _get_formula_variables(formula) == ["y", "x1", "x2"]
+
+    # Polynomial term
+    formula = "y ~ I(x1^2)"
+    assert _get_formula_variables(formula) == ["y", "x1"]
+
+    # Categorical term
+    formula = "y ~ C(x1)"
+    assert _get_formula_variables(formula) == ["y", "x1"]
+
+    # Nested transformations
+    formula = "y ~ I((x1 + x2)^2)"
+    result = _get_formula_variables(formula)
+
+    # Depending on parser limitations, at least x1 and x2 should appear
+    assert "y" in result
+    assert "x1" in result
+    assert "x2" in result
+
+    # Empty RHS
+    formula = "y ~ "
+    assert _get_formula_variables(formula) == ["y"]
+
+    # No dependent variable
+    formula = "~ x1 + x2"
+    assert _get_formula_variables(formula) == ["x1", "x2"]
+
+
+def test_formula_parsing_empty_subterm():
+    """Test that _get_formula_variables handles '1' and empty subterms correctly."""
+    assert _get_formula_variables("y ~ 1") == ["y"]
+    assert _get_formula_variables("y ~ ") == ["y"]
+
+
+def test_extract_regression_info_invalid_val():
+    """Trigger the except block in _extract_regression_info."""
+    records = Records()
+    # Create a table where the value next to "no. observations" is not a number
+    df = pd.DataFrame({"Value": ["not_a_float"]}, index=["no. observations"])
+    assert records._extract_regression_info([df]) == 0
+
+
+def test_get_output_variables_regression_fallback():
+    """Test fallback regression variable extraction."""
+    records = Records()
+    # Create a regression record manually WITHOUT 'variables' in properties
+    table0 = pd.DataFrame({"y": [1]}, index=["Model"])
+    table1 = pd.DataFrame({"coef": [1]}, index=["x1"])
+    records.add(
+        status="pass",
+        output_type="regression",
+        properties={"method": "ols"},  # no variables here
+        sdc={},
+        command="test",
+        summary="test",
+        outcome=pd.DataFrame(),
+        output=[table0, table1],
+    )
+    rec = records.get_index(0)
+    vars = records._get_output_variables(rec)
+    assert vars == ["y", "x1"]
+
+
+def test_build_variable_matrix_no_vars():
+    """Trigger return early if no variables found."""
+    records = Records()
+    records.add(
+        status="pass",
+        output_type="table",
+        properties={"method": "test"},
+        sdc={},
+        command="test",
+        summary="test",
+        outcome=pd.DataFrame(),
+        output=[pd.DataFrame([[1]])],
+    )
+    summary_df = records.generate_summary()
+    assert "variables" in summary_df.columns
+    assert len(summary_df.columns) == 11
+
+
+def test_build_variable_matrix_with_vars():
+    """Ensure build variable matrix."""
+    records = Records()
+    records.add(
+        status="pass",
+        output_type="table",
+        properties={"method": "test", "variables": ["v1", "v2"]},
+        sdc={},
+        command="test",
+        summary="test",
+        outcome=pd.DataFrame(),
+        output=[pd.DataFrame([[1]])],
+    )
+    summary_df = records.generate_summary()
+    assert "v1" in summary_df.columns
+    assert "v2" in summary_df.columns
+    assert summary_df.iloc[0]["v1"] == 1
+    assert summary_df.iloc[0]["v2"] == 1

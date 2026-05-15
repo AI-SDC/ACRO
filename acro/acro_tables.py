@@ -159,6 +159,7 @@ class Tables:
         outcome: DataFrame,
         table: DataFrame,
         comments: list[str],
+        variables: list[str] | None = None,
     ) -> None:
         """Record a table output and attach any mitigation exception note."""
         properties: dict[str, Any] = {
@@ -167,6 +168,9 @@ class Tables:
         }
         if self._mitigation == "round":
             properties["round_base"] = self._round_base
+        if variables is not None:
+            properties["variables"] = variables
+
         self.results.add(
             status=status,
             output_type="table",
@@ -189,6 +193,87 @@ class Tables:
                 just_added,
                 f"Rounding automatically applied to nearest {self._round_base}",
             )
+
+    def _collect_crosstab_variables(
+        self, index: Any, columns: Any, values: Any
+    ) -> list[str]:
+        """Extract variable names from crosstab parameters."""
+        vars_used: list[str] = []
+        if isinstance(index, pd.Series):
+            vars_used.append(index.name)
+        elif isinstance(index, list):
+            for var in index:
+                if isinstance(var, pd.Series):
+                    vars_used.append(var.name)
+        if isinstance(columns, pd.Series):
+            vars_used.append(columns.name)
+        elif isinstance(columns, list):
+            for var in columns:
+                if isinstance(var, pd.Series):
+                    vars_used.append(var.name)
+        if values is not None and isinstance(values, pd.Series):
+            vars_used.append(values.name)
+        return vars_used
+
+    def _apply_crosstab_suppression_flow(
+        self,
+        table: DataFrame,
+        masks: dict,
+        sdc: dict,
+        agg_func: str | Callable | list[str | Callable] | None,
+        original_aggfunc: str | list[str] | None,
+        index: Any,
+        columns: Any,
+        values: Any,
+        rownames: Any,
+        colnames: Any,
+        margins: bool,
+        margins_name: str,
+        dropna: bool,
+        normalize: bool | str,
+        show_suppressed: bool,
+    ) -> tuple[DataFrame, dict]:
+        """Apply suppression mitigation and recalculate SDC if needed."""
+        safe_table, _ = apply_suppression(table, masks)
+        table = safe_table
+        if margins:
+            if show_suppressed:
+                table = manual_crossstab_with_totals(
+                    table,
+                    original_aggfunc,
+                    index,
+                    columns,
+                    values,
+                    rownames,
+                    colnames,
+                    margins,
+                    margins_name,
+                    dropna,
+                    normalize,
+                )
+            else:
+                table = crosstab_with_totals(
+                    masks=masks,
+                    aggfunc=agg_func,
+                    index=index,
+                    columns=columns,
+                    values=values,
+                    margins=margins,
+                    margins_name=margins_name,
+                    dropna=dropna,
+                    crosstab=True,
+                    rownames=rownames,
+                    colnames=colnames,
+                    normalize=normalize,
+                )
+        sdc = get_table_sdc(
+            masks,
+            self.suppress,
+            table,
+            mitigation=self._mitigation,
+            round_base=self._round_base,
+        )
+        return table, sdc
 
     def crosstab(
         self,
@@ -309,45 +394,24 @@ class Tables:
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
-        safe_table, outcome = apply_suppression(table, masks)
+        _, outcome = apply_suppression(table, masks)
         if self._mitigation == "suppress":
-            table = safe_table
-            if margins:
-                if show_suppressed:
-                    table = manual_crossstab_with_totals(
-                        table,
-                        aggfunc,
-                        index,
-                        columns,
-                        values,
-                        rownames,
-                        colnames,
-                        margins,
-                        margins_name,
-                        dropna,
-                        normalize,
-                    )
-                else:
-                    table = crosstab_with_totals(
-                        masks=masks,
-                        aggfunc=agg_func,
-                        index=index,
-                        columns=columns,
-                        values=values,
-                        margins=margins,
-                        margins_name=margins_name,
-                        dropna=dropna,
-                        crosstab=True,
-                        rownames=rownames,
-                        colnames=colnames,
-                        normalize=normalize,
-                    )
-            sdc = get_table_sdc(
-                masks,
-                self.suppress,
+            table, sdc = self._apply_crosstab_suppression_flow(
                 table,
-                mitigation=self._mitigation,
-                round_base=self._round_base,
+                masks,
+                sdc,
+                agg_func,
+                aggfunc,
+                index,
+                columns,
+                values,
+                rownames,
+                colnames,
+                margins,
+                margins_name,
+                dropna,
+                normalize,
+                show_suppressed,
             )
         elif self._mitigation == "round":
             table = round_table(table, self._round_base)
@@ -355,6 +419,8 @@ class Tables:
                 table = append_rounded_margins(
                     table, agg_func, margins_name, self._round_base
                 )
+
+        vars_used = self._collect_crosstab_variables(index, columns, values)
 
         self._record_table_output(
             method="crosstab",
@@ -365,8 +431,156 @@ class Tables:
             outcome=outcome,
             table=table,
             comments=comments,
+            variables=vars_used,
         )
         return table
+
+    def _create_pivot_table_masks(
+        self,
+        data: DataFrame,
+        values: Any,
+        index: Any,
+        columns: Any,
+        resolved_aggfunc: str | Callable | list[str | Callable] | None,
+        margins: bool,
+        dropna: bool,
+        n_agg: int,
+    ) -> dict[str, DataFrame]:
+        """Create suppression masks for pivot table."""
+        masks: dict[str, DataFrame] = {}
+
+        # threshold check
+        agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
+        t_values = pd.pivot_table(
+            data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
+        )
+        masks["threshold"] = t_values
+
+        if resolved_aggfunc is not None:
+            # check for negative values -- currently unsupported
+            agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
+            negative = pd.pivot_table(
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
+            )
+            if negative.to_numpy().sum() > 0:
+                masks["negative"] = negative
+            # p-percent check
+            agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
+            masks["p-ratio"] = pd.pivot_table(
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
+            )
+            # nk values check
+            agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
+            masks["nk-rule"] = pd.pivot_table(
+                data,
+                values,
+                index,
+                columns,
+                aggfunc=agg,
+                margins=margins,
+                dropna=dropna,
+            )
+            # check for missing values -- currently unsupported
+            if CHECK_MISSING_VALUES:
+                agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
+                masks["missing"] = pd.pivot_table(
+                    data,
+                    values,
+                    index,
+                    columns,
+                    aggfunc=agg,
+                    margins=margins,
+                    dropna=dropna,
+                )
+
+        # pd.pivot_table returns nan for an empty cell
+        for name, mask in masks.items():
+            mask.fillna(value=1, inplace=True)
+            mask = mask.astype(int)
+            mask.replace({0: False, 1: True}, inplace=True)
+            masks[name] = mask
+
+        return masks
+
+    def _collect_pivot_variables(
+        self, index: Any, columns: Any, values: Any
+    ) -> list[str]:
+        """Extract variable names from pivot_table parameters."""
+        vars_used: list[str] = []
+        if isinstance(index, list):
+            vars_used.extend(index)
+        elif index is not None:
+            vars_used.append(index)
+        if isinstance(columns, list):
+            vars_used.extend(columns)
+        elif columns is not None:
+            vars_used.append(columns)
+        if isinstance(values, list):
+            vars_used.extend(values)
+        elif values is not None:
+            vars_used.append(values)
+        return [str(v) for v in vars_used]
+
+    def _apply_pivot_suppression_flow(
+        self,
+        table: DataFrame,
+        masks: dict,
+        sdc: dict,
+        resolved_aggfunc: str | Callable | list[str | Callable] | None,
+        index: Any,
+        columns: Any,
+        values: Any,
+        margins: bool,
+        margins_name: str,
+        dropna: bool,
+        data: DataFrame,
+        fill_value: Any,
+        observed: bool,
+        sort: bool,
+    ) -> tuple[DataFrame, dict]:
+        """Apply suppression mitigation and recalculate SDC if needed."""
+        safe_table, _ = apply_suppression(table, masks)
+        table = safe_table
+        if margins:
+            logger.info(
+                "Disclosive cells were deleted from the dataframe "
+                "before calculating the pivot table"
+            )
+            table = crosstab_with_totals(
+                masks=masks,
+                aggfunc=resolved_aggfunc,
+                index=index,
+                columns=columns,
+                values=values,
+                margins=margins,
+                margins_name=margins_name,
+                dropna=dropna,
+                crosstab=False,
+                data=data,
+                fill_value=fill_value,
+                observed=observed,
+                sort=sort,
+            )
+        sdc = get_table_sdc(
+            masks,
+            self.suppress,
+            table,
+            mitigation=self._mitigation,
+            round_base=self._round_base,
+        )
+        return table, sdc
 
     def pivot_table(
         self,
@@ -469,70 +683,16 @@ class Tables:
         table, comments = delete_empty_rows_columns(table)
 
         # suppression masks to apply based on the following checks
-        masks: dict[str, DataFrame] = {}
-
-        # threshold check
-        agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
-        t_values = pd.pivot_table(
-            data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
+        masks = self._create_pivot_table_masks(
+            data,
+            values,
+            index,
+            columns,
+            resolved_aggfunc,
+            margins,
+            dropna,
+            n_agg,
         )
-        masks["threshold"] = t_values
-
-        if resolved_aggfunc is not None:
-            # check for negative values -- currently unsupported
-            agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
-            negative = pd.pivot_table(
-                data,
-                values,
-                index,
-                columns,
-                aggfunc=agg,
-                margins=margins,
-                dropna=dropna,
-            )
-            if negative.to_numpy().sum() > 0:
-                masks["negative"] = negative
-            # p-percent check
-            agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
-            masks["p-ratio"] = pd.pivot_table(
-                data,
-                values,
-                index,
-                columns,
-                aggfunc=agg,
-                margins=margins,
-                dropna=dropna,
-            )
-            # nk values check
-            agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
-            masks["nk-rule"] = pd.pivot_table(
-                data,
-                values,
-                index,
-                columns,
-                aggfunc=agg,
-                margins=margins,
-                dropna=dropna,
-            )
-            # check for missing values -- currently unsupported
-            if CHECK_MISSING_VALUES:
-                agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
-                masks["missing"] = pd.pivot_table(
-                    data,
-                    values,
-                    index,
-                    columns,
-                    aggfunc=agg,
-                    margins=margins,
-                    dropna=dropna,
-                )
-
-        # pd.pivot_table returns nan for an empty cell
-        for name, mask in masks.items():
-            mask.fillna(value=1, inplace=True)
-            mask = mask.astype(int)
-            mask.replace({0: False, 1: True}, inplace=True)
-            masks[name] = mask
 
         # build the sdc dictionary
         sdc: dict = get_table_sdc(
@@ -545,35 +705,23 @@ class Tables:
         # get the status and summary
         status, summary = get_summary(sdc)
         # apply the suppression
-        safe_table, outcome = apply_suppression(table, masks)
+        _, outcome = apply_suppression(table, masks)
         if self._mitigation == "suppress":
-            table = safe_table
-            if margins:
-                logger.info(
-                    "Disclosive cells were deleted from the dataframe "
-                    "before calculating the pivot table"
-                )
-                table = crosstab_with_totals(
-                    masks=masks,
-                    aggfunc=resolved_aggfunc,
-                    index=index,
-                    columns=columns,
-                    values=values,
-                    margins=margins,
-                    margins_name=margins_name,
-                    dropna=dropna,
-                    crosstab=False,
-                    data=data,
-                    fill_value=fill_value,
-                    observed=observed,
-                    sort=sort,
-                )
-            sdc = get_table_sdc(
-                masks,
-                self.suppress,
+            table, sdc = self._apply_pivot_suppression_flow(
                 table,
-                mitigation=self._mitigation,
-                round_base=self._round_base,
+                masks,
+                sdc,
+                resolved_aggfunc,
+                index,
+                columns,
+                values,
+                margins,
+                margins_name,
+                dropna,
+                data,
+                fill_value,
+                observed,
+                sort,
             )
         elif self._mitigation == "round":
             table = round_table(table, self._round_base)
@@ -581,6 +729,9 @@ class Tables:
                 table = append_rounded_margins(
                     table, resolved_aggfunc, margins_name, self._round_base
                 )
+
+        vars_used = self._collect_pivot_variables(index, columns, values)
+
         self._record_table_output(
             method="pivot_table",
             status=status,
@@ -590,6 +741,7 @@ class Tables:
             outcome=outcome,
             table=table,
             comments=comments,
+            variables=vars_used,
         )
         return table
 

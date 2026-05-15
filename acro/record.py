@@ -443,6 +443,329 @@ class Records:
                 )
                 record.exception = input("")
 
+    def _extract_table_info(
+        self,
+        output: list,
+    ) -> tuple[list[str], int]:
+        """Extract variables and total records from table output.
+
+        Parameters
+        ----------
+        output : list
+            The output to extract information from.
+
+        Returns
+        -------
+        tuple[list[str], int]
+            A sorted, deduplicated list of variables and the total record count.
+            Sorting is critical so that tables with identical variables in
+            different orders are correctly flagged for differencing risk.
+        """
+        variables: list[str] = []
+        total_records: int = 0
+
+        for table in output:
+            if isinstance(table, DataFrame):
+                if hasattr(table.index, "names") and any(table.index.names):
+                    variables.extend(str(n) for n in table.index.names if n is not None)
+
+                if hasattr(table.columns, "names") and any(table.columns.names):
+                    variables.extend(
+                        str(n) for n in table.columns.names if n is not None
+                    )
+
+                try:
+                    arr = table.to_numpy()
+                    cell_sum = arr[~pd.isna(arr)].sum()
+                    if cell_sum > 0:
+                        total_records = int(cell_sum)
+                    else:
+                        total_records = int(table.shape[0] * table.shape[1])
+                except (TypeError, ValueError):
+                    pass
+
+        return sorted(set(variables)), total_records
+
+    def _extract_regression_info(self, output: list) -> int:
+        """Extract variables and total records from regression output.
+
+        Parameters
+        ----------
+        output : list
+            The output to extract information from.
+
+        Returns
+        -------
+        int
+            Total record count.
+        """
+        total_records: int = 0
+
+        for table in output:
+            if isinstance(table, DataFrame):
+                search_targets = [str(idx).lower() for idx in table.index]
+                for i, target in enumerate(search_targets):
+                    if "no. observations" in target:
+                        try:
+                            val = table.iloc[i].dropna().iloc[0]
+                            total_records = int(float(val))
+                            return total_records
+                        except (ValueError, TypeError, IndexError):
+                            pass
+
+                col_targets = [str(col).lower() for col in table.columns]
+                for i, target in enumerate(col_targets):
+                    if "no. observations" in target:
+                        try:
+                            val_str = table.columns[i + 1]
+                            total_records = int(float(val_str))
+                            return total_records
+                        except (ValueError, TypeError, IndexError):
+                            pass
+
+        return total_records
+
+    def _mark_diff_risk(self, summary_df: DataFrame) -> DataFrame:
+        """Mark outputs with differencing risk.
+
+        Differencing risk occurs when multiple tables share the same variables but have different
+        suppression settings or total records. This allows an attacker to infer suppressed values.
+
+        Parameters
+        ----------
+        summary_df : DataFrame
+            The summary DataFrame to update.
+
+        Returns
+        -------
+        DataFrame
+            Updated summary DataFrame with diff_risk column.
+        """
+        if summary_df.empty:
+            summary_df["diff_risk"] = pd.Series(dtype=bool)
+        else:
+            summary_df["diff_risk"] = False
+            table_mask = summary_df["type"] == "table"
+            table_outputs = summary_df.loc[table_mask]
+            if not table_outputs.empty:
+                for _, group in table_outputs.groupby("variables"):
+                    if len(group) > 1:
+                        suppressions = group["suppression"].unique()
+                        total_records = group["total_records"].unique()
+                        if len(suppressions) > 1 or len(total_records) > 1:
+                            summary_df.loc[group.index, "diff_risk"] = True
+
+        return summary_df
+
+    def _extract_all_variables(self) -> list[str]:
+        """Extract all unique variables across all outputs.
+
+        Returns
+        -------
+        list[str]
+            Sorted list of unique variable names.
+        """
+        all_variables: set[str] = set()
+
+        for rec in self.results.values():
+            if rec.output_type == "custom":
+                continue
+            variables = self._get_output_variables(rec)
+            all_variables.update(variables)
+
+        return sorted(all_variables)
+
+    def _get_output_variables(self, rec: Record) -> list[str]:
+        """Extract variables from a single record.
+
+        Parameters
+        ----------
+        rec : Record
+            The record to extract variables from.
+
+        Returns
+        -------
+        list[str]
+            List of variable names.
+        """
+        variables: list[str] = []
+
+        if "variables" in rec.properties:
+            variables = [str(v) for v in rec.properties["variables"]]
+        elif rec.output_type == "table":
+            variables, _ = self._extract_table_info(rec.output)
+        elif rec.output_type == "regression":
+            variables = self._extract_regression_variables(rec.output)
+
+        return variables
+
+    def _build_variable_matrix(self, summary_df: DataFrame) -> DataFrame:
+        """Build a variable-output matrix showing variable usage.
+
+        Parameters
+        ----------
+        summary_df : DataFrame
+            The base summary DataFrame.
+
+        Returns
+        -------
+        DataFrame
+            Summary with binary variable columns added.
+        """
+        all_variables = self._extract_all_variables()
+
+        if not all_variables:
+            return summary_df
+
+        for var in all_variables:
+            summary_df[var] = summary_df["variables"].apply(
+                lambda vars_str, v=var: 1 if v in vars_str.split("; ") else 0
+            )
+
+        return summary_df
+
+    def generate_variable_matrix_table(self) -> DataFrame:
+        """Generate a clean variable-output matrix table.
+
+        Creates a table with one row per output and one column per variable,
+        plus an output_type column. Binary values indicate variable usage.
+
+        Returns
+        -------
+        DataFrame
+            Variable matrix table with columns: output_type, var1, var2, ...
+        """
+        all_variables = self._extract_all_variables()
+        matrix_rows = []
+
+        for uid, rec in self.results.items():
+            if rec.output_type == "custom":
+                continue
+
+            variables = self._get_output_variables(rec)
+
+            row: dict[str, Any] = {"output_id": uid, "output_type": rec.output_type}
+            for var in all_variables:
+                row[var] = 1 if var in variables else 0
+
+            matrix_rows.append(row)
+
+        return DataFrame(matrix_rows)
+
+    def _extract_regression_variables(self, output: list) -> list[str]:
+        """Extract dependent and independent variable names from regression output.
+
+        Parameters
+        ----------
+        output : list
+            The regression output DataFrames.
+
+        Returns
+        -------
+        list[str]
+            Dependent variable followed by independent variables.
+        """
+        variables: list[str] = []
+        if len(output) < 2:
+            return variables
+        table0, table1 = output[0], output[1]
+        if isinstance(table0, DataFrame) and len(table0.columns) > 0:
+            dep_var = table0.columns[0]
+            variables.append(dep_var)
+        if isinstance(table1, DataFrame):
+            for name in table1.index:
+                name_str = str(name)
+                if name_str not in ("const", "Intercept"):
+                    variables.append(name_str)
+        return variables
+
+    def generate_summary(self) -> DataFrame:
+        """Generate a summary DataFrame of all outputs in the session.
+
+        Provides output checkers with a high-level overview of all outputs,
+        including what method was used, what variables are involved, the
+        total record count, and whether there is a differencing risk.
+
+        Returns
+        -------
+        DataFrame
+            Summary of all outputs with columns: id, method, variables, status,
+            type, command, summary, total_records, suppression, timestamp, diff_risk.
+        """
+        rows = []
+        for uid, rec in self.results.items():
+            if rec.output_type == "custom":
+                continue
+            method = rec.properties.get("method", rec.output_type)
+            variables: list[str] = self._get_output_variables(rec)
+            total_records: int = 0
+
+            if rec.output_type == "table":
+                _, total_records = self._extract_table_info(rec.output)
+            elif rec.output_type == "regression":
+                total_records = self._extract_regression_info(rec.output)
+
+            variables_str = "; ".join(variables) if variables else ""
+
+            suppression: bool = False
+            if isinstance(rec.sdc, dict) and "summary" in rec.sdc:
+                suppression = bool(rec.sdc["summary"].get("suppressed", False))
+
+            rows.append(
+                {
+                    "id": uid,
+                    "method": method,
+                    "variables": variables_str,
+                    "status": rec.status,
+                    "type": rec.output_type,
+                    "command": rec.command,
+                    "summary": rec.summary,
+                    "total_records": total_records,
+                    "suppression": suppression,
+                    "timestamp": rec.timestamp,
+                }
+            )
+
+        summary_df = DataFrame(rows)
+        summary_df = self._mark_diff_risk(summary_df)
+        summary_df = self._build_variable_matrix(summary_df)
+
+        return summary_df
+
+    def add_summary_to_results(self) -> None:
+        """Add the summary DataFrames as custom outputs to results.
+
+        This generates a summary of all outputs in the session with metadata
+        about variables, record counts, and differencing risk, as well as a
+        separate variable matrix. The files are marked with a clear warning
+        not to release.
+        """
+        summary_df = self.generate_summary()
+        if not summary_df.empty:
+            os.makedirs(ARTIFACTS_DIR, exist_ok=True)
+            summary_path = os.path.normpath(
+                f"{ARTIFACTS_DIR}/DO_NOT_RELEASE_session_summary.csv"
+            )
+            summary_df.to_csv(summary_path, index=False)
+
+            self.add_custom(
+                summary_path,
+                "WARNING: DO NOT RELEASE - Session summary for output checker use only",
+            )
+
+        matrix_df = self.generate_variable_matrix_table()
+        if not matrix_df.empty:
+            os.makedirs(ARTIFACTS_DIR, exist_ok=True)
+            matrix_path = os.path.normpath(
+                f"{ARTIFACTS_DIR}/DO_NOT_RELEASE_variable_matrix.csv"
+            )
+            matrix_df.to_csv(matrix_path, index=False)
+
+            self.add_custom(
+                matrix_path,
+                "WARNING: DO NOT RELEASE - Variable matrix for output checker use only",
+            )
+
     def finalise(self, path: str, ext: str, interactive: bool = False) -> None:
         """Create a results file for checking.
 
@@ -458,6 +781,7 @@ class Records:
         logger.debug("finalise()")
         if interactive:
             self.validate_outputs()
+        self.add_summary_to_results()
         if ext == "json":
             self.finalise_json(path)
         elif ext == "xlsx":
@@ -467,7 +791,7 @@ class Records:
         self.write_checksums(path)
         # check if the artifacts directory exists and delete it
         if os.path.exists(ARTIFACTS_DIR):
-            shutil.rmtree(ARTIFACTS_DIR)
+            shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
         logger.info("outputs written to: %s", path)
 
     def finalise_json(self, path: str) -> None:
@@ -483,6 +807,7 @@ class Records:
             outputs[key] = {
                 "uid": val.uid,
                 "status": val.status,
+                "variables": self._get_output_variables(val),
                 "type": val.output_type,
                 "properties": val.properties,
                 "files": [],
@@ -497,7 +822,26 @@ class Records:
             for file in files:
                 outputs[key]["files"].append({"name": file, "sdc": val.sdc})
 
-        results: dict[str, str | dict] = {"version": __version__, "results": outputs}
+        summary_df = self.generate_summary()
+        session_summary = {
+            "DO_NOT_RELEASE": True,
+            "purpose": "Session summary for output checker use only",
+            "data": json.loads(summary_df.to_json(orient="records")),
+        }
+
+        matrix_df = self.generate_variable_matrix_table()
+        variable_matrix = {
+            "DO_NOT_RELEASE": True,
+            "purpose": "Variable matrix for output checker use only",
+            "data": json.loads(matrix_df.to_json(orient="records")),
+        }
+
+        results: dict = {
+            "version": __version__,
+            "results": outputs,
+            "session_summary": session_summary,
+            "variable_matrix": variable_matrix,
+        }
         filename: str = os.path.normpath(f"{path}/results.json")
         try:
             with open(filename, "w", newline="", encoding="utf-8") as handle:
@@ -524,6 +868,18 @@ class Records:
         except FileExistsError:  # pragma: no cover
             logger.debug("Directory %s already exists", path)
         with pd.ExcelWriter(filename, engine="openpyxl") as writer:
+            summary_df = self.generate_summary()
+            if not summary_df.empty:
+                summary_df.to_excel(
+                    writer, sheet_name="summary", index=False, startrow=0
+                )
+
+            matrix_df = self.generate_variable_matrix_table()
+            if not matrix_df.empty:
+                matrix_df.to_excel(
+                    writer, sheet_name="variable_matrix", index=False, startrow=0
+                )
+
             # description sheet
             sheet: list[str] = []
             summary: list[str] = []

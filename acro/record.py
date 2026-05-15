@@ -223,15 +223,15 @@ class Records:
 
     def add(  # pylint: disable=too-many-arguments
         self,
-        status: str,
-        output_type: str,
-        properties: dict,
-        sdc: dict,
-        fair: dict,
-        command: str,
-        summary: str,
-        outcome: DataFrame,
-        output: list[str] | list[DataFrame],
+        status: str="",
+        output_type: str="",
+        properties: dict ={},
+        sdc: dict={},
+        fair: dict={},
+        command: str="",
+        summary: str="",
+        outcome: DataFrame=pd.DataFrame(),
+        output: list[str] | list[DataFrame]=None,
         comments: list[str] | None = None,
     ) -> None:
         """Add an output to the results.
@@ -426,7 +426,7 @@ class Records:
         outputs: str = ""
         for _, record in self.results.items():
             outputs += str(record) + "\n"
-        #print(outputs)
+        print(outputs)
         return outputs
 
     def validate_outputs(self) -> None:

@@ -282,6 +282,9 @@ class SDCChecks:
             dictionary of outcomes with keys for the check and values which might be:
              numbers (e.g. Dof), or masks (Dataframes),
             depending on the check and the type of model e.g. regression vs table
+        sdc_dict: details of the sdc processes
+                    dict with one key (for now) "check_status" where the value is itself a dict
+                    of checkname (str): status (str)
         """
         if not analysis_name in self.analyses.keys():
             logger.info(f"keys are : {list(self.analyses.keys())}")
@@ -309,7 +312,7 @@ class SDCChecks:
         logger.debug(
             f"statuses : {statuses}\nsummary: {summaries}\noutcomes: {outcomes}\n"
         )
-        logger.info(analysis_name +" : " + summaries)
+        #logger.info(analysis_name +" : " + summaries)
 
         if "fail" in statuses:
             overall_status = "fail"
@@ -317,8 +320,9 @@ class SDCChecks:
             overall_status = "review"
         else:
             overall_status = "pass"
-
-        return overall_status, " ".join(summaries), outcomes, sdc_dict
+        summary = " ".join(summaries)
+        logger.info(summary)
+        return overall_status, summary, outcomes, sdc_dict
 
 
 
@@ -608,9 +612,11 @@ class SDCChecks:
         if not ok:
             return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
 
+        rowvars= [arg.name for arg in model['args'][0]]
+        colvars= [arg.name for arg in model['args'][1]]
         summary= (
                 "Review -  a manual check is needed for possible linked tables"
-                f" variables defining table are:  {[arg.name for arg in model['args']]}.\n"
+                f" variables defining table are:  {set(rowvars+colvars)}.\n"
             )
         return "review", summary, get_allfalse_mask(model)
 

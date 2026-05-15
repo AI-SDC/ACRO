@@ -84,12 +84,13 @@ class Regression:
             status=status,
             output_type="regression",
             properties={"method": "ols", "dof": outcome["MinimumDoFCheck"]},
+            sdc={},
+            fair=fair_dict,
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
-            sdc={},
-            fair=fair_dict,
+ 
         )
         return results
 
@@ -161,12 +162,13 @@ class Regression:
             status=status,
             output_type="regression",
             properties={"method": "olsr", "dof": outcome["MinimumDoFCheck"]},
+            sdc={},
+            fair=fair_dict,
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
-            sdc={},
-            fair=fair_dict,
+
         )
         return results
 
@@ -216,12 +218,13 @@ class Regression:
             status=status,
             output_type="regression",
             properties={"method": "logit", "dof": outcome["MinimumDoFCheck"]},
+            sdc={},
+            fair=fair_dict,
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
-            sdc={},
-            fair=fair_dict,
+
         )
         return results
 
@@ -294,12 +297,13 @@ class Regression:
             status=status,
             output_type="regression",
             properties={"method": "logitr", "dof": outcome["MinimumDoFCheck"]},
+            sdc={},
+            fair=fair_dict,
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
-            sdc={},
-            fair=fair_dict,
+
         )
         return results
 
@@ -349,12 +353,13 @@ class Regression:
             status=status,
             output_type="regression",
             properties={"method": "probit", "dof": outcome["MinimumDoFCheck"]},
+            sdc={},
+            fair=fair_dict,
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
-            sdc={},
-            fair=fair_dict,
+
         )
         return results
 
@@ -427,12 +432,13 @@ class Regression:
             status=status,
             output_type="regression",
             properties={"method": "probitr", "dof": outcome["MinimumDoFCheck"]},
+            sdc={},
+            fair=fair_dict,
             command=command,
             summary=summary,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
-            sdc={},
-            fair=fair_dict,
+
         )
         return results
 

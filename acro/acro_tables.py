@@ -12,9 +12,12 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+
 import statsmodels.api as sm
 from matplotlib import pyplot as plt
 from pandas import DataFrame, Series
+from pandas.api.types import CategoricalDtype
+import copy
 
 from . import utils
 from .checks import SDCChecks
@@ -28,8 +31,9 @@ from .aggregationfunctions import agg_p_percent, agg_nk, agg_threshold
 
 logger = logging.getLogger("acro")
 
-
-
+#https://www.sdmx.io/learning/essential-sdmx-structural-modelling/003-concept-mapping/
+SDMX_DIMENSION:str= "sdmx.model.Dimension"
+SDMX_MEASURE:str= "sdmx.model.Measure"
 
 
 AGGFUNC: dict[str, str | Callable] = {
@@ -146,9 +150,28 @@ class Tables:
                     "to aggregate over."
                 )
 
-        # convert [list of] string to [list of] function
-        # agg_func = get_aggfuncs(aggfunc)
+        #standardise format to simplify later code
+        index = axis_to_list(index)
+        columns= axis_to_list(columns)
+        
+        #create data dictionary
+        #TODO handle arraylike as well as series
+        #TODO handle rownmanes/colnames
+        variable_metadata:dict[str,dict] = {}
+        variable_metadata.update(get_catvar_data(index,where="rows"))
+        variable_metadata.update(get_catvar_data(columns,where="columns"))
+        if values is not None:
+            name= values.name if isinstance(values,Series) else "unknown_measure"
+            variable_metadata[name]= {"location": "cells",
+                                  "sequence_id": 0,
+                                  "dtype": values[0].dtype,
+                                  "type" : SDMX_MEASURE,
+                                  "categories":[]
+                                 }
+  
 
+
+        
         # save list and dict to reduce clutter
         args = (index, columns)
         kwargs = {
@@ -172,6 +195,7 @@ class Tables:
 
         ## get names of Aggregation Functions- sole case first
         analysis_names: list[str] = []
+        table_width_multiplier=1
 
         if aggfunc is None:
             analysis_names.append(AGGFUNC_TO_TYPE.get("count", "missing"))
@@ -180,6 +204,7 @@ class Tables:
         if isinstance(aggfunc, list):
             for i in aggfunc:
                 analysis_names.append(AGGFUNC_TO_TYPE.get(i, "missing"))
+                table_width_multiplier+=1
 
         ## run the checks and get the masks
         allmasks: dict[str, DataFrame] = {}
@@ -190,17 +215,17 @@ class Tables:
         model: dict[str, Any] = {"args": args, "kwargs": kwargs}
 
         for analysis in analysis_names:
-            logger.debug(f"running checks for {analysis_names[0]}")
             status, summary, masks, fair_dict = self.sdc_checks.run_checks_for_analysis(
                 analysis_names[0], model
             )
-            #logger.debug(f"status for {analysis}: {status}")
-            #logger.ddebug(f"summary for {analysis}: {summary}")
+
             summaries[analysis] = summary
             statuses[analysis] = status
             allmasks[analysis] = masks
-            #print("TODO should check if there are duplicate keys with different values")
+            #TODO should check if there are duplicate keys with different values
             fair_dicts[analysis] = fair_dict
+
+        collated_assessment = collate_risk_assessments(table, allmasks)
 
         ## Debugging print out
         debug_print = False
@@ -229,29 +254,51 @@ class Tables:
                 else:
                     print(f" {key} : {val}")
 
+            print("\n=== collated masks ===")
+            print(f"{collated_assessment}")
             print("====end acro.crosstab print statement=====\n")
 
         ## summarise
-        sdc_details: dict = get_table_sdc(masks)
+        sdc_details: dict = get_table_sdc(allmasks)
         if "fail" in statuses:
             overall_status = "fail"
         elif "review" in statuses:
             overall_status = "review"
         else:
             overall_status = "pass"
-        summary = "".join(summaries)
 
+        allsummary=""
+        for key, val in summaries.items():
+            allsummary += f'\n{key} : {val}'
+
+        #summary = "".join(summaries)
+        #logger.info(f'summary just before applying suppression is a {type(summary)}'
+        #           f' with contents {allsummary}'
+        #          )
         # # apply the suppression
-        safe_table, outcome = apply_suppression(table, masks)
         if self.suppress:
-            if kwargs["margins"]:
-                table= recalculate_margin(safe_table,kwargs["margins_name"])
-            else:
-                table = safe_table
-            justadded = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                justadded, "Suppression automatically applied where needed"
-            )
+            queries: list[str] = get_queries_from_collated_risk(collated_assessment,aggfunc)
+            relevant_data:DataFrame = get_relevant_dataframe(args,kwargs,variable_metadata)
+            redacted_data: DataFrame = get_redacted_data(relevant_data,queries)
+            #ensure missing categories are present
+            for name in list(redacted_data):
+                if variable_metadata[name]["type"]==SDMX_DIMENSION:
+                    cat_type= CategoricalDtype(
+                            categories=variable_metadata[name]['categories'],
+                            ordered=variable_metadata[name]['ordered']
+                        )
+                    redacted_data[name]=redacted_data[name].astype(cat_type)
+
+
+            newargs = translate_args_to_newdf(args,redacted_data)
+            newkwargs:dict[str:Any]= copy.deepcopy(kwargs)
+            newkwargs['dropna']=False
+            if "values" in kwargs.keys() and kwargs["values"] is not None:
+                newkwargs["values"]= redacted_data[ kwargs["values"].name]
+            table = pd.crosstab(*newargs,**newkwargs)
+            if self.sdc_checks.risk_appetite["zeros_are_disclosive"]:
+                table.replace({0:np.nan},inplace=True)
+
         # record output
         self.results.add(
             status=overall_status,
@@ -260,11 +307,16 @@ class Tables:
             sdc=sdc_details,
             fair=fair_dicts,
             command=command,
-            summary=summary,
-            outcome=outcome,
+            summary=allsummary,
+            outcome=collated_assessment,
             output=[table],
             comments=[],
         )
+        if self.suppress:
+            justadded = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                justadded, "Suppression automatically applied where needed"
+                )
 
         return table
 
@@ -962,162 +1014,6 @@ class Tables:
         return unique_filename
 
 
-def create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
-    index: Any,
-    columns: Any,
-    values: Any,
-    rownames: Any,
-    colnames: Any,
-    agg_func: str | Callable | list[str | Callable] | None,
-    margins: bool,
-    margins_name: str,
-    dropna: bool,
-    normalize: bool | str,
-) -> dict[str, DataFrame]:
-    """Create masks to specify the cells to suppress."""
-    # suppression masks to apply based on the following checks
-    masks: dict[str, DataFrame] = {}
-
-    if agg_func is not None:
-        # create lists with single entry for when there is only one aggfunc
-        count_funcs: list[str | Callable] = [AGGFUNC["count"]]
-        neg_funcs: list[Callable] = [agg_negative]
-        pperc_funcs: list[Callable] = [agg_p_percent]
-        nk_funcs: list[Callable] = [agg_nk]
-        missing_funcs: list[Callable] = [agg_missing]
-        # then expand them to deal with extra columns as needed
-        if isinstance(agg_func, list):
-            num = len(agg_func)
-            count_funcs.extend([AGGFUNC["count"] for i in range(1, num)])
-            neg_funcs.extend([agg_negative for i in range(1, num)])
-            pperc_funcs.extend([agg_p_percent for i in range(1, num)])
-            nk_funcs.extend([agg_nk for i in range(1, num)])
-            missing_funcs.extend([agg_missing for i in range(1, num)])
-        # threshold check- doesn't matter what we pass for value
-        if agg_func is mode_aggfunc:
-            # check that all observations dont have the same value
-            logger.info(
-                "If there are multiple modes, one of them is randomly selected and displayed."
-            )
-            masks["all-values-are-same"] = pd.crosstab(
-                index,
-                columns,
-                values,
-                aggfunc=agg_values_are_same,
-                margins=margins,
-                dropna=dropna,
-            )
-        else:
-            t_values = pd.crosstab(
-                index,
-                columns,
-                values=values,
-                rownames=rownames,
-                colnames=colnames,
-                aggfunc=count_funcs,
-                margins=margins,
-                margins_name=margins_name,
-                dropna=dropna,
-                normalize=normalize,
-            )
-
-            # drop empty columns and rows
-            if dropna or margins:
-                empty_cols_mask = t_values.sum(axis=0) == 0
-                empty_rows_mask = t_values.sum(axis=1) == 0
-
-                t_values = t_values.loc[:, ~empty_cols_mask]
-                t_values = t_values.loc[~empty_rows_mask, :]
-
-            t_values = t_values < THRESHOLD
-            masks["threshold"] = t_values
-            # check for negative values -- currently unsupported
-            negative = pd.crosstab(
-                index, columns, values, aggfunc=neg_funcs, margins=margins
-            )
-            if negative.to_numpy().sum() > 0:
-                masks["negative"] = negative
-            # p-percent check
-            masks["p-ratio"] = pd.crosstab(
-                index,
-                columns,
-                values,
-                aggfunc=pperc_funcs,
-                margins=margins,
-                dropna=dropna,
-            )
-            # nk values check
-            masks["nk-rule"] = pd.crosstab(
-                index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
-            )
-            # check for missing values -- currently unsupported
-            if CHECK_MISSING_VALUES:
-                masks["missing"] = pd.crosstab(
-                    index, columns, values, aggfunc=missing_funcs, margins=margins
-                )
-    else:
-        # threshold check- doesn't matter what we pass for value
-        t_values = pd.crosstab(
-            index,
-            columns,
-            values=None,
-            rownames=rownames,
-            colnames=colnames,
-            aggfunc=None,
-            margins=margins,
-            margins_name=margins_name,
-            dropna=dropna,
-            normalize=normalize,
-        )
-        t_values = t_values < THRESHOLD
-        masks["threshold"] = t_values
-
-    # pd.crosstab returns nan for an empty cell
-    for name, mask in masks.items():
-        mask.fillna(value=1, inplace=True)
-        mask = mask.astype(int)
-        mask.replace({0: False, 1: True}, inplace=True)
-        masks[name] = mask
-    return masks
-
-
-def delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
-    """Delete empty rows and columns from table.
-
-    Parameters
-    ----------
-    table : DataFrame
-        The table where the empty rows and columns will be deleted from.
-
-    Returns
-    -------
-    DataFrame
-        The resulting table where the empty columns and rows were deleted.
-    list[str]
-        A comment showing information about the deleted columns and rows.
-    """
-    deleted_rows: list[Any] = []
-    deleted_cols: list[Any] = []
-    # define empty columns and rows using boolean masks
-    empty_cols_mask: Any = table.sum(axis=0) == 0
-    empty_rows_mask: Any = table.sum(axis=1) == 0
-
-    deleted_cols = list(table.columns[empty_cols_mask])
-    table = table.loc[:, ~empty_cols_mask]
-    deleted_rows = list(table.index[empty_rows_mask])
-    table = table.loc[~empty_rows_mask, :]
-
-    # create a message with the deleted column's names
-    comments: list[str] = []
-    if deleted_cols:
-        msg_cols = ", ".join(str(col) for col in deleted_cols)
-        comments.append(f"Empty columns: {msg_cols} were deleted.")
-    if deleted_rows:
-        msg_rows = ", ".join(str(row) for row in deleted_rows)
-        comments.append(f"Empty rows: {msg_rows} were deleted.")
-    if comments:
-        logger.info(" ".join(comments))
-    return (table, comments)
 
 
 def _rounded_survival_table(
@@ -1187,286 +1083,181 @@ def _rounded_survival_table(
     return survival_table
 
 
-def get_aggfunc(aggfunc: str | None) -> str | Callable | None:
-    """Check whether an aggregation function is allowed and return the appropriate function.
-
-    Parameters
-    ----------
-    aggfunc : str | None
-        Name of the aggregation function to apply.
-
-    Returns
-    -------
-    Callable | None
-        The aggregation function to apply.
-    """
-    logger.debug("get_aggfunc()")
-    func: str | Callable | None = None
-    if aggfunc is not None:
-        if not isinstance(aggfunc, str):  # pragma: no cover
-            raise ValueError(f"aggfunc {aggfunc} must be:{', '.join(AGGFUNC.keys())}")
-        if aggfunc not in AGGFUNC:  # pragma: no cover
-            raise ValueError(f"aggfunc {aggfunc} must be: {', '.join(AGGFUNC.keys())}")
-        func = AGGFUNC[aggfunc]
-    logger.debug("aggfunc: %s", func)
-    return func
 
 
-def get_aggfuncs(
-    aggfuncs: str | list[str] | None,
-) -> str | Callable | list[str | Callable] | None:
-    """Check whether aggregation functions are allowed and return appropriate functions.
+def axis_to_list(axis:Series|list[Series])->list[Series]:
+    """translate axis into standard format
 
-    Parameters
-    ----------
-    aggfuncs : str | list[str] | None
-        List of names of the aggregation functions to apply.
+
+    Convert variables describing an axis (row/column) into a list
+    to simplify code. Wraps the  input inside a list if it   is a single series
+    or leaves it unchanged if it is already a list of series
+    
+    
+    Parameters:
+    -----------
+    axis: pandas series or list of series
 
     Returns
     -------
-    Callable | list[Callable] | None
-        The aggregation functions to apply.
+    list [Series]
+ 
     """
-    logger.debug("get_aggfuncs()")
-    if aggfuncs is None:
-        logger.debug("aggfuncs: None")
-        return None
-    if isinstance(aggfuncs, str):
-        function = get_aggfunc(aggfuncs)
-        logger.debug("aggfuncs: %s", function)
-        return function
-    if isinstance(aggfuncs, list):
-        functions: list[str | Callable] = []
-        for function_name in aggfuncs:
-            function = get_aggfunc(function_name)
-            if function is not None:
-                functions.append(function)
-        logger.debug("aggfuncs: %s", functions)
-        if len(functions) < 1:  # pragma: no cover
-            raise ValueError(f"invalid aggfuncs: {aggfuncs}")
-        return functions
-    raise ValueError("aggfuncs must be: either str or list[str]")  # pragma: no cover
+    if not isinstance(axis,list):
+        foo:list= []
+        foo.append(axis)
+        return foo
+    return axis
 
 
 
 
-def _broadcast_mask_to_multiindex(
-    m: DataFrame, table: DataFrame, top_levels: list
-) -> DataFrame:
-    """Replicate a flat (or single-group) mask across each aggfunc top-level group.
-
-    Parameters
-    ----------
-    m : DataFrame
-        Flat mask with base columns only.
-    table : DataFrame
-        MultiIndex table whose top-level groups define the replication targets.
-    top_levels : list
-        Ordered list of unique top-level values from the table's MultiIndex columns.
-
-    Returns
-    -------
-    DataFrame
-        A mask with MultiIndex columns matching the table's column structure.
-    """
-    frames = []
-    for lvl in top_levels:
-        sub_cols = table[lvl].columns
-        sub_m = m.reindex(index=table.index, columns=sub_cols, fill_value=False)
-        sub_m.columns = pd.MultiIndex.from_product([[lvl], sub_m.columns])
-        frames.append(sub_m)
-    return pd.concat(frames, axis=1)
 
 
-def _align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
-    """Align the columns of mask *m* to match those of *table*.
-
-    Parameters
-    ----------
-    m : DataFrame
-        A single suppression mask.
-    table : DataFrame
-        The output table the mask should match.
-
-    Returns
-    -------
-    DataFrame
-        The mask with columns aligned to the table.
-    """
-    table_nlevels = table.columns.nlevels
-    mask_nlevels = m.columns.nlevels
-
-    if table_nlevels == 2 and mask_nlevels == 2:
-        table_top = table.columns.get_level_values(0).unique().tolist()
-        mask_top = m.columns.get_level_values(0).unique().tolist()
-        if mask_top != table_top:
-            n_base = len(table.columns.get_level_values(1).unique())
-            base_mask = m.iloc[:, :n_base]
-            flat_cols = base_mask.columns.get_level_values(1)
-            base_mask = pd.DataFrame(base_mask.values, index=m.index, columns=flat_cols)
-            m = _broadcast_mask_to_multiindex(base_mask, table, table_top)
-    elif mask_nlevels < table_nlevels:
-        top_levels = table.columns.get_level_values(0).unique().tolist()
-        m = _broadcast_mask_to_multiindex(m, table, top_levels)
-    elif mask_nlevels > table_nlevels:
-        m = m.droplevel(0, axis=1)
-
-    return m
-
-
-def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
-    """Align masks to the table's index and columns.
+def collate_risk_assessments(
+    table: DataFrame, 
+    allmasks: dict[str, DataFrame]
+    ) -> DataFrame:
+    """Collate the Risk Assessment for a table.
 
     Parameters
     ----------
     table : DataFrame
-        Table to align masks to.
+        Table to be risk assessed.
     masks : dict[str, DataFrame]
-        Dictionary of tables specifying suppression masks.
+        Dictionary of tables specifying individual risk assessment masks .
 
     Returns
     -------
-    dict[str, DataFrame]
-        The aligned masks.
-    """
-    aligned_masks = {}
-    for name, mask in masks.items():
-        m = mask
-
-        # handle index level mismatch
-        if m.index.nlevels > table.index.nlevels:
-            m = m.droplevel(0, axis=0)
-
-        m = _align_mask_columns(m, table)
-
-        # reindex if still necessary
-        if not m.index.equals(table.index) or not m.columns.equals(table.columns):
-            try:
-                m = m.reindex(
-                    index=table.index, columns=table.columns, fill_value=False
-                )
-            except (ValueError, TypeError):  # pragma: no cover
-                logger.warning("Could not reindex mask %s", name)
-        aligned_masks[name] = m
-    return aligned_masks
-
-
-def apply_suppression(
-    table: DataFrame, masks: dict[str, DataFrame]
-) -> tuple[DataFrame, DataFrame]:
-    """Apply suppression to a table.
-
-    Parameters
-    ----------
-    table : DataFrame
-        Table to apply suppression.
-    masks : dict[str, DataFrame]
-        Dictionary of tables specifying suppression masks for application.
-
-    Returns
-    -------
-    DataFrame
-        Table to output with any suppression applied.
     DataFrame
         Table with outcomes of suppression checks.
     """
-    logger.debug("apply_suppression()")
-    # align masks
-    masks = align_masks(table, masks)
-    safe_df = table.copy()
-    outcome_df = DataFrame(index=table.index, columns=table.columns)
-    outcome_df.fillna("", inplace=True)
-    # don't apply suppression if negatives are present
-    if "negative" in masks:
-        mask = masks["negative"]
-        outcome_df[mask.values] = "negative"
-    # don't apply suppression if missing values are present
-    elif "missing" in masks:
-        mask = masks["missing"]
-        outcome_df[mask.values] = "missing"
-    # apply suppression masks
-    else:
-        for name, mask in masks.items():
-            try:
-                safe_df[mask.values] = np.nan
-                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
-                tmp_df.fillna("", inplace=True)
-                tmp_df[mask.values] = name + "; "
-                outcome_df += tmp_df
-            except TypeError:
-                logger.warning("problem mask %s is not binary", name)
-            except ValueError as error:  # pragma: no cover
-                error_message = (
-                    f"An error occurred with the following details"
-                    f":\n Name: {name}\n Mask: {mask}\n Table: {table}"
-                )
-                raise ValueError(error_message) from error
 
+    outcome_df = DataFrame(index=table.index, columns=table.columns)
+    #drop column repetitions for multiple aggregatino functions
+    lowestlevelfound = []
+    to_drops=[]
+    for thetuple in list(outcome_df):
+        if thetuple[-1] in lowestlevelfound:
+            to_drops.append(thetuple)
+        else:
+            lowestlevelfound.append(thetuple[-1])
+    for drop in to_drops:
+        outcome_df= outcome_df.drop(drop,axis='columns')
+
+
+    outcome_df.fillna("", inplace=True)
+
+    checks_seen:list[str] = []
+    for analysis, masks in allmasks.items():
+        # report if negatives are present
+        if "negative" in masks:
+            mask = masks["negative"]
+            outcome_df[mask.values] = "negative"
+        #   report if missing values are present
+        elif "missing" in masks:
+            mask = masks["missing"]
+            outcome_df[mask.values] = "missing"
+        # collate at-risk cells from individual risk masks
+        else:
+            for name, mask in masks.items():
+                if name in checks_seen:
+                    continue
+                checks_seen.append(name)
+                try:
+                    tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
+                    tmp_df.fillna("", inplace=True)
+                    tmp_df[mask.values] = name + "; "
+                    outcome_df += tmp_df
+                except TypeError:
+                    logger.warning("problem mask %s is not binary", name)
+                except ValueError as error:  # pragma: no cover
+                    error_message = (
+                        f"An error occurred with the following details"
+                        f":\n Name: {name}\n "
+                        f"Mask of size {mask.shape}"
+                        f"table of shape {table.shape}"
+                    )
+                    raise ValueError(error_message) from error
+    
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
-    return safe_df, outcome_df
+    return outcome_df
 
+def get_catdtype(series:pd.Series)->pd.CategoricalDtype:
+    """convert axis dimension to CategoricalDtype"""
+    ordered=  True if series.astype(int, errors="ignore").dtype=='int64' else False
+    categories= np.sort(series.unique())
+    cat_type= pd.CategoricalDtype(categories, ordered)
+    return cat_type
 
-def get_table_sdc_old(
-    masks: dict[str, DataFrame], suppress: bool, table: DataFrame | None = None
-) -> dict[str, Any]:
-    """Return the SDC dictionary using the suppression masks.
-
+def get_catvar_data(axis,where:str)-> dict:
+    """ get  metadata for categorical variables describing an axis
+    
+    Cycle through the categorical variables that define an axis 
+    and construct a meta data dictionary describing them 
+    
     Parameters
     ----------
-    masks : dict[str, DataFrame]
-        Dictionary of tables specifying suppression masks for application.
-    suppress : bool
-        Whether suppression has been applied.
-    table : DataFrame, optional
-        The table to align masks to.
+    axis: list[pd.Series]
+        list of series defining a dimension in an analysis
+    where: str
+        axis reference i.e. "rows" or "columns"
+
+    Returns
+    -------
+
+    dict   
+        one entry for item in list provided
+        key is name of series
+        dict of values describe location, type, categories present
+        
     """
-    if table is not None:
-        masks = align_masks(table, masks)
-    # summary of cells to be suppressed
-    sdc: dict[str, Any] = {"summary": {"suppressed": suppress}, "cells": {}}
-    sdc["summary"]["negative"] = 0
-    sdc["summary"]["missing"] = 0
-    sdc["summary"]["threshold"] = 0
-    sdc["summary"]["p-ratio"] = 0
-    sdc["summary"]["nk-rule"] = 0
-    sdc["summary"]["all-values-are-same"] = 0
-    for name, mask in masks.items():
-        sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
-    # positions of cells to be suppressed
-    sdc["cells"]["negative"] = []
-    sdc["cells"]["missing"] = []
-    sdc["cells"]["threshold"] = []
-    sdc["cells"]["p-ratio"] = []
-    sdc["cells"]["nk-rule"] = []
-    sdc["cells"]["all-values-are-same"] = []
-    for name, mask in masks.items():
-        true_positions = np.column_stack(np.where(mask.values))
-        for pos in true_positions:
-            row_index, col_index = pos
-            sdc["cells"][name].append([int(row_index), int(col_index)])
-    return sdc
+    
+    metadata: dict[str,dict] = {}
+    for idx,dimension in enumerate(axis):
+        entry:dict={}
+        if not isinstance(dimension,Series):
+            logger.info("unable to construct meta data for "
+                         " component of %s that is not a pandas series", where)
+        else:
+            name = dimension.name
+            cat_type=get_catdtype(dimension)
+            metadata[name]= {
+                "location": where,
+                "sequence_id": idx,
+                "dtype": str(cat_type.categories.dtype),
+                "type" : SDMX_DIMENSION,
+                "categories":list(cat_type.categories),
+                "ordered": cat_type.ordered 
+            }
+    return metadata
 
-
-def get_table_sdc(masks: dict[str, DataFrame]) -> dict[str, Any]:
+    
+def get_table_sdc(allmasks: dict[str, dict]) -> dict[str, Any]:
     """Return the SDC dictionary using the suppression masks.
 
     Parameters
     ----------
-    masks : dict[str, DataFrame]
-        Dictionary of tables specifying suppression masks for application.
+    allmasks : dict[str, dict]
+        Nested Dictionary of tables specifying suppression masks for application.
     """
     # summary of number of cells to be suppressed
     sdc: dict[str, Any] = {"summary": {}, "cells": {}}
-    for name, mask in masks.items():
-        sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
-        sdc["cells"][name] = []
-    # positions of cells to be suppressed
-    for name, mask in masks.items():
-        true_positions = np.column_stack(np.where(mask.values))
-        for pos in true_positions:
-            row_index, col_index = pos
-            sdc["cells"][name].append([int(row_index), int(col_index)])
+
+    checks_seen:list[str] = []
+    for analysis, masks in allmasks.items():
+        for name, mask in masks.items():
+            if name in checks_seen:
+                continue
+            checks_seen.append(name)
+            sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
+            sdc["cells"][name] = []
+            # positions of cells to be suppressed
+            true_positions = np.column_stack(np.where(mask.values))
+            for pos in true_positions:
+                row_index, col_index = pos
+                sdc["cells"][name].append([int(row_index), int(col_index)])
     return sdc
 
 
@@ -1569,6 +1360,77 @@ def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
     return parts
 
 
+def get_relevant_dataframe(args:list,kwargs:dict[str:Any], metadata:dict)->DataFrame:
+    """ extract copy of data relevant to crosstab into new DataFrame
+
+    Assumes preprocessing has happenededindex and columns in args should both have been converted into lists of Series
+    
+    
+    Parameters
+    ----------
+    args:list[str|list]
+        list of index, columns from call to crosstab function
+        should have already been converted to lists
+    kwargs: dict
+        kwargs for crosstab function
+    metadata: dict
+        information for creating categorical datatypes so as to preserve possible values
+
+    Returns
+    -------
+    dataframe containing copies of pandas series need to calculate the  crosstab
+    """
+    series_list:list= []
+    if "values" in kwargs.keys() and kwargs["values"] is not None:
+        series_list.append( kwargs["values"].copy())
+    if not (isinstance (args,tuple) and len(args)==2):
+        print(f'args is of type {type(args)} and contents {args}\n')
+        raise ValueError("list passed as positional args has wrong type or length")
+    for contents in args:
+        if not isinstance(contents,list):
+            raise TypeError("index and columns should be lists")
+        for series in contents:
+            series_list.append(series.copy())
+
+    relevant_data = DataFrame(series_list).T
+    return relevant_data
+
+
+
+def translate_args_to_newdf(arguments:list,redacted_data:DataFrame)->list:
+    """translate arguments or keys from one data frame to another
+
+    Parameters:
+    -----------
+    arguments: list
+        list of positional arguments to be translated to a different dataframe
+    redacted_data: Dataframe
+        the name of the 'host' dataframe
+        
+
+    Returns:
+    ---------
+    list
+         arguments  translate on to columns with the same name in the host DataFrame 
+    """
+    #todo put in checks to make this robust
+    #decide whether to return args i.e. don't do redaction/suppression
+    #instead of raising valueerror
+    newargs:list = []
+    if not (isinstance (arguments,tuple) and len(arguments)==2):
+        raise ValueError("list passed as positional args has wrong type or length")
+    for contents in arguments:
+        if isinstance (contents,pd.Series):
+            newargs.append(redacted_data[contents.name])
+        elif isinstance(contents,list):
+            newlist:list=[]
+            for series in contents:
+                newlist.append(redacted_data[series.name])
+            newargs.append(newlist)
+    return newargs
+
+        
+    
 def _get_cell_query(
     mask: DataFrame,
     row_index: int,
@@ -1609,11 +1471,11 @@ def _get_cell_query(
     return " & ".join(parts)
 
 
-def get_queries(
-    masks: dict[str, DataFrame],
-    aggfunc: str | Callable | list[str | Callable] | None,
+def get_queries_from_collated_risk(
+    collated_risk: DataFrame,
+    aggfunc:str|None
 ) -> list[str]:
-    """Return a list of the boolean conditions for each true cell in the suppression masks.
+    """Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
 
     Parameters
     ----------
@@ -1625,70 +1487,62 @@ def get_queries(
     Returns
     -------
     str
-        The boolean conditions for each true cell in the suppression masks.
+        The boolean conditions for each true (disclosive) cell in the suppression masks.
     """
     true_cell_queries = []
-    for _, mask in masks.items():
-        if aggfunc is not None:
-            if mask.columns.nlevels > 1:
-                mask = mask.droplevel(0, axis=1)
-        index_level_names = mask.index.names
-        column_level_names = mask.columns.names
-        for col_index, _ in enumerate(mask.columns):
-            for row_index, _ in enumerate(mask.index):
-                query = _get_cell_query(
-                    mask, row_index, col_index, index_level_names, column_level_names
-                )
-                if query is not None:
-                    true_cell_queries.append(query)
+    themask = collated_risk.copy()
+
+    themask=themask.replace({"ok":False})
+    themask = themask.mask(themask != False, other=True)
+    if aggfunc is not None:
+        if themask.columns.nlevels > 1:
+            themask = themask.droplevel(0, axis=1)
+    index_level_names = themask.index.names
+    column_level_names = themask.columns.names
+    for col_index, _ in enumerate(themask.columns):
+        for row_index, _ in enumerate(themask.index):
+            query = _get_cell_query(
+                themask, row_index, col_index, index_level_names, column_level_names
+            )
+            if query is not None:
+                true_cell_queries.append(query)
     true_cell_queries = list(set(true_cell_queries))
     return true_cell_queries
 
 
-def create_dataframe(index: Any, columns: Any) -> DataFrame:
-    """Combine the index and columns in a dataframe and return the dataframe.
+def get_redacted_data(data:DataFrame,queries:list[str])->DataFrame:
+    """Apply set of queries to remove sensitive data from  DataFrame
 
-    Parameters
-    ----------
-    index : array-like, Series, or list of arrays/Series
-        Values to group by in the rows.
-    columns : array-like, Series, or list of arrays/Series
-        Values to group by in the columns.
+    Parameters:
+    -------------
+    data: pandas DataFrame
+        the raw data
+    queries: list[str]
+        a set of queries that define the data in cells marked as being disclosive
 
-    Returns
-    -------
-    Dataframe
-        Table of the index and columns combined.
+    Returns:
+    ---------
+    DataFrame 
+         the data after the sensitive data has been removed
     """
-    empty_dataframe = pd.DataFrame([])
+    redacted_data = data.copy()
+    #logger.info(f'data has shape {data.shape}')
+    for query in queries:
+        #logger.info(f'applying query{query}')
+        redacted_data.query(f"not ({query})",inplace=True)
+        #logger.info(f'now redacted data has shape {redacted_data.shape}')
 
-    index_df = empty_dataframe
-    try:
-        if isinstance(index, list):
-            index_df = pd.concat(index, axis=1)
-        elif isinstance(index, pd.Series):
-            index_df = pd.DataFrame({index.name: index})
-    except (ValueError, TypeError):
-        index_df = empty_dataframe
-
-    columns_df = empty_dataframe
-    try:
-        if isinstance(columns, list):
-            columns_df = pd.concat(columns, axis=1)
-        elif isinstance(columns, pd.Series):
-            columns_df = pd.DataFrame({columns.name: columns})
-    except (ValueError, TypeError):
-        columns_df = empty_dataframe
-
-    try:
-        data = pd.concat([index_df, columns_df], axis=1)
-    except (ValueError, TypeError):  # pragma: no cover
-        data = empty_dataframe
-
-    return data
+    if not set(data.columns)==set(redacted_data.columns):
+        logger.warning("Error created redacted data"
+                       " - unable to apply suppression"
+                      )
+        return data
+    return redacted_data
 
 
-def get_index_columns(
+
+
+def unused_get_index_columns(
     index: Any, columns: Any, data: DataFrame
 ) -> tuple[list[Any] | Series, list[Any] | Series]:
     """Get the index and columns from the data dataframe.
@@ -1727,7 +1581,7 @@ def get_index_columns(
     return index_new, columns_new
 
 
-def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
+def unused_crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     masks: dict[str, DataFrame],
     aggfunc: Any,
     index: Any,
@@ -1863,7 +1717,7 @@ def crosstab_with_totals(  # pylint: disable=too-many-arguments,too-many-locals
     return table
 
 
-def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
+def unused_manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
     table: DataFrame,
     aggfunc: str | list[str] | None,
     index: Any,
@@ -1990,7 +1844,7 @@ def manual_crossstab_with_totals(  # pylint: disable=too-many-arguments
     return table
 
 
-def recalculate_count_margins(table: DataFrame, margins_name: str) -> DataFrame:
+def unused_recalculate_count_margins(table: DataFrame, margins_name: str) -> DataFrame:
     """Recalculate the margins in a table of counts.
 
     Parameters
@@ -2017,3 +1871,609 @@ def recalculate_count_margins(table: DataFrame, margins_name: str) -> DataFrame:
         cols_total = table.sum(axis=0)
         table.loc[margins_name] = cols_total
     return table
+
+
+def unused_create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
+    index: Any,
+    columns: Any,
+    values: Any,
+    rownames: Any,
+    colnames: Any,
+    agg_func: str | Callable | list[str | Callable] | None,
+    margins: bool,
+    margins_name: str,
+    dropna: bool,
+    normalize: bool | str,
+) -> dict[str, DataFrame]:
+    """Create masks to specify the cells to suppress."""
+    # suppression masks to apply based on the following checks
+    masks: dict[str, DataFrame] = {}
+
+    if agg_func is not None:
+        # create lists with single entry for when there is only one aggfunc
+        count_funcs: list[str | Callable] = [AGGFUNC["count"]]
+        neg_funcs: list[Callable] = [agg_negative]
+        pperc_funcs: list[Callable] = [agg_p_percent]
+        nk_funcs: list[Callable] = [agg_nk]
+        missing_funcs: list[Callable] = [agg_missing]
+        # then expand them to deal with extra columns as needed
+        if isinstance(agg_func, list):
+            num = len(agg_func)
+            count_funcs.extend([AGGFUNC["count"] for i in range(1, num)])
+            neg_funcs.extend([agg_negative for i in range(1, num)])
+            pperc_funcs.extend([agg_p_percent for i in range(1, num)])
+            nk_funcs.extend([agg_nk for i in range(1, num)])
+            missing_funcs.extend([agg_missing for i in range(1, num)])
+        # threshold check- doesn't matter what we pass for value
+        if agg_func is mode_aggfunc:
+            # check that all observations dont have the same value
+            logger.info(
+                "If there are multiple modes, one of them is randomly selected and displayed."
+            )
+            masks["all-values-are-same"] = pd.crosstab(
+                index,
+                columns,
+                values,
+                aggfunc=agg_values_are_same,
+                margins=margins,
+                dropna=dropna,
+            )
+        else:
+            t_values = pd.crosstab(
+                index,
+                columns,
+                values=values,
+                rownames=rownames,
+                colnames=colnames,
+                aggfunc=count_funcs,
+                margins=margins,
+                margins_name=margins_name,
+                dropna=dropna,
+                normalize=normalize,
+            )
+
+            # drop empty columns and rows
+            if dropna or margins:
+                empty_cols_mask = t_values.sum(axis=0) == 0
+                empty_rows_mask = t_values.sum(axis=1) == 0
+
+                t_values = t_values.loc[:, ~empty_cols_mask]
+                t_values = t_values.loc[~empty_rows_mask, :]
+
+            t_values = t_values < THRESHOLD
+            masks["threshold"] = t_values
+            # check for negative values -- currently unsupported
+            negative = pd.crosstab(
+                index, columns, values, aggfunc=neg_funcs, margins=margins
+            )
+            if negative.to_numpy().sum() > 0:
+                masks["negative"] = negative
+            # p-percent check
+            masks["p-ratio"] = pd.crosstab(
+                index,
+                columns,
+                values,
+                aggfunc=pperc_funcs,
+                margins=margins,
+                dropna=dropna,
+            )
+            # nk values check
+            masks["nk-rule"] = pd.crosstab(
+                index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
+            )
+            # check for missing values -- currently unsupported
+            if CHECK_MISSING_VALUES:
+                masks["missing"] = pd.crosstab(
+                    index, columns, values, aggfunc=missing_funcs, margins=margins
+                )
+    else:
+        # threshold check- doesn't matter what we pass for value
+        t_values = pd.crosstab(
+            index,
+            columns,
+            values=None,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=None,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+        t_values = t_values < THRESHOLD
+        masks["threshold"] = t_values
+
+    # pd.crosstab returns nan for an empty cell
+    for name, mask in masks.items():
+        mask.fillna(value=1, inplace=True)
+        mask = mask.astype(int)
+        mask.replace({0: False, 1: True}, inplace=True)
+        masks[name] = mask
+    return masks
+
+
+def unused_delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
+    """Delete empty rows and columns from table.
+
+    Parameters
+    ----------
+    table : DataFrame
+        The table where the empty rows and columns will be deleted from.
+
+    Returns
+    -------
+    DataFrame
+        The resulting table where the empty columns and rows were deleted.
+    list[str]
+        A comment showing information about the deleted columns and rows.
+    """
+    deleted_rows: list[Any] = []
+    deleted_cols: list[Any] = []
+    # define empty columns and rows using boolean masks
+    empty_cols_mask: Any = table.sum(axis=0) == 0
+    empty_rows_mask: Any = table.sum(axis=1) == 0
+
+    deleted_cols = list(table.columns[empty_cols_mask])
+    table = table.loc[:, ~empty_cols_mask]
+    deleted_rows = list(table.index[empty_rows_mask])
+    table = table.loc[~empty_rows_mask, :]
+
+    # create a message with the deleted column's names
+    comments: list[str] = []
+    if deleted_cols:
+        msg_cols = ", ".join(str(col) for col in deleted_cols)
+        comments.append(f"Empty columns: {msg_cols} were deleted.")
+    if deleted_rows:
+        msg_rows = ", ".join(str(row) for row in deleted_rows)
+        comments.append(f"Empty rows: {msg_rows} were deleted.")
+    if comments:
+        logger.info(" ".join(comments))
+    return (table, comments)
+def unused_create_crosstab_masks(  # pylint: disable=too-many-arguments,too-many-locals
+    index: Any,
+    columns: Any,
+    values: Any,
+    rownames: Any,
+    colnames: Any,
+    agg_func: str | Callable | list[str | Callable] | None,
+    margins: bool,
+    margins_name: str,
+    dropna: bool,
+    normalize: bool | str,
+) -> dict[str, DataFrame]:
+    """Create masks to specify the cells to suppress."""
+    # suppression masks to apply based on the following checks
+    masks: dict[str, DataFrame] = {}
+
+    if agg_func is not None:
+        # create lists with single entry for when there is only one aggfunc
+        count_funcs: list[str | Callable] = [AGGFUNC["count"]]
+        neg_funcs: list[Callable] = [agg_negative]
+        pperc_funcs: list[Callable] = [agg_p_percent]
+        nk_funcs: list[Callable] = [agg_nk]
+        missing_funcs: list[Callable] = [agg_missing]
+        # then expand them to deal with extra columns as needed
+        if isinstance(agg_func, list):
+            num = len(agg_func)
+            count_funcs.extend([AGGFUNC["count"] for i in range(1, num)])
+            neg_funcs.extend([agg_negative for i in range(1, num)])
+            pperc_funcs.extend([agg_p_percent for i in range(1, num)])
+            nk_funcs.extend([agg_nk for i in range(1, num)])
+            missing_funcs.extend([agg_missing for i in range(1, num)])
+        # threshold check- doesn't matter what we pass for value
+        if agg_func is mode_aggfunc:
+            # check that all observations dont have the same value
+            logger.info(
+                "If there are multiple modes, one of them is randomly selected and displayed."
+            )
+            masks["all-values-are-same"] = pd.crosstab(
+                index,
+                columns,
+                values,
+                aggfunc=agg_values_are_same,
+                margins=margins,
+                dropna=dropna,
+            )
+        else:
+            t_values = pd.crosstab(
+                index,
+                columns,
+                values=values,
+                rownames=rownames,
+                colnames=colnames,
+                aggfunc=count_funcs,
+                margins=margins,
+                margins_name=margins_name,
+                dropna=dropna,
+                normalize=normalize,
+            )
+
+            # drop empty columns and rows
+            if dropna or margins:
+                empty_cols_mask = t_values.sum(axis=0) == 0
+                empty_rows_mask = t_values.sum(axis=1) == 0
+
+                t_values = t_values.loc[:, ~empty_cols_mask]
+                t_values = t_values.loc[~empty_rows_mask, :]
+
+            t_values = t_values < THRESHOLD
+            masks["threshold"] = t_values
+            # check for negative values -- currently unsupported
+            negative = pd.crosstab(
+                index, columns, values, aggfunc=neg_funcs, margins=margins
+            )
+            if negative.to_numpy().sum() > 0:
+                masks["negative"] = negative
+            # p-percent check
+            masks["p-ratio"] = pd.crosstab(
+                index,
+                columns,
+                values,
+                aggfunc=pperc_funcs,
+                margins=margins,
+                dropna=dropna,
+            )
+            # nk values check
+            masks["nk-rule"] = pd.crosstab(
+                index, columns, values, aggfunc=nk_funcs, margins=margins, dropna=dropna
+            )
+            # check for missing values -- currently unsupported
+            if CHECK_MISSING_VALUES:
+                masks["missing"] = pd.crosstab(
+                    index, columns, values, aggfunc=missing_funcs, margins=margins
+                )
+    else:
+        # threshold check- doesn't matter what we pass for value
+        t_values = pd.crosstab(
+            index,
+            columns,
+            values=None,
+            rownames=rownames,
+            colnames=colnames,
+            aggfunc=None,
+            margins=margins,
+            margins_name=margins_name,
+            dropna=dropna,
+            normalize=normalize,
+        )
+        t_values = t_values < THRESHOLD
+        masks["threshold"] = t_values
+
+    # pd.crosstab returns nan for an empty cell
+    for name, mask in masks.items():
+        mask.fillna(value=1, inplace=True)
+        mask = mask.astype(int)
+        mask.replace({0: False, 1: True}, inplace=True)
+        masks[name] = mask
+    return masks
+
+
+def unused_delete_empty_rows_columns(table: DataFrame) -> tuple[DataFrame, list[str]]:
+    """Delete empty rows and columns from table.
+
+    Parameters
+    ----------
+    table : DataFrame
+        The table where the empty rows and columns will be deleted from.
+
+    Returns
+    -------
+    DataFrame
+        The resulting table where the empty columns and rows were deleted.
+    list[str]
+        A comment showing information about the deleted columns and rows.
+    """
+    deleted_rows: list[Any] = []
+    deleted_cols: list[Any] = []
+    # define empty columns and rows using boolean masks
+    empty_cols_mask: Any = table.sum(axis=0) == 0
+    empty_rows_mask: Any = table.sum(axis=1) == 0
+
+    deleted_cols = list(table.columns[empty_cols_mask])
+    table = table.loc[:, ~empty_cols_mask]
+    deleted_rows = list(table.index[empty_rows_mask])
+    table = table.loc[~empty_rows_mask, :]
+
+    # create a message with the deleted column's names
+    comments: list[str] = []
+    if deleted_cols:
+        msg_cols = ", ".join(str(col) for col in deleted_cols)
+        comments.append(f"Empty columns: {msg_cols} were deleted.")
+    if deleted_rows:
+        msg_rows = ", ".join(str(row) for row in deleted_rows)
+        comments.append(f"Empty rows: {msg_rows} were deleted.")
+    if comments:
+        logger.info(" ".join(comments))
+    return (table, comments)
+
+def unused_get_aggfunc(aggfunc: str | None) -> str | Callable | None:
+    """Check whether an aggregation function is allowed and return the appropriate function.
+
+    Parameters
+    ----------
+    aggfunc : str | None
+        Name of the aggregation function to apply.
+
+    Returns
+    -------
+    Callable | None
+        The aggregation function to apply.
+    """
+    logger.debug("get_aggfunc()")
+    func: str | Callable | None = None
+    if aggfunc is not None:
+        if not isinstance(aggfunc, str):  # pragma: no cover
+            raise ValueError(f"aggfunc {aggfunc} must be:{', '.join(AGGFUNC.keys())}")
+        if aggfunc not in AGGFUNC:  # pragma: no cover
+            raise ValueError(f"aggfunc {aggfunc} must be: {', '.join(AGGFUNC.keys())}")
+        func = AGGFUNC[aggfunc]
+    logger.debug("aggfunc: %s", func)
+    return func
+
+def unused_get_aggfuncs(
+    aggfuncs: str | list[str] | None,
+) -> str | Callable | list[str | Callable] | None:
+    """Check whether aggregation functions are allowed and return appropriate functions.
+
+    Parameters
+    ----------
+    aggfuncs : str | list[str] | None
+        List of names of the aggregation functions to apply.
+
+    Returns
+    -------
+    Callable | list[Callable] | None
+        The aggregation functions to apply.
+    """
+    logger.debug("get_aggfuncs()")
+    if aggfuncs is None:
+        logger.debug("aggfuncs: None")
+        return None
+    if isinstance(aggfuncs, str):
+        function = get_aggfunc(aggfuncs)
+        logger.debug("aggfuncs: %s", function)
+        return function
+    if isinstance(aggfuncs, list):
+        functions: list[str | Callable] = []
+        for function_name in aggfuncs:
+            function = get_aggfunc(function_name)
+            if function is not None:
+                functions.append(function)
+        logger.debug("aggfuncs: %s", functions)
+        if len(functions) < 1:  # pragma: no cover
+            raise ValueError(f"invalid aggfuncs: {aggfuncs}")
+        return functions
+    raise ValueError("aggfuncs must be: either str or list[str]")  # pragma: no cover
+
+def unused__broadcast_mask_to_multiindex(
+    m: DataFrame, table: DataFrame, top_levels: list
+) -> DataFrame:
+    """Replicate a flat (or single-group) mask across each aggfunc top-level group.
+
+    Parameters
+    ----------
+    m : DataFrame
+        Flat mask with base columns only.
+    table : DataFrame
+        MultiIndex table whose top-level groups define the replication targets.
+    top_levels : list
+        Ordered list of unique top-level values from the table's MultiIndex columns.
+
+    Returns
+    -------
+    DataFrame
+        A mask with MultiIndex columns matching the table's column structure.
+    """
+    frames = []
+    for lvl in top_levels:
+        sub_cols = table[lvl].columns
+        sub_m = m.reindex(index=table.index, columns=sub_cols, fill_value=False)
+        sub_m.columns = pd.MultiIndex.from_product([[lvl], sub_m.columns])
+        frames.append(sub_m)
+    return pd.concat(frames, axis=1)
+
+
+def unused__align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
+    """Align the columns of mask *m* to match those of *table*.
+
+    Parameters
+    ----------
+    m : DataFrame
+        A single suppression mask.
+    table : DataFrame
+        The output table the mask should match.
+
+    Returns
+    -------
+    DataFrame
+        The mask with columns aligned to the table.
+    """
+    table_nlevels = table.columns.nlevels
+    mask_nlevels = m.columns.nlevels
+
+    if table_nlevels == 2 and mask_nlevels == 2:
+        table_top = table.columns.get_level_values(0).unique().tolist()
+        mask_top = m.columns.get_level_values(0).unique().tolist()
+        if mask_top != table_top:
+            n_base = len(table.columns.get_level_values(1).unique())
+            base_mask = m.iloc[:, :n_base]
+            flat_cols = base_mask.columns.get_level_values(1)
+            base_mask = pd.DataFrame(base_mask.values, index=m.index, columns=flat_cols)
+            m = _broadcast_mask_to_multiindex(base_mask, table, table_top)
+    elif mask_nlevels < table_nlevels:
+        top_levels = table.columns.get_level_values(0).unique().tolist()
+        m = _broadcast_mask_to_multiindex(m, table, top_levels)
+    elif mask_nlevels > table_nlevels:
+        m = m.droplevel(0, axis=1)
+
+    return m
+
+
+def unused_align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
+    """Align masks to the table's index and columns.
+
+    Parameters
+    ----------
+    table : DataFrame
+        Table to align masks to.
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks.
+
+    Returns
+    -------
+    dict[str, DataFrame]
+        The aligned masks.
+    """
+    aligned_masks = {}
+    for name, mask in masks.items():
+        m = mask
+
+        # handle index level mismatch
+        if m.index.nlevels > table.index.nlevels:
+            m = m.droplevel(0, axis=0)
+
+        m = _align_mask_columns(m, table)
+
+        # reindex if still necessary
+        if not m.index.equals(table.index) or not m.columns.equals(table.columns):
+            try:
+                m = m.reindex(
+                    index=table.index, columns=table.columns, fill_value=False
+                )
+            except (ValueError, TypeError):  # pragma: no cover
+                logger.warning("Could not reindex mask %s", name)
+        aligned_masks[name] = m
+    return aligned_masks
+
+
+def unused_apply_suppression(
+    table: DataFrame, masks: dict[str, DataFrame]
+) -> tuple[DataFrame, DataFrame]:
+    """Apply suppression to a table.
+
+    Parameters
+    ----------
+    table : DataFrame
+        Table to apply suppression.
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+
+    Returns
+    -------
+    DataFrame
+        Table to output with any suppression applied.
+    DataFrame
+        Table with outcomes of suppression checks.
+    """
+    logger.debug("apply_suppression()")
+    # align masks
+    masks = align_masks(table, masks)
+    safe_df = table.copy()
+    outcome_df = DataFrame(index=table.index, columns=table.columns)
+    outcome_df.fillna("", inplace=True)
+    # don't apply suppression if negatives are present
+    if "negative" in masks:
+        mask = masks["negative"]
+        outcome_df[mask.values] = "negative"
+    # don't apply suppression if missing values are present
+    elif "missing" in masks:
+        mask = masks["missing"]
+        outcome_df[mask.values] = "missing"
+    # apply suppression masks
+    else:
+        for name, mask in masks.items():
+            try:
+                safe_df[mask.values] = np.nan
+                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
+                tmp_df.fillna("", inplace=True)
+                tmp_df[mask.values] = name + "; "
+                outcome_df += tmp_df
+            except TypeError:
+                logger.warning("problem mask %s is not binary", name)
+            except ValueError as error:  # pragma: no cover
+                error_message = (
+                    f"An error occurred with the following details"
+                    f":\n Name: {name}\n Mask: {mask}\n Table: {table}"
+                )
+                raise ValueError(error_message) from error
+
+        outcome_df = outcome_df.replace({"": "ok"})
+    logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
+    return safe_df, outcome_df
+
+def unused_get_queries_from_masks(
+    masks: dict[str, DataFrame],
+    aggfunc: str | Callable | list[str | Callable] | None,
+) -> list[str]:
+    """Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
+
+    Parameters
+    ----------
+    masks : dict[str, DataFrame]
+        Dictionary of tables specifying suppression masks for application.
+    aggfunc : str | None
+        The aggregation function
+
+    Returns
+    -------
+    str
+        The boolean conditions for each true (disclosive) cell in the suppression masks.
+    """
+    true_cell_queries = []
+    for _, mask in masks.items():
+        if aggfunc is not None:
+            if mask.columns.nlevels > 1:
+                mask = mask.droplevel(0, axis=1)
+        index_level_names = mask.index.names
+        column_level_names = mask.columns.names
+        for col_index, _ in enumerate(mask.columns):
+            for row_index, _ in enumerate(mask.index):
+                query = _get_cell_query(
+                    mask, row_index, col_index, index_level_names, column_level_names
+                )
+                if query is not None:
+                    true_cell_queries.append(query)
+    true_cell_queries = list(set(true_cell_queries))
+    return true_cell_queries
+
+def unused_create_dataframe(index: Any, columns: Any) -> DataFrame:
+    """Combine the index and columns in a dataframe and return the dataframe.
+
+    Parameters
+    ----------
+    index : array-like, Series, or list of arrays/Series
+        Values to group by in the rows.
+    columns : array-like, Series, or list of arrays/Series
+        Values to group by in the columns.
+
+    Returns
+    -------
+    Dataframe
+        Table of the index and columns combined.
+    """
+    empty_dataframe = pd.DataFrame([])
+
+    index_df = empty_dataframe
+    try:
+        if isinstance(index, list):
+            index_df = pd.concat(index, axis=1)
+        elif isinstance(index, pd.Series):
+            index_df = pd.DataFrame({index.name: index})
+    except (ValueError, TypeError):
+        index_df = empty_dataframe
+
+    columns_df = empty_dataframe
+    try:
+        if isinstance(columns, list):
+            columns_df = pd.concat(columns, axis=1)
+        elif isinstance(columns, pd.Series):
+            columns_df = pd.DataFrame({columns.name: columns})
+    except (ValueError, TypeError):
+        columns_df = empty_dataframe
+
+    try:
+        data = pd.concat([index_df, columns_df], axis=1)
+    except (ValueError, TypeError):  # pragma: no cover
+        data = empty_dataframe
+
+    return data

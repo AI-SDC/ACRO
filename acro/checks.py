@@ -12,6 +12,7 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 
+from dataclasses import dataclass, field
 from .aggregationfunctions import agg_mode, agg_values_are_same
 from .aggregationfunctions import agg_negative,agg_missing
 from .aggregationfunctions import agg_p_percent, agg_nk, agg_threshold
@@ -20,6 +21,83 @@ from . import aggregationfunctions
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 logger = logging.getLogger("acro")
+
+@dataclass
+class ChecksResults:
+    """Class for results of running checks for an analyis
+
+        overall_status : str
+          'fail', 'review', or 'pass'
+        summaries : string
+            concatenation of summaries for each check run
+        outcomes : dict[str,Any]
+            dictionary of outcomes with keys for the check and values which might be:
+             numbers (e.g. Dof), or masks (Dataframes),
+            depending on the check and the type of model e.g. regression vs table
+        fair_dict: details of the sdc processes
+                    dict with one key (for now) "check_status" where the value is itself a dict
+    """
+    overall_status: str
+    summaries: str
+    outcomes: dict[str|Any]
+    fair_dict: dict
+
+@dataclass
+class ManyChecksResults:
+    """ class for running checks on multiple analysis"""
+    allchecksresults:dict[str:ChecksResults]= field(default_factory=dict)
+
+    def get_overall_summary(self)->str:
+        """Get overall summary from multiple statistics"""    
+        allsummary=""
+        for analysis, checksresults in self.allchecksresults.items():
+            allsummary += f'\n{analysis} : {checksresults.summaries}\n'
+        return allsummary
+
+    def get_overall_status(self)->str:
+        """get overall risk status for set of analyses"""
+        overall_status = "pass"
+        
+        statuses:list[str]=[]
+        for analysis, checksresults in self.allchecksresults.items():
+            statuses.append(checksresults.overall_status)
+        if "fail" in statuses:
+            overall_status = "fail"
+        elif "review" in statuses:
+            overall_status= "review"
+    
+        return overall_status
+
+    def get_overall_fair(self)->dict[str,dict]:
+        """get overall FAIR analysis for set of analyses"""
+        fairdict: dict[str,dict]={}
+        for analysis, checksresults in self.allchecksresults.items():    
+            fairdict.update(checksresults.fair_dict)
+    
+        return fairdict
+    
+    def get_table_sdc(self) -> dict[str, Any]:
+        """Return the SDC dictionary for a tableusing the suppression masks. """
+                
+        # summary of number of cells to be suppressed
+        sdc: dict[str, Any] = {"summary": {}, "cells": {}}
+    
+        checks_seen:list[str] = []
+        for analysis, checksresults in self.allchecksresults.items():
+            for name, mask in checksresults.outcomes.items():
+                if name in checks_seen:
+                    continue
+                checks_seen.append(name)
+                sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
+                sdc["cells"][name] = []
+                # positions of cells to be suppressed
+                true_positions = np.column_stack(np.where(mask.values))
+                for pos in true_positions:
+                    row_index, col_index = pos
+                    sdc["cells"][name].append([int(row_index), int(col_index)])
+    
+        return sdc
+
 
 
 # Helper function that do not need to be in class
@@ -219,7 +297,7 @@ class SDCChecks:
             # set globals for survival analysis
             aggregationfunctions.SURVIVAL_THRESHOLD = self.risk_appetite["survival_safe_threshold"]
 
-    def get_sdc_for_analysis(self, statname: str) -> dict:
+    def get_sdctokens_for_analysis(self, statname: str) -> dict:
         """Get list of sdc tokens to run for a given analysis.
 
         Parameters
@@ -290,7 +368,7 @@ class SDCChecks:
             logger.info(f"keys are : {list(self.analyses.keys())}")
             return "Review", "Name of analysis not recognised in ontology", {}, {}
 
-        sdc_dict = self.get_sdc_for_analysis(analysis_name)
+        sdc_dict = self.get_sdctokens_for_analysis(analysis_name)
 
         logger.debug(f"details for analysis {analysis_name} are:")
         for key, val in sdc_dict.items():
@@ -322,7 +400,7 @@ class SDCChecks:
             overall_status = "pass"
         summary = " ".join(summaries)
         logger.info(summary)
-        return overall_status, summary, outcomes, sdc_dict
+        return ChecksResults(overall_status, summary, outcomes, sdc_dict)
 
 
 

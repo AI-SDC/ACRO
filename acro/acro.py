@@ -198,6 +198,20 @@ class ACRO(Tables, Regression):
         self.suppress = False
 
 
+    def show_fair_summaries(self)->str:
+        """print ids and fair summaries for outputs in session"""
+        thestr=""
+        for id,value in self.results.results.items():
+            thestr += id +'\n'
+            for key, val in value.fair.items():
+                if isinstance(val,dict):
+                    for key2,val2 in val.items():
+                        thestr+= f'{key2} : {val2}'
+                else:
+                    thestr += f'{key}:{val}'
+        return thestr +'\n'
+
+
 def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
     """Add outputs to an acro object and creates a results file for checking.
 

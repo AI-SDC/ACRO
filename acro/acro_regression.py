@@ -16,8 +16,9 @@ from statsmodels.iolib.table import SimpleTable
 from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 from . import utils
-from .checks import SDCChecks
+from .checks import SDCChecks,ChecksResults
 from .record import Records
+from .constants import SDMX_DIMENSION, SDMX_MEASURE
 
 logger = logging.getLogger("acro")
 
@@ -75,19 +76,22 @@ class Regression:
         results = model.fit()
 
         analysis_name = "GeneralLinearModel"
-        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
+        checkresults:ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
 
+        checkresults.fair_dict.update(get_variable_type_dict(results))
+
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
-            status=status,
+            status=checkresults.overall_status,
             output_type="regression",
-            properties={"method": "ols", "dof": outcome["MinimumDoFCheck"]},
+            properties={"method": "ols", "dof": 
+                        checkresults.outcomes["MinimumDoFCheck"]},
             sdc={},
-            fair=fair_dict,
+            fair=checkresults.fair_dict,
             command=command,
-            summary=summary,
+            summary=checkresults.summaries,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
  
@@ -153,19 +157,21 @@ class Regression:
         results = model.fit()
 
         analysis_name = "GeneralLinearModel"
-        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
+        checkresults:ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
+        checkresults.fair_dict.update(get_variable_type_dict(results))
 
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
-            status=status,
+            status=checkresults.overall_status,
             output_type="regression",
-            properties={"method": "olsr", "dof": outcome["MinimumDoFCheck"]},
+            properties={"method": "olsr", 
+                        "dof": checkresults.outcomes["MinimumDoFCheck"]},
             sdc={},
-            fair=fair_dict,
+            fair=checkresults.fair_dict,
             command=command,
-            summary=summary,
+            summary=checkresults.summaries,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
 
@@ -209,19 +215,21 @@ class Regression:
         results = model.fit()
 
         analysis_name = "Logit"
-        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
+        checkresults:ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
+        checkresults.fair_dict.update(get_variable_type_dict(results))
 
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
-            status=status,
+            status=checkresults.overall_status,
             output_type="regression",
-            properties={"method": "logit", "dof": outcome["MinimumDoFCheck"]},
+            properties={"method": "logit", 
+                        "dof": checkresults.outcomes["MinimumDoFCheck"]},
             sdc={},
-            fair=fair_dict,
+            fair=checkresults.fair_dict,
             command=command,
-            summary=summary,
+            summary=checkresults.summaries,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
 
@@ -287,20 +295,21 @@ class Regression:
         results = model.fit()
 
         analysis_name = "Logit"
-        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
+        checkresults:ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
+        checkresults.fair_dict.update(get_variable_type_dict(results))
 
-        # status, summary, dof = checks.check_model_dof(self.config,"logitr", model)
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
-            status=status,
+            status=checkresults.overall_status,
             output_type="regression",
-            properties={"method": "logitr", "dof": outcome["MinimumDoFCheck"]},
+            properties={"method": "logitr", 
+                        "dof": checkresults.outcomes["MinimumDoFCheck"]},
             sdc={},
-            fair=fair_dict,
+            fair=checkresults.fair_dict,
             command=command,
-            summary=summary,
+            summary=checkresults.summaries,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
 
@@ -344,19 +353,22 @@ class Regression:
         results = model.fit()
 
         analysis_name = "Probit"
-        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
+        checkresults:ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
+        checkresults.fair_dict.update(get_variable_type_dict(results))
+        
 
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
-            status=status,
+            status=checkresults.overall_status,
             output_type="regression",
-            properties={"method": "probit", "dof": outcome["MinimumDoFCheck"]},
+            properties={"method": "probit",
+                        "dof": checkresults.outcomes["MinimumDoFCheck"]},
             sdc={},
-            fair=fair_dict,
+            fair=checkresults.fair_dict,
             command=command,
-            summary=summary,
+            summary=checkresults.summaries,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
 
@@ -422,20 +434,21 @@ class Regression:
         results = model.fit()
 
         analysis_name = "Probit"
-        status, summary, outcome, fair_dict = self.sdc_checks.run_checks_for_analysis(
+        checkresults:ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
+        checkresults.fair_dict.update(get_variable_type_dict(results))
 
-        # status, summary, dof = checks.check_model_dof(self.config,"probitr", model)
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
-            status=status,
+            status=checkresults.overall_status,
             output_type="regression",
-            properties={"method": "probitr", "dof": outcome["MinimumDoFCheck"]},
+            properties={"method": "probitr", 
+                        "dof": checkresults.outcomes["MinimumDoFCheck"]},
             sdc={},
-            fair=fair_dict,
+            fair=checkresults.fair_dict,
             command=command,
-            summary=summary,
+            summary=checkresults.summaries,
             outcome=DataFrame(),
             output=get_summary_dataframes(tables),
 
@@ -491,3 +504,43 @@ def add_constant(data: Any, prepend: bool = True, has_constant: str = "skip") ->
     is 'const'.
     """
     return sm.add_constant(data, prepend=prepend, has_constant=has_constant)
+
+def get_variable_metadata(endog:list,exog:list,values:Series|None)->dict[str,dict]:
+    """ create data dictionary 
+
+    TODO 
+    expand
+    
+    """
+    #TODO handle arraylike as well as series
+    #TODO handle rownames/colnames
+    variable_metadata:dict[str,dict] = {}
+    variable_metadata.update(get_axis_metadata(index,where="rows"))
+    variable_metadata.update(get_axis_metadata(columns,where="columns"))
+    if values is not None:
+        name= values.name if isinstance(values,Series) else "unknown_measure"
+        variable_metadata[name]= {"location": "cells",
+                              "sequence_id": 0,
+                              "dtype": values[0].dtype,
+                              "type" : SDMX_MEASURE,
+                              "dependent":True,
+                              "categories":[]
+                             }
+    return variable_metadata
+
+
+def get_variable_type_dict(results:RegressionResultsWrapper)->dict[str,Any]:
+    """get dict of idependent and independent variable ids for regression models)"""
+    thedict:dict[str,Any]={
+        "dependent":"unknown",
+        "independent":["unknown"]
+    }
+    deps=results.model.endog_names
+    if isinstance(deps,str):
+        thedict["dependent"]=deps
+    indeps=results.model.exog_names.copy()
+    if 'const' in indeps: indeps.remove('const')
+    if 'Intercept' in indeps: indeps.remove('Intercept')
+    thedict["independent"]= indeps    
+    return thedict
+    

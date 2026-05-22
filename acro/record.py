@@ -14,6 +14,7 @@ from typing import Any
 import pandas as pd
 from pandas import DataFrame
 
+from .utils import is_blocked_extension
 from .version import __version__
 
 logger = logging.getLogger("acro:records")
@@ -216,22 +217,25 @@ class Record:  # pylint: disable=too-many-instance-attributes
 class Records:
     """Stores data related to a collection of output records."""
 
-    def __init__(self) -> None:
+    def __init__(self, blocked_extensions: list[str] | None = None) -> None:
         """Construct a new object for storing multiple records."""
         self.results: dict[str, Record] = {}
         self.output_id: int = 0
+        self.blocked_extensions: list[str] = [
+            ext.lower() for ext in (blocked_extensions or [])
+        ]
 
     def add(  # pylint: disable=too-many-arguments
         self,
-        status: str="",
-        output_type: str="",
-        properties: dict ={},
-        sdc: dict={},
-        fair: dict={},
-        command: str="",
-        summary: str="",
-        outcome: DataFrame=pd.DataFrame(),
-        output: list[str] | list[DataFrame]=None,
+        status: str = "",
+        output_type: str = "",
+        properties: dict = {},
+        sdc: dict = {},
+        fair: dict = {},
+        command: str = "",
+        summary: str = "",
+        outcome: DataFrame = pd.DataFrame(),
+        output: list[str] | list[DataFrame] = [],
         comments: list[str] | None = None,
     ) -> None:
         """Add an output to the results.
@@ -333,7 +337,7 @@ class Records:
         key = list(self.results.keys())[index]
         return self.results[key]
 
-    def add_custom(self, filename: str, comment: str | None = None) -> None:
+    def add_custom(self, filename: str, comment: str | None = None) -> bool:
         """Add an unsupported output to the results dictionary.
 
         Parameters
@@ -342,7 +346,14 @@ class Records:
             The name of the file that will be added to the list of the outputs.
         comment : str | None, default None
             An optional comment.
+
+        Returns
+        -------
+        bool
+            False if the file extension is blocked, True otherwise.
         """
+        if is_blocked_extension(filename, self.blocked_extensions):
+            return False
         if os.path.exists(filename):
             output = Record(
                 uid=f"output_{self.output_id}",
@@ -364,6 +375,7 @@ class Records:
             logger.info(
                 "WARNING: Unable to add %s because the file does not exist", filename
             )  # pragma: no cover
+        return True
 
     def rename(self, old: str, new: str) -> None:
         """Rename an output.
@@ -491,7 +503,7 @@ class Records:
                 "timestamp": val.timestamp,
                 "comments": val.comments,
                 "exception": val.exception,
-                "fair": val.fair
+                "fair": val.fair,
             }
             files: list[str] = val.serialize_output(path)
             for file in files:

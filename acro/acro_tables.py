@@ -5,45 +5,33 @@ from __future__ import annotations
 
 import logging
 import os
-import secrets
 from collections.abc import Callable
 from inspect import stack
 from typing import Any
 
-import numpy as np
+# import old_table_functions as old
 import pandas as pd
-
-import statsmodels.api as sm
 from matplotlib import pyplot as plt
-from pandas import DataFrame, Series
-from pandas.api.types import CategoricalDtype
-import copy
+from pandas import DataFrame
 
 from . import utils
-from .checks import SDCChecks, ChecksResults, ManyChecksResults
+from .aggregationfunctions import (
+    agg_mode,
+)
+from .checks import ManyChecksResults, SDCChecks
 from .record import Records
-from .aggregationfunctions import agg_mode, agg_values_are_same
-from .aggregationfunctions import agg_negative,agg_missing
-from .aggregationfunctions import agg_p_percent, agg_nk, agg_threshold
-
-from .constants import SDMX_DIMENSION, SDMX_MEASURE
-
-
 from .table_utils import (
     aggfunc_to_strings,
-    axis_to_list, 
+    axis_to_list,
     collate_risk_assessments,
-    get_axis_metadata,
-    get_redacted_table,
     get_debugging_table_analysis,
-    get_variable_metadata,
-    get_variable_type_dict
-
+    get_modeldict_for_array,
+    get_modeldict_for_table,
+    get_redacted_table,
+    get_variable_type_dict,
 )
 
 logger = logging.getLogger("acro")
-
-
 
 
 AGGFUNC: dict[str, str | Callable] = {
@@ -54,8 +42,6 @@ AGGFUNC: dict[str, str | Callable] = {
     "count": "count",
     "mode": agg_mode,
 }
-
-
 
 
 # aggregation function parameters
@@ -133,7 +119,7 @@ class Tables:
             - If passed 'columns' will normalize over each column.
             - If margins is `True`, will also normalize margin values.
         show_suppressed : bool. default False
-            Deprecated in v.10, only present for backwards compatability
+            Deprecated in v.10, only present for backwards compatibility
             how the totals are being calculated when the suppression is true
 
         Returns
@@ -143,9 +129,8 @@ class Tables:
         """
         logger.debug("crosstab()")
         command: str = utils.get_command("crosstab()", stack())
-        _ = show_suppressed #hide complaint about unused legacy variable
+        _ = show_suppressed  # hide complaint about unused legacy variable
 
-        
         # syntax checking
         if aggfunc is not None:
             if values is None or isinstance(values, list):
@@ -155,11 +140,10 @@ class Tables:
                     "to aggregate over."
                 )
 
-        #standardise format to simplify later code
+        # standardise format to simplify later code
         index = axis_to_list(index)
-        columns= axis_to_list(columns)
-        
-        
+        columns = axis_to_list(columns)
+
         # save list and dict to reduce code clutter
         args = (index, columns)
         kwargs = {
@@ -174,39 +158,33 @@ class Tables:
         }
         # enforce dropna=False for SDC reasons
         kwargs["dropna"] = False
-        variable_metadata = get_variable_metadata(index, columns,values)
-        #make object containing these that can easily be passed around
-        model: dict[str, Any] = {
-            "args": args, 
-            "kwargs": kwargs,
-            "variable_metadata":variable_metadata,
-            "risk_appetite":self.sdc_checks.risk_appetite
-                                }
+
+        modeldict = get_modeldict_for_table(args, kwargs, self.sdc_checks.risk_appetite)
 
         ## requested table
         table: DataFrame = pd.crosstab(*args, **kwargs)
         analysis_names: list[str] = aggfunc_to_strings(aggfunc)
 
         ## run the checks and get the masks
-        collatedres=ManyChecksResults()
+        collatedres = ManyChecksResults()
         for analysis in analysis_names:
-            collatedres.allchecksresults[analysis] = self.sdc_checks.run_checks_for_analysis(
-                analysis, model
+            collatedres.allchecksresults[analysis] = (
+                self.sdc_checks.run_checks_for_analysis(analysis, modeldict)
             )
 
         logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
 
-        collated_assessment = collate_risk_assessments(table, collatedres.allchecksresults)
+        collated_assessment = collate_risk_assessments(
+            table, collatedres.allchecksresults
+        )
         sdc_details: dict = collatedres.get_table_sdc()
-        overall_status:str = collatedres.get_overall_status()
-        allsummary:str=collatedres.get_overall_summary()
+        overall_status: str = collatedres.get_overall_status()
+        allsummary: str = collatedres.get_overall_summary()
         fair_dict = collatedres.get_overall_fair()
-        fair_dict.update( get_variable_type_dict(variable_metadata ))
-
-
+        fair_dict.update(get_variable_type_dict(modeldict["variable_metadata"]))
 
         if self.suppress:
-            table=get_redacted_table(model, collated_assessment)
+            table = get_redacted_table(modeldict, collated_assessment)
 
         # record output
         self.results.add(
@@ -225,11 +203,11 @@ class Tables:
             justadded = f"output_{self.results.output_id - 1}"
             self.results.add_exception(
                 justadded, "Suppression automatically applied where needed"
-                )
+            )
 
         return table
 
-    def pivot_table(  # pylint: disable=too-many-arguments,too-many-locals
+    def pivot_table(
         self,
         data: DataFrame,
         values: Any = None,
@@ -295,15 +273,24 @@ class Tables:
             Cross tabulation of the data.
         """
         logger.debug("pivot_table()")
-        command: str = utils.get_command("pivot_table()", stack())
+
+        # command: str = utils.get_command("pivot_table()", stack())
+
+        # When rounding, compute the table without pandas-managed margins
+        # and re-derive them from the rounded cells; see append_rounded_margins()
+        # / Jim Smith's review on PR #381.
+
+        # recompute_margins = margins and self._mitigation == "round"
+        # pandas_margins = False if recompute_margins else margins
+        pandas_margins = margins  # TODO REMIOVE
 
         # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
-        resolved_aggfunc: (
-            str | Callable[..., Any] | list[str | Callable[..., Any]] | None
-        ) = get_aggfuncs(aggfunc)
-        n_agg: int = (
-            1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
-        )
+        # resolved_aggfunc: (
+        #    str | Callable[..., Any] | list[str | Callable[..., Any]] | None
+        # ) = get_aggfuncs(aggfunc)
+        # n_agg: int = (
+        #    1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
+        # )
 
         # requested table
         table: DataFrame = pd.pivot_table(
@@ -311,135 +298,144 @@ class Tables:
             values,
             index,
             columns,
-            resolved_aggfunc,
+            aggfunc,  # resolved_aggfunc,
             fill_value,
-            margins,
+            pandas_margins,
             dropna,
             margins_name,
             observed,
             sort,
         )
 
-        # delete empty rows and columns from table
-        table, comments = delete_empty_rows_columns(table)
+        # # delete empty rows and columns from table
+        # table, comments = delete_empty_rows_columns(table)
 
-        # suppression masks to apply based on the following checks
-        masks: dict[str, DataFrame] = {}
+        # # suppression masks to apply based on the following checks
+        # masks: dict[str, DataFrame] = {}
 
-        # threshold check
-        agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
-        t_values = pd.pivot_table(
-            data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
-        )
-        masks["threshold"] = t_values
+        # # threshold check
+        # agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
+        # t_values = pd.pivot_table(
+        #     data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
+        # )
+        # masks["threshold"] = t_values
 
-        if resolved_aggfunc is not None:
-            # check for negative values -- currently unsupported
-            agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
-            negative = pd.pivot_table(
-                data,
-                values,
-                index,
-                columns,
-                aggfunc=agg,
-                margins=margins,
-                dropna=dropna,
-            )
-            if negative.to_numpy().sum() > 0:
-                masks["negative"] = negative
-            # p-percent check
-            agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
-            masks["p-ratio"] = pd.pivot_table(
-                data,
-                values,
-                index,
-                columns,
-                aggfunc=agg,
-                margins=margins,
-                dropna=dropna,
-            )
-            # nk values check
-            agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
-            masks["nk-rule"] = pd.pivot_table(
-                data,
-                values,
-                index,
-                columns,
-                aggfunc=agg,
-                margins=margins,
-                dropna=dropna,
-            )
-            # check for missing values -- currently unsupported
-            if CHECK_MISSING_VALUES:
-                agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
-                masks["missing"] = pd.pivot_table(
-                    data,
-                    values,
-                    index,
-                    columns,
-                    aggfunc=agg,
-                    margins=margins,
-                    dropna=dropna,
-                )
+        # if resolved_aggfunc is not None:
+        #     # check for negative values -- currently unsupported
+        #     agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
+        #     negative = pd.pivot_table(
+        #         data,
+        #         values,
+        #         index,
+        #         columns,
+        #         aggfunc=agg,
+        #         margins=margins,
+        #         dropna=dropna,
+        #     )
+        #     if negative.to_numpy().sum() > 0:
+        #         masks["negative"] = negative
+        #     # p-percent check
+        #     agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
+        #     masks["p-ratio"] = pd.pivot_table(
+        #         data,
+        #         values,
+        #         index,
+        #         columns,
+        #         aggfunc=agg,
+        #         margins=margins,
+        #         dropna=dropna,
+        #     )
+        #     # nk values check
+        #     agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
+        #     masks["nk-rule"] = pd.pivot_table(
+        #         data,
+        #         values,
+        #         index,
+        #         columns,
+        #         aggfunc=agg,
+        #         margins=margins,
+        #         dropna=dropna,
+        #     )
+        #     # check for missing values -- currently unsupported
+        #     if CHECK_MISSING_VALUES:
+        #         agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
+        #         masks["missing"] = pd.pivot_table(
+        #             data,
+        #             values,
+        #             index,
+        #             columns,
+        #             aggfunc=agg,
+        #             margins=margins,
+        #             dropna=dropna,
+        #         )
 
-        # pd.pivot_table returns nan for an empty cell
-        for name, mask in masks.items():
-            mask.fillna(value=1, inplace=True)
-            mask = mask.astype(int)
-            mask.replace({0: False, 1: True}, inplace=True)
-            masks[name] = mask
+        # # pd.pivot_table returns nan for an empty cell
+        # for name, mask in masks.items():
+        #     mask.fillna(value=1, inplace=True)
+        #     mask = mask.astype(int)
+        #     mask.replace({0: False, 1: True}, inplace=True)
+        #     masks[name] = mask
 
-        # build the sdc dictionary
-        sdc: dict = get_table_sdc_old(masks, self.suppress, table)
-        # get the status and summary
-        status, summary = get_summary(sdc)
-        # apply the suppression
-        safe_table, outcome = apply_suppression(table, masks)
-        if self.suppress:
-            table = safe_table
-            if margins:
-                logger.info(
-                    "Disclosive cells were deleted from the dataframe "
-                    "before calculating the pivot table"
-                )
-                table = crosstab_with_totals(
-                    masks=masks,
-                    aggfunc=resolved_aggfunc,
-                    index=index,
-                    columns=columns,
-                    values=values,
-                    margins=margins,
-                    margins_name=margins_name,
-                    dropna=dropna,
-                    crosstab=False,
-                    data=data,
-                    fill_value=fill_value,
-                    observed=observed,
-                    sort=sort,
-                )
-        # record output
-        fair: dict = {}  # TODO
-
-        self.results.add(
-            status=status,
-            output_type="table",
-            properties={"method": "pivot_table"},
-            sdc=sdc,
-            fair=fair,
-            command=command,
-            summary=summary,
-            outcome=outcome,
-            output=[table],
-            comments=comments,
-        )
-        if self.suppress:
-            justadded = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                justadded, "Suppression automatically applied where needed"
-            )
+        # # build the sdc dictionary
+        # sdc: dict = get_table_sdc(
+        #     masks,
+        #     self.suppress,
+        #     table,
+        #     mitigation=self._mitigation,
+        #     round_base=self._round_base,
+        # )
+        # # get the status and summary
+        # status, summary = get_summary(sdc)
+        # # apply the suppression
+        # safe_table, outcome = apply_suppression(table, masks)
+        # if self._mitigation == "suppress":
+        #     table = safe_table
+        #     if margins:
+        #         logger.info(
+        #             "Disclosive cells were deleted from the dataframe "
+        #             "before calculating the pivot table"
+        #         )
+        #         table = crosstab_with_totals(
+        #             masks=masks,
+        #             aggfunc=resolved_aggfunc,
+        #             index=index,
+        #             columns=columns,
+        #             values=values,
+        #             margins=margins,
+        #             margins_name=margins_name,
+        #             dropna=dropna,
+        #             crosstab=False,
+        #             data=data,
+        #             fill_value=fill_value,
+        #             observed=observed,
+        #             sort=sort,
+        #         )
+        #     sdc = get_table_sdc(
+        #         masks,
+        #         self.suppress,
+        #         table,
+        #         mitigation=self._mitigation,
+        #         round_base=self._round_base,
+        #     )
+        # elif self._mitigation == "round":
+        #     table = round_table(table, self._round_base)
+        #     if recompute_margins:
+        #         table = append_rounded_margins(
+        #             table, resolved_aggfunc, margins_name, self._round_base
+        #         )
+        # self._record_table_output(
+        #     method="pivot_table",
+        #     status=status,
+        #     sdc=sdc,
+        #     command=command,
+        #     summary=summary,
+        #     outcome=outcome,
+        #     table=table,
+        #     comments=comments,
+        # )
         return table
 
-    def surv_func(  # pylint: disable=too-many-arguments,too-many-locals
+    def surv_func(
         self,
         time: Any,
         status: Any,
@@ -483,62 +479,63 @@ class Tables:
             The survival table.
         """
         logger.debug("surv_func()")
-        command: str = utils.get_command("surv_func()", stack())
-        survival_func: Any = sm.SurvfuncRight(
-            time,
-            status,
-            entry,
-            title,
-            freq_weights,
-            exog,
-            bw_factor,
-        )
-        masks = {}
-        survival_table = survival_func.summary()
-        t_values = (
-            survival_table["num at risk"].shift(periods=1)
-            - survival_table["num at risk"]
-        )
-        t_values = t_values < SURVIVAL_THRESHOLD
-        masks["threshold"] = t_values
-        masks["threshold"] = masks["threshold"].to_frame()
+        # command: str = utils.get_command("surv_func()", stack())
+        # survival_func: Any = sm.SurvfuncRight(
+        #     time,
+        #     status,
+        #     entry,
+        #     title,
+        #     freq_weights,
+        #     exog,
+        #     bw_factor,
+        # )
+        # masks = {}
+        # survival_table = survival_func.summary()
+        # t_values = (
+        #     survival_table["num at risk"].shift(periods=1)
+        #     - survival_table["num at risk"]
+        # )
+        # t_values = t_values < SURVIVAL_THRESHOLD
+        # masks["threshold"] = t_values
+        # masks["threshold"] = masks["threshold"].to_frame()
 
-        masks["threshold"].insert(0, "Surv prob", t_values, True)
-        masks["threshold"].insert(1, "Surv prob SE", t_values, True)
-        masks["threshold"].insert(3, "num events", t_values, True)
+        # masks["threshold"].insert(0, "Surv prob", t_values, True)
+        # masks["threshold"].insert(1, "Surv prob SE", t_values, True)
+        # masks["threshold"].insert(3, "num events", t_values, True)
 
-        # build the sdc dictionary
-        sdc: dict = get_table_sdc_old(masks, self.suppress, survival_table)
-        # get the status and summary
-        status, summary = get_summary(sdc)
-        # apply the suppression
-        safe_table, outcome = apply_suppression(survival_table, masks)
+        # # build the sdc dictionary
+        # sdc: dict = get_table_sdc(masks, self.suppress, survival_table)
+        # # get the status and summary
+        # status, summary = get_summary(sdc)
+        # # apply the suppression
+        # safe_table, outcome = apply_suppression(survival_table, masks)
 
-        # record output
-        if output == "table":
-            table = self.survival_table(
-                survival_table, safe_table, status, sdc, command, summary, outcome
-            )
-            return table
-        if output == "plot":
-            plot_result = self.survival_plot(
-                survival_table,
-                survival_func,
-                filename,
-                status,
-                sdc,
-                command,
-                summary,
-            )
-            if plot_result is None:
-                raise AssertionError(
-                    "plot_result must be set when applying survival plot queries"
-                )
-            plot, output_filename = plot_result
-            return (plot, output_filename)
-        return None
+        # # record output
+        # if output == "table":
+        #     table = self.survival_table(
+        #         survival_table, safe_table, status, sdc, command, summary, outcome
+        #     )
+        #     return table
+        # if output == "plot":
+        #     plot_result = self.survival_plot(
+        #         survival_table,
+        #         survival_func,
+        #         filename,
+        #         status,
+        #         sdc,
+        #         command,
+        #         summary,
+        #     )
+        #     if plot_result is None:
+        #         raise AssertionError(
+        #             "plot_result must be set when applying survival plot queries"
+        #         )
+        #     plot, output_filename = plot_result
+        #     return (plot, output_filename)
+        # return None
+        return pd.Dataframe()  # remove once supported
 
-    def survival_table(  # pylint: disable=too-many-arguments
+    def survival_table(
         self,
         survival_table: DataFrame,
         safe_table: DataFrame,
@@ -551,15 +548,11 @@ class Tables:
         """Create the survival table according to the status of suppressing."""
         if self.suppress:
             survival_table = safe_table
-
-        fair: dict = {}  # TODO
-
         self.results.add(
             status=status,
             output_type="table",
             properties={"method": "surv_func"},
             sdc=sdc,
-            fair=fair,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -567,7 +560,7 @@ class Tables:
         )
         return survival_table
 
-    def survival_plot(  # pylint: disable=too-many-arguments
+    def survival_plot(
         self,
         survival_table: DataFrame,
         survival_func: Any,
@@ -578,42 +571,26 @@ class Tables:
         summary: str,
     ) -> tuple[Any, str] | None:
         """Create the survival plot according to the status of suppressing."""
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
             plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
         else:  # pragma: no cover
             plot = survival_func.plot()
 
-        try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
-        except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
-
-        # create a unique filename with number to avoid overwrite
-        filename, extension = os.path.splitext(filename)
-        if not extension:  # pragma: no cover
-            logger.info("Please provide a valid file extension")
-            return None  # pragma: no cover
-        increment_number = 0
-        while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
-        ):  # pragma: no cover
-            increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
-
+        unique_filename = utils.get_unique_artefact_filename(filename)
+        if unique_filename == "None":
+            return None
         # save the plot to the acro artifacts directory
         plt.savefig(unique_filename)
 
         # record output
-        fair: dict = {}  # TODO
-
         self.results.add(
             status=status,
             output_type="survival plot",
             properties={"method": "surv_func"},
             sdc=sdc,
-            fair=fair,
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),
@@ -621,7 +598,7 @@ class Tables:
         )
         return (plot, unique_filename)
 
-    def hist(  # pylint: disable=too-many-arguments,too-many-locals
+    def hist(
         self,
         data: DataFrame,
         column: str,
@@ -704,8 +681,21 @@ class Tables:
             The histogram.
         str
             The name of the file where the histogram is saved.
+
+        Notes
+        -----
+        When ``zeros_are_disclosive`` is set to ``False`` in the config, empty
+        bins (count == 0) are excluded from the disclosure threshold check.
+        This avoids flagging histograms as disclosive solely because outliers
+        in a wide-spread column produced empty tail bins.
         """
         logger.debug("hist()")
+        # passed_kwargs=locals().copy()
+        # _=passed_kwargs.pop('data',None)
+        # _=passed_kwargs.pop('self',None)
+        # logger.info(f'{passed_kwargs}')
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         command: str = utils.get_command("hist()", stack())
 
         if isinstance(data, list):  # pragma: no cover
@@ -715,42 +705,80 @@ class Tables:
             )
             return None
 
-        freq, _ = np.histogram(
-            data[column], bins, range=(data[column].min(), data[column].max())
-        )
+        col_series = data[column].dropna()
+        if col_series.empty:  # pragma: no cover
+            logger.warning("Column %s is empty after dropping NaN.", column)
+            self.results.add(
+                status="fail",
+                output_type="histogram",
+                properties={"method": "histogram"},
+                sdc={},
+                fair={},
+                command=command,
+                summary="fail; empty column after dropping NaN",
+                outcome=pd.DataFrame(),
+                output=[],
+            )
+            return None
 
-        # threshold check
-        threshold_mask = freq < THRESHOLD
+        oldway = False
+        status: str = ""
+        if oldway:
+            col_min = float(col_series.min())
+            col_max = float(col_series.max())
+            # masks, bin_edges, freq, left_count, right_count = _build_histogram_masks(
+            #     col_series, bins, col_min, col_max
+            # )
+            # by_val, mismatch, sub_stats = _analyse_by_val_ranges(data, column, by_val)
 
-        # plot the histogram
-        if np.any(threshold_mask):  # the column is disclosive
-            status = "fail"
-            if self.suppress:
-                logger.warning(
-                    "Histogram will not be shown as the %s column is disclosive.",
-                    column,
-                )
-            else:  # pragma: no cover
-                data.hist(
-                    column=column,
-                    by=by_val,
-                    grid=grid,
-                    xlabelsize=xlabelsize,
-                    xrot=xrot,
-                    ylabelsize=ylabelsize,
-                    yrot=yrot,
-                    ax=axis,
-                    sharex=sharex,
-                    sharey=sharey,
-                    figsize=figsize,
-                    layout=layout,
-                    bins=bins,
-                    backend=backend,
-                    legend=legend,
-                    **kwargs,
-                )
-        else:
-            status = "review"
+            # sdc = get_histogram_sdc(
+            #     masks,
+            #     self.suppress,
+            #     bin_edges,
+            #     freq,
+            #     col_min,
+            #     col_max,
+            #     left_count,
+            #     right_count,
+            #     mismatch,
+            #     sub_stats,
+            # )
+            # status, summary = get_histogram_summary(sdc, column, col_min, col_max)
+            # outcome = build_histogram_outcome(bin_edges, freq, masks)
+            status, summary = (
+                "not ready-needs ontology change",
+                "not ready-needs ontology change",
+            )
+            logger.info("status: %s", status)
+            fair_dict = {}
+
+        else:  # ontology-driven
+            analysis = "Histogram"
+            modeldict = get_modeldict_for_array(
+                data[column], self.sdc_checks.risk_appetite
+            )
+            collatedres = ManyChecksResults()
+            collatedres.allchecksresults[analysis] = (
+                self.sdc_checks.run_checks_for_analysis(analysis, modeldict)
+            )
+
+            sdc_details: dict = collatedres.get_table_sdc()
+            status = collatedres.get_overall_status()
+            fair_dict = collatedres.get_overall_fair()
+            fair_dict.update(get_variable_type_dict(modeldict["variable_metadata"]))
+            summary = collatedres.get_overall_summary()
+
+        # plot the histogram (skip when suppressed and disclosive)
+        if status == "fail" and self.suppress:
+            logger.warning(
+                "Histogram will not be shown as the %s column is disclosive.",
+                column,
+            )
+            summary = summary + "Disclosive Histogram Redacted."
+            output: list = []
+            unique_filename = ""
+        else:  # pragma: no cover
+            summary += "Please also check bin ends and empty bins are not disclosive."
             data.hist(
                 column=column,
                 by=by_val,
@@ -769,48 +797,18 @@ class Tables:
                 legend=legend,
                 **kwargs,
             )
-        logger.info("status: %s", status)
-
-        # create the summary
-        min_value = data[column].min()
-        max_value = data[column].max()
-        summary = (
-            f"Please check the minimum and the maximum values. "
-            f"The minimum value of the {column} column is: {min_value}. "
-            f"The maximum value of the {column} column is: {max_value}"
-        )
-
-        # create the acro_artifacts directory to save the plot in it
-        try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
-        except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
-
-        # create a unique filename with number to avoid overwrite
-        filename, extension = os.path.splitext(filename)
-        if not extension:  # pragma: no cover
-            logger.info("Please provide a valid file extension")
-            return None
-        increment_number = 0
-        while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
-        ):  # pragma: no cover
-            increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
-
-        # save the plot to the acro artifacts directory
-        plt.savefig(unique_filename)
+            unique_filename = utils.get_unique_artefact_filename(filename)
+            if unique_filename == "None":
+                return None
+            plt.savefig(unique_filename)
 
         # record output
-        fair: dict = {}  # TODO
-
         self.results.add(
             status=status,
             output_type="histogram",
             properties={"method": "histogram"},
-            sdc={},
-            fair=fair,
+            sdc=sdc_details,
+            fair=fair_dict,
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),
@@ -833,7 +831,7 @@ class Tables:
         suppress=True. Otherwise the chart is produced and marked as
         "review".
 
-        The chart is saved to acro_artifacts/ with a unique incrementing
+        The chart is saved to the artifacts directory with a unique incrementing
         number appended to avoid overwriting existing files.
 
         Parameters
@@ -854,75 +852,62 @@ class Tables:
             The path to the saved pie chart file.
         """
         logger.debug("pie()")
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
         command: str = utils.get_command("pie()", stack())
 
-        # COMPUTE PRE-CATEGORY COUNTS
-        counts = data[column].value_counts()
+        ## run the checks and get the masks
+        analysis = "PieChart"
+        modeldict = get_modeldict_for_array(data[column], self.sdc_checks.risk_appetite)
+        collatedres = ManyChecksResults()
+        collatedres.allchecksresults[analysis] = (
+            self.sdc_checks.run_checks_for_analysis(analysis, modeldict)
+        )
 
-        # THRESHOLD CHECK - same as hist() logic
-        threshold_mask = counts < THRESHOLD
+        sdc_details: dict = collatedres.get_table_sdc()
+        overall_status: str = collatedres.get_overall_status()
+        fair_dict = collatedres.get_overall_fair()
+        fair_dict.update(get_variable_type_dict(modeldict["variable_metadata"]))
+        summary = collatedres.get_overall_summary()
 
-        if np.any(threshold_mask):
-            status = "fail"
-            if self.suppress:
-                logger.warning(
-                    "Pie chart will not be shown as the %s column is disclosive.",
-                    column,
-                )
-            else:  # pragma: no cover
-                _, ax = plt.subplots()
-                ax.pie(counts.values, labels=counts.index, **kwargs)
+        if self.suppress and overall_status == "Fail":
+            logger.warning(
+                "Pie chart will not be shown as the %s column is disclosive.",
+                column,
+            )
+            summary = summary + " Pie Chart Redacted."
+            output = []
+            unique_filename = ""
+
         else:
-            status = "review"
+            summary += "Please also for missing categories."
+
+            counts = data[column].value_counts()
             _, ax = plt.subplots()
             ax.pie(counts.values, labels=counts.index, **kwargs)
 
-        logger.info("status: %s", status)
+            unique_filename = utils.get_unique_artefact_filename(filename)
+            if unique_filename == "None":
+                return None
 
-        # CREATE SUMMARY
-        summary = f"Pie chart of {column}. Categories and counts: {counts.to_dict()}."
-
-        # CREATE acro_artifacts DIRECTORY to save plot in
-        try:
-            os.makedirs("acro_artifacts")
-            logger.debug("Directory acro_artifacts created successfully")
-        except FileExistsError:  # pragma: no cover
-            logger.debug("Directory acro_artifacts already exists")
-
-        # CREATE UNIQUE FILENAME to avoid overwrite
-
-        filename, extension = os.path.splitext(filename)
-        if not extension:  # pragma: no cover
-            logger.info("Please provide a valid file extension")
-            return None
-        increment_number = 0
-
-        while os.path.exists(
-            f"acro_artifacts/{filename}_{increment_number}{extension}"
-        ):  # pragma: no cover
-            increment_number += 1
-        unique_filename = f"acro_artifacts/{filename}_{increment_number}{extension}"
-
-        # SAVE PLOT to acro_artifacts directory
-        plt.savefig(unique_filename)
+            plt.savefig(unique_filename)
+            output = [os.path.normpath(unique_filename)]
 
         # RECORD OUTPUT
-        fair: dict = {}  # TODO
         self.results.add(
-            status=status,
+            status=overall_status,
             output_type="pie chart",
             properties={"method": "pie"},
-            sdc={},
-            fair=fair,
+            sdc=sdc_details,
+            fair=fair_dict,
             command=command,
             summary=summary,
             outcome=pd.DataFrame(),
-            output=[os.path.normpath(unique_filename)],
+            output=output,
+            comments=[],
         )
 
         return unique_filename
-
-
 
 
 def _rounded_survival_table(
@@ -990,11 +975,3 @@ def _rounded_survival_table(
         )
     survival_table["rounded_survival_fun"] = rounded_survival_func
     return survival_table
-
-
-
-
-
-
-
-

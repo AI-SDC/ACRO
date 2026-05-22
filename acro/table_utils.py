@@ -1,27 +1,20 @@
-""" ACRO Table-Specific Utility Functions"""
+"""ACRO Table-Specific Utility Functions."""
+
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
+import copy
 import logging
-import os
-import secrets
-from collections.abc import Callable
-from inspect import stack
 from typing import Any
 
 import numpy as np
 import pandas as pd
-
-import statsmodels.api as sm
-from matplotlib import pyplot as plt
 from pandas import DataFrame, Series
 from pandas.api.types import CategoricalDtype
-import copy
 
 from . import utils
 from .checks import ChecksResults
-
-from .constants import SDMX_DIMENSION, SDMX_MEASURE
+from .constants import DIMENSION_URI, MEASURE_URI
 
 logger = logging.getLogger("acro")
 
@@ -36,39 +29,32 @@ AGGFUNC_TO_TYPE: dict[str, str] = {
     "max": "Maximum",
 }
 
-def axis_to_list(axis:Series|list[Series])->list[Series]:
-    """translate axis into standard format
 
+def axis_to_list(axis: Series | list[Series]) -> list[Series]:
+    """Translate axis into standard format.
 
     Convert variables describing an axis (row/column) into a list
     to simplify code. Wraps the  input inside a list if it   is a single series
     or leaves it unchanged if it is already a list of series
-    
-    
-    Parameters:
-    -----------
-    axis: pandas series or list of series
+
+    Parameters
+    ----------
+    axis : pandas series or list of series
 
     Returns
     -------
     list [Series]
- 
     """
-    if not isinstance(axis,list):
-        foo:list= []
+    if not isinstance(axis, list):
+        foo: list = []
         foo.append(axis)
         return foo
     return axis
 
 
-
-
-
-
 def collate_risk_assessments(
-    table: DataFrame, 
-    allcheckresults: dict[str, ChecksResults]
-    ) -> DataFrame:
+    table: DataFrame, allcheckresults: dict[str, ChecksResults]
+) -> DataFrame:
     """Collate the Risk Assessment for a table.
 
     Parameters
@@ -83,23 +69,21 @@ def collate_risk_assessments(
     DataFrame
         Table with collated outcomes of suppression checks.
     """
-
     outcome_df = DataFrame(index=table.index, columns=table.columns)
-    #drop column repetitions for multiple aggregation functions
+    # drop column repetitions for multiple aggregation functions
     lowestlevelfound = []
-    to_drops=[]
+    to_drops = []
     for thetuple in list(outcome_df):
         if thetuple[-1] in lowestlevelfound:
             to_drops.append(thetuple)
         else:
             lowestlevelfound.append(thetuple[-1])
     for drop in to_drops:
-        outcome_df= outcome_df.drop(drop,axis='columns')
-
+        outcome_df = outcome_df.drop(drop, axis="columns")
 
     outcome_df.fillna("", inplace=True)
 
-    checks_seen:list[str] = []
+    checks_seen: list[str] = []
     for analysis, checkresults in allcheckresults.items():
         masks = checkresults.outcomes
         # report if negatives are present
@@ -117,7 +101,9 @@ def collate_risk_assessments(
                     continue
                 checks_seen.append(name)
                 try:
-                    tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
+                    tmp_df = DataFrame(
+                        index=outcome_df.index, columns=outcome_df.columns
+                    )
                     tmp_df.fillna("", inplace=True)
                     tmp_df[mask.values] = name + "; "
                     outcome_df += tmp_df
@@ -131,63 +117,56 @@ def collate_risk_assessments(
                         f"table of shape {table.shape}"
                     )
                     raise ValueError(error_message) from error
-    
+
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
     return outcome_df
 
 
+def get_axis_metadata(axis, where: str) -> dict:
+    """Get  metadata for categorical variables describing an axis.
 
-def get_axis_metadata(axis,where:str)-> dict:
-    """ get  metadata for categorical variables describing an axis
-    
-    Cycle through the categorical variables that define an axis 
-    and construct a meta data dictionary describing them 
-    
+    Cycle through the categorical variables that define an axis
+    and construct a meta data dictionary describing them
+
     Parameters
     ----------
-    axis: list[pd.Series]
+    axis : list[pd.Series]
         list of series defining a dimension in an analysis
-    where: str
+    where : str
         axis reference i.e. "rows" or "columns"
 
     Returns
     -------
-
-    dict   
+    dict
         one entry for item in list provided
         key is name of series
         dict of values describe location, type, categories present
-        
     """
-    
-    metadata: dict[str,dict] = {}
-    for idx,dimension in enumerate(axis):
-        entry:dict={}
-        if not isinstance(dimension,Series):
-            logger.info("unable to construct meta data for "
-                         " component of %s that is not a pandas series", where)
+    metadata: dict[str, dict] = {}
+    for idx, dimension in enumerate(axis):
+        entry: dict = {}
+        if not isinstance(dimension, Series):
+            logger.info(
+                "unable to construct meta data for "
+                " component of %s that is not a pandas series",
+                where,
+            )
         else:
             name = dimension.name
-            cat_type=utils.get_catdtype(dimension)
-            metadata[name]= {
+            cat_type = utils.get_catdtype(dimension)
+            metadata[name] = {
                 "location": where,
                 "sequence_id": idx,
                 "dtype": str(cat_type.categories.dtype),
-                "type" : SDMX_DIMENSION,
-                "dependent":False,
-                "categories":list(cat_type.categories),
-                "ordered": cat_type.ordered 
+                "type": DIMENSION_URI,
+                "dependent": False,
+                "categories": list(cat_type.categories),
+                "ordered": cat_type.ordered,
             }
     return metadata
 
-    
 
-
-
-
-
-        
 def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
     """Return the status and summary of the suppression masks.
 
@@ -237,37 +216,35 @@ def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
     return status, summary
 
 
-
-def  get_redacted_table(model:dict, collated_assessment:DataFrame)->DataFrame:
-    """redact table as needed then rereun the table query"""
-    args= model['args']
-    kwargs=model['kwargs']
-    variable_metadata=model['variable_metadata']
-    queries: list[str] = get_queries_from_collated_risk(collated_assessment,kwargs["aggfunc"])
-    relevant_data:DataFrame = get_relevant_dataframe(args,kwargs,variable_metadata)
-    redacted_data: DataFrame = get_redacted_data(relevant_data,queries)
-    #ensure missing categories are present
+def get_redacted_table(model: dict, collated_assessment: DataFrame) -> DataFrame:
+    """Redact table as needed then rereun the table query."""
+    args = model["args"]
+    kwargs = model["kwargs"]
+    variable_metadata = model["variable_metadata"]
+    queries: list[str] = get_queries_from_collated_risk(
+        collated_assessment, kwargs["aggfunc"]
+    )
+    relevant_data: DataFrame = get_relevant_dataframe(args, kwargs, variable_metadata)
+    redacted_data: DataFrame = get_redacted_data(relevant_data, queries)
+    # ensure missing categories are present
     for name in list(redacted_data):
-        if variable_metadata[name]["type"]==SDMX_DIMENSION:
-            cat_type= CategoricalDtype(
-                    categories=variable_metadata[name]['categories'],
-                    ordered=variable_metadata[name]['ordered']
-                )
-            redacted_data[name]=redacted_data[name].astype(cat_type)
+        if variable_metadata[name]["type"] == DIMENSION_URI:
+            cat_type = CategoricalDtype(
+                categories=variable_metadata[name]["categories"],
+                ordered=variable_metadata[name]["ordered"],
+            )
+            redacted_data[name] = redacted_data[name].astype(cat_type)
 
-
-    newargs = translate_args_to_newdf(args,redacted_data)
-    newkwargs:dict[str:Any]= copy.deepcopy(kwargs)
-    newkwargs['dropna']=False
+    newargs = translate_args_to_newdf(args, redacted_data)
+    newkwargs: dict[str, Any] = copy.deepcopy(kwargs)
+    newkwargs["dropna"] = False
     if "values" in kwargs.keys() and kwargs["values"] is not None:
-        newkwargs["values"]= redacted_data[ kwargs["values"].name]
-    table = pd.crosstab(*newargs,**newkwargs)
-    if model['risk_appetite']["zeros_are_disclosive"]:
-        table.replace({0:np.nan},inplace=True)
+        newkwargs["values"] = redacted_data[kwargs["values"].name]
+    table = pd.crosstab(*newargs, **newkwargs)
+    if model["risk_appetite"]["zeros_are_disclosive"]:
+        table.replace({0: np.nan}, inplace=True)
 
     return table
-
-
 
 
 def add_backticks(name: str) -> str:
@@ -320,34 +297,35 @@ def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
     return parts
 
 
-def get_relevant_dataframe(args:list,kwargs:dict[str:Any], metadata:dict)->DataFrame:
-    """ extract copy of data relevant to crosstab into new DataFrame
+def get_relevant_dataframe(
+    args: list, kwargs: dict[str, Any], metadata: dict
+) -> DataFrame:
+    """Extract copy of data relevant to crosstab into new DataFrame.
 
     Assumes preprocessing has happenededindex and columns in args should both have been converted into lists of Series
-    
-    
+
     Parameters
     ----------
-    args:list[str|list]
+    args : list[str|list]
         list of index, columns from call to crosstab function
         should have already been converted to lists
-    kwargs: dict
+    kwargs : dict
         kwargs for crosstab function
-    metadata: dict
+    metadata : dict
         information for creating categorical datatypes so as to preserve possible values
 
     Returns
     -------
     dataframe containing copies of pandas series need to calculate the  crosstab
     """
-    series_list:list= []
+    series_list: list = []
     if "values" in kwargs.keys() and kwargs["values"] is not None:
-        series_list.append( kwargs["values"].copy())
-    if not (isinstance (args,tuple) and len(args)==2):
-        print(f'args is of type {type(args)} and contents {args}\n')
+        series_list.append(kwargs["values"].copy())
+    if not (isinstance(args, tuple) and len(args) == 2):
+        print(f"args is of type {type(args)} and contents {args}\n")
         raise ValueError("list passed as positional args has wrong type or length")
     for contents in args:
-        if not isinstance(contents,list):
+        if not isinstance(contents, list):
             raise TypeError("index and columns should be lists")
         for series in contents:
             series_list.append(series.copy())
@@ -356,41 +334,38 @@ def get_relevant_dataframe(args:list,kwargs:dict[str:Any], metadata:dict)->DataF
     return relevant_data
 
 
+def translate_args_to_newdf(arguments: list, redacted_data: DataFrame) -> list:
+    """Translate arguments or keys from one data frame to another.
 
-def translate_args_to_newdf(arguments:list,redacted_data:DataFrame)->list:
-    """translate arguments or keys from one data frame to another
-
-    Parameters:
-    -----------
-    arguments: list
+    Parameters
+    ----------
+    arguments : list
         list of positional arguments to be translated to a different dataframe
-    redacted_data: Dataframe
+    redacted_data : Dataframe
         the name of the 'host' dataframe
-        
 
-    Returns:
-    ---------
+    Returns
+    -------
     list
-         arguments  translate on to columns with the same name in the host DataFrame 
+         arguments  translate on to columns with the same name in the host DataFrame
     """
-    #todo put in checks to make this robust
-    #decide whether to return args i.e. don't do redaction/suppression
-    #instead of raising valueerror
-    newargs:list = []
-    if not (isinstance (arguments,tuple) and len(arguments)==2):
+    # todo put in checks to make this robust
+    # decide whether to return args i.e. don't do redaction/suppression
+    # instead of raising valueerror
+    newargs: list = []
+    if not (isinstance(arguments, tuple) and len(arguments) == 2):
         raise ValueError("list passed as positional args has wrong type or length")
     for contents in arguments:
-        if isinstance (contents,pd.Series):
+        if isinstance(contents, pd.Series):
             newargs.append(redacted_data[contents.name])
-        elif isinstance(contents,list):
-            newlist:list=[]
+        elif isinstance(contents, list):
+            newlist: list = []
             for series in contents:
                 newlist.append(redacted_data[series.name])
             newargs.append(newlist)
     return newargs
 
-        
-    
+
 def _get_cell_query(
     mask: DataFrame,
     row_index: int,
@@ -432,8 +407,7 @@ def _get_cell_query(
 
 
 def get_queries_from_collated_risk(
-    collated_risk: DataFrame,
-    aggfunc:str|None
+    collated_risk: DataFrame, aggfunc: str | None
 ) -> list[str]:
     """Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
 
@@ -452,7 +426,7 @@ def get_queries_from_collated_risk(
     true_cell_queries = []
     themask = collated_risk.copy()
 
-    themask=themask.replace({"ok":False})
+    themask = themask.replace({"ok": False})
     themask = themask.mask(themask != False, other=True)
     if aggfunc is not None:
         if themask.columns.nlevels > 1:
@@ -470,122 +444,119 @@ def get_queries_from_collated_risk(
     return true_cell_queries
 
 
-def get_redacted_data(data:DataFrame,queries:list[str])->DataFrame:
-    """Apply set of queries to remove sensitive data from  DataFrame
+def get_redacted_data(data: DataFrame, queries: list[str]) -> DataFrame:
+    """Apply set of queries to remove sensitive data from  DataFrame.
 
-    Parameters:
-    -------------
-    data: pandas DataFrame
+    Parameters
+    ----------
+    data : pandas DataFrame
         the raw data
-    queries: list[str]
+    queries : list[str]
         a set of queries that define the data in cells marked as being disclosive
 
-    Returns:
-    ---------
-    DataFrame 
+    Returns
+    -------
+    DataFrame
          the data after the sensitive data has been removed
     """
     redacted_data = data.copy()
-    #logger.info(f'data has shape {data.shape}')
+    # logger.info(f'data has shape {data.shape}')
     for query in queries:
-        #logger.info(f'applying query{query}')
-        redacted_data.query(f"not ({query})",inplace=True)
-        #logger.info(f'now redacted data has shape {redacted_data.shape}')
+        # logger.info(f'applying query{query}')
+        redacted_data.query(f"not ({query})", inplace=True)
+        # logger.info(f'now redacted data has shape {redacted_data.shape}')
 
-    if not set(data.columns)==set(redacted_data.columns):
-        logger.warning("Error created redacted data"
-                       " - unable to apply suppression"
-                      )
+    if not set(data.columns) == set(redacted_data.columns):
+        logger.warning("Error created redacted data - unable to apply suppression")
         return data
     return redacted_data
 
-def get_debugging_table_analysis(allchecksresults:dict[str,ChecksResults]
-                                )->str:
-    """get string of status/summary debugginf info"""
-    thestring=""
-    thestring +=  "\n====start acro.crosstab print statement====="
 
-    for analysis,checksresults in allchecksresults.items():
+def get_debugging_table_analysis(allchecksresults: dict[str, ChecksResults]) -> str:
+    """Get string of status/summary debugging info."""
+    thestring = ""
+    thestring += "\n====start acro.crosstab print statement====="
+
+    for analysis, checksresults in allchecksresults.items():
         thestring += f"\n====findings for {analysis}====="
-        
-        thestring +=  "\n== statuses==\n"
-        thestring +=  f" {checksresults.overall_status}\n"
 
-        thestring +=  "\n== summaries==\n"
-        thestring +=  f" {checksresults.summaries}\n"
+        thestring += "\n== statuses==\n"
+        thestring += f" {checksresults.overall_status}\n"
 
+        thestring += "\n== summaries==\n"
+        thestring += f" {checksresults.summaries}\n"
 
-        thestring +=  "\n== allmasks==\n"
+        thestring += "\n== allmasks==\n"
         for name, mask in checksresults.outcomes.items():
-            thestring +=  f"\nMask for {name}\n"
-            thestring += f'{mask}\n'
-            #for key, val in mask.items():
-                #thestring +=  f"{key} \n{val}\n"
+            thestring += f"\nMask for {name}\n"
+            thestring += f"{mask}\n"
+            # for key, val in mask.items():
+            # thestring +=  f"{key} \n{val}\n"
 
-        thestring +=  "\n== fair_dicts==\n"
+        thestring += "\n== fair_dicts==\n"
         for key, val in checksresults.fair_dict.items():
             if isinstance(val, dict):
                 for key2, val2 in val.items():
-                    thestring +=  f" {key2} : {val2}\n"
+                    thestring += f" {key2} : {val2}\n"
             else:
-                thestring +=  f" {key} : {val}\n"
+                thestring += f" {key} : {val}\n"
 
-    #thestring +=  "\n=== collated masks ===\n"
-    #thestring +=  f"{collated_assessment}\n"
-    #thestring +=  "====end acro.crosstab print statement=====\n"
+    # thestring +=  "\n=== collated masks ===\n"
+    # thestring +=  f"{collated_assessment}\n"
+    # thestring +=  "====end acro.crosstab print statement=====\n"
     return thestring
 
 
-def get_variable_metadata(index:list,columns:list,values:Series|None)->dict[str,dict]:
-    """ create data dictionary 
+def get_variable_metadata(
+    index: list, columns: list, values: Series | None
+) -> dict[str, dict]:
+    """Create data dictionary.
 
-    TODO 
+    TODO
     expand docstring
-    
     """
-    #TODO handle arraylike as well as series
-    #TODO handle rownames/colnames
-    variable_metadata:dict[str,dict] = {}
-    variable_metadata.update(get_axis_metadata(index,where="rows"))
-    variable_metadata.update(get_axis_metadata(columns,where="columns"))
+    # TODO handle arraylike as well as series
+    # TODO handle rownames/colnames
+    variable_metadata: dict[str, dict] = {}
+    variable_metadata.update(get_axis_metadata(index, where="rows"))
+    variable_metadata.update(get_axis_metadata(columns, where="columns"))
     if values is not None:
-        name= values.name if isinstance(values,Series) else "unknown_measure"
-        variable_metadata[name]= {"location": "cells",
-                              "sequence_id": 0,
-                              "dtype": values[0].dtype,
-                              "type" : SDMX_MEASURE,
-                              "dependent":True,
-                              "categories":[]
-                             }
+        name = values.name if isinstance(values, Series) else "unknown_measure"
+        variable_metadata[name] = {
+            "location": "cells",
+            "sequence_id": 0,
+            "dtype": values[0].dtype,
+            "type": MEASURE_URI,
+            "dependent": True,
+            "categories": [],
+        }
     return variable_metadata
 
 
-def get_variable_type_dict(variable_metadata:dict[str,dict])->dict[str,Any]:
-    """Get dict listing dependent and independant variables from metadata catalogue
+def get_variable_type_dict(variable_metadata: dict[str, dict]) -> dict[str, Any]:
+    """Get dict listing dependent and independent variables from metadata catalogue.
 
     Parameters
-    -----------
-    variable_metadata: dict
+    ----------
+    variable_metadata : dict
 
     Returns
-    --------
-    dict 
+    -------
+    dict
         holding  name of dependent variable and list of independent (exogenous) variables
     """
-    mydict:dict[str,Any]= {
-        "dependent":"unknown",
-        "independent":[]
-    }
+    mydict: dict[str, Any] = {"dependent": "unknown", "independent": []}
     for varname in variable_metadata.keys():
-        if variable_metadata[varname]['dependent']:
-            mydict["dependent"]=varname
+        if variable_metadata[varname]["dependent"]:
+            mydict["dependent"] = varname
         else:
             mydict["independent"].append(varname)
-    
+
     return mydict
 
-def aggfunc_to_strings(aggfunc:Any)->list[str]:
-    """turn aggfunc into lsit of strings"""
+
+def aggfunc_to_strings(aggfunc: Any) -> list[str]:
+    """Turn aggfunc into list of strings."""
     analysis_names: list[str] = []
 
     if aggfunc is None:
@@ -596,3 +567,55 @@ def aggfunc_to_strings(aggfunc:Any)->list[str]:
         for i in aggfunc:
             analysis_names.append(AGGFUNC_TO_TYPE.get(i, "missing"))
     return analysis_names
+
+
+def get_modeldict_for_array(thedata: pd.Series, risk_appetite: dict) -> dict:
+    """Construct the model dict for an array type analysis.
+
+    Parameters
+    ----------
+    thedata : pd.Series
+        array of values to summarise as counts
+    risk_appetite : dict
+        statement of TREs risk appetite
+
+    Returns
+    -------
+    dict in form to support running various checks
+    """
+    variable_metadata = {thedata.name: {"type": MEASURE_URI, "dependent": True}}
+    modeldict: dict[str, Any] = {
+        "model_type": "array",
+        "data": thedata,
+        "variable_metadata": variable_metadata,
+        "risk_appetite": risk_appetite,
+    }
+    return modeldict
+
+
+def get_modeldict_for_table(args: tuple, kwargs: dict, risk_appetite: dict) -> dict:
+    """Construct the model dict for an array type analysis.
+
+    Parameters
+    ----------
+    args : tuple
+        tuple of length 2, contrtns are lists or rows and column series names
+    kwargs : dict
+        all the other info needed to specify a table
+    risk_appetite : dict
+        statement of TREs risk appetite
+
+    Returns
+    -------
+    dict in form to support running various checks
+    """
+    variable_metadata = get_variable_metadata(args[0], args[1], kwargs["values"])
+    # make object containing these that can easily be passed around
+    modeldict: dict[str, Any] = {
+        "model_type": "table",
+        "args": args,
+        "kwargs": kwargs,
+        "variable_metadata": variable_metadata,
+        "risk_appetite": risk_appetite,
+    }
+    return modeldict

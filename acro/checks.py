@@ -6,83 +6,90 @@ import json
 import logging
 import pathlib
 import warnings
-from typing import Any
+from collections.abc import Callable
 from copy import deepcopy
+from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
-from dataclasses import dataclass, field
-from .aggregationfunctions import agg_mode, agg_values_are_same
-from .aggregationfunctions import agg_negative,agg_missing
-from .aggregationfunctions import agg_p_percent, agg_nk, agg_threshold
 from . import aggregationfunctions
+from .aggregationfunctions import (
+    agg_missing,
+    agg_nk,
+    agg_p_percent,
+    agg_values_are_same,
+)
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 logger = logging.getLogger("acro")
 
+
 @dataclass
 class ChecksResults:
-    """Class for results of running checks for an analyis
+    """Class for results of running checks for an analysis.
 
-        overall_status : str
-          'fail', 'review', or 'pass'
-        summaries : string
-            concatenation of summaries for each check run
-        outcomes : dict[str,Any]
-            dictionary of outcomes with keys for the check and values which might be:
-             numbers (e.g. Dof), or masks (Dataframes),
-            depending on the check and the type of model e.g. regression vs table
-        fair_dict: details of the sdc processes
-                    dict with one key (for now) "check_status" where the value is itself a dict
+    overall_status : str
+      'fail', 'review', or 'pass'
+    summaries : string
+        concatenation of summaries for each check run
+    outcomes : dict[str,Any]
+        dictionary of outcomes with keys for the check and values which might be:
+         numbers (e.g. Dof), or masks (Dataframes),
+        depending on the check and the type of model e.g. regression vs table
+    fair_dict: details of the sdc processes
+                dict with one key (for now) "check_status" where the value is itself a dict
     """
+
     overall_status: str
     summaries: str
-    outcomes: dict[str|Any]
+    outcomes: dict[str, Any]
     fair_dict: dict
+
 
 @dataclass
 class ManyChecksResults:
-    """ class for running checks on multiple analysis"""
-    allchecksresults:dict[str:ChecksResults]= field(default_factory=dict)
+    """Class for running checks on multiple analysis."""
 
-    def get_overall_summary(self)->str:
-        """Get overall summary from multiple statistics"""    
-        allsummary=""
+    allchecksresults: dict[str, ChecksResults] = field(default_factory=dict)
+
+    def get_overall_summary(self) -> str:
+        """Get overall summary from multiple statistics."""
+        allsummary = ""
         for analysis, checksresults in self.allchecksresults.items():
-            allsummary += f'\n{analysis} : {checksresults.summaries}\n'
+            allsummary += f"\n{analysis} : {checksresults.summaries}\n"
         return allsummary
 
-    def get_overall_status(self)->str:
-        """get overall risk status for set of analyses"""
+    def get_overall_status(self) -> str:
+        """Get overall risk status for set of analyses."""
         overall_status = "pass"
-        
-        statuses:list[str]=[]
+
+        statuses: list[str] = []
         for analysis, checksresults in self.allchecksresults.items():
             statuses.append(checksresults.overall_status)
         if "fail" in statuses:
             overall_status = "fail"
         elif "review" in statuses:
-            overall_status= "review"
-    
+            overall_status = "review"
+
         return overall_status
 
-    def get_overall_fair(self)->dict[str,dict]:
-        """get overall FAIR analysis for set of analyses"""
-        fairdict: dict[str,dict]={}
-        for analysis, checksresults in self.allchecksresults.items():    
+    def get_overall_fair(self) -> dict[str, dict]:
+        """Get overall FAIR analysis for set of analyses."""
+        fairdict: dict[str, dict] = {}
+        for analysis, checksresults in self.allchecksresults.items():
             fairdict.update(checksresults.fair_dict)
-    
+
         return fairdict
-    
+
     def get_table_sdc(self) -> dict[str, Any]:
-        """Return the SDC dictionary for a tableusing the suppression masks. """
-                
+        """Return the SDC dictionary for a table using the suppression masks."""
         # summary of number of cells to be suppressed
         sdc: dict[str, Any] = {"summary": {}, "cells": {}}
-    
-        checks_seen:list[str] = []
+
+        checks_seen: list[str] = []
         for analysis, checksresults in self.allchecksresults.items():
             for name, mask in checksresults.outcomes.items():
                 if name in checks_seen:
@@ -95,9 +102,8 @@ class ManyChecksResults:
                 for pos in true_positions:
                     row_index, col_index = pos
                     sdc["cells"][name].append([int(row_index), int(col_index)])
-    
-        return sdc
 
+        return sdc
 
 
 # Helper function that do not need to be in class
@@ -108,32 +114,53 @@ def mask_to_boolmask(mask: pd.DataFrame) -> pd.DataFrame:
     mask = mask.astype(bool)
     return mask
 
-def status_summary_from_mask( mask:pd.Dataframe)->tuple[str,str]:
-    """ Get status and summary from mask
-    
+
+def status_summary_from_mask(mask: pd.Dataframe) -> tuple[str, str]:
+    """Get status and summary from mask.
+
     Parameters
     ----------
-    mask:pd.Dataframe
+    mask : pd.Dataframe
         the output of running some condition over a table
-
 
     Returns
     -------
-    str: status -one of 'pass','fail'
-    str: summary string
+    str : status -one of 'pass','fail'
+    str : summary string
     """
     mask = mask_to_boolmask(mask)
     truecount = int(np.nansum(mask.to_numpy()))
     status = "fail" if truecount > 0 else "pass"
-    #name of check that reated mask gets prepended to summary in run_checks()
+    # name of check that reated mask gets prepended to summary in run_checks()
     summary = f"{status} - {truecount} cells may need suppressing.\n"
     return status, summary
 
+
 def get_empty_mask():
-    """return an empty pandas dataftrame with nominal bool contents"""
+    """Return an empty pandas dataftrame with nominal bool contents."""
     return pd.DataFrame(dtype=bool)
 
-def check_table_validity_size( model: Any) -> tuple[bool, int]:
+
+def check_array_validity(model: Any) -> bool:
+    """Check that model is a valid combination s to specify an array.
+
+    Returns
+    -------
+    bool
+
+    Parameter
+    ---------
+    model:dict
+    combination of detail to specify an array
+    """
+    data = model.get("data", None)
+    if not isinstance(data, pd.Series):
+        logger.info("data passed into model for 1d frequency is not a pandas series")
+        return False
+    return True
+
+
+def check_table_validity_size(model: Any) -> tuple[bool, int]:
     """Check that model is a valid combination of args and kwargs to specify a table.
 
     Returns
@@ -147,16 +174,15 @@ def check_table_validity_size( model: Any) -> tuple[bool, int]:
     """
     if not (
         isinstance(model, dict)
-        and (isinstance(model["args"], list)
-             or isinstance(model["args"],tuple)
-            )
+        and (isinstance(model["args"], list) or isinstance(model["args"], tuple))
         and len(model["args"]) == 2
         and isinstance(model["kwargs"], dict)
     ):
-        logger.info(f'failing table validity check1, model type is {type(model)} '
-                    f'args type= {type(model['args'])}, args length = {len(model['args'])}'
-                    f'kwargs type is {type(model['kwargs'])}'
-                   )
+        logger.info(
+            f"failing table validity check1, model type is {type(model)} "
+            f"args type= {type(model['args'])}, args length = {len(model['args'])}"
+            f"kwargs type is {type(model['kwargs'])}"
+        )
         return False, 0
     aggfuncs = model["kwargs"]["aggfunc"]
     if isinstance(aggfuncs, str):
@@ -166,12 +192,13 @@ def check_table_validity_size( model: Any) -> tuple[bool, int]:
     elif aggfuncs is None:
         return True, 1
     else:
-        logger.info(f'failing table validity check2, model is {model}')
+        logger.info(f"failing table validity check2, model is {model}")
         return False, 0
+
 
 def get_zeros_mask(model: dict) -> pd.DataFrame:
     """Create a data frame filled with zeros of same size as underlying table."""
-    ok,size=check_table_validity_size(model)
+    ok, size = check_table_validity_size(model)
     if not ok:
         return get_empty_mask()
     else:
@@ -183,49 +210,127 @@ def get_zeros_mask(model: dict) -> pd.DataFrame:
             count_table[col].values[:] = 0
     return count_table
 
+
 def get_allfalse_mask(model: dict) -> pd.DataFrame:
     """Create a data frame filled with false of same size as underlying table."""
-    ok,size=check_table_validity_size(model)
-    if not ok:
-        return get_empty_mask()
-    else:
+    model_type = model.get("model_type", "unknown")
+    if model_type not in ["table", "array"]:
+        logger.info("model type recognised or not present in model descriptor")
+        return None
+    if model_type == "table":
+        ok, size = check_table_validity_size(model)
+        if not ok:
+            return (
+                "fail",
+                "testing table: dict passed as model in insufficient",
+                get_empty_mask(),
+            )
         args: list = model["args"]
         kwargs: dict = deepcopy(model["kwargs"])
         kwargs["aggfunc"] = kwargs["values"] = None
         mask = pd.crosstab(*args, **kwargs)
         for col in mask.columns:
             mask[col].values[:] = False
+
+    else:  # array
+        ok = check_array_validity(model)
+        if not ok:
+            return (
+                "fail",
+                "testing array: dict passed as model in insufficient",
+                get_empty_mask(),
+            )
+        series_mask = model["data"].value_counts()
+        series_mask.iloc[:] = False
+        mask = pd.DataFrame(series_mask)
+
     return mask_to_boolmask(mask)
 
-def get_count_table(model:dict)->pd.DataFrame:
-    """ make count table as specfiied by model"""
-    ok , size=check_table_validity_size(model) 
+
+def get_count_table(model: dict) -> pd.DataFrame:
+    """Make count table as specified by model."""
+    ok, size = check_table_validity_size(model)
     if not ok:
-        return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
+        return (
+            "fail",
+            "testing table: dict passed as model in insufficient",
+            get_empty_mask(),
+        )
     # change aggregation function to count
-    kwargs:dict = deepcopy(model["kwargs"])
+    kwargs: dict = deepcopy(model["kwargs"])
     kwargs["aggfunc"] = kwargs["values"] = None
     return pd.crosstab(*model["args"], **kwargs)
 
-def run_check_from_aggfunc(model:Any, aggfunc:Callable)->tuple[str,str,pd.DataFrame]:
-    """ Run a check given a model and an aggregation fucntion"""
-    ok , size=check_table_validity_size(model) 
-    if not ok:
-        return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
 
-    kwargs= deepcopy(model['kwargs'])
-    if kwargs['values'] is None:   
-        #shouldn't really occur?
+def run_check_from_aggfunc(
+    model: Any, aggfunc: Callable
+) -> tuple[str, str, pd.DataFrame]:
+    """Run a check given a model and an aggregation function."""
+    model_type = model.get("model_type", "unknown")
+    if model_type not in ["table", "array"]:
+        logger.info("model type recognised or not present in model descriptor")
+        return (
+            "model type recognised or not present in model descriptor",
+            "",
+            pd.DataFrame(),
+        )
+    if model_type == "table":
+        ok, size = check_table_validity_size(model)
+        if not ok:
+            return (
+                "fail",
+                "testing table: dict passed as model in insufficient",
+                get_empty_mask(),
+            )
+        return run_tablecheck_from_aggfunc(model, aggfunc)
+    else:  # array
+        ok = check_array_validity(model)
+        if not ok:
+            return (
+                "fail",
+                "testing array: dict passed as model in insufficient",
+                get_empty_mask(),
+            )
+        return run_arraycheck_from_aggfunc(model, aggfunc)
+
+    ok, size = check_table_validity_size(model)
+    if not ok:
+        return (
+            "fail",
+            "testing table: dict passed as model in insufficient",
+            get_empty_mask(),
+        )
+
+
+def run_tablecheck_from_aggfunc(
+    model: Any, aggfunc: Callable
+) -> tuple[str, str, pd.DataFrame]:
+    """Run a check on a table given a model and an aggregation function."""
+    kwargs = deepcopy(model["kwargs"])
+    if kwargs["values"] is None:
+        # shouldn't really occur?
         # but use outer layer of rows if it does
-        if isinstance (model['args'][0],list): #nested rows
-            kwargs['values']= model['args'][0][0]
+        if isinstance(model["args"][0], list):  # nested rows
+            kwargs["values"] = model["args"][0][0]
         else:
-            kwargs['values']= model['args'][0]
-    kwargs['aggfunc']= aggfunc
-    mask= pd.crosstab(*model['args'], **kwargs)
+            kwargs["values"] = model["args"][0]
+    kwargs["aggfunc"] = aggfunc
+    mask = pd.crosstab(*model["args"], **kwargs)
     mask = mask_to_boolmask(mask)
-    status,summary = status_summary_from_mask(mask)
+    status, summary = status_summary_from_mask(mask)
     return status, summary, mask
+
+
+def run_arraycheck_from_aggfunc(
+    model: Any, aggfunc: Callable
+) -> tuple[str, str, pd.DataFrame]:
+    """Run a check on an array given a model and an aggregation function."""
+    series_mask = aggfunc(model["data"])
+    mask = pd.DataFrame(series_mask)
+    mask = mask_to_boolmask(mask)
+    status, summary = status_summary_from_mask(mask)
+    return status, summary, mask
+
 
 ###################################################################################
 class SDCChecks:
@@ -275,7 +380,7 @@ class SDCChecks:
 
         # map names of checks onto methods
         self.check_to_method: dict = {
-            "MissingCheck":self.check_missing,
+            "MissingCheck": self.check_missing,
             "MinimumDoFCheck": self.check_model_dof,
             "AllSameValuesCheck": self.check_all_same,
             "MinimumThresholdCheck": self.check_min_threshold,
@@ -287,15 +392,21 @@ class SDCChecks:
             "PresenceOfZeroCheck": self.check_presence_of_zero,
         }
         # set globals needed for aggregation functions
-        if len(self.risk_appetite)>0:
+        if len(self.risk_appetite) > 0:
             aggregationfunctions.THRESHOLD = self.risk_appetite["safe_threshold"]
             aggregationfunctions.SAFE_PRATIO_P = self.risk_appetite["safe_pratio_p"]
             aggregationfunctions.SAFE_NK_N = self.risk_appetite["safe_nk_n"]
             aggregationfunctions.SAFE_NK_K = self.risk_appetite["safe_nk_k"]
-            aggregationfunctions.CHECK_MISSING_VALUES = self.risk_appetite["check_missing_values"]
-            aggregationfunctions.ZEROS_ARE_DISCLOSIVE = self.risk_appetite["zeros_are_disclosive"]
+            aggregationfunctions.CHECK_MISSING_VALUES = self.risk_appetite[
+                "check_missing_values"
+            ]
+            aggregationfunctions.ZEROS_ARE_DISCLOSIVE = self.risk_appetite[
+                "zeros_are_disclosive"
+            ]
             # set globals for survival analysis
-            aggregationfunctions.SURVIVAL_THRESHOLD = self.risk_appetite["survival_safe_threshold"]
+            aggregationfunctions.SURVIVAL_THRESHOLD = self.risk_appetite[
+                "survival_safe_threshold"
+            ]
 
     def get_sdctokens_for_analysis(self, statname: str) -> dict:
         """Get list of sdc tokens to run for a given analysis.
@@ -329,16 +440,14 @@ class SDCChecks:
 
         # TODOcommon mitigations - remove ones where count != len risks
         if False:
-                print(
+            print(
                 "todo on mitigations ",
                 np.unique(np.array(sdc_dict["common_mitigations"]), return_counts=True),
             )
 
         return sdc_dict
 
-    def run_checks_for_analysis(
-        self, analysis_name: str, model: Any
-    ) -> tuple[str, str, dict, dict]:
+    def run_checks_for_analysis(self, analysis_name: str, model: Any) -> ChecksResults:
         """Run all the checks needed for a given type of analysis and report outcomes.
 
         Parameters
@@ -360,13 +469,15 @@ class SDCChecks:
             dictionary of outcomes with keys for the check and values which might be:
              numbers (e.g. Dof), or masks (Dataframes),
             depending on the check and the type of model e.g. regression vs table
-        sdc_dict: details of the sdc processes
+        sdc_dict : details of the sdc processes
                     dict with one key (for now) "check_status" where the value is itself a dict
                     of checkname (str): status (str)
         """
         if not analysis_name in self.analyses.keys():
             logger.info(f"keys are : {list(self.analyses.keys())}")
-            return "Review", "Name of analysis not recognised in ontology", {}, {}
+            return ChecksResults(
+                "Review", "Name of analysis not recognised in ontology", {}, {}
+            )
 
         sdc_dict = self.get_sdctokens_for_analysis(analysis_name)
 
@@ -382,15 +493,15 @@ class SDCChecks:
         for check in sdc_dict["checks_needed"]:
             checkfunc = self.check_to_method[check]
             status, summary, outcome = checkfunc(analysis_name, model)
-            #prepend name of check to summary
+            # prepend name of check to summary
             statuses.append(status)
-            summaries.append(check +": " +summary)
+            summaries.append(check + ": " + summary)
             outcomes[check] = outcome
             sdc_dict["check_status"][check] = status
         logger.debug(
             f"statuses : {statuses}\nsummary: {summaries}\noutcomes: {outcomes}\n"
         )
-        #logger.info(analysis_name +" : " + summaries)
+        # logger.info(analysis_name +" : " + summaries)
 
         if "fail" in statuses:
             overall_status = "fail"
@@ -401,8 +512,6 @@ class SDCChecks:
         summary = " ".join(summaries)
         logger.info(summary)
         return ChecksResults(overall_status, summary, outcomes, sdc_dict)
-
-
 
     def check_model_dof(self, name: str, model: Any) -> tuple[str, str, int]:
         """Check model DOF.
@@ -423,7 +532,6 @@ class SDCChecks:
         float
             the residual degrees of freedom.
         """
-
         status = "fail"
         if not hasattr(model, "df_resid"):
             return (
@@ -435,12 +543,12 @@ class SDCChecks:
         dof: int = int(model.df_resid)
         threshold: int = int(self.risk_appetite["safe_dof_threshold"])
         if dof < threshold:
-            status='fail'
-            comparator= '<'
+            status = "fail"
+            comparator = "<"
         else:
             status = "pass"
-            comparator= ">="
-            
+            comparator = ">="
+
         summary = f"{status} dof={dof} {comparator} {threshold}"
 
         logger.debug("in checks.check_model_dof()")
@@ -469,24 +577,9 @@ class SDCChecks:
             binary mask with same config as the underlying table.
         """
         _ = name
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
 
         return run_check_from_aggfunc(model, agg_values_are_same)
-        # kwargs= deepcopy(model['kwargs'])
-        # if kwargs['values'] is None:   
-        #     #shouldn't really occur?
-        #     # but use outer layer of rows if it does
-        #     if isinstance (model['args'][0],list): #nested rows
-        #         kwargs['values']= model['args'][0][0]
-        #     else:
-        #         kwargs['values']= model['args'][0]
-        # kwargs['aggfunc']= agg_values_are_same
-        # mask= pd.crosstab(*model['args'], **kwargs)
-        # status,summary = status_summary_from_mask(mask)
-        # return status, summary, mask
-                
+
     def check_missing(self, name: str, model: Any) -> tuple[str, str, pd.DataFrame]:
         """Check whether any  cells have missing values .
 
@@ -507,24 +600,8 @@ class SDCChecks:
             binary mask with same config as the underlying table.
         """
         _ = name
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
-        return run_check_from_aggfunc(model, agg_missing)
 
-        # kwargs= deepcopy(model['kwargs'])
-        # if kwargs['values'] is None:   
-        #     #shouldn't really occur?
-        #     # but use outer layer of rows if it does
-        #     if isinstance (model['args'][0],list): #nested rows
-        #         kwargs['values']= model['args'][0][0]
-        #     else:
-        #         kwargs['values']= model['args'][0]
-        # kwargs['aggfunc']= agg_missing
-        # mask= pd.crosstab(*model['args'], **kwargs)
-        # status,summary = status_summary_from_mask(mask)
-        # return status, summary, mask
-                        
+        return run_check_from_aggfunc(model, agg_missing)
 
     def check_min_threshold(
         self, name: str, model: Any
@@ -549,14 +626,37 @@ class SDCChecks:
         """
         _ = name
 
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
-            
- 
-        count_table = get_count_table(model)
+        model_type = model.get("model_type", "unknown")
+        if model_type not in ["table", "array"]:
+            logger.info("model type recognised or not present in model descriptor")
+            return (
+                "fail",
+                "model type recognised or not present in model descriptor",
+                get_empty_mask(),
+            )
+        if model_type == "table":
+            ok, size = check_table_validity_size(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing table: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+            count_table = get_count_table(model)
+
+        else:  # array
+            ok = check_array_validity(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing array: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+            count_series = model["data"].value_counts()
+            count_table = pd.DataFrame(count_series)
+
         mask = count_table < self.risk_appetite["safe_threshold"]
-        status,summary = status_summary_from_mask(mask)
+        status, summary = status_summary_from_mask(mask)
         return status, summary, mask
 
     def manual_check(self, name: str, model: Any) -> tuple[str, str, pd.DataFrame]:
@@ -579,14 +679,39 @@ class SDCChecks:
             binary mask with same config as the underlying table.
         """
         _ = name
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
-        
-        summary = (
-                  "Review: a manual check is needed for possible linked tables"
-                  f" variables defining table are:  {[arg.name for arg in model['args']]}"
-                  )
+
+        model_type = model.get("model_type", "unknown")
+        if model_type not in ["table", "array"]:
+            logger.info("model type recognised or not present in model descriptor")
+            return (
+                "fail",
+                "testing table: dict passed as model in insufficient",
+                get_empty_mask(),
+            )
+        if model_type == "table":
+            ok, size = check_table_validity_size(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing table: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+            summary = (
+                "Review: a manual check is needed for possible linked tables"
+                f" variables defining table are:  {[arg.name for arg in model['args']]}"
+            )
+        else:  # array
+            ok = check_array_validity(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing array: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+            summary = (
+                "Review: a manual check is needed for possible linked tables"
+                f" variables defining table are:  {model['data'].name}"
+            )
         return "review", summary, get_allfalse_mask(model)
 
     def check_nk_dominance(
@@ -611,23 +736,7 @@ class SDCChecks:
             binary mask with same config as the underlying table.
         """
         _ = name
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
         return run_check_from_aggfunc(model, agg_nk)
-
-        # kwargs= deepcopy(model['kwargs'])
-        # kwargs['values'] is None:   
-        #     #shouldn't really occur?
-        #     # but use outer layer of rows if it does
-        #     if isinstance (model['args'][0],list): #nested rows
-        #         kwargs['values']= model['args'][0][0]
-        #     else:
-        #         kwargs['values']= model['args'][0]
-        # kwargs['aggfunc']= agg_nk
-        # mask= pd.crosstab(*model['args'], **kwargs)
-        # status,summary = status_summary_from_mask(mask)
-        # return status, summary, mask
 
     def check_pq_dominance(
         self, name: str, model: Any
@@ -649,24 +758,13 @@ class SDCChecks:
             Summary of the check.
         pandas DataFrame
             binary mask with same config as the underlying table.
-       """
+        """
         _ = name
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
         return run_check_from_aggfunc(model, agg_p_percent)
 
-        # kwargs= deepcopy(model['kwargs'])
-        # kwargs['values'] is None:   
-        #     #shouldn't really occur?
-        #     # but use outer layer of rows if it does
-        #     if isinstance (model['args'][0],list): #nested rows
-        #         kwargs['values']= model['args'][0][0]
-        #     else:
-        #         kwargs['values']= model['args'][0]
-        # kwargs['aggfunc']= agg_p_percent
-
-    def check_linked_table(self, name: str, model: Any) -> tuple[str, str, pd.DataFrame]:
+    def check_linked_table(
+        self, name: str, model: Any
+    ) -> tuple[str, str, pd.DataFrame]:
         """Check for presence of linked tables.
 
         Parameters
@@ -686,16 +784,42 @@ class SDCChecks:
             binary mask with same config as the underlying table.
         """
         _ = name
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
 
-        rowvars= [arg.name for arg in model['args'][0]]
-        colvars= [arg.name for arg in model['args'][1]]
-        summary= (
-                "Review -  a manual check is needed for possible linked tables"
-                f" variables defining table are:  {set(rowvars+colvars)}.\n"
+        model_type = model.get("model_type", "unknown")
+        if model_type not in ["table", "array"]:
+            logger.info("model type recognised or not present in model descriptor")
+            return (
+                "fail",
+                "model type recognised or not present in model descriptor",
+                get_empty_mask(),
             )
+        if model_type == "table":
+            ok, size = check_table_validity_size(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing table: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+            rowvars = [arg.name for arg in model["args"][0]]
+            colvars = [arg.name for arg in model["args"][1]]
+            summary = (
+                "Review -  a manual check is needed for possible linked tables"
+                f" variables defining table are:  {set(rowvars + colvars)}.\n"
+            )
+        else:  # array
+            ok = check_array_validity(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing array: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+            summary = (
+                "Review -  a manual check is needed for possible linked tables"
+                f" variables defining array are:  {model['data'].name}.\n"
+            )
+
         return "review", summary, get_allfalse_mask(model)
 
     def check_required_zero(
@@ -720,9 +844,32 @@ class SDCChecks:
             binary mask with same config as the underlying table.
         """
         _ = name
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
+
+        model_type = model.get("model_type", "unknown")
+        if model_type not in ["table", "array"]:
+            logger.info("model type recognised or not present in model descriptor")
+            return (
+                "fail",
+                "model type recognised or not present in model descriptor",
+                get_empty_mask(),
+            )
+        if model_type == "table":
+            ok, _ = check_table_validity_size(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing table: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+
+        else:  # array
+            ok = check_array_validity(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing array: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
 
         mask = get_allfalse_mask(model)
         qualifier = ""
@@ -753,20 +900,43 @@ class SDCChecks:
             binary mask with same config as the underlying table.
         """
         _ = name
-        ok , size=check_table_validity_size(model) 
-        if not ok:
-            return 'fail','testing table: dict passed as model in insufficient', get_empty_mask()
+        model_type = model.get("model_type", "unknown")
+        if model_type not in ["table", "array"]:
+            logger.info("model type recognised or not present in model descriptor")
+            return (
+                "fail",
+                "model type recognised or not present in model descriptor",
+                pd.DataFrame(),
+            )
+        if model_type == "table":
+            ok, size = check_table_validity_size(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing table: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+            count_table = get_count_table(model)
 
-        count_table = get_count_table(model)        
+        else:  # array
+            ok = check_array_validity(model)
+            if not ok:
+                return (
+                    "fail",
+                    "testing array: dict passed as model in insufficient",
+                    get_empty_mask(),
+                )
+            count_series = model["data"].value_counts()
+            count_table = pd.DataFrame(count_series)
 
         if self.risk_appetite["zeros_are_disclosive"]:
-            # mask has true for disclosive cells where count==0 
+            # mask has true for disclosive cells where count==0
             mask = count_table == 0
-            status,summary = status_summary_from_mask(mask)
+            status, summary = status_summary_from_mask(mask)
 
         else:
             mask = get_allfalse_mask(model)
-            status,summary = status_summary_from_mask(mask)
+            status, summary = status_summary_from_mask(mask)
             summary = summary + " - risk appetite states zeros not disclosive.\n"
         return status, summary, mask
 
@@ -783,5 +953,3 @@ class SDCChecks:
             row_index, col_index = pos
             mask_sdc["cells"][name].append([int(row_index), int(col_index)])
         return mask_sdc
-
-

@@ -197,19 +197,18 @@ class ACRO(Tables, Regression):
         """Turn suppression off during a session."""
         self.suppress = False
 
-
-    def show_fair_summaries(self)->str:
-        """print ids and fair summaries for outputs in session"""
-        thestr=""
-        for id,value in self.results.results.items():
-            thestr += id +'\n'
+    def show_fair_summaries(self) -> str:
+        """Print ids and fair summaries for all outputs in session."""
+        thestr = ""
+        for id, value in self.results.results.items():
+            thestr += id + "\n"
             for key, val in value.fair.items():
-                if isinstance(val,dict):
-                    for key2,val2 in val.items():
-                        thestr+= f'{key2} : {val2}'
+                if isinstance(val, dict):
+                    for key2, val2 in val.items():
+                        thestr += f"{key2} : {val2}"
                 else:
-                    thestr += f'{key}:{val}'
-        return thestr +'\n'
+                    thestr += f"{key}:{val}"
+        return thestr + "\n"
 
 
 def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:

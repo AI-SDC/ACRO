@@ -229,13 +229,13 @@ class Records:
         self,
         status: str = "",
         output_type: str = "",
-        properties: dict = {},
-        sdc: dict = {},
-        fair: dict = {},
+        properties: dict | None = None,
+        sdc: dict | None = None,
+        fair: dict | None = None,
         command: str = "",
         summary: str = "",
-        outcome: DataFrame = pd.DataFrame(),
-        output: list[str] | list[DataFrame] = [],
+        outcome: DataFrame | None = None,
+        output: list[str] | list[DataFrame] | None = None,
         comments: list[str] | None = None,
     ) -> None:
         """Add an output to the results.
@@ -263,6 +263,17 @@ class Records:
         comments : list[str] | None, default None
             List of strings entered by the user to add comments to the output.
         """
+        if outcome is None:
+            outcome = pd.DataFrame()
+        if output is None:
+            output = []
+        if properties is None:
+            properties = {}
+        if sdc is None:
+            sdc = {}
+        if fair is None:
+            fair = {}
+
         new = Record(
             uid=f"output_{self.output_id}",
             status=status,

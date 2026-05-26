@@ -52,6 +52,22 @@ def axis_to_list(axis: Series | list[Series]) -> list[Series]:
     return axis
 
 
+def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
+    """Remove duplicate columns arising from multiple aggregation functions."""
+    lowestlevelfound: list[str] = []
+    to_drops: list[str] = []
+    for thetuple in list(outcome):
+        if thetuple[-1] in lowestlevelfound:
+            to_drops.append(thetuple)
+        else:
+            lowestlevelfound.append(thetuple[-1])
+    for drop in to_drops:
+        outcome = outcome.drop(drop, axis="columns")
+
+    outcome.fillna("", inplace=True)
+    return outcome
+
+
 def collate_risk_assessments(
     table: DataFrame, allcheckresults: dict[str, ChecksResults]
 ) -> DataFrame:
@@ -70,21 +86,11 @@ def collate_risk_assessments(
         Table with collated outcomes of suppression checks.
     """
     outcome_df = DataFrame(index=table.index, columns=table.columns)
-    # drop column repetitions for multiple aggregation functions
-    lowestlevelfound = []
-    to_drops = []
-    for thetuple in list(outcome_df):
-        if thetuple[-1] in lowestlevelfound:
-            to_drops.append(thetuple)
-        else:
-            lowestlevelfound.append(thetuple[-1])
-    for drop in to_drops:
-        outcome_df = outcome_df.drop(drop, axis="columns")
-
-    outcome_df.fillna("", inplace=True)
+    if isinstance(list(outcome_df)[0], tuple):
+        outcome_df = drop_duplicate_columns(outcome_df)
 
     checks_seen: list[str] = []
-    for analysis, checkresults in allcheckresults.items():
+    for _, checkresults in allcheckresults.items():
         masks = checkresults.outcomes
         # report if negatives are present
         if "negative" in masks:
@@ -123,7 +129,7 @@ def collate_risk_assessments(
     return outcome_df
 
 
-def get_axis_metadata(axis, where: str) -> dict:
+def get_axis_metadata(axis: list[pd.Series], where: str) -> dict:
     """Get  metadata for categorical variables describing an axis.
 
     Cycle through the categorical variables that define an axis
@@ -145,7 +151,6 @@ def get_axis_metadata(axis, where: str) -> dict:
     """
     metadata: dict[str, dict] = {}
     for idx, dimension in enumerate(axis):
-        entry: dict = {}
         if not isinstance(dimension, Series):
             logger.info(
                 "unable to construct meta data for "
@@ -224,7 +229,7 @@ def get_redacted_table(model: dict, collated_assessment: DataFrame) -> DataFrame
     queries: list[str] = get_queries_from_collated_risk(
         collated_assessment, kwargs["aggfunc"]
     )
-    relevant_data: DataFrame = get_relevant_dataframe(args, kwargs, variable_metadata)
+    relevant_data: DataFrame = get_relevant_dataframe(args, kwargs)
     redacted_data: DataFrame = get_redacted_data(relevant_data, queries)
     # ensure missing categories are present
     for name in list(redacted_data):
@@ -297,12 +302,11 @@ def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
     return parts
 
 
-def get_relevant_dataframe(
-    args: list, kwargs: dict[str, Any], metadata: dict
-) -> DataFrame:
+def get_relevant_dataframe(args: list, kwargs: dict[str, Any]) -> DataFrame:
     """Extract copy of data relevant to crosstab into new DataFrame.
 
-    Assumes preprocessing has happenededindex and columns in args should both have been converted into lists of Series
+    Assumes preprocessing has happeneded, so
+    index and columns in args should both have been converted into lists of Series
 
     Parameters
     ----------
@@ -311,8 +315,6 @@ def get_relevant_dataframe(
         should have already been converted to lists
     kwargs : dict
         kwargs for crosstab function
-    metadata : dict
-        information for creating categorical datatypes so as to preserve possible values
 
     Returns
     -------

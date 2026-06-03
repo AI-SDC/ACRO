@@ -25,11 +25,10 @@ from .table_utils import (
     axis_to_list,
     collate_risk_assessments,
     get_debugging_table_analysis,
-    get_modeldict_for_array,
-    get_modeldict_for_table,
+    get_redacted_pivottable,
     get_redacted_table,
-    get_variable_type_dict,
 )
+from .tablemodeldetails import TableModelDetails
 
 logger = logging.getLogger("acro")
 
@@ -130,6 +129,7 @@ class Tables:
         logger.debug("crosstab()")
         command: str = utils.get_command("crosstab()", stack())
         _ = show_suppressed  # hide complaint about unused legacy variable
+        _ = dropna  # hide complaint about unused param
 
         # syntax checking
         if aggfunc is not None:
@@ -153,14 +153,23 @@ class Tables:
             "aggfunc": aggfunc,
             "margins": margins,
             "margins_name": margins_name,
-            "dropna": dropna,
+            "dropna": False,  # enforced for SDC reasons
             "normalize": normalize,
         }
-        # enforce dropna=False for SDC reasons
-        kwargs["dropna"] = False
 
-        modeldict = get_modeldict_for_table(args, kwargs, self.sdc_checks.risk_appetite)
-
+        model_details = TableModelDetails(
+            index=index,
+            columns=columns,
+            values=kwargs["values"],
+            thekwargs=kwargs,
+            risk_appetite=self.sdc_checks.risk_appetite,
+            command="crosstab",
+        )
+        # for i,series in enumerate(index):
+        #     logger.info(f'index series level {i} is {series.name}')
+        # for i,series in enumerate(model_details.index):
+        #     logger.info(f'in model_details index series level {i} is {series.name}')
+        # logger.info(f'model details dimension names are: {model_details.get_dimension_names()}')
         ## requested table
         table: DataFrame = pd.crosstab(*args, **kwargs)
         analysis_names: list[str] = aggfunc_to_strings(aggfunc)
@@ -169,7 +178,7 @@ class Tables:
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
             collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(analysis, modeldict)
+                self.sdc_checks.run_checks_for_analysis(analysis, model_details)
             )
 
         logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
@@ -181,10 +190,10 @@ class Tables:
         overall_status: str = collatedres.get_overall_status()
         allsummary: str = collatedres.get_overall_summary()
         fair_dict = collatedres.get_overall_fair()
-        fair_dict.update(get_variable_type_dict(modeldict["variable_metadata"]))
+        fair_dict.update(model_details.get_variable_type_dict())
 
         if self.suppress:
-            table = get_redacted_table(modeldict, collated_assessment)
+            table = get_redacted_table(model_details, collated_assessment)
 
         # record output
         self.results.add(
@@ -220,6 +229,7 @@ class Tables:
         margins_name: str = "All",
         observed: bool = False,
         sort: bool = True,
+        **kwargs: dict,
     ) -> DataFrame:
         """Create a spreadsheet-style pivot table as a DataFrame.
 
@@ -266,274 +276,350 @@ class Tables:
             all values for categorical groupers.
         sort : bool, default True
             Specifies if the result should be sorted.
+        **kwargs : dict|None default =None
+            Optional keyword arguments to pass to aggfunc.
 
         Returns
         -------
         DataFrame
             Cross tabulation of the data.
         """
+        _ = dropna  # hide complaint about unused param
+
         logger.debug("pivot_table()")
+        command: str = utils.get_command("pivot_table()", stack())
 
-        # command: str = utils.get_command("pivot_table()", stack())
+        # syntax checking
+        if values is None:
+            raise ValueError(
+                "You must  specify at least one values column "
+                "to report statistics about."
+            )
 
-        # When rounding, compute the table without pandas-managed margins
-        # and re-derive them from the rounded cells; see append_rounded_margins()
-        # / Jim Smith's review on PR #381.
+        if isinstance(values, list):
+            raise ValueError(
+                "Specifying multiple values columns is not currently supported."
+            )
 
-        # recompute_margins = margins and self._mitigation == "round"
-        # pandas_margins = False if recompute_margins else margins
-        pandas_margins = margins  # TODO REMIOVE
+        # standardise format to simplify later code
+        index = axis_to_list(index)
+        columns = axis_to_list(columns)
 
-        # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
-        # resolved_aggfunc: (
-        #    str | Callable[..., Any] | list[str | Callable[..., Any]] | None
-        # ) = get_aggfuncs(aggfunc)
-        # n_agg: int = (
-        #    1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
-        # )
+        # save list and dict to reduce code clutter
 
-        # requested table
-        table: DataFrame = pd.pivot_table(
-            data,
-            values,
-            index,
-            columns,
-            aggfunc,  # resolved_aggfunc,
-            fill_value,
-            pandas_margins,
-            dropna,
-            margins_name,
-            observed,
-            sort,
+        thiskwargs = {
+            "values": values,
+            "index": index,
+            "columns": columns,
+            "aggfunc": aggfunc,
+            "fill_value": fill_value,
+            "margins": margins,
+            "dropna": False,  # forced for sdc reasons
+            "margins_name": margins_name,
+            "observed": observed,
+            "sort": sort,
+        }
+        thiskwargs.update(kwargs)
+        series_index, series_columns = [], []
+        for name in index:
+            series_index.append(data[name])
+        for name in columns:
+            series_columns.append(data[name])
+
+        model_details = TableModelDetails(
+            index=series_index,
+            columns=series_columns,
+            values=data[values],
+            thekwargs=thiskwargs,
+            risk_appetite=self.sdc_checks.risk_appetite,
+            command="pivot_table",
         )
 
-        # # delete empty rows and columns from table
-        # table, comments = delete_empty_rows_columns(table)
+        table: DataFrame = pd.pivot_table(data, **thiskwargs)
+        analysis_names: list[str] = aggfunc_to_strings(aggfunc)
 
-        # # suppression masks to apply based on the following checks
-        # masks: dict[str, DataFrame] = {}
+        # copy-pastes from crosstab below
+        ## run the checks and get the masks
+        collatedres = ManyChecksResults()
+        for analysis in analysis_names:
+            collatedres.allchecksresults[analysis] = (
+                self.sdc_checks.run_checks_for_analysis(analysis, model_details)
+            )
 
-        # # threshold check
-        # agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
-        # t_values = pd.pivot_table(
-        #     data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
-        # )
-        # masks["threshold"] = t_values
+        logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
 
-        # if resolved_aggfunc is not None:
-        #     # check for negative values -- currently unsupported
-        #     agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
-        #     negative = pd.pivot_table(
-        #         data,
-        #         values,
-        #         index,
-        #         columns,
-        #         aggfunc=agg,
-        #         margins=margins,
-        #         dropna=dropna,
-        #     )
-        #     if negative.to_numpy().sum() > 0:
-        #         masks["negative"] = negative
-        #     # p-percent check
-        #     agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
-        #     masks["p-ratio"] = pd.pivot_table(
-        #         data,
-        #         values,
-        #         index,
-        #         columns,
-        #         aggfunc=agg,
-        #         margins=margins,
-        #         dropna=dropna,
-        #     )
-        #     # nk values check
-        #     agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
-        #     masks["nk-rule"] = pd.pivot_table(
-        #         data,
-        #         values,
-        #         index,
-        #         columns,
-        #         aggfunc=agg,
-        #         margins=margins,
-        #         dropna=dropna,
-        #     )
-        #     # check for missing values -- currently unsupported
-        #     if CHECK_MISSING_VALUES:
-        #         agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
-        #         masks["missing"] = pd.pivot_table(
-        #             data,
-        #             values,
-        #             index,
-        #             columns,
-        #             aggfunc=agg,
-        #             margins=margins,
-        #             dropna=dropna,
-        #         )
+        collated_assessment = collate_risk_assessments(
+            table, collatedres.allchecksresults
+        )
+        sdc_details: dict = collatedres.get_table_sdc()
+        overall_status: str = collatedres.get_overall_status()
+        allsummary: str = collatedres.get_overall_summary()
+        fair_dict = collatedres.get_overall_fair()
+        fair_dict.update(model_details.get_variable_type_dict())
 
-        # # pd.pivot_table returns nan for an empty cell
-        # for name, mask in masks.items():
-        #     mask.fillna(value=1, inplace=True)
-        #     mask = mask.astype(int)
-        #     mask.replace({0: False, 1: True}, inplace=True)
-        #     masks[name] = mask
+        if self.suppress:
+            table = get_redacted_pivottable(model_details, collated_assessment)
 
-        # # build the sdc dictionary
-        # sdc: dict = get_table_sdc(
-        #     masks,
-        #     self.suppress,
-        #     table,
-        #     mitigation=self._mitigation,
-        #     round_base=self._round_base,
-        # )
-        # # get the status and summary
-        # status, summary = get_summary(sdc)
-        # # apply the suppression
-        # safe_table, outcome = apply_suppression(table, masks)
-        # if self._mitigation == "suppress":
-        #     table = safe_table
-        #     if margins:
-        #         logger.info(
-        #             "Disclosive cells were deleted from the dataframe "
-        #             "before calculating the pivot table"
-        #         )
-        #         table = crosstab_with_totals(
-        #             masks=masks,
-        #             aggfunc=resolved_aggfunc,
-        #             index=index,
-        #             columns=columns,
-        #             values=values,
-        #             margins=margins,
-        #             margins_name=margins_name,
-        #             dropna=dropna,
-        #             crosstab=False,
-        #             data=data,
-        #             fill_value=fill_value,
-        #             observed=observed,
-        #             sort=sort,
-        #         )
-        #     sdc = get_table_sdc(
-        #         masks,
-        #         self.suppress,
-        #         table,
-        #         mitigation=self._mitigation,
-        #         round_base=self._round_base,
-        #     )
-        # elif self._mitigation == "round":
-        #     table = round_table(table, self._round_base)
-        #     if recompute_margins:
-        #         table = append_rounded_margins(
-        #             table, resolved_aggfunc, margins_name, self._round_base
-        #         )
-        # self._record_table_output(
-        #     method="pivot_table",
-        #     status=status,
-        #     sdc=sdc,
-        #     command=command,
-        #     summary=summary,
-        #     outcome=outcome,
-        #     table=table,
-        #     comments=comments,
-        # )
+        # record output
+        self.results.add(
+            status=overall_status,
+            output_type="table",
+            properties={"method": "pivot_table"},
+            sdc=sdc_details,
+            fair=fair_dict,
+            command=command,
+            summary=allsummary,
+            outcome=collated_assessment,
+            output=[table],
+            comments=[],
+        )
+        if self.suppress:
+            justadded = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                justadded, "Suppression automatically applied where needed"
+            )
+
         return table
 
-    def surv_func(
-        self,
-        time: Any,
-        status: Any,
-        output: str,
-        entry: Any = None,
-        title: Any = None,
-        freq_weights: Any = None,
-        exog: Any = None,
-        bw_factor: float = 1.0,
-        filename: str = "kaplan-meier.png",
-    ) -> DataFrame | tuple[Any, str] | None:
-        """Estimate the survival function.
+    # copy-pasted from crosstab above
 
-        Parameters
-        ----------
-        time : array_like
-            An array of times (censoring times or event times)
-        status : array_like
-            Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning
-            that the event occurs at the given value in time; status==0 indicatesthat censoring
-            has occurred, meaning that the event occurs after the given value in time.
-        output : str
-            A string determine the type of output. Available options are ‘table’, ‘plot’.
-        entry : array_like, optional An array of entry times for handling
-            left truncation (the subject is not in the risk set on or before the entry time)
-        title : str
-            Optional title used for plots and summary output.
-        freq_weights : array_like
-            Optional frequency weights
-        exog : array_like
-            Optional, if present used to account for violation of independent censoring.
-        bw_factor : float
-            Band-width multiplier for kernel-based estimation. Only used if exog is provided.
-        filename : str
-            The name of the file where the plot will be saved. Only used if the output
-            is a plot.
+    # When rounding, compute the table without pandas-managed margins
+    # and re-derive them from the rounded cells; see append_rounded_margins()
+    # / Jim Smith's review on PR #381.
 
-        Returns
-        -------
-        DataFrame
-            The survival table.
-        """
-        logger.debug("surv_func()")
-        # command: str = utils.get_command("surv_func()", stack())
-        # survival_func: Any = sm.SurvfuncRight(
-        #     time,
-        #     status,
-        #     entry,
-        #     title,
-        #     freq_weights,
-        #     exog,
-        #     bw_factor,
-        # )
-        # masks = {}
-        # survival_table = survival_func.summary()
-        # t_values = (
-        #     survival_table["num at risk"].shift(periods=1)
-        #     - survival_table["num at risk"]
-        # )
-        # t_values = t_values < SURVIVAL_THRESHOLD
-        # masks["threshold"] = t_values
-        # masks["threshold"] = masks["threshold"].to_frame()
+    # recompute_margins = margins and self._mitigation == "round"
+    # pandas_margins = False if recompute_margins else margins
+    # pandas_margins = margins  # TODO REMOVE ONCE ROUNDING IN PLACE
 
-        # masks["threshold"].insert(0, "Surv prob", t_values, True)
-        # masks["threshold"].insert(1, "Surv prob SE", t_values, True)
-        # masks["threshold"].insert(3, "num events", t_values, True)
+    # requested table
 
-        # # build the sdc dictionary
-        # sdc: dict = get_table_sdc(masks, self.suppress, survival_table)
-        # # get the status and summary
-        # status, summary = get_summary(sdc)
-        # # apply the suppression
-        # safe_table, outcome = apply_suppression(survival_table, masks)
+    # # delete empty rows and columns from table
+    # table, comments = delete_empty_rows_columns(table)
 
-        # # record output
-        # if output == "table":
-        #     table = self.survival_table(
-        #         survival_table, safe_table, status, sdc, command, summary, outcome
-        #     )
-        #     return table
-        # if output == "plot":
-        #     plot_result = self.survival_plot(
-        #         survival_table,
-        #         survival_func,
-        #         filename,
-        #         status,
-        #         sdc,
-        #         command,
-        #         summary,
-        #     )
-        #     if plot_result is None:
-        #         raise AssertionError(
-        #             "plot_result must be set when applying survival plot queries"
-        #         )
-        #     plot, output_filename = plot_result
-        #     return (plot, output_filename)
-        # return None
-        return pd.Dataframe()  # remove once supported
+    # # suppression masks to apply based on the following checks
+    # masks: dict[str, DataFrame] = {}
+
+    # # threshold check
+    # agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
+    # t_values = pd.pivot_table(
+    #     data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
+    # )
+    # masks["threshold"] = t_values
+
+    # if resolved_aggfunc is not None:
+    #     # check for negative values -- currently unsupported
+    #     agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
+    #     negative = pd.pivot_table(
+    #         data,
+    #         values,
+    #         index,
+    #         columns,
+    #         aggfunc=agg,
+    #         margins=margins,
+    #         dropna=dropna,
+    #     )
+    #     if negative.to_numpy().sum() > 0:
+    #         masks["negative"] = negative
+    #     # p-percent check
+    #     agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
+    #     masks["p-ratio"] = pd.pivot_table(
+    #         data,
+    #         values,
+    #         index,
+    #         columns,
+    #         aggfunc=agg,
+    #         margins=margins,
+    #         dropna=dropna,
+    #     )
+    #     # nk values check
+    #     agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
+    #     masks["nk-rule"] = pd.pivot_table(
+    #         data,
+    #         values,
+    #         index,
+    #         columns,
+    #         aggfunc=agg,
+    #         margins=margins,
+    #         dropna=dropna,
+    #     )
+    #     # check for missing values -- currently unsupported
+    #     if CHECK_MISSING_VALUES:
+    #         agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
+    #         masks["missing"] = pd.pivot_table(
+    #             data,
+    #             values,
+    #             index,
+    #             columns,
+    #             aggfunc=agg,
+    #             margins=margins,
+    #             dropna=dropna,
+    #         )
+
+    # # pd.pivot_table returns nan for an empty cell
+    # for name, mask in masks.items():
+    #     mask.fillna(value=1, inplace=True)
+    #     mask = mask.astype(int)
+    #     mask.replace({0: False, 1: True}, inplace=True)
+    #     masks[name] = mask
+
+    # # build the sdc dictionary
+    # sdc: dict = get_table_sdc(
+    #     masks,
+    #     self.suppress,
+    #     table,
+    #     mitigation=self._mitigation,
+    #     round_base=self._round_base,
+    # )
+    # # get the status and summary
+    # status, summary = get_summary(sdc)
+    # # apply the suppression
+    # safe_table, outcome = apply_suppression(table, masks)
+    # if self._mitigation == "suppress":
+    #     table = safe_table
+    #     if margins:
+    #         logger.info(
+    #             "Disclosive cells were deleted from the dataframe "
+    #             "before calculating the pivot table"
+    #         )
+    #         table = crosstab_with_totals(
+    #             masks=masks,
+    #             aggfunc=resolved_aggfunc,
+    #             index=index,
+    #             columns=columns,
+    #             values=values,
+    #             margins=margins,
+    #             margins_name=margins_name,
+    #             dropna=dropna,
+    #             crosstab=False,
+    #             data=data,
+    #             fill_value=fill_value,
+    #             observed=observed,
+    #             sort=sort,
+    #         )
+    #     sdc = get_table_sdc(
+    #         masks,
+    #         self.suppress,
+    #         table,
+    #         mitigation=self._mitigation,
+    #         round_base=self._round_base,
+    #     )
+    # elif self._mitigation == "round":
+    #     table = round_table(table, self._round_base)
+    #     if recompute_margins:
+    #         table = append_rounded_margins(
+    #             table, resolved_aggfunc, margins_name, self._round_base
+    #         )
+    # self._record_table_output(
+    #     method="pivot_table",
+    #     status=status,
+    #     sdc=sdc,
+    #     command=command,
+    #     summary=summary,
+    #     outcome=outcome,
+    #     table=table,
+    #     comments=comments,
+    # )
+    # return table
+
+    # def surv_func(
+    #     self,
+    #     time: Any,
+    #     status: Any,
+    #     output: str,
+    #     entry: Any = None,
+    #     title: Any = None,
+    #     freq_weights: Any = None,
+    #     exog: Any = None,
+    #     bw_factor: float = 1.0,
+    #     filename: str = "kaplan-meier.png",
+    # ) -> DataFrame | tuple[Any, str] | None:
+    #     """Estimate the survival function.
+
+    #     Parameters
+    #     ----------
+    #     time : array_like
+    #         An array of times (censoring times or event times)
+    #     status : array_like
+    #         Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning
+    #         that the event occurs at the given value in time; status==0 indicatesthat censoring
+    #         has occurred, meaning that the event occurs after the given value in time.
+    #     output : str
+    #         A string determine the type of output. Available options are ‘table’, ‘plot’.
+    #     entry : array_like, optional An array of entry times for handling
+    #         left truncation (the subject is not in the risk set on or before the entry time)
+    #     title : str
+    #         Optional title used for plots and summary output.
+    #     freq_weights : array_like
+    #         Optional frequency weights
+    #     exog : array_like
+    #         Optional, if present used to account for violation of independent censoring.
+    #     bw_factor : float
+    #         Band-width multiplier for kernel-based estimation. Only used if exog is provided.
+    #     filename : str
+    #         The name of the file where the plot will be saved. Only used if the output
+    #         is a plot.
+
+    #     Returns
+    #     -------
+    #     DataFrame
+    #         The survival table.
+    #     """
+    #     logger.debug("surv_func()")
+    # command: str = utils.get_command("surv_func()", stack())
+    # survival_func: Any = sm.SurvfuncRight(
+    #     time,
+    #     status,
+    #     entry,
+    #     title,
+    #     freq_weights,
+    #     exog,
+    #     bw_factor,
+    # )
+    # masks = {}
+    # survival_table = survival_func.summary()
+    # t_values = (
+    #     survival_table["num at risk"].shift(periods=1)
+    #     - survival_table["num at risk"]
+    # )
+    # t_values = t_values < SURVIVAL_THRESHOLD
+    # masks["threshold"] = t_values
+    # masks["threshold"] = masks["threshold"].to_frame()
+
+    # masks["threshold"].insert(0, "Surv prob", t_values, True)
+    # masks["threshold"].insert(1, "Surv prob SE", t_values, True)
+    # masks["threshold"].insert(3, "num events", t_values, True)
+
+    # # build the sdc dictionary
+    # sdc: dict = get_table_sdc(masks, self.suppress, survival_table)
+    # # get the status and summary
+    # status, summary = get_summary(sdc)
+    # # apply the suppression
+    # safe_table, outcome = apply_suppression(survival_table, masks)
+
+    # # record output
+    # if output == "table":
+    #     table = self.survival_table(
+    #         survival_table, safe_table, status, sdc, command, summary, outcome
+    #     )
+    #     return table
+    # if output == "plot":
+    #     plot_result = self.survival_plot(
+    #         survival_table,
+    #         survival_func,
+    #         filename,
+    #         status,
+    #         sdc,
+    #         command,
+    #         summary,
+    #     )
+    #     if plot_result is None:
+    #         raise AssertionError(
+    #             "plot_result must be set when applying survival plot queries"
+    #         )
+    #     plot, output_filename = plot_result
+    #     return (plot, output_filename)
+    # return None
+    # return pd.Dataframe()  # remove once supported
 
     def survival_table(
         self,
@@ -690,10 +776,7 @@ class Tables:
         in a wide-spread column produced empty tail bins.
         """
         logger.debug("hist()")
-        # passed_kwargs=locals().copy()
-        # _=passed_kwargs.pop('data',None)
-        # _=passed_kwargs.pop('self',None)
-        # logger.info(f'{passed_kwargs}')
+
         if utils.is_blocked_extension(filename, self.results.blocked_extensions):
             return None
         command: str = utils.get_command("hist()", stack())
@@ -724,8 +807,8 @@ class Tables:
         oldway = False
         status: str = ""
         if oldway:
-            col_min = float(col_series.min())
-            col_max = float(col_series.max())
+            # col_min = float(col_series.min())
+            # col_max = float(col_series.max())
             # masks, bin_edges, freq, left_count, right_count = _build_histogram_masks(
             #     col_series, bins, col_min, col_max
             # )
@@ -754,18 +837,21 @@ class Tables:
 
         else:  # ontology-driven
             analysis = "Histogram"
-            modeldict = get_modeldict_for_array(
-                data[column], self.sdc_checks.risk_appetite
+            model_details = TableModelDetails(
+                index=[data[column]],
+                thekwargs={"bins": bins},
+                risk_appetite=self.sdc_checks.risk_appetite,
+                command="hist",
             )
             collatedres = ManyChecksResults()
             collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(analysis, modeldict)
+                self.sdc_checks.run_checks_for_analysis(analysis, model_details)
             )
 
             sdc_details: dict = collatedres.get_table_sdc()
             status = collatedres.get_overall_status()
             fair_dict = collatedres.get_overall_fair()
-            fair_dict.update(get_variable_type_dict(modeldict["variable_metadata"]))
+            fair_dict.update(model_details.get_variable_type_dict())
             summary = collatedres.get_overall_summary()
 
         # plot the histogram (skip when suppressed and disclosive)
@@ -775,7 +861,7 @@ class Tables:
                 column,
             )
             summary = summary + "Disclosive Histogram Redacted."
-            output: list = []
+            # output: list = []
             unique_filename = ""
         else:  # pragma: no cover
             summary += "Please also check bin ends and empty bins are not disclosive."
@@ -858,16 +944,22 @@ class Tables:
 
         ## run the checks and get the masks
         analysis = "PieChart"
-        modeldict = get_modeldict_for_array(data[column], self.sdc_checks.risk_appetite)
+        model_details = TableModelDetails(
+            index=[data[column]],
+            thekwargs=dict(kwargs),
+            risk_appetite=self.sdc_checks.risk_appetite,
+            command="pie",
+        )
+        # modeldict = get_modeldict_for_array(data[column], self.sdc_checks.risk_appetite)
         collatedres = ManyChecksResults()
         collatedres.allchecksresults[analysis] = (
-            self.sdc_checks.run_checks_for_analysis(analysis, modeldict)
+            self.sdc_checks.run_checks_for_analysis(analysis, model_details)
         )
 
         sdc_details: dict = collatedres.get_table_sdc()
         overall_status: str = collatedres.get_overall_status()
         fair_dict = collatedres.get_overall_fair()
-        fair_dict.update(get_variable_type_dict(modeldict["variable_metadata"]))
+        fair_dict.update(model_details.get_variable_type_dict())
         summary = collatedres.get_overall_summary()
 
         if self.suppress and overall_status == "Fail":

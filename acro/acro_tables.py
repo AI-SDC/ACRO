@@ -9,15 +9,12 @@ from collections.abc import Callable
 from inspect import stack
 from typing import Any
 
-# import old_table_functions as old
 import pandas as pd
 from matplotlib import pyplot as plt
 from pandas import DataFrame
+import statsmodels.api as sm
 
 from . import utils
-from .aggregationfunctions import (
-    agg_mode,
-)
 from .checks import ManyChecksResults, SDCChecks
 from .record import Records
 from .table_utils import (
@@ -33,23 +30,13 @@ from .tablemodeldetails import TableModelDetails
 logger = logging.getLogger("acro")
 
 
-AGGFUNC: dict[str, str | Callable] = {
-    "mean": "mean",
-    "median": "median",
-    "sum": "sum",
-    "std": "std",
-    "count": "count",
-    "mode": agg_mode,
-}
-
-
 # aggregation function parameters
-THRESHOLD: int = 10
-SAFE_PRATIO_P: float = 0.1
-SAFE_NK_N: int = 2
-SAFE_NK_K: float = 0.9
-CHECK_MISSING_VALUES: bool = False
-ZEROS_ARE_DISCLOSIVE: bool = True
+# THRESHOLD: int = 10
+# SAFE_PRATIO_P: float = 0.1
+# SAFE_NK_N: int = 2
+# SAFE_NK_K: float = 0.9
+# CHECK_MISSING_VALUES: bool = False
+# ZEROS_ARE_DISCLOSIVE: bool = True
 
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
@@ -132,7 +119,7 @@ class Tables:
         _ = dropna  # hide complaint about unused param
 
         # syntax checking
-        if aggfunc is not None:
+        if (aggfunc is not None):
             if values is None or isinstance(values, list):
                 raise ValueError(
                     "If you pass an aggregation function to crosstab "
@@ -165,16 +152,12 @@ class Tables:
             risk_appetite=self.sdc_checks.risk_appetite,
             command="crosstab",
         )
-        # for i,series in enumerate(index):
-        #     logger.info(f'index series level {i} is {series.name}')
-        # for i,series in enumerate(model_details.index):
-        #     logger.info(f'in model_details index series level {i} is {series.name}')
-        # logger.info(f'model details dimension names are: {model_details.get_dimension_names()}')
-        ## requested table
+
+        #make the requested table
         table: DataFrame = pd.crosstab(*args, **kwargs)
-        analysis_names: list[str] = aggfunc_to_strings(aggfunc)
 
         ## run the checks and get the masks
+        analysis_names: list[str] = aggfunc_to_strings(aggfunc)
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
             collatedres.allchecksresults[analysis] = (
@@ -186,9 +169,7 @@ class Tables:
         collated_assessment = collate_risk_assessments(
             table, collatedres.allchecksresults
         )
-        sdc_details: dict = collatedres.get_table_sdc()
-        overall_status: str = collatedres.get_overall_status()
-        allsummary: str = collatedres.get_overall_summary()
+
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
 
@@ -197,13 +178,13 @@ class Tables:
 
         # record output
         self.results.add(
-            status=overall_status,
+            status=collatedres.get_overall_status(),
             output_type="table",
             properties={"method": "crosstab"},
-            sdc=sdc_details,
+            sdc=collatedres.get_table_sdc(),
             fair=fair_dict,
             command=command,
-            summary=allsummary,
+            summary=collatedres.get_overall_summary(),
             outcome=collated_assessment,
             output=[table],
             comments=[],
@@ -213,6 +194,7 @@ class Tables:
             self.results.add_exception(
                 justadded, "Suppression automatically applied where needed"
             )
+            self.results.results[justadded].status="review"
 
         return table
 
@@ -306,7 +288,6 @@ class Tables:
         columns = axis_to_list(columns)
 
         # save list and dict to reduce code clutter
-
         thiskwargs = {
             "values": values,
             "index": index,
@@ -320,6 +301,7 @@ class Tables:
             "sort": sort,
         }
         thiskwargs.update(kwargs)
+
         series_index, series_columns = [], []
         for name in index:
             series_index.append(data[name])
@@ -335,11 +317,11 @@ class Tables:
             command="pivot_table",
         )
 
+        #make the reuested pivot table
         table: DataFrame = pd.pivot_table(data, **thiskwargs)
-        analysis_names: list[str] = aggfunc_to_strings(aggfunc)
 
-        # copy-pastes from crosstab below
         ## run the checks and get the masks
+        analysis_names: list[str] = aggfunc_to_strings(aggfunc)
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
             collatedres.allchecksresults[analysis] = (
@@ -351,9 +333,8 @@ class Tables:
         collated_assessment = collate_risk_assessments(
             table, collatedres.allchecksresults
         )
-        sdc_details: dict = collatedres.get_table_sdc()
-        overall_status: str = collatedres.get_overall_status()
-        allsummary: str = collatedres.get_overall_summary()
+
+
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
 
@@ -362,13 +343,13 @@ class Tables:
 
         # record output
         self.results.add(
-            status=overall_status,
+            status=collatedres.get_overall_status(),
             output_type="table",
             properties={"method": "pivot_table"},
-            sdc=sdc_details,
+            sdc=collatedres.get_table_sdc(),
             fair=fair_dict,
             command=command,
-            summary=allsummary,
+            summary=collatedres.get_overall_summary(),
             outcome=collated_assessment,
             output=[table],
             comments=[],
@@ -378,311 +359,146 @@ class Tables:
             self.results.add_exception(
                 justadded, "Suppression automatically applied where needed"
             )
+            self.results.results[justadded].status="review"
 
         return table
 
-    # copy-pasted from crosstab above
+ 
 
-    # When rounding, compute the table without pandas-managed margins
-    # and re-derive them from the rounded cells; see append_rounded_margins()
-    # / Jim Smith's review on PR #381.
-
-    # recompute_margins = margins and self._mitigation == "round"
-    # pandas_margins = False if recompute_margins else margins
-    # pandas_margins = margins  # TODO REMOVE ONCE ROUNDING IN PLACE
-
-    # requested table
-
-    # # delete empty rows and columns from table
-    # table, comments = delete_empty_rows_columns(table)
-
-    # # suppression masks to apply based on the following checks
-    # masks: dict[str, DataFrame] = {}
-
-    # # threshold check
-    # agg = [agg_threshold] * n_agg if n_agg > 1 else agg_threshold
-    # t_values = pd.pivot_table(
-    #     data, values, index, columns, aggfunc=agg, margins=margins, dropna=dropna
-    # )
-    # masks["threshold"] = t_values
-
-    # if resolved_aggfunc is not None:
-    #     # check for negative values -- currently unsupported
-    #     agg = [agg_negative] * n_agg if n_agg > 1 else agg_negative
-    #     negative = pd.pivot_table(
-    #         data,
-    #         values,
-    #         index,
-    #         columns,
-    #         aggfunc=agg,
-    #         margins=margins,
-    #         dropna=dropna,
-    #     )
-    #     if negative.to_numpy().sum() > 0:
-    #         masks["negative"] = negative
-    #     # p-percent check
-    #     agg = [agg_p_percent] * n_agg if n_agg > 1 else agg_p_percent
-    #     masks["p-ratio"] = pd.pivot_table(
-    #         data,
-    #         values,
-    #         index,
-    #         columns,
-    #         aggfunc=agg,
-    #         margins=margins,
-    #         dropna=dropna,
-    #     )
-    #     # nk values check
-    #     agg = [agg_nk] * n_agg if n_agg > 1 else agg_nk
-    #     masks["nk-rule"] = pd.pivot_table(
-    #         data,
-    #         values,
-    #         index,
-    #         columns,
-    #         aggfunc=agg,
-    #         margins=margins,
-    #         dropna=dropna,
-    #     )
-    #     # check for missing values -- currently unsupported
-    #     if CHECK_MISSING_VALUES:
-    #         agg = [agg_missing] * n_agg if n_agg > 1 else agg_missing
-    #         masks["missing"] = pd.pivot_table(
-    #             data,
-    #             values,
-    #             index,
-    #             columns,
-    #             aggfunc=agg,
-    #             margins=margins,
-    #             dropna=dropna,
-    #         )
-
-    # # pd.pivot_table returns nan for an empty cell
-    # for name, mask in masks.items():
-    #     mask.fillna(value=1, inplace=True)
-    #     mask = mask.astype(int)
-    #     mask.replace({0: False, 1: True}, inplace=True)
-    #     masks[name] = mask
-
-    # # build the sdc dictionary
-    # sdc: dict = get_table_sdc(
-    #     masks,
-    #     self.suppress,
-    #     table,
-    #     mitigation=self._mitigation,
-    #     round_base=self._round_base,
-    # )
-    # # get the status and summary
-    # status, summary = get_summary(sdc)
-    # # apply the suppression
-    # safe_table, outcome = apply_suppression(table, masks)
-    # if self._mitigation == "suppress":
-    #     table = safe_table
-    #     if margins:
-    #         logger.info(
-    #             "Disclosive cells were deleted from the dataframe "
-    #             "before calculating the pivot table"
-    #         )
-    #         table = crosstab_with_totals(
-    #             masks=masks,
-    #             aggfunc=resolved_aggfunc,
-    #             index=index,
-    #             columns=columns,
-    #             values=values,
-    #             margins=margins,
-    #             margins_name=margins_name,
-    #             dropna=dropna,
-    #             crosstab=False,
-    #             data=data,
-    #             fill_value=fill_value,
-    #             observed=observed,
-    #             sort=sort,
-    #         )
-    #     sdc = get_table_sdc(
-    #         masks,
-    #         self.suppress,
-    #         table,
-    #         mitigation=self._mitigation,
-    #         round_base=self._round_base,
-    #     )
-    # elif self._mitigation == "round":
-    #     table = round_table(table, self._round_base)
-    #     if recompute_margins:
-    #         table = append_rounded_margins(
-    #             table, resolved_aggfunc, margins_name, self._round_base
-    #         )
-    # self._record_table_output(
-    #     method="pivot_table",
-    #     status=status,
-    #     sdc=sdc,
-    #     command=command,
-    #     summary=summary,
-    #     outcome=outcome,
-    #     table=table,
-    #     comments=comments,
-    # )
-    # return table
-
-    # def surv_func(
-    #     self,
-    #     time: Any,
-    #     status: Any,
-    #     output: str,
-    #     entry: Any = None,
-    #     title: Any = None,
-    #     freq_weights: Any = None,
-    #     exog: Any = None,
-    #     bw_factor: float = 1.0,
-    #     filename: str = "kaplan-meier.png",
-    # ) -> DataFrame | tuple[Any, str] | None:
-    #     """Estimate the survival function.
-
-    #     Parameters
-    #     ----------
-    #     time : array_like
-    #         An array of times (censoring times or event times)
-    #     status : array_like
-    #         Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning
-    #         that the event occurs at the given value in time; status==0 indicatesthat censoring
-    #         has occurred, meaning that the event occurs after the given value in time.
-    #     output : str
-    #         A string determine the type of output. Available options are ‘table’, ‘plot’.
-    #     entry : array_like, optional An array of entry times for handling
-    #         left truncation (the subject is not in the risk set on or before the entry time)
-    #     title : str
-    #         Optional title used for plots and summary output.
-    #     freq_weights : array_like
-    #         Optional frequency weights
-    #     exog : array_like
-    #         Optional, if present used to account for violation of independent censoring.
-    #     bw_factor : float
-    #         Band-width multiplier for kernel-based estimation. Only used if exog is provided.
-    #     filename : str
-    #         The name of the file where the plot will be saved. Only used if the output
-    #         is a plot.
-
-    #     Returns
-    #     -------
-    #     DataFrame
-    #         The survival table.
-    #     """
-    #     logger.debug("surv_func()")
-    # command: str = utils.get_command("surv_func()", stack())
-    # survival_func: Any = sm.SurvfuncRight(
-    #     time,
-    #     status,
-    #     entry,
-    #     title,
-    #     freq_weights,
-    #     exog,
-    #     bw_factor,
-    # )
-    # masks = {}
-    # survival_table = survival_func.summary()
-    # t_values = (
-    #     survival_table["num at risk"].shift(periods=1)
-    #     - survival_table["num at risk"]
-    # )
-    # t_values = t_values < SURVIVAL_THRESHOLD
-    # masks["threshold"] = t_values
-    # masks["threshold"] = masks["threshold"].to_frame()
-
-    # masks["threshold"].insert(0, "Surv prob", t_values, True)
-    # masks["threshold"].insert(1, "Surv prob SE", t_values, True)
-    # masks["threshold"].insert(3, "num events", t_values, True)
-
-    # # build the sdc dictionary
-    # sdc: dict = get_table_sdc(masks, self.suppress, survival_table)
-    # # get the status and summary
-    # status, summary = get_summary(sdc)
-    # # apply the suppression
-    # safe_table, outcome = apply_suppression(survival_table, masks)
-
-    # # record output
-    # if output == "table":
-    #     table = self.survival_table(
-    #         survival_table, safe_table, status, sdc, command, summary, outcome
-    #     )
-    #     return table
-    # if output == "plot":
-    #     plot_result = self.survival_plot(
-    #         survival_table,
-    #         survival_func,
-    #         filename,
-    #         status,
-    #         sdc,
-    #         command,
-    #         summary,
-    #     )
-    #     if plot_result is None:
-    #         raise AssertionError(
-    #             "plot_result must be set when applying survival plot queries"
-    #         )
-    #     plot, output_filename = plot_result
-    #     return (plot, output_filename)
-    # return None
-    # return pd.Dataframe()  # remove once supported
-
-    def survival_table(
+    def surv_func(
         self,
-        survival_table: DataFrame,
-        safe_table: DataFrame,
-        status: str,
-        sdc: dict,
-        command: str,
-        summary: str,
-        outcome: DataFrame,
-    ) -> DataFrame:
-        """Create the survival table according to the status of suppressing."""
-        if self.suppress:
-            survival_table = safe_table
-        self.results.add(
-            status=status,
-            output_type="table",
-            properties={"method": "surv_func"},
-            sdc=sdc,
-            command=command,
-            summary=summary,
-            outcome=outcome,
-            output=[survival_table],
+        time: Any,
+        status: Any,
+        output: str,
+        entry: Any = None,
+        title: Any = None,
+        freq_weights: Any = None,
+        exog: Any = None,
+        bw_factor: float = 1.0,
+        filename: str = "kaplan-meier.png",
+    ) -> DataFrame | tuple[Any, str] | None:
+        """Estimate the survival function.
+
+        Parameters
+        ----------
+        time : array_like
+            An array of times (censoring times or event times)
+        status : array_like
+            Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning
+            that the event occurs at the given value in time; status==0 indicatesthat censoring
+            has occurred, meaning that the event occurs after the given value in time.
+        output : str
+            A string determine the type of output. Available options are ‘table’, ‘plot’.
+        entry : array_like, optional An array of entry times for handling
+            left truncation (the subject is not in the risk set on or before the entry time)
+        title : str
+            Optional title used for plots and summary output.
+        freq_weights : array_like
+            Optional frequency weights
+        exog : array_like
+            Optional, if present used to account for violation of independent censoring.
+        bw_factor : float
+            Band-width multiplier for kernel-based estimation. Only used if exog is provided.
+        filename : str
+            The name of the file where the plot will be saved. Only used if the output
+            is a plot.
+
+        Returns
+        -------
+        DataFrame
+            The survival table.
+        """
+        logger.debug("surv_func()")
+        command: str = utils.get_command("surv_func()", stack())
+        survival_func: Any = sm.SurvfuncRight(
+            time,
+            status,
+            entry,
+            title,
+            freq_weights,
+            exog,
+            bw_factor,
         )
-        return survival_table
+        #make the requested model
+        survival_table:pd.DataFrame = survival_func.summary()
 
-    def survival_plot(
-        self,
-        survival_table: DataFrame,
-        survival_func: Any,
-        filename: str,
-        status: str,
-        sdc: dict,
-        command: str,
-        summary: str,
-    ) -> tuple[Any, str] | None:
-        """Create the survival plot according to the status of suppressing."""
-        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
-            return None
+        model_details= TableModelDetails(
+            index=[survival_table['num at risk']],
+            risk_appetite=self.sdc_checks.risk_appetite,
+            command="surv_func"
+        )
+        model_details.model_type="survival"
+        model_details.df_resid=len(status)-len(time.unique())
+
+        analysis ="KaplanMeier"
+        collatedres = ManyChecksResults()
+        collatedres.allchecksresults[analysis] = (
+                self.sdc_checks.run_checks_for_analysis(analysis, model_details)
+            )
+
+        #collated_assessment = collate_risk_assessments(
+        #    #survival_table['num at risk'], collatedres.allchecksresults
+        #    model_details,collatedres.allchecksresults
+        #)
+        fair_dict = collatedres.get_overall_fair()
+        fair_dict.update(model_details.get_variable_type_dict())
+
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
-            plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
-        else:  # pragma: no cover
-            plot = survival_func.plot()
 
-        unique_filename = utils.get_unique_artefact_filename(filename)
-        if unique_filename == "None":
-            return None
-        # save the plot to the acro artifacts directory
-        plt.savefig(unique_filename)
+        if output=='table':       
+            # record output
+            self.results.add(
+                status=collatedres.get_overall_status(),
+                output_type="table",
+                properties={"method": "surv func"},
+                sdc=collatedres.get_table_sdc(),
+                fair=fair_dict,
+                command=command,
+                summary=collatedres.get_overall_summary(),
+                outcome=pd.DataFrame(),
+                output=[survival_table],
+                comments=[],
+            )
+            if self.suppress:
+                justadded = f"output_{self.results.output_id - 1}"
+                self.results.add_exception(
+                    justadded, "Events Reported when min_threshold accumulated"
+                )
+                self.results.results[justadded].status="review"
 
-        # record output
-        self.results.add(
-            status=status,
-            output_type="survival plot",
-            properties={"method": "surv_func"},
-            sdc=sdc,
-            command=command,
-            summary=summary,
-            outcome=pd.DataFrame(),
-            output=[os.path.normpath(unique_filename)],
-        )
-        return (plot, unique_filename)
+            return survival_table            
+            
+
+        if output == "plot":
+            if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+                return None            
+            if self.suppress:
+                plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
+            else:  # pragma: no cover
+                plot = survival_func.plot() 
+            
+            unique_filename = utils.get_unique_artefact_filename(filename)
+            if unique_filename == "None":
+                return None
+            # save the plot to the acro artifacts directory
+            plt.savefig(unique_filename)
+
+            # record output
+            self.results.add(
+                status=collatedres.get_overall_status(),
+                output_type="survival plot",
+                properties={"method": "surv_func"},
+                sdc=collatedres.get_table_sdc(),
+                command=command,
+                summary=collatedres.get_overall_summary(),
+                outcome=pd.DataFrame(),
+                output=[os.path.normpath(unique_filename)],
+            )
+            return (plot, unique_filename)
+        return None
+
+
 
     def hist(
         self,

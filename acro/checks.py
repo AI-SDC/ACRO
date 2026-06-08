@@ -56,10 +56,18 @@ class ManyChecksResults:
     allchecksresults: dict[str, ChecksResults] = field(default_factory=dict)
 
     def get_overall_summary(self) -> str:
-        """Get overall summary from multiple statistics."""
+        """Get overall summary from multiple statistics.
+        
+        Don't include details for tests that pass
+        """
         allsummary = ""
         for analysis, checksresults in self.allchecksresults.items():
-            allsummary += f"\n{analysis} : {checksresults.summaries}\n"
+            allsummary += f"\n{analysis} : "
+            logger.info(f'{analysis}')
+            for checksummary in checksresults.summaries.split('\n'):
+                logger.info(f'checksumary line {checksummary}')
+                if checksummary.split()[0]!='pass':
+                    allsummary += f'\n {checksummary}\n'
         return allsummary
 
     def get_overall_status(self) -> str:
@@ -92,16 +100,20 @@ class ManyChecksResults:
         checks_seen: list[str] = []
         for _analysis, checksresults in self.allchecksresults.items():
             for name, mask in checksresults.outcomes.items():
+                #logger.info(f' in get_table_sdc, name={name} mask= {mask}')
                 if name in checks_seen:
                     continue
                 checks_seen.append(name)
-                sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
                 sdc["cells"][name] = []
-                # positions of cells to be suppressed
-                true_positions = np.column_stack(np.where(mask.values))
-                for pos in true_positions:
-                    row_index, col_index = pos
-                    sdc["cells"][name].append([int(row_index), int(col_index)])
+                if name=="MinimumDoFCheck":
+                    sdc["summary"][name]= 0 if mask>0 else 1
+                else:
+                    sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
+                    # positions of cells to be suppressed
+                    true_positions = np.column_stack(np.where(mask.values))
+                    for pos in true_positions:
+                        row_index, col_index = pos
+                        sdc["cells"][name].append([int(row_index), int(col_index)])
 
         return sdc
 
@@ -131,7 +143,7 @@ def status_summary_from_mask(mask: pd.Dataframe) -> tuple[str, str]:
     mask = mask_to_boolmask(mask)
     truecount = int(np.nansum(mask.to_numpy()))
     status = "fail" if truecount > 0 else "pass"
-    # name of check that reated mask gets prepended to summary in run_checks()
+    # name of check that related mask gets prepended to summary in run_checks()
     summary = f"{status} - {truecount} cells may need suppressing.\n"
     return status, summary
 
@@ -350,9 +362,9 @@ class SDCChecks:
 
         sdc_dict = self.get_sdctokens_for_analysis(analysis_name)
 
-        logger.debug(f"details for analysis {analysis_name} are:")
+        logger.info(f"details for analysis {analysis_name} are:")
         for key, val in sdc_dict.items():
-            logger.debug(f"{key} : {val}")
+            logger.info(f"{key} : {val}")
 
         statuses: list = []
         summaries: list = []
@@ -402,14 +414,17 @@ class SDCChecks:
             the residual degrees of freedom.
         """
         status = "fail"
-        if not hasattr(model, "df_resid"):
+        if isinstance(model,TableModelDetails):
+            dof=model.df_resid
+        elif not hasattr(model, "df_resid"):
             return (
                 "fail",
                 "model does not have attribute df_resid so check could not run",
                 -1,
             )
 
-        dof: int = int(model.df_resid)
+        else:
+            dof: int = int(model.df_resid)
         threshold: int = int(self.risk_appetite["safe_dof_threshold"])
         if dof < threshold:
             status = "fail"
@@ -553,7 +568,7 @@ class SDCChecks:
         _ = name
 
         model_type = model.model_type
-        if model_type not in ["table", "array"]:
+        if model_type not in ["table", "array","survival"]:
             logger.info("model type recognised or not present in model descriptor")
             return (
                 "fail",
@@ -565,6 +580,9 @@ class SDCChecks:
                 "Review Notes: a manual check is needed for possible linked tables"
                 f" variables defining table are:  {model.get_dimension_names()}"
             )
+        if model_type=="survival":
+            summary= ("Review Notes: a manual check may be needed "
+                      "if related plots have been produced")
         return "review", summary, get_allfalse_mask(model)
 
     def check_nk_dominance(

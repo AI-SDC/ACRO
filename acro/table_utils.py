@@ -195,9 +195,13 @@ def get_redacted_table(
     queries: list[str] = get_queries_from_collated_risk(
         collated_assessment, kwargs["aggfunc"]
     )
-    relevant_data: DataFrame = get_relevant_dataframe(args, kwargs)
+    relevant_data: DataFrame = get_relevant_dataframe(model)
+ 
+    print(f'in get_redacted_table list(relevant_data)=\n{list(relevant_data)}')
+
     redacted_data: DataFrame = get_redacted_data(relevant_data, queries)
     # ensure missing categories are present
+    print(f'in get_redacted_table list(redacted_data)=\n{list(redacted_data)}')
     for name in list(redacted_data):
         if variable_metadata[name]["type"] == DIMENSION_URI:
             cat_type = CategoricalDtype(
@@ -209,8 +213,10 @@ def get_redacted_table(
     newargs = translate_args_to_newdf(args, redacted_data)
     newkwargs: dict[str, Any] = copy.deepcopy(kwargs)
     newkwargs["dropna"] = False
-    if "values" in kwargs.keys() and kwargs["values"] is not None:
+    if isinstance(model.values,pd.Series) and len(model.values)>0:
         newkwargs["values"] = redacted_data[kwargs["values"].name]
+    else:
+        newkwargs['values']=None
     table = pd.crosstab(*newargs, **newkwargs)
     if model.risk_appetite["zeros_are_disclosive"]:
         table.replace({0: np.nan}, inplace=True)
@@ -228,7 +234,7 @@ def get_redacted_pivottable(
     queries: list[str] = get_queries_from_collated_risk(
         collated_assessment, kwargs["aggfunc"]
     )
-    relevant_data: DataFrame = get_relevant_dataframe(args, kwargs)
+    relevant_data: DataFrame = get_relevant_dataframe(model)
     redacted_data: DataFrame = get_redacted_data(relevant_data, queries)
     # ensure missing categories are present
     for name in list(redacted_data):
@@ -308,7 +314,7 @@ def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
     return parts
 
 
-def get_relevant_dataframe(args: tuple, kwargs: dict[str, Any]) -> DataFrame:
+def get_relevant_dataframe(model:TableModelDetails) -> DataFrame:
     """Extract copy of data relevant to crosstab into new DataFrame.
 
     Assumes preprocessing has happeneded, so
@@ -326,21 +332,30 @@ def get_relevant_dataframe(args: tuple, kwargs: dict[str, Any]) -> DataFrame:
     -------
     dataframe containing copies of pandas series need to calculate the  crosstab
     """
-    series_list: list = []
-    if "values" in kwargs.keys() and kwargs["values"] is not None:
-        series_list.append(kwargs["values"].copy())
-    if not (isinstance(args, tuple) and len(args) == 2):
-        print(f"args is of type {type(args)} and contents {args}\n")
-        raise ValueError("list passed as positional args has wrong type or length")
-    for contents in args:
-        if not isinstance(contents, list):
-            raise TypeError("index and columns should be lists")
-        for series in contents:
-            series_list.append(series.copy())
+    # series_list: list = []
+    # if "values" in kwargs.keys() and kwargs["values"] is not None:
+    #     series_list.append(kwargs["values"].copy())
+    # if not (isinstance(args, tuple) and len(args) == 2):
+    #     print(f"args is of type {type(args)} and contents {args}\n")
+    #     raise ValueError("list passed as positional args has wrong type or length")
+    # for contents in args:
+    #     if not isinstance(contents, list):
+    #         raise TypeError("index and columns should be lists")
+    #     for series in contents:
+    #         series_list.append(series.copy())
 
-    relevant_data = DataFrame(series_list).T
+    # relevant_data = DataFrame(series_list).T
+    # relevant_data.reset_index(drop=True, inplace=True)
+    # return relevant_data
+    if isinstance(model.values,pd.Series) and len(model.values)>0:
+        relevant_data=pd.DataFrame(model.values)
+    else:
+            relevant_data=pd.DataFrame()
+    for series in model.index:
+        relevant_data[series.name]=series
+    for series in model.columns:
+        relevant_data[series.name]=series
     return relevant_data
-
 
 def translate_args_to_newdf(arguments: tuple, redacted_data: DataFrame) -> list:
     """Translate arguments or keys from one data frame to another.

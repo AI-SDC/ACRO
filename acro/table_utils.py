@@ -196,12 +196,9 @@ def get_redacted_table(
         collated_assessment, kwargs["aggfunc"]
     )
     relevant_data: DataFrame = get_relevant_dataframe(model)
- 
-    print(f'in get_redacted_table list(relevant_data)=\n{list(relevant_data)}')
 
     redacted_data: DataFrame = get_redacted_data(relevant_data, queries)
     # ensure missing categories are present
-    print(f'in get_redacted_table list(redacted_data)=\n{list(redacted_data)}')
     for name in list(redacted_data):
         if variable_metadata[name]["type"] == DIMENSION_URI:
             cat_type = CategoricalDtype(
@@ -213,10 +210,10 @@ def get_redacted_table(
     newargs = translate_args_to_newdf(args, redacted_data)
     newkwargs: dict[str, Any] = copy.deepcopy(kwargs)
     newkwargs["dropna"] = False
-    if isinstance(model.values,pd.Series) and len(model.values)>0:
+    if isinstance(model.values, pd.Series) and len(model.values) > 0:
         newkwargs["values"] = redacted_data[kwargs["values"].name]
     else:
-        newkwargs['values']=None
+        newkwargs["values"] = None
     table = pd.crosstab(*newargs, **newkwargs)
     if model.risk_appetite["zeros_are_disclosive"]:
         table.replace({0: np.nan}, inplace=True)
@@ -228,7 +225,7 @@ def get_redacted_pivottable(
     model: TableModelDetails, collated_assessment: DataFrame
 ) -> DataFrame:
     """Redact table as needed then rereun the table query."""
-    args = model.get_crosstab_args()
+    # args = model.get_crosstab_args()
     kwargs = model.get_crosstab_kwargs()
     variable_metadata = model.variable_metadata
     queries: list[str] = get_queries_from_collated_risk(
@@ -246,15 +243,6 @@ def get_redacted_pivottable(
             redacted_data[name] = redacted_data[name].astype(cat_type)
 
     newkwargs: dict[str, Any] = copy.deepcopy(model.kwargs)
-    #    for key,val in newkwargs.items():
-    #        logger.info(f'redacted pivot kwargs {key} : {val}')
-    # newkwargs['index']:list=[]
-    # for series in newargs[0]:
-    #     newkwargs['index'].append(series.name)
-    # newkwargs['columns']:list=[]
-    # for series in newargs[1]:
-    #     newkwargs['columns'].append(series.name)
-    #     newkwargs['values']=model.values.name
     newkwargs["dropna"] = False
 
     table = pd.pivot_table(redacted_data, **newkwargs)
@@ -314,7 +302,7 @@ def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
     return parts
 
 
-def get_relevant_dataframe(model:TableModelDetails) -> DataFrame:
+def get_relevant_dataframe(model: TableModelDetails) -> DataFrame:
     """Extract copy of data relevant to crosstab into new DataFrame.
 
     Assumes preprocessing has happeneded, so
@@ -347,15 +335,16 @@ def get_relevant_dataframe(model:TableModelDetails) -> DataFrame:
     # relevant_data = DataFrame(series_list).T
     # relevant_data.reset_index(drop=True, inplace=True)
     # return relevant_data
-    if isinstance(model.values,pd.Series) and len(model.values)>0:
-        relevant_data=pd.DataFrame(model.values)
+    if isinstance(model.values, pd.Series) and len(model.values) > 0:
+        relevant_data = pd.DataFrame(model.values)
     else:
-            relevant_data=pd.DataFrame()
+        relevant_data = pd.DataFrame()
     for series in model.index:
-        relevant_data[series.name]=series
+        relevant_data[series.name] = series
     for series in model.columns:
-        relevant_data[series.name]=series
+        relevant_data[series.name] = series
     return relevant_data
+
 
 def translate_args_to_newdf(arguments: tuple, redacted_data: DataFrame) -> list:
     """Translate arguments or keys from one data frame to another.

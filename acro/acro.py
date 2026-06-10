@@ -31,8 +31,9 @@ class ACRO(Tables, Regression):
         Safe parameters and their values.
     results : Records
         The current outputs including the results of checks.
-    suppress : bool
-        Whether to automatically apply suppression
+    mitigation : str
+        The disclosure-control strategy applied to outputs, one of ``"none"``,
+        ``"suppress"``, ``"round"``.
 
     Examples
     --------
@@ -47,7 +48,13 @@ class ACRO(Tables, Regression):
     ... )
     """
 
-    def __init__(self, config: str = "default", suppress: bool = False) -> None:
+    def __init__(
+        self,
+        config: str = "default",
+        suppress: bool = False,
+        mitigation: str | None = None,
+        round_base: int | None = None,
+    ) -> None:
         """Construct a new ACRO object and reads parameters from config.
 
         Parameters
@@ -55,29 +62,61 @@ class ACRO(Tables, Regression):
         config : str
             Name of a yaml configuration file with safe parameters.
         suppress : bool, default False
-            Whether to automatically apply suppression.
+            Whether to automatically apply suppression (back-compat alias for
+            ``mitigation="suppress"``). Ignored when ``mitigation`` is set.
+        mitigation : str, optional
+            The disclosure-control strategy to apply, one of ``"none"``,
+            ``"suppress"``, ``"round"``. When ``None``, derived from
+            ``suppress``.
+        round_base : int, optional
+            The base to round to when ``mitigation="round"``. Defaults to the
+            ``safe_round_base`` value from the yaml config.
         """
-        Tables.__init__(self, suppress)
+        ### from current
+
+        ### end from current
+        Tables.__init__(self, suppress=suppress, mitigation=mitigation)
         Regression.__init__(self, config)
         self.config: dict[str, Any] = {}
-        self.results: Records = Records()
-        self.suppress: bool = suppress
         path: pathlib.Path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
+
+        # Tables and Regression each construct their own ``self.results`` so
+        # they can be used standalone; in the combined ACRO object we want a
+        # single shared Records instance regardless of init order, so make
+        # that explicit here.
+        self.results: Records = Records(
+            blocked_extensions=self.config.get("blocked_extensions", [])
+        )
+
+        # Preserve the user-requested suppress value alongside the yaml config.
+        # Tables.suppress is now a property derived from the live mitigation, so
+        # it can drift over a session (enable_rounding flips mitigation away from
+        # 'suppress'). Recording the original ask here keeps it available for
+        # callers that need to re-enforce suppression for disclosive outputs.
+        self.config["suppress"] = suppress
+
+        # # set globals needed for aggregation functions
+        # acro_tables.THRESHOLD = self.config["safe_threshold"]
+        # acro_tables.SAFE_PRATIO_P = self.config["safe_pratio_p"]
+        # acro_tables.SAFE_NK_N = self.config["safe_nk_n"]
+        # acro_tables.SAFE_NK_K = self.config["safe_nk_k"]
+        # acro_tables.CHECK_MISSING_VALUES = self.config["check_missing_values"]
+        # acro_tables.ZEROS_ARE_DISCLOSIVE = self.config["zeros_are_disclosive"]
+        # # set globals for survival analysis
+        # acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
+        # set globals and instance state for the round mitigation strategy
+        acro_tables.SAFE_ROUND_BASE = self.config.get(
+            "safe_round_base", acro_tables.SAFE_ROUND_BASE
+        )
+        self.round_base = (
+            round_base if round_base is not None else acro_tables.SAFE_ROUND_BASE
+        )
         logger.info("version: %s", __version__)
         logger.info("config: %s", self.config)
-        logger.info("automatic suppression: %s", self.suppress)
-        # set globals needed for aggregation functions
-        acro_tables.THRESHOLD = self.config["safe_threshold"]
-        acro_tables.SAFE_PRATIO_P = self.config["safe_pratio_p"]
-        acro_tables.SAFE_NK_N = self.config["safe_nk_n"]
-        acro_tables.SAFE_NK_K = self.config["safe_nk_k"]
-        acro_tables.CHECK_MISSING_VALUES = self.config["check_missing_values"]
-        acro_tables.ZEROS_ARE_DISCLOSIVE = self.config["zeros_are_disclosive"]
-        # set globals for survival analysis
-        acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
+        logger.info("mitigation: %s (round_base=%s)", self.mitigation, self.round_base)
 
         # make object to handle all the ontology-driven checking
         self.sdc_checks = checks.SDCChecks(self.config)
@@ -196,6 +235,17 @@ class ACRO(Tables, Regression):
     def disable_suppression(self) -> None:
         """Turn suppression off during a session."""
         self.suppress = False
+
+    def enable_rounding(self, base: int | None = None) -> None:
+        """Turn rounding on; overwrites any prior suppress=True (not restored on disable_rounding)."""
+        if base is not None:
+            self.round_base = base
+        self.mitigation = "round"
+
+    def disable_rounding(self) -> None:
+        """Turn rounding off; always falls back to mitigation='none' (prior suppress not restored)."""
+        if self.mitigation == "round":
+            self.mitigation = "none"
 
     def show_fair_summaries(self) -> str:
         """Print ids and fair summaries for all outputs in session."""

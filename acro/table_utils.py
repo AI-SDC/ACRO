@@ -28,6 +28,7 @@ AGGFUNC_TO_TYPE: dict[str, str] = {
     "sum": "Sum",
     "min": "Minimum",
     "max": "Maximum",
+    "agg_mode": "ModeCalculation",
 }
 
 
@@ -48,7 +49,8 @@ def axis_to_list(axis: Series | list[Series]) -> list[Series]:
     """
     if not isinstance(axis, list):
         foo: list = []
-        foo.append(axis)
+        if axis is not None:
+            foo.append(axis)
         return foo
     return axis
 
@@ -127,11 +129,12 @@ def collate_risk_assessments(
                         f":\n Name: {name}\n "
                         f"Mask of size {mask.shape}"
                         f"table of shape {table.shape}"
+                        f"current table:\n{outcome_df}\n"
+                        f"current mask:\n{tmp_df}\n"
                     )
                     raise ValueError(error_message) from error
 
         outcome_df = outcome_df.replace({"": "ok"})
-    # logger.info(f"ugly outcome:\n {outcome_df}")
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
     return outcome_df
 
@@ -195,9 +198,12 @@ def get_redacted_table(
     queries: list[str] = get_queries_from_collated_risk(
         collated_assessment, kwargs["aggfunc"]
     )
+    dim_names = model.get_dimension_names()
+    # logger.info(f'queries are {queries}')
     relevant_data: DataFrame = get_relevant_dataframe(model)
 
-    redacted_data: DataFrame = get_redacted_data(relevant_data, queries)
+    redacted_data: DataFrame = get_redacted_data(relevant_data, queries, dim_names)
+
     # ensure missing categories are present
     for name in list(redacted_data):
         if variable_metadata[name]["type"] == DIMENSION_URI:
@@ -231,8 +237,10 @@ def get_redacted_pivottable(
     queries: list[str] = get_queries_from_collated_risk(
         collated_assessment, kwargs["aggfunc"]
     )
+    dim_names = model.get_dimension_names()
+
     relevant_data: DataFrame = get_relevant_dataframe(model)
-    redacted_data: DataFrame = get_redacted_data(relevant_data, queries)
+    redacted_data: DataFrame = get_redacted_data(relevant_data, queries, dim_names)
     # ensure missing categories are present
     for name in list(redacted_data):
         if variable_metadata[name]["type"] == DIMENSION_URI:
@@ -456,7 +464,9 @@ def get_queries_from_collated_risk(
     return true_cell_queries
 
 
-def get_redacted_data(data: DataFrame, queries: list[str]) -> DataFrame:
+def get_redacted_data(
+    data: DataFrame, queries: list[str], dimensions: list[str]
+) -> DataFrame:
     """Apply set of queries to remove sensitive data from  DataFrame.
 
     Parameters
@@ -465,6 +475,8 @@ def get_redacted_data(data: DataFrame, queries: list[str]) -> DataFrame:
         the raw data
     queries : list[str]
         a set of queries that define the data in cells marked as being disclosive
+    dimensions : list[str]
+        the names of the dimensional varaibels - these  are the categorical entities in the queries
 
     Returns
     -------
@@ -472,11 +484,37 @@ def get_redacted_data(data: DataFrame, queries: list[str]) -> DataFrame:
          the data after the sensitive data has been removed
     """
     redacted_data = data.copy()
-    # logger.info(f'data has shape {data.shape}')
+
+    # queries are in string form
+    oldtypes: dict = {}
+    for dimension in dimensions:
+        if dimension in list(redacted_data):
+            oldtypes[dimension] = redacted_data[dimension].dtype
+            # logger.info(f'converting {dimension} from {redacted_data[dimension].dtype} to str')
+            redacted_data[dimension] = redacted_data[dimension].astype(str)
+
+    # logger.info(f'now columns are {list(redacted_data)}')
+    # for col in redacted_data:
+    #     logger.info(f'{col}: {redacted_data[col].unique()}')
+
+    # logger.info(f'queries are:\n{queries}')
+    # logger.info(f'initially redacted  data has shape {redacted_data.shape}')
+
     for query in queries:
         # logger.info(f'applying query{query}')
         redacted_data.query(f"not ({query})", inplace=True)
         # logger.info(f'now redacted data has shape {redacted_data.shape}')
+
+    # logger.info(f'after querying, columns are {list(redacted_data)}')
+    # for col in redacted_data:
+    #     logger.info(f'{col}: {redacted_data[col].unique()}')
+
+    # reconvert
+    for dimension in dimensions:
+        if dimension in list(redacted_data):
+            redacted_data[dimension] = redacted_data[dimension].astype(
+                oldtypes[dimension]
+            )
 
     if not set(data.columns) == set(redacted_data.columns):
         logger.warning("Error created redacted data - unable to apply suppression")
@@ -531,3 +569,82 @@ def aggfunc_to_strings(aggfunc: Any) -> list[str]:
         for i in aggfunc:
             analysis_names.append(AGGFUNC_TO_TYPE.get(i, "missing"))
     return analysis_names
+
+
+def round_table(table: DataFrame, base: int) -> DataFrame:
+    """Round numeric cells to the nearest multiple of ``base`` (NaNs preserved)."""
+    logger.debug("round_table(base=%s)", base)
+    if base is None or base <= 0:
+        return table.copy()
+    numeric = table.select_dtypes(include=["number"])
+    rounded = (numeric / base).round() * base
+    result = table.copy()
+    result[numeric.columns] = rounded
+    return result
+
+
+def append_rounded_margins(
+    rounded_table: DataFrame,
+    aggfunc: Any,
+    margins_name: str,
+    base: int,
+) -> DataFrame:
+    """Append row/column/grand-total margins to a pre-rounded table.
+
+    Once cells have been rounded,
+    margins are computed by aggregating the rounded cells (so rounded inner
+    cells add up to the displayed totals) and then rounded again to ``base``
+    so the whole output respects the rounding base.
+
+    Conceptually this is the same as the "synthetic-data" approach Jim
+    described - exploding the rounded table into one record per cell and
+    re-running ``pd.crosstab(margins=True)`` - but implemented directly on
+    the rounded DataFrame to keep it simple. We currently support single-
+    level row and column indices; multi-level or list-of-aggfunc tables fall
+    back to returning the table without margins.
+    """
+    aggnames: list = aggfunc_to_strings(aggfunc)
+    if len(aggnames) > 1:
+        logger.info(
+            "Cannot add margins to a rounded table when multiple aggregation "
+            "functions were requested; returning the table without margins."
+        )
+        return rounded_table
+    if rounded_table.index.nlevels > 1 or rounded_table.columns.nlevels > 1:
+        logger.info(
+            "Margin recomputation for hierarchical row/column indexes is not "
+            "yet supported under rounding; returning the table without margins."
+        )
+        return rounded_table
+
+    name = aggnames[0]
+    if aggfunc is None or name in (None, "count", "sum", "mode_aggfunc"):
+        agg_method = "sum"
+    elif name == "mean":
+        agg_method = "mean"
+    elif name == "median":
+        agg_method = "median"
+    else:
+        logger.info(
+            "Margin recomputation for aggfunc %r is not supported under "
+            "rounding; returning the table without margins.",
+            name,
+        )
+        return rounded_table
+
+    numeric = rounded_table.select_dtypes(include=["number"])
+    row_margin = getattr(numeric, agg_method)(axis=1, skipna=True)
+    col_margin = getattr(numeric, agg_method)(axis=0, skipna=True)
+    grand = float(getattr(numeric.stack(), agg_method)())
+
+    if base and base > 0:
+        row_margin = (row_margin / base).round() * base
+        col_margin = (col_margin / base).round() * base
+        grand = round(grand / base) * base
+
+    table = rounded_table.copy()
+    table[margins_name] = row_margin
+    new_row = col_margin.reindex(table.columns)
+    new_row[margins_name] = grand
+    table.loc[margins_name] = new_row
+    return table

@@ -5,41 +5,42 @@ from __future__ import annotations
 
 import logging
 import os
-from collections.abc import Callable
 from inspect import stack
 from typing import Any
 
 import pandas as pd
+import statsmodels.api as sm
 from matplotlib import pyplot as plt
 from pandas import DataFrame
-import statsmodels.api as sm
 
 from . import utils
+from .aggregationfunctions import agg_mode
 from .checks import ManyChecksResults, SDCChecks
 from .record import Records
 from .table_utils import (
     aggfunc_to_strings,
+    append_rounded_margins,
     axis_to_list,
     collate_risk_assessments,
     get_debugging_table_analysis,
     get_redacted_pivottable,
     get_redacted_table,
+    round_table,
 )
 from .tablemodeldetails import TableModelDetails
+from .utils import ALLOWED_MITIGATIONS
 
 logger = logging.getLogger("acro")
 
 
-# aggregation function parameters
-# THRESHOLD: int = 10
-# SAFE_PRATIO_P: float = 0.1
-# SAFE_NK_N: int = 2
-# SAFE_NK_K: float = 0.9
-# CHECK_MISSING_VALUES: bool = False
-# ZEROS_ARE_DISCLOSIVE: bool = True
-
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
+
+# default base for the 'round' mitigation strategy
+SAFE_ROUND_BASE: int = 5
+
+# Re-export so existing callers that imported from this module keep working.
+_ALLOWED_MITIGATIONS = ALLOWED_MITIGATIONS
 
 
 class Tables:
@@ -47,14 +48,129 @@ class Tables:
 
     Attributes
     ----------
+    mitigation : str
+        The disclosure-control strategy applied to outputs, one of ``"none"``,
+        ``"suppress"``, ``"round"``.
+    round_base : int
+        The base to round to when ``mitigation == "round"``. Must be a positive integer.
     suppress : bool
-        Whether to automatically apply suppression.
+        Backward-compatible alias. ``True`` is equivalent to ``mitigation == "suppress"``.
     """
 
-    def __init__(self, suppress: bool) -> None:
-        self.suppress: bool = suppress
+    def __init__(
+        self,
+        suppress: bool = False,
+        mitigation: str | None = None,
+    ) -> None:
+        """Initialise a Tables instance with the chosen mitigation strategy."""
+        self._mitigation: str = "none"
+        self._round_base: int = SAFE_ROUND_BASE
+        if mitigation is None:
+            mitigation = "suppress" if suppress else "none"
+        self.mitigation = mitigation
         self.results: Records = Records()
         self.sdc_checks = SDCChecks({})
+
+    @property
+    def mitigation(self) -> str:
+        """Return the current mitigation strategy."""
+        return self._mitigation
+
+    @mitigation.setter
+    def mitigation(self, value: str) -> None:
+        if value not in ALLOWED_MITIGATIONS:
+            logger.info(
+                "Sorry, I don't recognise the mitigation %r. "
+                "It should be one of %s. You can turn them on later using "
+                "enable_suppression() or enable_rounding(). "
+                "For now I am proceeding with no mitigation.",
+                value,
+                sorted(ALLOWED_MITIGATIONS),
+            )
+            self._mitigation = "none"
+            return
+        self._mitigation = value
+
+    @property
+    def round_base(self) -> int:
+        """Return the base used by the ``round`` mitigation strategy."""
+        return self._round_base
+
+    @round_base.setter
+    def round_base(self, value: int) -> None:
+        if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+            logger.info(
+                "round_base must be a positive integer, got %r. "
+                "Falling back to the default value of %d.",
+                value,
+                SAFE_ROUND_BASE,
+            )
+            self._round_base = SAFE_ROUND_BASE
+            return
+        self._round_base = value
+
+    @property
+    def suppress(self) -> bool:
+        """Return True iff the active mitigation strategy is 'suppress'."""
+        return self._mitigation == "suppress"
+
+    @suppress.setter
+    def suppress(self, value: bool) -> None:
+        if value:
+            self._mitigation = "suppress"
+        elif self._mitigation == "suppress":
+            self._mitigation = "none"
+        elif self._mitigation == "round":
+            logger.info(
+                "Setting suppress=False had no effect because mitigation is "
+                "currently 'round'. Use disable_rounding() to turn off rounding."
+            )
+
+    def _record_table_output(
+        self,
+        method: str,
+        status: str,
+        sdc: dict,
+        fair: dict,
+        command: str,
+        summary: str,
+        outcome: DataFrame,
+        table: DataFrame,
+        comments: list[str],
+    ) -> None:
+        """Record a table output and attach any mitigation exception note."""
+        properties: dict[str, Any] = {
+            "method": method,
+            "mitigation": self._mitigation,
+        }
+        if self._mitigation == "round":
+            properties["round_base"] = self._round_base
+        self.results.add(
+            status=status,
+            output_type="table",
+            properties=properties,
+            sdc=sdc,
+            fair=fair,
+            command=command,
+            summary=summary,
+            outcome=outcome,
+            output=[table],
+            comments=comments,
+        )
+        if self._mitigation == "suppress":
+            just_added = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                just_added, "Suppression automatically applied where needed"
+            )
+            self.results.results[just_added].status = "review"
+
+        elif self._mitigation == "round":
+            just_added = f"output_{self.results.output_id - 1}"
+            self.results.add_exception(
+                just_added,
+                f"Rounding automatically applied to nearest {self._round_base}",
+            )
+            self.results.results[just_added].status = "review"
 
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals,too-complex
         self,
@@ -118,8 +234,13 @@ class Tables:
         _ = show_suppressed  # hide complaint about unused legacy variable
         _ = dropna  # hide complaint about unused param
 
+        #### Step 0 standardise syntax and capture all relevant information
+        #### in a TableModelDetails instance
+        #### this could be done in a separate function if the parameters
+        #### to the call can be cleanly passed across
+        #### resulting details are held in a TableModelDetails object
         # syntax checking
-        if (aggfunc is not None):
+        if aggfunc is not None:
             if values is None or isinstance(values, list):
                 raise ValueError(
                     "If you pass an aggregation function to crosstab "
@@ -131,6 +252,13 @@ class Tables:
         index = axis_to_list(index)
         columns = axis_to_list(columns)
 
+        # When rounding, compute the table without margins first and then
+        # derive margins from the rounded cells (so the inner cells add up
+        # to the displayed totals). See append_rounded_margins() / Jim
+        # Smith's review on PR #381.
+        recompute_margins = margins and self._mitigation == "round"
+        pandas_margins = False if recompute_margins else margins
+
         # save list and dict to reduce code clutter
         args = (index, columns)
         kwargs = {
@@ -138,11 +266,14 @@ class Tables:
             "rownames": rownames,
             "colnames": colnames,
             "aggfunc": aggfunc,
-            "margins": margins,
+            "margins": pandas_margins,
             "margins_name": margins_name,
             "dropna": False,  # enforced for SDC reasons
             "normalize": normalize,
         }
+        if aggfunc == "mode":
+            aggfunc = "agg_mode"
+            kwargs["aggfunc"] = agg_mode
 
         model_details = TableModelDetails(
             index=index,
@@ -153,11 +284,12 @@ class Tables:
             command="crosstab",
         )
 
-        #make the requested table
+        #### Step 1  make the requested output
         table: DataFrame = pd.crosstab(*args, **kwargs)
 
-        ## run the checks and get the masks
+        #### Step 2 run the checks and gather evidence
         analysis_names: list[str] = aggfunc_to_strings(aggfunc)
+        # extra layer of loops as requested tables may have more than one agg func
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
             collatedres.allchecksresults[analysis] = (
@@ -173,28 +305,28 @@ class Tables:
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
 
+        #### Step 3 apply mitigations
         if self.suppress:
             table = get_redacted_table(model_details, collated_assessment)
+        elif self._mitigation == "round":
+            table = round_table(table, self._round_base)
+            if recompute_margins:
+                table = append_rounded_margins(
+                    table, aggfunc, margins_name, self._round_base
+                )
 
-        # record output
-        self.results.add(
+        ##### Step 4: store evidence & output
+        self._record_table_output(
+            method="crosstab",
             status=collatedres.get_overall_status(),
-            output_type="table",
-            properties={"method": "crosstab"},
             sdc=collatedres.get_table_sdc(),
             fair=fair_dict,
             command=command,
             summary=collatedres.get_overall_summary(),
             outcome=collated_assessment,
-            output=[table],
+            table=table,
             comments=[],
         )
-        if self.suppress:
-            justadded = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                justadded, "Suppression automatically applied where needed"
-            )
-            self.results.results[justadded].status="review"
 
         return table
 
@@ -271,6 +403,7 @@ class Tables:
         logger.debug("pivot_table()")
         command: str = utils.get_command("pivot_table()", stack())
 
+        #### Step 0 standardise syntax and capture all relevant information
         # syntax checking
         if values is None:
             raise ValueError(
@@ -278,7 +411,7 @@ class Tables:
                 "to report statistics about."
             )
 
-        if isinstance(values, list):
+        if isinstance(values, list) and len(values) > 1:
             raise ValueError(
                 "Specifying multiple values columns is not currently supported."
             )
@@ -287,26 +420,39 @@ class Tables:
         index = axis_to_list(index)
         columns = axis_to_list(columns)
 
+        # When rounding, compute the table without pandas-managed margins
+        # and re-derive them from the rounded cells; see append_rounded_margins()
+
+        recompute_margins = margins and self._mitigation == "round"
+        pandas_margins = False if recompute_margins else margins
         # save list and dict to reduce code clutter
+
         thiskwargs = {
             "values": values,
             "index": index,
             "columns": columns,
             "aggfunc": aggfunc,
             "fill_value": fill_value,
-            "margins": margins,
+            "margins": pandas_margins,
             "dropna": False,  # forced for sdc reasons
             "margins_name": margins_name,
             "observed": observed,
             "sort": sort,
         }
+        # use our mode function
+
+        if aggfunc == "mode":
+            aggfunc = "agg_mode"
+            thiskwargs["aggfunc"] = agg_mode
+
         thiskwargs.update(kwargs)
 
         series_index, series_columns = [], []
         for name in index:
             series_index.append(data[name])
-        for name in columns:
-            series_columns.append(data[name])
+        if len(columns) > 0:
+            for name in columns:
+                series_columns.append(data[name])
 
         model_details = TableModelDetails(
             index=series_index,
@@ -317,10 +463,20 @@ class Tables:
             command="pivot_table",
         )
 
-        #make the reuested pivot table
+        # from previous version- if needed i suggesgt we move this code to
+        # the function append_rounded_margins()?
+        # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
+        # resolved_aggfunc: (
+        #     str | Callable[..., Any] | list[str | Callable[..., Any]] | None
+        # ) = get_aggfuncs(aggfunc)
+        # n_agg: int = (
+        #     1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
+        # )
+
+        #### Step 1  make the requested output
         table: DataFrame = pd.pivot_table(data, **thiskwargs)
 
-        ## run the checks and get the masks
+        #### Step 2 run the checks and gather evidence
         analysis_names: list[str] = aggfunc_to_strings(aggfunc)
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
@@ -334,36 +490,35 @@ class Tables:
             table, collatedres.allchecksresults
         )
 
-
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
 
+        #### Step 3 apply mitigations
         if self.suppress:
             table = get_redacted_pivottable(model_details, collated_assessment)
-
-        # record output
-        self.results.add(
+        elif self._mitigation == "round":
+            table = round_table(table, self._round_base)
+            # if recompute_margins:
+            #    table = append_rounded_margins(
+            #        table, resolved_aggfunc, margins_name, self._round_base
+            #    )    see comments  above
+            table = append_rounded_margins(
+                table, aggfunc, margins_name, self._round_base
+            )
+        ##### Step 4: store evidence & output
+        self._record_table_output(
+            method="pivot_table",
             status=collatedres.get_overall_status(),
-            output_type="table",
-            properties={"method": "pivot_table"},
             sdc=collatedres.get_table_sdc(),
             fair=fair_dict,
             command=command,
             summary=collatedres.get_overall_summary(),
             outcome=collated_assessment,
-            output=[table],
+            table=table,
             comments=[],
         )
-        if self.suppress:
-            justadded = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                justadded, "Suppression automatically applied where needed"
-            )
-            self.results.results[justadded].status="review"
 
         return table
-
- 
 
     def surv_func(
         self,
@@ -410,6 +565,8 @@ class Tables:
         """
         logger.debug("surv_func()")
         command: str = utils.get_command("surv_func()", stack())
+
+        #### Step 1  make the requested output
         survival_func: Any = sm.SurvfuncRight(
             time,
             status,
@@ -419,34 +576,34 @@ class Tables:
             exog,
             bw_factor,
         )
-        #make the requested model
-        survival_table:pd.DataFrame = survival_func.summary()
+        survival_table: pd.DataFrame = survival_func.summary()
 
-        model_details= TableModelDetails(
-            index=[survival_table['num at risk']],
+        #### Step 0 standardise syntax and capture all relevant information
+        ##out of order because what we do SDC on is a by product of the analysis
+        model_details = TableModelDetails(
+            index=[survival_table["num at risk"]],
             risk_appetite=self.sdc_checks.risk_appetite,
-            command="surv_func"
+            command="surv_func",
         )
-        model_details.model_type="survival"
-        model_details.df_resid=len(status)-len(time.unique())
+        model_details.model_type = "survival"
+        model_details.df_resid = len(status) - len(time.unique())
 
-        analysis ="KaplanMeier"
+        #### Step 2 run the checks and gather evidence
+        analysis = "KaplanMeier"
         collatedres = ManyChecksResults()
         collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(analysis, model_details)
-            )
+            self.sdc_checks.run_checks_for_analysis(analysis, model_details)
+        )
 
-        #collated_assessment = collate_risk_assessments(
-        #    #survival_table['num at risk'], collatedres.allchecksresults
-        #    model_details,collatedres.allchecksresults
-        #)
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
 
+        #### Step 3 apply mitigations
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
 
-        if output=='table':       
+        ##### Step 4: store evidence & output
+        if output == "table":
             # record output
             self.results.add(
                 status=collatedres.get_overall_status(),
@@ -465,19 +622,18 @@ class Tables:
                 self.results.add_exception(
                     justadded, "Events Reported when min_threshold accumulated"
                 )
-                self.results.results[justadded].status="review"
+                self.results.results[justadded].status = "review"
 
-            return survival_table            
-            
+            return survival_table
 
         if output == "plot":
             if utils.is_blocked_extension(filename, self.results.blocked_extensions):
-                return None            
+                return None
             if self.suppress:
                 plot = survival_table.plot(y="rounded_survival_fun", xlim=0, ylim=0)
             else:  # pragma: no cover
-                plot = survival_func.plot() 
-            
+                plot = survival_func.plot()
+
             unique_filename = utils.get_unique_artefact_filename(filename)
             if unique_filename == "None":
                 return None
@@ -498,7 +654,7 @@ class Tables:
             return (plot, unique_filename)
         return None
 
-
+    #### end step 4
 
     def hist(
         self,
@@ -671,6 +827,7 @@ class Tables:
             summary = collatedres.get_overall_summary()
 
         # plot the histogram (skip when suppressed and disclosive)
+        #### Step 3 apply mitigations
         if status == "fail" and self.suppress:
             logger.warning(
                 "Histogram will not be shown as the %s column is disclosive.",
@@ -757,6 +914,10 @@ class Tables:
         if utils.is_blocked_extension(filename, self.results.blocked_extensions):
             return None
         command: str = utils.get_command("pie()", stack())
+        #### Step 0 standardise syntax and capture all relevant information
+        #### Step 1  make the requested output
+        #### Step 3 apply mitigations
+        ##### Step 4: store evidence & output
 
         ## run the checks and get the masks
         analysis = "PieChart"
@@ -766,7 +927,7 @@ class Tables:
             risk_appetite=self.sdc_checks.risk_appetite,
             command="pie",
         )
-        # modeldict = get_modeldict_for_array(data[column], self.sdc_checks.risk_appetite)
+        #### Step 2 run the checks and gather evidence
         collatedres = ManyChecksResults()
         collatedres.allchecksresults[analysis] = (
             self.sdc_checks.run_checks_for_analysis(analysis, model_details)

@@ -357,17 +357,17 @@ class SDCChecks:
                     dict with one key (for now) "check_status" where the value is itself a dict
                     of checkname (str): status (str)
         """
-        if not analysis_name in self.analyses.keys():
-            logger.info(f"keys are : {list(self.analyses.keys())}")
+        if analysis_name not in self.analyses.keys():
+            # logger.info(f"keys are : {list(self.analyses.keys())}")
             return ChecksResults(
                 "Review", "Name of analysis not recognised in ontology", {}, {}
             )
 
         sdc_dict = self.get_sdctokens_for_analysis(analysis_name)
 
-        logger.debug(f"details for analysis {analysis_name} are:")
-        for key, val in sdc_dict.items():
-            logger.debug(f"{key} : {val}")
+        # logger.info(f"details for analysis {analysis_name} are:")
+        # for key, val in sdc_dict.items():
+        #    logger.debug(f"{key} : {val}")
 
         statuses: list = []
         summaries: list = []
@@ -544,7 +544,7 @@ class SDCChecks:
 
         # print(f'mask in mintheshold= {mask}')
         mask = mask_to_boolmask(mask)
-        # print(f'bool mask in mintheshold= {mask}')
+        # print(f'bool mask in minthreshold= {mask}')
         status, summary = status_summary_from_mask(mask)
         if model.command == "hist":
             summary += (

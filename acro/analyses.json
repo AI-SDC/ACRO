@@ -475,6 +475,13 @@
         "statbarn": "Endpoints",
         "uri": "https://www.w3id.org/statbarnsdc#Minimum"
     },
+    "ModeCalculation": {
+        "definition": "The most frequent recorded values of outcome.",
+        "name": "ModeCalculation",
+        "prefix_label": "ModeCalculation",
+        "statbarn": "Mode",
+        "uri": "https://www.w3id.org/statbarnsdc#Mode"
+    },
     "MultinomialLogit": {
         "definition": "A statistical model used to predict outcomes where the dependent variable has more than two discrete categories.",
         "name": "MultinomialLogit",

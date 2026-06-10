@@ -42,6 +42,7 @@ dependencies = [
     "pandas<=2.3.3",
     "PyYAML",
     "statsmodels",
+    "rdflib",
 ]
 
 [tool.setuptools.dynamic]

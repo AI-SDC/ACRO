@@ -70,17 +70,21 @@ class Regression:
         """
         logger.debug("ols()")
         command: str = utils.get_command("ols()", stack())
-
+        ##### Step 1: build the output
         model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
         results = model.fit()
 
+        ##### Step 2: identify type of output and gather evidence
         analysis_name = "GeneralLinearModel"
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
-
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
+        ##### Step 3 Apply mitigation
+        # none available  for simple regression models
+
+        ##### Step 4: store evidence & output
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=checkresults.overall_status,
@@ -146,6 +150,7 @@ class Regression:
         """
         logger.debug("olsr()")
         command: str = utils.get_command("olsr()", stack())
+        ##### Step 1: build the output
         model = smf.ols(
             formula=formula,
             data=data,
@@ -156,12 +161,17 @@ class Regression:
         )
         results = model.fit()
 
+        ##### Step 2: identify type of output and gather evidence
         analysis_name = "GeneralLinearModel"
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
+        ##### Step 3 Apply mitigation
+        # none available  for simple regression models
+
+        ##### Step 4: store evidence & output
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=checkresults.overall_status,
@@ -212,15 +222,21 @@ class Regression:
         """
         logger.debug("logit()")
         command: str = utils.get_command("logit()", stack())
+        ##### Step 1: build the output
         model = sm.Logit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
 
+        ##### Step 2: identify type of output and gather evidence
         analysis_name = "Logit"
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
+        ##### Step 3 Apply mitigation
+        # none available  for simple regression models
+
+        ##### Step 4: store evidence & output
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=checkresults.overall_status,
@@ -286,6 +302,7 @@ class Regression:
         """
         logger.debug("logitr()")
         command: str = utils.get_command("logitr()", stack())
+        ##### Step 1: build the output
         model = smf.logit(
             formula=formula,
             data=data,
@@ -296,12 +313,17 @@ class Regression:
         )
         results = model.fit()
 
+        ##### Step 2: identify type of output and gather evidence
         analysis_name = "Logit"
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
+        ##### Step 3 Apply mitigation
+        # none available  for simple regression models
+
+        ##### Step 4: store evidence & output
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=checkresults.overall_status,
@@ -352,15 +374,21 @@ class Regression:
         """
         logger.debug("probit()")
         command: str = utils.get_command("probit()", stack())
+        ##### Step 1: build the output
         model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
 
+        ##### Step 2: identify type of output and gather evidence
         analysis_name = "Probit"
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
+        ##### Step 3 Apply mitigation
+        # none available  for simple regression models
+
+        ##### Step 4: store evidence & output
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=checkresults.overall_status,
@@ -426,6 +454,7 @@ class Regression:
         """
         logger.debug("probitr()")
         command: str = utils.get_command("probitr()", stack())
+        ##### Step 1: build the output
         model = smf.probit(
             formula=formula,
             data=data,
@@ -436,12 +465,17 @@ class Regression:
         )
         results = model.fit()
 
+        ##### Step 2: identify type of output and gather evidence
         analysis_name = "Probit"
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
+        ##### Step 3 Apply mitigation
+        # none available  for simple regression models
+
+        ##### Step 4: store evidence & output
         tables: list[SimpleTable] = results.summary().tables
         self.results.add(
             status=checkresults.overall_status,

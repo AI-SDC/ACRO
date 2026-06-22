@@ -136,6 +136,7 @@ dmypy.json
 
 #Jims Development
 stata/various_stata_development__files
+playing/
 
 # outputs folder
 /notebooks/outputs/
@@ -144,5 +145,6 @@ stata/various_stata_development__files
 /test.xlsx
 /outputs/
 
-# test datasets that can't b shared
+# test datasets that can't be shared
 UKDA-7401-stata12/
+notebooks/old/test.ipynb

@@ -150,7 +150,7 @@ df.head()
 #
 # The acro version uses all the pandas code - but it adds extra code that checks for disclosure risks depending on the statistic you ask for
 #
-# ### Example 1: A simple 2-D table of frequencies stratified by two variables
+# ### Example 1: A 2-D table calculating the mean of a target variable, grouped by two categorical variables
 #
 # Note that having imported the pandas package with the shortname `pd`(most people do)  you would normally  write
 # ````
@@ -160,24 +160,39 @@ df.head()
 #
 # _NB_: the first two parameters to crosstab() are mandatory, so you could just do `crosstab(df.recommendation,df.parents)` to save typing.
 #
+# Going through the parameters in order:
+# - `index=df.recommendation` and `columns=df.parents` tell it we want to create a cross tabulation by two categorical variables: recommendation and parents
+# - setting `values=df.children`(the name of a column in the dataset) tells it we want to report something about the number of children for each sub-group (table cell)
+# - setting `aggfunc=mean` tells it the statistic we want to report is the  mean number of children (which introduces additional risks of *dominance*)
+#
 # Now run the next cell.
 
 # In[5]:
 
 
-acro.crosstab(index=df.recommendation, columns=df.parents)
+acro.crosstab(
+    index=df.recommendation, columns=df.parents, values=df.children, aggfunc="mean"
+)
 
 
 # ### How to understand this output
 # The top part (with a pink background) is the risk analysis produced by acro.
 # It is telling us that:
-# - the overall summary is _fail_ because 4 cells are failing the 'minimum threshold' check
+# - the overall summary is _fail_ because 4 cells are failing the 'p-ratio and nk-rule' checks and 1 cell is failing the 'minimum threshold' check
 # - then it is showing which cells failed so you can choose how to respond
 # - finally it is telling us that is has saved the table and risk assessment to our acro session with id "output_0"
 #
 # The part below is the normal output produced by the pandas _crosstab()_ function.
-# - As this is such a small table it is not hard to spot the four problematic cells with zero or low counts
-# - but of course this might be harder for a bigger table.
+# - In this table, it might be easy to identifying "Obvious" Risks. It is simple to spot that empty cells (where values are NaN) can be disclosive. If the mean is NaN, it means no records in the dataset match those specific criteria. For example, a NaN in the first column and third row indicates that there are no children whose parents are great_pret and whose recommendation is recommend. This information itself can be disclosive.
+
+# - But it is much harder to spot the "Hidden" Risks (for example a cell with a mean of 10) just by looking at this table. You always need more information than what is provided in a single table.
+
+# -In this table, you would need:
+#   - A secondary count table to verify if the number of records in that cell falls below a required threshold.
+#   - To assess the risk of dominance (calculate the p-ratio), you would need to extract all individual records that fall into that specific cell from the original dataset, sort them, and manually calculate the ratio to check it against the TRE (Trusted Research Environment) appetite.
+#   - Another check for dominance is The NK-rule which is even more complicated.
+#
+#   Imagine doing this for much larger tables! Actually acro can do this for us in the background!
 #
 # ### How to respond to this input
 # There are basically three choices:
@@ -205,8 +220,9 @@ acro.crosstab(index=df.recommendation, columns=df.parents)
 
 
 acro.enable_suppression()
-acro.crosstab(index=df.recommendation, columns=df.parents)
-
+acro.crosstab(
+    index=df.recommendation, columns=df.parents, values=df.children, aggfunc="mean"
+)
 
 # ## An example of a  more complex table
 # Just to show off the sort of tables that `cross_tab()` can produce, let's make something more complex.<br>

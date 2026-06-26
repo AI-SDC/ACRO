@@ -11,7 +11,7 @@ from typing import Any
 
 import yaml
 
-from . import acro_tables, checks
+from . import acro_tables, sdcchecks
 from .acro_regression import Regression
 from .acro_tables import Tables
 from .record import Records
@@ -119,7 +119,7 @@ class ACRO(Tables, Regression):
         logger.info("mitigation: %s (round_base=%s)", self.mitigation, self.round_base)
 
         # make object to handle all the ontology-driven checking
-        self.sdc_checks = checks.SDCChecks(self.config)
+        self.sdc_checks = sdcchecks.SDCChecks(self.config)
 
     def finalise(
         self, path: str = "outputs", ext: str = "json", interactive: bool = False

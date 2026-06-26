@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from copy import deepcopy
 from typing import Any
 
@@ -28,6 +29,7 @@ class TableModelDetails:
     variable_data: dict = {}
     risk_appetite: dict = {}
     command: str = ""
+    df_resid: int = 0
 
     def __init__(
         self,
@@ -200,3 +202,49 @@ class TableModelDetails:
                 "categories": [],
             }
         return variable_metadata
+
+    def get_count_table(self) -> pd.DataFrame:
+        """Make count table as specified by model."""
+        args = self.get_crosstab_args()
+        thiskwargs = self.get_crosstab_kwargs()
+        thiskwargs["values"] = None
+        thiskwargs["aggfunc"] = None
+        return pd.crosstab(*args, **thiskwargs)
+
+    def get_table_newagg(self, newaggfunc: Callable) -> pd.DataFrame:
+        """Make  table as specified by model but with new agg func."""
+        args = self.get_crosstab_args()
+        thiskwargs = self.get_crosstab_kwargs()
+        if len(thiskwargs["values"]) != len(self.index[0]):
+            raise AttributeError("column used for values has incompatibe length")
+        thiskwargs["aggfunc"] = newaggfunc
+        return pd.crosstab(*args, **thiskwargs)
+
+    def get_zeros_table(self) -> pd.DataFrame:
+        """Create a data frame filled with zeros of same size as underlying table."""
+        args: tuple = self.get_crosstab_args()
+        kwargs: dict = self.get_crosstab_kwargs()
+        kwargs["aggfunc"] = kwargs["values"] = None
+        zeros_table = pd.crosstab(*args, **kwargs)
+        for col in zeros_table.columns:
+            zeros_table[col].values[:] = 0
+        return zeros_table
+
+    def get_allfalse_table(self) -> pd.DataFrame:
+        """Create a data frame filled with false of same size as underlying table."""
+        if self.model_type == "table":
+            args = self.get_crosstab_args()
+            thiskwargs = self.get_crosstab_kwargs()
+            thiskwargs["aggfunc"] = thiskwargs["values"] = None
+            mask = pd.crosstab(*args, **thiskwargs).astype(bool)
+            for col in mask.columns:
+                mask[col].values[:] = False
+            # logger.info(f'get_allfalse_mask for table, mask=:\n{mask}')
+
+        else:  # array
+            series_mask = self.index[0].value_counts()
+            series_mask.iloc[:] = False
+            mask = pd.DataFrame(series_mask, dtype=bool)
+            # logger.info(f'get_allfalse_mask for other {model.model_type}, mask=:\n{mask}')
+
+        return mask

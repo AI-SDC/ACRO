@@ -13,8 +13,8 @@ from pandas import DataFrame, Series
 from pandas.api.types import CategoricalDtype
 
 from . import utils
-from .checks import ChecksResults
 from .constants import DIMENSION_URI
+from .sdcchecks import ChecksResults
 from .tablemodeldetails import TableModelDetails
 
 logger = logging.getLogger("acro")

@@ -16,8 +16,8 @@ from statsmodels.iolib.table import SimpleTable
 from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 from . import utils
-from .checks import ChecksResults, SDCChecks
 from .record import Records
+from .sdcchecks import ChecksResults, SDCChecks, SDCEvidence
 
 logger = logging.getLogger("acro")
 
@@ -76,8 +76,11 @@ class Regression:
 
         ##### Step 2: identify type of output and gather evidence
         analysis_name = "GeneralLinearModel"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
+        )
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, model
+            analysis_name, evidence, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
@@ -163,8 +166,11 @@ class Regression:
 
         ##### Step 2: identify type of output and gather evidence
         analysis_name = "GeneralLinearModel"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
+        )
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, model
+            analysis_name, evidence, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
@@ -228,8 +234,11 @@ class Regression:
 
         ##### Step 2: identify type of output and gather evidence
         analysis_name = "Logit"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
+        )
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, model
+            analysis_name, evidence, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
@@ -315,8 +324,11 @@ class Regression:
 
         ##### Step 2: identify type of output and gather evidence
         analysis_name = "Logit"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
+        )
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, model
+            analysis_name, evidence, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
@@ -380,8 +392,11 @@ class Regression:
 
         ##### Step 2: identify type of output and gather evidence
         analysis_name = "Probit"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
+        )
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, model
+            analysis_name, evidence, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 
@@ -467,8 +482,11 @@ class Regression:
 
         ##### Step 2: identify type of output and gather evidence
         analysis_name = "Probit"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
+        )
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, model
+            analysis_name, evidence, model
         )
         checkresults.fair_dict.update(get_variable_type_dict(results))
 

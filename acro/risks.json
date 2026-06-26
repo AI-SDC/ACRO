@@ -36,7 +36,7 @@
     "Dominance": {
         "checks": [
             "NKCheck",
-            "PQCheck"
+            "PPercentCheck"
         ],
         "definition": "The risk that a small number of individuals contribute a disproportionately large share of a cells value, making it easier to identify or infer their data.",
         "mitigations": [

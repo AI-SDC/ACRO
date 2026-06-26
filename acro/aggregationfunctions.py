@@ -4,12 +4,8 @@
 from __future__ import annotations
 
 import logging
-import os
-import secrets
 
-import pandas as pd
-from pandas import DataFrame, Series
-
+from pandas import Series
 
 logger = logging.getLogger("acro")
 # aggregation function parameters
@@ -23,52 +19,52 @@ ZEROS_ARE_DISCLOSIVE: bool = True
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
 
-def agg_mode(values: Series) -> Series:
-    """Calculate the mode or randomly selects one of the modes from a pandas Series.
+# def agg_mode(values: Series) -> Series:
+#     """Calculate the mode or randomly selects one of the modes from a pandas Series.
 
-    Parameters
-    ----------
-    values : Series
-        A pandas Series for which to calculate the mode.
+#     Parameters
+#     ----------
+#     values : Series
+#         A pandas Series for which to calculate the mode.
 
-    Returns
-    -------
-    Series
-        The mode. If multiple modes, randomly selects and returns one of the modes.
-    """
-    modes = values.mode()
-    return secrets.choice(modes)
+#     Returns
+#     -------
+#     Series
+#         The mode. If multiple modes, randomly selects and returns one of the modes.
+#     """
+#     modes = values.mode()
+#     return secrets.choice(modes)
 
-def agg_negative(vals: Series) -> bool:
-    """Return whether any values are negative.
+# def agg_negative(vals: Series) -> bool:
+#     """Return whether any values are negative.
 
-    Parameters
-    ----------
-    vals : Series
-        Series to check for negative values.
+#     Parameters
+#     ----------
+#     vals : Series
+#         Series to check for negative values.
 
-    Returns
-    -------
-    bool
-        Whether a negative value was found.
-    """
-    return vals.min() < 0
+#     Returns
+#     -------
+#     bool
+#         Whether a negative value was found.
+#     """
+#     return vals.min() < 0
 
 
-def agg_missing(vals: Series) -> bool:
-    """Return whether any values are missing.
+# def agg_missing(vals: Series) -> bool:
+#     """Return whether any values are missing.
 
-    Parameters
-    ----------
-    vals : Series
-        Series to check for missing values.
+#     Parameters
+#     ----------
+#     vals : Series
+#         Series to check for missing values.
 
-    Returns
-    -------
-    bool
-        Whether a missing value was found.
-    """
-    return vals.isna().sum() != 0
+#     Returns
+#     -------
+#     bool
+#         Whether a missing value was found.
+#     """
+#     return vals.isna().sum() != 0
 
 
 def agg_p_percent(vals: Series) -> bool:
@@ -138,18 +134,35 @@ def agg_threshold(vals: Series) -> bool:
     return vals.count() < THRESHOLD
 
 
-def agg_values_are_same(vals: Series) -> bool:
-    """Return whether all observations having the same value.
+# def agg_values_are_same(vals: Series) -> bool:
+#     """Return whether all observations having the same value.
 
-    Parameters
-    ----------
-    vals : Series
-        Series to calculate if all the values are the same.
+#     Parameters
+#     ----------
+#     vals : Series
+#         Series to calculate if all the values are the same.
 
-    Returns
-    -------
-    bool
-        Whether the values are the same.
-    """
-    # the observations are not the same
-    return vals.nunique(dropna=True) == 1
+#     Returns
+#     -------
+#     bool
+#         Whether the values are the same.
+#     """
+#     # the observations are not the same
+#     return vals.nunique(dropna=True) == 1
+
+# def agg_top_n_sum(vals: Series, n: int = 2) -> float:
+#     """Return the sum of the top n values in a pandas Series.
+
+#     Parameters
+#     ----------
+#     vals : Series
+#         A pandas Series for which to calculate the sum of the top n values.
+#     n : int, optional
+#         The number of top values to sum, by default 2.
+
+#     Returns
+#     -------
+#     float
+#         The sum of the top n values in the Series.
+#     """
+#     return vals.nlargest(n,keep='all')[0:n].sum()

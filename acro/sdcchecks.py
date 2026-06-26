@@ -13,13 +13,15 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import statsmodels
 
-from . import aggregationfunctions
-from .aggregationfunctions import (
+from . import sdc_agg_funcs
+from .sdc_agg_funcs import (
     agg_missing,
-    agg_nk,
-    agg_p_percent,
-    agg_values_are_same,
+    agg_num_negative,
+    agg_top_2_sum,
+    agg_top_n_sum,
+    get_statsmodel_dof,
 )
 from .tablemodeldetails import TableModelDetails
 
@@ -27,21 +29,76 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 logger = logging.getLogger("acro")
 
+DETAIL_TO_AGG: dict[str, Callable] = {
+    "sum": np.sum,
+    "max": np.max,
+    "missing": agg_missing,
+    "top_2_sum": agg_top_2_sum,
+    "top_n_sum": agg_top_n_sum,
+    "num_negative": agg_num_negative,
+}
+
+
+@dataclass
+class SDCEvidence:
+    """Class for evidence needed to run risk assesSment checks for an analysis."""
+
+    dof: Any = None
+    interim_tables: dict[str, pd.DataFrame] = field(default_factory=dict)
+    other_evidence: dict[str, Any] = field(default_factory=dict)
+    variable_type_dict: dict[str, Any] = field(default_factory=dict)
+
+    def populate_dof(self, model: Any) -> None:
+        """Populate dof for any sort of model."""
+        if isinstance(model, statsmodels.base.model.Model):
+            self.dof = get_statsmodel_dof(model)
+        elif isinstance(model, TableModelDetails):
+            self.dof = model.get_count_table() - 1
+        else:
+            self.dof = -1
+
+    def populate_from_list(self, evidence_needed: set, model: Any) -> None:
+        """Populate dataclass for a given model-analyses combination."""
+        if "DoF" in evidence_needed:
+            self.populate_dof(model)
+        if isinstance(model, statsmodels.base.model.Model):
+            deps = model.endog_names
+            if isinstance(deps, str):
+                self.variable_type_dict["dependent"] = deps
+            indeps = model.exog_names.copy()
+            if "const" in indeps:
+                indeps.remove("const")
+            if "Intercept" in indeps:
+                indeps.remove("Intercept")
+            self.variable_type_dict["independent"] = indeps
+
+        if isinstance(model, TableModelDetails):
+            sdc_agg_funcs.NK_N = model.risk_appetite["safe_nk_n"]
+            if "count_table" in evidence_needed:
+                self.interim_tables["count_table"] = model.get_count_table()
+                logger.debug(f"count table:\n{self.interim_tables['count_table']}\n")
+            for detail, value in DETAIL_TO_AGG.items():
+                if detail in evidence_needed:
+                    aggfunc = value
+                    self.interim_tables[detail] = model.get_table_newagg(aggfunc)
+                    logger.debug(f"{detail} table:\n{self.interim_tables[detail]}\n")
+            self.variable_type_dict = model.get_variable_type_dict()
+
 
 @dataclass
 class ChecksResults:
-    """Class for results of running checks for an analysis.
+    """Class holding results of running checks  for an analysis.
 
     overall_status : str
-      'fail', 'review', or 'pass'
+        'fail', 'review', or 'pass'
     summaries : string
-        concatenation of summaries for each check run
+            concatenation of summaries for each check run.
     outcomes : dict[str,Any]
         dictionary of outcomes with keys for the check and values which might be:
-         numbers (e.g. Dof), or masks (Dataframes),
+        numbers (e.g. Dof), or masks (Dataframes),
         depending on the check and the type of model e.g. regression vs table
     fair_dict: details of the sdc processes
-                dict with one key (for now) "check_status" where the value is itself a dict
+        dict with one key (for now) `check_status where the value is itself a dict
     """
 
     overall_status: str
@@ -63,14 +120,14 @@ class ManyChecksResults:
         """
         allsummary = ""
         for analysis, checksresults in self.allchecksresults.items():
-            allsummary += f"\n{analysis} : "
+            allsummary += f"{analysis} : "
             for checksummary in checksresults.summaries.split("\n"):
                 if operator.contains(checksummary, "pass") or operator.contains(
                     checksummary, "RequiredZeroCheck"
                 ):
                     pass
                 else:
-                    allsummary += f"\n {checksummary}"
+                    allsummary += f"\n{checksummary}"
         return allsummary
 
     def get_overall_status(self) -> str:
@@ -103,12 +160,11 @@ class ManyChecksResults:
         checks_seen: list[str] = []
         for _analysis, checksresults in self.allchecksresults.items():
             for name, mask in checksresults.outcomes.items():
-                # logger.info(f' in get_table_sdc, name={name} mask= {mask}')
                 if name in checks_seen:
                     continue
                 checks_seen.append(name)
                 sdc["cells"][name] = []
-                if name == "MinimumDoFCheck":
+                if name == "MinimumDoFCheck" and isinstance(mask, int):
                     sdc["summary"][name] = 0 if mask > 0 else 1
                 else:
                     sdc["summary"][name] = int(np.nansum(mask.to_numpy()))
@@ -125,18 +181,13 @@ class ManyChecksResults:
 def mask_to_boolmask(mask: pd.DataFrame) -> pd.DataFrame:
     """Tidy up glitches in mask."""
     # pd.crosstab returns nan for an empty cell
-    mask.fillna(value=1, inplace=True)
+    mask = mask.fillna(value=1, inplace=False)
     mask = mask.astype(bool)
     return mask
 
 
-def status_summary_from_mask(mask: pd.Dataframe) -> tuple[str, str]:
+def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
     """Get status and summary from mask.
-
-    Parameters
-    ----------
-    mask : pd.Dataframe
-        the output of running some condition over a table
 
     Returns
     -------
@@ -149,66 +200,6 @@ def status_summary_from_mask(mask: pd.Dataframe) -> tuple[str, str]:
     # name of check that related mask gets prepended to summary in run_checks()
     summary = f"{status} - {truecount} cells may need suppressing.\n"
     return status, summary
-
-
-def get_empty_mask() -> pd.DataFrame:
-    """Return an empty pandas dataftrame with nominal bool contents."""
-    return pd.DataFrame(dtype=bool)
-
-
-def get_zeros_mask(model: TableModelDetails) -> pd.DataFrame:
-    """Create a data frame filled with zeros of same size as underlying table."""
-    args: tuple = model.get_crosstab_args()
-    kwargs: dict = model.get_crosstab_kwargs()
-    kwargs["aggfunc"] = kwargs["values"] = None
-    count_table = pd.crosstab(*args, **kwargs)
-    for col in count_table.columns:
-        count_table[col].values[:] = 0
-    return count_table
-
-
-def get_allfalse_mask(model: TableModelDetails) -> pd.DataFrame:
-    """Create a data frame filled with false of same size as underlying table."""
-    if model.model_type == "table":
-        args = model.get_crosstab_args()
-        thiskwargs = model.get_crosstab_kwargs()
-        thiskwargs["aggfunc"] = thiskwargs["values"] = None
-        mask = pd.crosstab(*args, **thiskwargs)
-        for col in mask.columns:
-            mask[col].values[:] = False
-        # logger.info(f'get_allfalse_mask for table, mask=:\n{mask}')
-
-    else:  # array
-        series_mask = model.index[0].value_counts()
-        series_mask.iloc[:] = False
-        mask = pd.DataFrame(series_mask)
-        # logger.info(f'get_allfalse_mask for other {model.model_type}, mask=:\n{mask}')
-
-    return mask_to_boolmask(mask)
-
-
-def get_count_table(model: TableModelDetails) -> pd.DataFrame:
-    """Make count table as specified by model."""
-    args = model.get_crosstab_args()
-    thiskwargs = model.get_crosstab_kwargs()
-    thiskwargs["values"] = None
-    thiskwargs["aggfunc"] = None
-    return pd.crosstab(*args, **thiskwargs)
-
-
-def run_check_from_aggfunc(
-    model: TableModelDetails, aggfunc: Callable
-) -> tuple[str, str, pd.DataFrame]:
-    """Run a check given a table model and an aggregation function."""
-    args = model.get_crosstab_args()
-    # logger.info(f'check from aggfunc args={args}')
-    thiskwargs = model.get_crosstab_kwargs()
-    thiskwargs["aggfunc"] = aggfunc
-    mask = pd.crosstab(*args, **thiskwargs)
-    # logger.info(f'run check from aggfunc mask={mask}')
-    mask = mask_to_boolmask(mask)
-    status, summary = status_summary_from_mask(mask)
-    return status, summary, mask
 
 
 ###################################################################################
@@ -245,7 +236,7 @@ class SDCChecks:
         risk_appetite : dict
             Dictionary of risk appetite values
         TODO
-            move risk_appetite from construvtor to model class
+            move risk_appetite from constructor to model class
             as it is in TableModelDetails class anyway
         """
         # load lookup tables from json
@@ -259,6 +250,9 @@ class SDCChecks:
         path3: pathlib.Path = pathlib.Path(__file__).with_name("risks.json")
         with open(path3, encoding="utf=8") as handle:
             self.risks = json.loads(handle.read())
+        path4: pathlib.Path = pathlib.Path(__file__).with_name("checks.json")
+        with open(path4, encoding="utf=8") as handle:
+            self.checks = json.loads(handle.read())
 
         # map names of checks onto methods
         self.check_to_method: dict = {
@@ -268,27 +262,11 @@ class SDCChecks:
             "MinimumThresholdCheck": self.check_min_threshold,
             "StatbarnDataCheck": self.manual_check,
             "NKCheck": self.check_nk_dominance,
-            "PQCheck": self.check_pq_dominance,
+            "PPercentCheck": self.check_ppercent_dominance,
             "PresenceOfLinkedTableCheck": self.check_linked_table,
             "RequiredZeroCheck": self.check_required_zero,
             "PresenceOfZeroCheck": self.check_presence_of_zero,
         }
-        # set globals needed for aggregation functions
-        if len(self.risk_appetite) > 0:
-            aggregationfunctions.THRESHOLD = self.risk_appetite["safe_threshold"]
-            aggregationfunctions.SAFE_PRATIO_P = self.risk_appetite["safe_pratio_p"]
-            aggregationfunctions.SAFE_NK_N = self.risk_appetite["safe_nk_n"]
-            aggregationfunctions.SAFE_NK_K = self.risk_appetite["safe_nk_k"]
-            aggregationfunctions.CHECK_MISSING_VALUES = self.risk_appetite[
-                "check_missing_values"
-            ]
-            aggregationfunctions.ZEROS_ARE_DISCLOSIVE = self.risk_appetite[
-                "zeros_are_disclosive"
-            ]
-            # set globals for survival analysis
-            aggregationfunctions.SURVIVAL_THRESHOLD = self.risk_appetite[
-                "survival_safe_threshold"
-            ]
 
     def get_sdctokens_for_analysis(self, statname: str) -> dict:
         """Get list of sdc tokens to run for a given analysis.
@@ -304,7 +282,6 @@ class SDCChecks:
         """
         prefix = "https://www.w3id.org/statbarnsdc#"
         statbarn = self.analyses.get(statname)["statbarn"]
-        logger.debug(f"{statname} is a form of {statbarn}")
         sdc_dict: dict = {
             "analysis_uri": self.analyses[statname]["uri"],
             "statbarn": self.analyses[statname]["statbarn"],
@@ -329,14 +306,36 @@ class SDCChecks:
 
         return sdc_dict
 
-    def run_checks_for_analysis(self, analysis_name: str, model: Any) -> ChecksResults:
-        """Run all the checks needed for a given type of analysis and report outcomes.
+    def get_evidence_forall_analyses(
+        self, analyses: list[str], model: Any
+    ) -> SDCEvidence:
+        """Collate the evidence needed to do SDC for all the analyses requested by a query."""
+        evidence_needed: set = set()
+        for analysis_name in analyses:
+            checks_needed = self.get_sdctokens_for_analysis(analysis_name)[
+                "checks_needed"
+            ]
+            for check in checks_needed:
+                evidence_needed.update(self.checks[check]["evidence"])
+        logger.debug(
+            f"model has type {type(model)}, evidence needed for analyses {analyses} is {evidence_needed}"
+        )
+        thevidence = SDCEvidence()
+        thevidence.populate_from_list(evidence_needed, model)
+        return thevidence
+
+    def run_checks_for_analysis(
+        self, analysis_name: str, evidence: SDCEvidence, model: Any
+    ) -> ChecksResults:
+        """Given a set of evidence, run all the checks needed for a given type of analysis and report outcomes.
 
         Parameters
         ----------
         analysis_name : str
             name of the type of analysis
             should match a type of analysis from statbarnsdc ontology
+        evidence : SDCEvidence
+            evidence collected in previous stage
         model : Any
             either the trained model (for regression etc)
             or sufficient details to recreate a table
@@ -358,16 +357,11 @@ class SDCChecks:
                     of checkname (str): status (str)
         """
         if analysis_name not in self.analyses.keys():
-            # logger.info(f"keys are : {list(self.analyses.keys())}")
             return ChecksResults(
                 "Review", "Name of analysis not recognised in ontology", {}, {}
             )
 
         sdc_dict = self.get_sdctokens_for_analysis(analysis_name)
-
-        # logger.info(f"details for analysis {analysis_name} are:")
-        # for key, val in sdc_dict.items():
-        #    logger.debug(f"{key} : {val}")
 
         statuses: list = []
         summaries: list = []
@@ -376,7 +370,7 @@ class SDCChecks:
 
         for check in sdc_dict["checks_needed"]:
             checkfunc = self.check_to_method[check]
-            status, summary, outcome = checkfunc(analysis_name, model)
+            status, summary, outcome = checkfunc(analysis_name, evidence, model)
             # prepend name of check to summary
             statuses.append(status)
             summaries.append(check + ": " + summary)
@@ -385,7 +379,6 @@ class SDCChecks:
         logger.debug(
             f"statuses : {statuses}\nsummary: {summaries}\noutcomes: {outcomes}\n"
         )
-        # logger.info(analysis_name +" : " + summaries)
 
         if "fail" in statuses:
             overall_status = "fail"
@@ -398,10 +391,12 @@ class SDCChecks:
         for summ in summaries:
             if operator.contains(summ, "review") or operator.contains(summ, "fail"):
                 shortsummary += summ
-        logger.info("%s : %s", overall_status, shortsummary)
+        logger.debug("%s : %s", overall_status, shortsummary)
         return ChecksResults(overall_status, summary, outcomes, sdc_dict)
 
-    def check_model_dof(self, name: str, model: Any) -> tuple[str, str, int]:
+    def check_model_dof(
+        self, name: str, evidence: SDCEvidence, model: Any
+    ) -> tuple[str, str, int]:
         """Check model DOF.
 
         Parameters
@@ -420,37 +415,26 @@ class SDCChecks:
         float
             the residual degrees of freedom.
         """
-        status = "fail"
-        dof: int = -999
-        if isinstance(model, TableModelDetails):
-            dof = model.df_resid
-        elif not hasattr(model, "df_resid"):
-            return (
-                "fail",
-                "model does not have attribute df_resid so check could not run",
-                -1,
-            )
-
-        else:
-            dof = int(model.df_resid)
+        _, _ = name, model
         threshold: int = int(self.risk_appetite["safe_dof_threshold"])
-        if dof < threshold:
+
+        status = "pass"
+        comparator = ">="
+
+        if isinstance(evidence.dof, int) and evidence.dof < threshold:
             status = "fail"
             comparator = "<"
-        else:
-            status = "pass"
-            comparator = ">="
+        if isinstance(evidence.dof, pd.DataFrame):
+            fail_table = evidence.dof < threshold
+            if fail_table.any().any():
+                status = "fail"
+                comparator = "<"
 
-        summary = f"{status} dof={dof} {comparator} {threshold}"
-
-        logger.debug("in checks.check_model_dof()")
-        logger.debug(
-            "%s(), status: %s(), summary: %s(), outcome: %s", name, status, summary, dof
-        )
-        return status, summary, dof
+        summary = f"{status} dof={evidence.dof} {comparator} {threshold}"
+        return status, summary, evidence.dof
 
     def check_all_same(
-        self, name: str, model: TableModelDetails
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
         """Check whether all values in cells are the same .
 
@@ -458,6 +442,7 @@ class SDCChecks:
         ----------
         name : str
             The name of the model.
+        evidence : SDCEvidence
         model : TableModelDetails
             definition of a table
 
@@ -470,12 +455,13 @@ class SDCChecks:
         pandas DataFrame
             binary mask with same config as the underlying table.
         """
-        _ = name
-
-        return run_check_from_aggfunc(model, agg_values_are_same)
+        _, _ = name, model
+        mask = evidence.interim_tables["values_are_same"]
+        status, summary = get_status_summary_from_mask(mask)
+        return status, summary, mask
 
     def check_missing(
-        self, name: str, model: TableModelDetails
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
         """Check whether any  cells have missing values .
 
@@ -495,12 +481,13 @@ class SDCChecks:
         pandas DataFrame
             binary mask with same config as the underlying table.
         """
-        _ = name
-
-        return run_check_from_aggfunc(model, agg_missing)
+        _, _ = name, model
+        mask = evidence.interim_tables["missing"]
+        status, summary = get_status_summary_from_mask(mask)
+        return status, summary, mask
 
     def check_min_threshold(
-        self, name: str, model: TableModelDetails
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
         """Check for small numbers of respondents in cells.
 
@@ -524,8 +511,12 @@ class SDCChecks:
 
         model_type = model.model_type
         if model_type == "table":
-            count_table = get_count_table(model)
-            mask = count_table < self.risk_appetite["safe_threshold"]
+            mask = (
+                evidence.interim_tables["count_table"]
+                < self.risk_appetite["safe_threshold"]
+            )
+            status, summary = get_status_summary_from_mask(mask)
+            return status, summary, mask
         else:  # array
             data = model.index[0]
             if model.command == "hist":
@@ -540,20 +531,16 @@ class SDCChecks:
                 the_array = data
             count_series = the_array.value_counts()
             mask_series = count_series < self.risk_appetite["safe_threshold"]
-            mask = pd.DataFrame(mask_series)
-
-        # print(f'mask in mintheshold= {mask}')
-        mask = mask_to_boolmask(mask)
-        # print(f'bool mask in minthreshold= {mask}')
-        status, summary = status_summary_from_mask(mask)
-        if model.command == "hist":
-            summary += (
-                " Review Notes: Please check extreme bin edges are not disclosive."
-            )
-        return status, summary, mask
+            mask = mask_to_boolmask(pd.DataFrame(mask_series))
+            status, summary = get_status_summary_from_mask(mask)
+            if model.command == "hist":
+                summary += (
+                    " Review Notes: Please check extreme bin edges are not disclosive."
+                )
+            return status, summary, mask
 
     def manual_check(
-        self, name: str, model: TableModelDetails
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
         """Report that a manual check is needed.
 
@@ -573,7 +560,7 @@ class SDCChecks:
         pandas DataFrame
             binary mask with same config as the underlying table.
         """
-        _ = name
+        _, _ = name, evidence
 
         model_type = model.model_type
         if model_type not in ["table", "array", "survival"]:
@@ -581,7 +568,7 @@ class SDCChecks:
             return (
                 "fail",
                 "testing table: dict passed as model in insufficient",
-                get_empty_mask(),
+                pd.DataFrame(),
             )
         if model_type == "table":
             summary = (
@@ -593,12 +580,12 @@ class SDCChecks:
                 "review: a manual check may be needed "
                 "if related plots have been produced"
             )
-        return "review", summary, get_allfalse_mask(model)
+        return "review", summary, model.get_allfalse_table()
 
     def check_nk_dominance(
-        self, name: str, model: TableModelDetails
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """Check for NK dominace within each cell.
+        """Check for NK dominance within each cell.
 
         Parameters
         ----------
@@ -616,11 +603,24 @@ class SDCChecks:
         pandas DataFrame
             binary mask with same config as the underlying table.
         """
-        _ = name
-        return run_check_from_aggfunc(model, agg_nk)
+        _, _ = name, model
+        if evidence.interim_tables["num_negative"].sum().sum() > 0:
+            negs = evidence.interim_tables["num_negative"] > 0
+            return (
+                "review",
+                "Dominance not defined when negative value are present",
+                negs,
+            )
+        proportionmask = (
+            evidence.interim_tables["top_n_sum"] / evidence.interim_tables["sum"]
+        )
+        logger.debug(f"NK proportionmask:\n{proportionmask}\n")
+        mask = proportionmask >= self.risk_appetite["safe_nk_k"]
+        status, summary = get_status_summary_from_mask(mask)
+        return status, summary, mask
 
-    def check_pq_dominance(
-        self, name: str, model: TableModelDetails
+    def check_ppercent_dominance(
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
         """Check for PQ dominance within each cell.
 
@@ -640,11 +640,26 @@ class SDCChecks:
         pandas DataFrame
             binary mask with same config as the underlying table.
         """
-        _ = name
-        return run_check_from_aggfunc(model, agg_p_percent)
+        _, _ = name, model
+
+        if evidence.interim_tables["num_negative"].sum().sum() > 0:
+            negs = evidence.interim_tables["num_negative"] > 0
+            return (
+                "review",
+                "Dominance not defined when negative value are present",
+                negs,
+            )
+
+        proportionmask = (
+            evidence.interim_tables["top_2_sum"] / evidence.interim_tables["sum"]
+        )
+        logger.debug(f"p percent proportionmask:\n{proportionmask}\n")
+        mask = proportionmask >= self.risk_appetite["safe_pratio_p"]
+        status, summary = get_status_summary_from_mask(mask)
+        return status, summary, mask
 
     def check_linked_table(
-        self, name: str, model: TableModelDetails
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
         """Check for presence of linked tables.
 
@@ -664,17 +679,17 @@ class SDCChecks:
         pandas DataFrame
             binary mask with same config as the underlying table.
         """
-        _ = name
+        _, _ = name, evidence
 
         summary = (
             "A manual review is needed."
             f" Variables defining table are:  {model.get_dimension_names()}.\n"
         )
 
-        return "review", summary, get_allfalse_mask(model)
+        return "review", summary, model.get_allfalse_table()
 
     def check_required_zero(
-        self, name: str, model: TableModelDetails
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
         """Check for.
 
@@ -695,7 +710,8 @@ class SDCChecks:
             binary mask with same config as the underlying table.
         """
         _ = name
-        mask = get_allfalse_mask(model)
+        _ = evidence
+        mask = model.get_allfalse_table()
         qualifier = ""
         if not self.risk_appetite["zeros_are_disclosive"]:
             qualifier = "not"
@@ -703,7 +719,7 @@ class SDCChecks:
         return "pass", f"zeros are {qualifier} considered disclosive.\n", mask
 
     def check_presence_of_zero(
-        self, name: str, model: TableModelDetails
+        self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
         """Check for presence of cells with values zero.
 
@@ -725,17 +741,17 @@ class SDCChecks:
         """
         _ = name
 
-        count_table = get_count_table(model)
+        count_table = evidence.interim_tables["count_table"]
 
         if self.risk_appetite["zeros_are_disclosive"]:
             # mask has true for disclosive cells where count==0
             mask = count_table == 0
-            status, summary = status_summary_from_mask(mask)
+            status, summary = get_status_summary_from_mask(mask)
 
         else:
-            mask = get_allfalse_mask(model)
-            status, summary = status_summary_from_mask(mask)
-            summary = summary + " - risk appetite states zeros not disclosive.\n"
+            mask = model.get_allfalse_table()
+            status, summary = get_status_summary_from_mask(mask)
+            summary = summary + " - risk appetite states zeros not disclosive."
         return status, summary, mask
 
     def get_mask_sdc(self, name: str, mask: pd.DataFrame) -> dict:

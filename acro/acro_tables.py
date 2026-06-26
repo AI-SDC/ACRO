@@ -14,9 +14,9 @@ from matplotlib import pyplot as plt
 from pandas import DataFrame
 
 from . import utils
-from .aggregationfunctions import agg_mode
-from .checks import ManyChecksResults, SDCChecks
 from .record import Records
+from .sdc_agg_funcs import agg_mode
+from .sdcchecks import ManyChecksResults, SDCChecks, SDCEvidence
 from .table_utils import (
     aggfunc_to_strings,
     append_rounded_margins,
@@ -289,11 +289,17 @@ class Tables:
 
         #### Step 2 run the checks and gather evidence
         analysis_names: list[str] = aggfunc_to_strings(aggfunc)
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            analysis_names, model_details
+        )
+
         # extra layer of loops as requested tables may have more than one agg func
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
             collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(analysis, model_details)
+                self.sdc_checks.run_checks_for_analysis(
+                    analysis, evidence, model_details
+                )
             )
 
         logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
@@ -478,10 +484,15 @@ class Tables:
 
         #### Step 2 run the checks and gather evidence
         analysis_names: list[str] = aggfunc_to_strings(aggfunc)
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            analysis_names, model_details
+        )
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
             collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(analysis, model_details)
+                self.sdc_checks.run_checks_for_analysis(
+                    analysis, evidence, model_details
+                )
             )
 
         logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
@@ -590,9 +601,12 @@ class Tables:
 
         #### Step 2 run the checks and gather evidence
         analysis = "KaplanMeier"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis], model_details
+        )
         collatedres = ManyChecksResults()
         collatedres.allchecksresults[analysis] = (
-            self.sdc_checks.run_checks_for_analysis(analysis, model_details)
+            self.sdc_checks.run_checks_for_analysis(analysis, evidence, model_details)
         )
 
         fair_dict = collatedres.get_overall_fair()
@@ -815,9 +829,14 @@ class Tables:
                 risk_appetite=self.sdc_checks.risk_appetite,
                 command="hist",
             )
+            evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+                [analysis], model_details
+            )
             collatedres = ManyChecksResults()
             collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(analysis, model_details)
+                self.sdc_checks.run_checks_for_analysis(
+                    analysis, evidence, model_details
+                )
             )
 
             sdc_details: dict = collatedres.get_table_sdc()
@@ -927,10 +946,14 @@ class Tables:
             risk_appetite=self.sdc_checks.risk_appetite,
             command="pie",
         )
+
         #### Step 2 run the checks and gather evidence
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis], model_details
+        )
         collatedres = ManyChecksResults()
         collatedres.allchecksresults[analysis] = (
-            self.sdc_checks.run_checks_for_analysis(analysis, model_details)
+            self.sdc_checks.run_checks_for_analysis(analysis, evidence, model_details)
         )
 
         sdc_details: dict = collatedres.get_table_sdc()

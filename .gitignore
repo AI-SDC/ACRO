@@ -140,6 +140,7 @@ playing/
 
 # outputs folder
 /notebooks/outputs/
+/notebooks/old/ 
 
 # test output
 /test.xlsx

@@ -32,6 +32,7 @@ However, TRE airlock procedures mean it is may not be  possible to read from w3i
 
 ## Flowchart
 ```mermaid
+<<<<<<< HEAD
 flowchart TD
   A[acro.___init__] --> B[Create SDCChecks instance];
   B --> C[populate instance from .json files and config.yaml];
@@ -54,6 +55,63 @@ flowchart TD
   O --> M;
   L -- review --> M;
 
+=======
+flowchart LR
+
+  subgraph INIT["Session Initialisation"]
+        direction TB
+        A([acro session
+           created]) --> B[Create SDCChecks
+                                 instance]; 
+        B --> C[populate instance]; 
+        B1[(Local copy  
+           of SDCStatbarn  
+           ontology)] --> C; 
+        B2[(risk
+            appetite)]--> C;
+        C --> SDCParams@{ shape: bow-rect, label: "SDC session params." };
+    end
+  subgraph Evidence["Collect Evidence"]
+      direction TB
+      SDCParams2@{ shape: bow-rect, label: "SDC session params." }
+      D[analysis method called];
+      D --> E{Table or Regression};
+      E -- table/plot --> G[collect list of summary
+                            statistics requested];
+      G --> H["make  TableDetail
+       instance"];
+      E -- regression --> F[collect type
+                             of regression];
+      F --> I[lookup lists of 
+                statbarn, risks
+                 and checks];
+      H --> I;
+      SDCParams2-->I;
+      I --> J[lookup list of evidence
+       required for checks];
+      SDCParams2 --> J;
+      SDCParams2 -->H;
+      J -->K[collect evidence in _SDCEvidence_ instance];
+      K -->  TheEvidence@{ shape: bow-rect, label: "SDCEvidence instance." };
+
+  end
+  subgraph Output["Output"]
+      direction TB
+      TheEvidence2@{ shape: bow-rect, label: "SDCEvidence instance." } -->K1{Using trusted aggregator?};
+      K1 -- YES --> K2[output to aggregator];
+      K1 -- NO -->  L{run checks on evidence};
+      L -- pass --> M[add record to acro session];
+      L -- fail and suppress --> N[identify and redact vulnerable records, rerun analysis];
+      N --> M;
+      L -- fail and round --> O[round outputs to appropriate base];
+      O --> M;
+      L -- review --> M;
+      M -->ACROitem@{ shape: bow-rect, label: "ACRO record" };
+    end
+  
+INIT --> Evidence;
+Evidence --> Output;
+>>>>>>> 3f7722c (improved flowcharts)
 
 
 

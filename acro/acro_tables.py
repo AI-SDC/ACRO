@@ -18,7 +18,6 @@ from .record import Records
 from .sdc_agg_funcs import agg_mode
 from .sdcchecks import ManyChecksResults, SDCChecks, SDCEvidence
 from .table_utils import (
-    AGGFUNC_TO_TYPE as AGGFUNC,
     aggfunc_to_strings,
     append_rounded_margins,
     axis_to_list,

@@ -71,7 +71,7 @@ def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
     return outcome
 
 
-def collate_risk_assessments(
+def collate_risk_assessments(  # noqa: C901
     table: DataFrame, allcheckresults: dict[str, ChecksResults]
 ) -> DataFrame:
     """Collate the Risk Assessment for a table.
@@ -111,9 +111,7 @@ def collate_risk_assessments(
                 if name in checks_seen:
                     continue
                 checks_seen.append(name)
-                tmp_df = DataFrame(
-                    index=outcome_df.index, columns=outcome_df.columns
-                )
+                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
                 tmp_df.fillna("", inplace=True)
                 if not isinstance(mask, DataFrame):
                     continue
@@ -129,8 +127,12 @@ def collate_risk_assessments(
                                 mask_cols_aligned.append(sub_c)
                         else:
                             mask_cols_aligned.append(c)
-                    mask_aligned = DataFrame(index=mask.index, columns=outcome_df.columns)
-                    for col_out, col_mask in zip(outcome_df.columns, mask_cols_aligned):
+                    mask_aligned = DataFrame(
+                        index=mask.index, columns=outcome_df.columns
+                    )
+                    for col_out, col_mask in zip(
+                        outcome_df.columns, mask_cols_aligned, strict=False
+                    ):
                         if col_mask in mask.columns:
                             mask_aligned[col_out] = mask[col_mask]
                 elif n_diff < 0:
@@ -142,13 +144,13 @@ def collate_risk_assessments(
                 shared_cols = outcome_df.columns.intersection(mask_aligned.columns)
                 if shared_index.empty or shared_cols.empty:
                     continue
-                mask_trimmed = mask_aligned.reindex(index=shared_index, columns=shared_cols)
-                mask_trimmed = mask_trimmed.fillna(value=1).astype(bool)
-                tmp_df.loc[shared_index, shared_cols] = (
-                    tmp_df.loc[shared_index, shared_cols].where(
-                        ~mask_trimmed, other=name + "; "
-                    )
+                mask_trimmed = mask_aligned.reindex(
+                    index=shared_index, columns=shared_cols
                 )
+                mask_trimmed = mask_trimmed.fillna(value=1).astype(bool)
+                tmp_df.loc[shared_index, shared_cols] = tmp_df.loc[
+                    shared_index, shared_cols
+                ].where(~mask_trimmed, other=name + "; ")
                 outcome_df += tmp_df
 
         outcome_df = outcome_df.replace({"": "ok"})

@@ -2,10 +2,11 @@
 
 import json
 import os
-import sys
 import shutil
-import matplotlib
-matplotlib.use("Agg")
+
+import matplotlib as mpl
+
+mpl.use("Agg")
 from unittest.mock import patch
 
 import numpy as np
@@ -13,10 +14,17 @@ import pandas as pd
 import pytest
 import statsmodels.api as sm
 
-from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
-from acro.acro_tables import _rounded_survival_table #, crosstab_with_totals
+from acro import (
+    ACRO,
+    add_constant,
+    add_to_acro,
+    record,
+    table_utils,
+    utils,
+)
+from acro.acro_tables import _rounded_survival_table  # , crosstab_with_totals
 from acro.record import Records, load_records
-from acro import table_utils
+
 # pylint: disable=redefined-outer-name,too-many-lines
 
 PATH: str = "RES_PYTEST"
@@ -25,10 +33,22 @@ PATH: str = "RES_PYTEST"
 @pytest.fixture(autouse=True)
 def cleanup_path():
     """Clean up output directories before and after each test."""
-    for d in ["RES_PYTEST", "outputs", "acro_artifacts", "sdc_results", "test_add_to_acro"]:
+    for d in [
+        "RES_PYTEST",
+        "outputs",
+        "acro_artifacts",
+        "sdc_results",
+        "test_add_to_acro",
+    ]:
         shutil.rmtree(d, ignore_errors=True)
     yield
-    for d in ["RES_PYTEST", "outputs", "acro_artifacts", "sdc_results", "test_add_to_acro"]:
+    for d in [
+        "RES_PYTEST",
+        "outputs",
+        "acro_artifacts",
+        "sdc_results",
+        "test_add_to_acro",
+    ]:
         shutil.rmtree(d, ignore_errors=True)
 
 
@@ -84,13 +104,15 @@ def test_crosstab_without_suppression(data):
     acro = ACRO(suppress=False)
     _ = acro.crosstab(data.year, data.grant_type)
     output = acro.results.get_index(0)
-    correct_summary: str = ("FrequencyTable : \n" 
-         " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
-         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
-                           )
+    correct_summary: str = (
+        "FrequencyTable : \n"
+        " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
+        " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
+    )
 
-    
-    assert output.summary == correct_summary,f'expected:\n{correct_summary}\n---\ngot\n{output.summary}\n---'
+    assert output.summary == correct_summary, (
+        f"expected:\n{correct_summary}\n---\ngot\n{output.summary}\n---"
+    )
     assert 48 == output.output[0]["R/G"].sum()
 
 
@@ -101,8 +123,8 @@ def test_crosstab_with_aggfunc_mode(data):
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mode"
     )
     output = acro.results.get_index(0)
-    correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
-##TODO    assert output.summary == correct_summary
+    # correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
+    # ##TODO    assert output.summary == correct_summary
     assert 913000 == output.output[0]["R/G"].iat[0]
 
 
@@ -111,41 +133,43 @@ def test_crosstab_with_aggfunc_sum(data, acro):
     acro = ACRO(suppress=False)
     thetable = acro.crosstab(
         data.year,
-        [ data.survivor],
+        [data.survivor],
         values=data.inc_grants,
         aggfunc="sum",
     )
-    pandastable= pd.crosstab(  
+    pandastable = pd.crosstab(
         data.year,
-        [ data.survivor],
+        [data.survivor],
         values=data.inc_grants,
-        aggfunc="sum",)
+        aggfunc="sum",
+    )
     assert thetable.equals(pandastable)
-    output_0 = acro.results.get_index(0)
 
 
 def test_crosstab_threshold(data, acro):
     """Crosstab threshold test."""
     acro.enable_suppression()
     _ = acro.crosstab(data.year, data.grant_type)
-    
+
     output = acro.results.get_index(0)
     total_nan: int = output.output[0]["R/G"].isnull().sum()
-    assert total_nan == 6,f'output is\n{output.output[0]}'
-    
+    assert total_nan == 6, f"output is\n{output.output[0]}"
+
     positions = output.sdc["cells"]["MinimumThresholdCheck"]
     for pos in positions:
         row, col = pos
         assert np.isnan(output.output[0].iloc[row, col])
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
-    correct_summary:str = (
-        "FrequencyTable : \n" 
+    correct_summary: str = (
+        "FrequencyTable : \n"
         " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
     output = results.get_index(0)
-    assert output.summary == correct_summary,f'expected:\n{correct_summary}\n---\ngot:\n{output.summary}\n----'
+    assert output.summary == correct_summary, (
+        f"expected:\n{correct_summary}\n---\ngot:\n{output.summary}\n----"
+    )
     shutil.rmtree(PATH)
 
 
@@ -156,15 +180,17 @@ def test_crosstab_multiple(data, acro):
     )
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
-    correct_summary:str = (
-        "Mean : \n" 
+    correct_summary: str = (
+        "Mean : \n"
         "NKCheck: fail - 1 cells may need suppressing.\n"
         " PPercentCheck: fail - 2 cells may need suppressing.\n"
         " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
     output = results.get_index(0)
-    assert output.summary == correct_summary,f'expected:\n{correct_summary}\n---\ngot:\n{output.summary}\n----'
+    assert output.summary == correct_summary, (
+        f"expected:\n{correct_summary}\n---\ngot:\n{output.summary}\n----"
+    )
     shutil.rmtree(PATH)
 
 
@@ -482,7 +508,7 @@ def test_custom_output(acro):
 
 def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with missing values."""
-    acro.sdc_checks.risk_appetite['check_missing_values'] = True
+    acro.sdc_checks.risk_appetite["check_missing_values"] = True
     acro.suppress = False
     data.loc[0:10, "inc_grants"] = np.nan
     _ = acro.crosstab(
@@ -501,9 +527,9 @@ def test_missing(data, acro, monkeypatch):
     shutil.rmtree(PATH)
 
 
-def test_suppression_error(caplog):
+@pytest.mark.skip(reason="Not yet implemented")
+def test_suppression_error():
     """Apply suppression type error test."""
-    pass
 
 
 def test_adding_exception(acro):
@@ -650,9 +676,6 @@ def test_surv_func(acro):
             }
         )
         data = mock_data
-        skip_exact_assertion = True
-    else:
-        skip_exact_assertion = False
 
     data = data.loc[data.sex == "F", :]
     _ = acro.surv_func(data.futime, data.death, output="table")
@@ -694,7 +717,7 @@ def test_rounded_survival_table():
 
 def test_zeros_are_not_disclosive(data, acro):
     """Test that zeros are handled as not disclosive when `zeros_are_disclosive=False`."""
-    acro.sdc_checks.risk_appetite['zeros_are_disclosive'] = False
+    acro.sdc_checks.risk_appetite["zeros_are_disclosive"] = False
     _ = acro.pivot_table(
         data,
         index=["grant_type"],
@@ -764,7 +787,7 @@ def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
     assert output.status in {"review", "fail"}
 
 
-def test_crosstab_with_totals_and_empty_data(data, acro, caplog):
+def test_crosstab_with_totals_and_empty_data(data, acro):
     """Test crosstab with margins on a fully disclosive subset."""
     data = data[
         (data.year == 2010)
@@ -853,9 +876,7 @@ def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
     assert output.output[0]["All"].iat[12] > 0
 
 
-def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(
-    data, acro, caplog
-):
+def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data, acro):
     """Test std crosstab with suppression enabled."""
     _ = acro.crosstab(
         data.year,
@@ -960,9 +981,7 @@ def test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
     assert ("std", "G", "Alive in 2015") in output.output[0].columns
 
 
-def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
-    data, acro, caplog
-):
+def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(data, acro):
     """Test multi-aggfunc crosstab with suppression enabled."""
     _ = acro.crosstab(
         data.year,
@@ -986,8 +1005,7 @@ def test_histogram_disclosive(acro, caplog):
     output_0 = results.get_index(0)
 
     assert (
-        "Histogram will not be shown as the value column is disclosive."
-        in caplog.text
+        "Histogram will not be shown as the value column is disclosive." in caplog.text
     )
     assert output_0.status == "fail"
     assert output_0.output == []
@@ -998,7 +1016,6 @@ def test_histogram_non_disclosive(acro):
     """Test a non-disclosive histogram with a larger synthetic dataset."""
     rng = np.random.default_rng(42)
     data = pd.DataFrame({"value": rng.normal(size=2000)})
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
 
     result = acro.hist(data, "value", bins=5)
 
@@ -1148,30 +1165,30 @@ def test_finalise_interactive(data):
         shutil.rmtree(mypath)
 
 
-def TODOtest_crosstab_with_totals_raises_when_data_none():
+@pytest.mark.skip(reason="Not yet implemented")
+def test_crosstab_with_totals_raises_when_data_none():
     """Test that crosstab_with_totals raises AssertionError when data is None."""
     # When crosstab=False, data is not set from create_dataframe; passing data=None
     # must raise "data must be set when applying crosstab queries".
-    with pytest.raises(
-        AssertionError, match="data must be set when applying crosstab queries"
-    ):
-        crosstab_with_totals(
-            masks={},
-            aggfunc=None,
-            index=pd.Series([1, 2]),
-            columns=pd.Series([1, 2]),
-            values=None,
-            margins=False,
-            margins_name="All",
-            dropna=True,
-            crosstab=False,
-            data=None,
-        )
+    # with pytest.raises(
+    #     AssertionError, match="data must be set when applying crosstab queries"
+    # ):
+    #     crosstab_with_totals(
+    #         masks={},
+    #         aggfunc=None,
+    #         index=pd.Series([1, 2]),
+    #         columns=pd.Series([1, 2]),
+    #         values=None,
+    #         margins=False,
+    #         margins_name="All",
+    #         dropna=True,
+    #         crosstab=False,
+    #         data=None,
+    #     )
 
 
 def test_create_dataframe(data):
     """Test correct functionality of code to create data frame."""
-    pass
 
 
 def test_toggle_suppression():
@@ -1184,10 +1201,6 @@ def test_toggle_suppression():
     assert not acro.suppress
 
 
-
-
-
-
 def test_crosstab_multi_aggfunc(data):
     """Test acro crosstab with multi-aggfunc list e.g. ['mean', 'std']."""
     acro = ACRO(suppress=False)
@@ -1198,7 +1211,7 @@ def test_crosstab_multi_aggfunc(data):
         aggfunc=["mean", "std"],
         margins=False,
     )
-    pandastable= pd.crosstab(
+    pandastable = pd.crosstab(
         data["survivor"],
         data["grant_type"],
         values=data["inc_grants"],

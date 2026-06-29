@@ -654,9 +654,7 @@ class SDCChecks:
         # i.e. the remaining contributors are too small relative to the largest
         # Uses: sum, max (=top1), top_2_sum (=top1+top2)
         top1 = evidence.interim_tables["max"]
-        sub_total = (
-            evidence.interim_tables["sum"] - evidence.interim_tables["top_2_sum"]
-        )
+        sub_total = evidence.interim_tables["sum"] - evidence.interim_tables["top_2_sum"]
         # avoid division by zero; if top1==0, treat as non-disclosive
         p_val = sub_total.where(top1 == 0, sub_total / top1.replace(0, float("nan")))
         p_val = p_val.fillna(1.0)

@@ -71,7 +71,7 @@ def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
     return outcome
 
 
-def collate_risk_assessments(
+def collate_risk_assessments(  # noqa: C901
     table: DataFrame, allcheckresults: dict[str, ChecksResults]
 ) -> DataFrame:
     """Collate the Risk Assessment for a table.
@@ -111,28 +111,47 @@ def collate_risk_assessments(
                 if name in checks_seen:
                     continue
                 checks_seen.append(name)
-                try:
-                    tmp_df = DataFrame(
-                        index=outcome_df.index, columns=outcome_df.columns
+                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
+                tmp_df.fillna("", inplace=True)
+                if not isinstance(mask, DataFrame):
+                    continue
+                n_diff = outcome_df.columns.nlevels - mask.columns.nlevels
+                if n_diff > 0:
+                    mask_cols_aligned = []
+                    for c in outcome_df.columns:
+                        if isinstance(c, tuple):
+                            sub_c = c[n_diff:]
+                            if len(sub_c) == 1:
+                                mask_cols_aligned.append(sub_c[0])
+                            else:
+                                mask_cols_aligned.append(sub_c)
+                        else:
+                            mask_cols_aligned.append(c)
+                    mask_aligned = DataFrame(
+                        index=mask.index, columns=outcome_df.columns
                     )
-                    tmp_df.fillna("", inplace=True)
-                    # logger.info(f"name {name}, mask:\n{mask}")
-                    tmp_df[mask.values] = name + "; "
-                    # logger.info(f"tmpdf:\n{tmp_df}")
-                    outcome_df += tmp_df
-                    # logger.info(f"now outcome_df:\n{outcome_df}")
-                except TypeError:
-                    logger.warning("problem mask %s is not binary", name)
-                except ValueError as error:  # pragma: no cover
-                    error_message = (
-                        f"An error occurred with the following details"
-                        f":\n Name: {name}\n "
-                        f"Mask of size {mask.shape}"
-                        f"table of shape {table.shape}"
-                        f"current table:\n{outcome_df}\n"
-                        f"current mask:\n{tmp_df}\n"
-                    )
-                    raise ValueError(error_message) from error
+                    for col_out, col_mask in zip(
+                        outcome_df.columns, mask_cols_aligned, strict=False
+                    ):
+                        if col_mask in mask.columns:
+                            mask_aligned[col_out] = mask[col_mask]
+                elif n_diff < 0:
+                    mask_aligned = mask.droplevel(list(range(-n_diff)), axis=1)
+                else:
+                    mask_aligned = mask
+
+                shared_index = outcome_df.index.intersection(mask_aligned.index)
+                shared_cols = outcome_df.columns.intersection(mask_aligned.columns)
+                if shared_index.empty or shared_cols.empty:
+                    continue
+                mask_trimmed = mask_aligned.reindex(
+                    index=shared_index, columns=shared_cols
+                )
+                mask_trimmed = mask_trimmed.fillna(value=1).astype(bool)
+                tmp_df.loc[shared_index, shared_cols] = tmp_df.loc[
+                    shared_index, shared_cols
+                ].where(~mask_trimmed, other=name + "; ")
+                outcome_df += tmp_df
 
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))

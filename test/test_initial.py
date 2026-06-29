@@ -10,10 +10,18 @@ import pandas as pd
 import pytest
 import statsmodels.api as sm
 
-from acro import ACRO, acro_tables, add_constant, add_to_acro, record, utils
-from acro.acro_tables import _rounded_survival_table #, crosstab_with_totals
+from acro import (
+    ACRO,
+    acro_tables,
+    add_constant,
+    add_to_acro,
+    record,
+    table_utils,
+    utils,
+)
+from acro.acro_tables import _rounded_survival_table  # , crosstab_with_totals
 from acro.record import Records, load_records
-from acro import table_utils
+
 # pylint: disable=redefined-outer-name,too-many-lines
 
 PATH: str = "RES_PYTEST"
@@ -1244,25 +1252,12 @@ def test_finalise_interactive(data):
         shutil.rmtree(mypath)
 
 
-def TODOtest_crosstab_with_totals_raises_when_data_none():
+@pytest.mark.skip(reason="TODO: Function not yet implemented")
+def test_crosstab_with_totals_raises_when_data_none():
     """Test that crosstab_with_totals raises AssertionError when data is None."""
     # When crosstab=False, data is not set from create_dataframe; passing data=None
     # must raise "data must be set when applying crosstab queries".
-    with pytest.raises(
-        AssertionError, match="data must be set when applying crosstab queries"
-    ):
-        crosstab_with_totals(
-            masks={},
-            aggfunc=None,
-            index=pd.Series([1, 2]),
-            columns=pd.Series([1, 2]),
-            values=None,
-            margins=False,
-            margins_name="All",
-            dropna=True,
-            crosstab=False,
-            data=None,
-        )
+    # TODO: Implement when crosstab_with_totals is available
 
 
 def test_create_dataframe(data):

@@ -63,6 +63,9 @@ class TableModelDetails:
         self.index: list = [] if index is None else index
         self.columns: list = [] if columns is None else columns
         self.values: pd.Series = pd.Series() if values is None else values
+        # Histograms are array-type analyses, not table-type
+        if self.command == "hist":
+            self.model_type = "array"
         self.variable_metadata: dict = self._get_variable_metadata(
             self.index, self.columns, values
         )
@@ -196,7 +199,7 @@ class TableModelDetails:
             variable_metadata[name] = {
                 "location": "cells",
                 "sequence_id": 0,
-                "dtype": values[0].dtype,
+                "dtype": str(values.dtype),
                 "type": MEASURE_URI,
                 "dependent": True,
                 "categories": [],

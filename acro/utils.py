@@ -129,6 +129,6 @@ def get_unique_artefact_filename(filename: str) -> str:
 def get_catdtype(series: pd.Series) -> pd.CategoricalDtype:
     """Get info for pandas datatype to convert series to CategoricalDtype."""
     ordered = True if series.astype(int, errors="ignore").dtype == "int64" else False
-    categories = np.sort(series.unique())
+    categories = np.sort(series.dropna().unique())
     cat_type = pd.CategoricalDtype(categories, ordered)
     return cat_type

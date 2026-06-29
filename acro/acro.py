@@ -72,9 +72,6 @@ class ACRO(Tables, Regression):
             The base to round to when ``mitigation="round"``. Defaults to the
             ``safe_round_base`` value from the yaml config.
         """
-        ### from current
-
-        ### end from current
         Tables.__init__(self, suppress=suppress, mitigation=mitigation)
         Regression.__init__(self, config)
         self.config: dict[str, Any] = {}

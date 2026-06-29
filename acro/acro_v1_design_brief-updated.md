@@ -33,7 +33,7 @@ However, TRE airlock procedures mean it is may not be  possible to read from w3i
 ## Flowchart
 ```mermaid
 flowchart TD
-  A[acro.___init__] --> B[Create SDCChecks instance]; 
+  A[acro.___init__] --> B[Create SDCChecks instance];
   B --> C[populate instance from .json files and config.yaml];
   C --> D[analysis method called];
   D --> E{Table or Regression};
@@ -53,7 +53,7 @@ flowchart TD
   L -- fail and round --> O[round outputs to appropriate base];
   O --> M;
   L -- review --> M;
-  
+
 
 
 
@@ -70,7 +70,7 @@ These commands all need similar information to perform SDCchecks, and running so
 
 The class also provides attributes and methods for capturing meta-data around the 'dimensions' (e.g. the categorical factors used to define rows/columns). In turn that supports preserving the range of possible values for dimensions via  the mechanism of  pandas `CategoricalDtype`s  (and setting `observed=False`) so they are not lost when data is redacted.
 
-Finally, since this class knows the structure of the desired table, it also provides support for producing tables wit the same strcuture that are needed for constructing evidence. Specifically: `get_count_table()`, `get_allfalse_table`, `get_zeros_table` and `get_newagg_table` (which accepts different aggregation functions).  
+Finally, since this class knows the structure of the desired table, it also provides support for producing tables with the same structure that are needed for constructing evidence. Specifically: `get_count_table()`, `get_allfalse_table`, `get_zeros_table` and `get_newagg_table` (which accepts different aggregation functions).
 
 2: `SDCChecks()` , with associate dataclasses `ChecksResults`,  `ManyChecksResults`, and `SDCEvidence' provides support for the main process of risk assessment.
 

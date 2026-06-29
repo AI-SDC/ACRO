@@ -521,10 +521,10 @@ class SDCChecks:
             data = model.index[0]
             if model.command == "hist":
                 bins = model.kwargs.get("bins", 10)
-                hist, bin_edges = np.histogram(data, bins)
-                binids = np.digitize(data, bin_edges)
-                # account for all possible bin ids
-                possibles = list(range(1, len(bin_edges) - 1))
+                hist, bin_edges = np.histogram(data.dropna(), bins)
+                binids = np.digitize(data.dropna(), bin_edges)
+                # account for all possible bin ids (1..num_bins inclusive)
+                possibles = list(range(1, len(bin_edges)))
                 cat_type = pd.CategoricalDtype(categories=possibles)
                 the_array = pd.Series(binids, dtype=cat_type)
             else:
@@ -650,11 +650,17 @@ class SDCChecks:
                 negs,
             )
 
-        proportionmask = (
-            evidence.interim_tables["top_2_sum"] / evidence.interim_tables["sum"]
+        # p-ratio rule: (sum - top1 - top2) / top1 < threshold
+        # i.e. the remaining contributors are too small relative to the largest
+        # Uses: sum, max (=top1), top_2_sum (=top1+top2)
+        top1 = evidence.interim_tables["max"]
+        sub_total = (
+            evidence.interim_tables["sum"] - evidence.interim_tables["top_2_sum"]
         )
-        logger.debug(f"p percent proportionmask:\n{proportionmask}\n")
-        mask = proportionmask >= self.risk_appetite["safe_pratio_p"]
+        # avoid division by zero; if top1==0, treat as non-disclosive
+        p_val = sub_total.where(top1 == 0, sub_total / top1.replace(0, float("nan")))
+        p_val = p_val.fillna(1.0)
+        mask = p_val < self.risk_appetite["safe_pratio_p"]
         status, summary = get_status_summary_from_mask(mask)
         return status, summary, mask
 

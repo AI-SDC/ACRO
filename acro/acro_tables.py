@@ -8,7 +8,6 @@ import os
 from inspect import stack
 from typing import Any
 
-import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from matplotlib import pyplot as plt
@@ -19,6 +18,7 @@ from .record import Records
 from .sdc_agg_funcs import agg_mode
 from .sdcchecks import ManyChecksResults, SDCChecks, SDCEvidence
 from .table_utils import (
+    AGGFUNC_TO_TYPE as AGGFUNC,
     aggfunc_to_strings,
     append_rounded_margins,
     axis_to_list,
@@ -33,18 +33,6 @@ from .utils import ALLOWED_MITIGATIONS
 
 logger = logging.getLogger("acro")
 
-# aggregation function parameters
-AGGFUNC: dict[str, str | Any] = {
-    "mean": "mean",
-    "median": "median",
-    "sum": "sum",
-    "std": "std",
-    "count": "count",
-    "mode": agg_mode,
-}
-
-CHECK_MISSING_VALUES: bool = False
-ZEROS_ARE_DISCLOSIVE: bool = True
 
 # survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
@@ -1084,203 +1072,3 @@ def _rounded_survival_table(
         )
     survival_table["rounded_survival_fun"] = rounded_survival_func
     return survival_table
-
-
-def _broadcast_mask_to_multiindex(
-    m: DataFrame, table: DataFrame, top_levels: list
-) -> DataFrame:
-    """Replicate a flat (or single-group) mask across each aggfunc top-level group.
-
-    Parameters
-    ----------
-    m : DataFrame
-        Flat mask with base columns only.
-    table : DataFrame
-        MultiIndex table whose top-level groups define the replication targets.
-    top_levels : list
-        Ordered list of unique top-level values from the table's MultiIndex columns.
-
-    Returns
-    -------
-    DataFrame
-        A mask with MultiIndex columns matching the table's column structure.
-    """
-    frames = []
-    for lvl in top_levels:
-        sub_cols = table[lvl].columns
-        sub_m = m.reindex(index=table.index, columns=sub_cols, fill_value=False)
-        sub_m.columns = pd.MultiIndex.from_product([[lvl], sub_m.columns])
-        frames.append(sub_m)
-    return pd.concat(frames, axis=1)
-
-
-def _align_mask_columns(m: DataFrame, table: DataFrame) -> DataFrame:
-    """Align the columns of mask *m* to match those of *table*.
-
-    Parameters
-    ----------
-    m : DataFrame
-        A single suppression mask.
-    table : DataFrame
-        The output table the mask should match.
-
-    Returns
-    -------
-    DataFrame
-        The mask with columns aligned to the table.
-    """
-    table_nlevels = table.columns.nlevels
-    mask_nlevels = m.columns.nlevels
-
-    if table_nlevels == 2 and mask_nlevels == 2:
-        table_top = table.columns.get_level_values(0).unique().tolist()
-        mask_top = m.columns.get_level_values(0).unique().tolist()
-        if len(mask_top) == 1 and len(table_top) > 1:
-            n_base = len(table.columns.get_level_values(1).unique())
-            base_mask = m.iloc[:, :n_base]
-            flat_cols = base_mask.columns.get_level_values(1)
-            base_mask = pd.DataFrame(base_mask.values, index=m.index, columns=flat_cols)
-            m = _broadcast_mask_to_multiindex(base_mask, table, table_top)
-    elif mask_nlevels < table_nlevels:
-        top_levels = table.columns.get_level_values(0).unique().tolist()
-        m = _broadcast_mask_to_multiindex(m, table, top_levels)
-    elif mask_nlevels > table_nlevels:
-        m = m.droplevel(0, axis=1)
-
-    return m
-
-
-def align_masks(table: DataFrame, masks: dict[str, DataFrame]) -> dict[str, DataFrame]:
-    """Align masks to the table's index and columns.
-
-    Parameters
-    ----------
-    table : DataFrame
-        Table to align masks to.
-    masks : dict[str, DataFrame]
-        Dictionary of tables specifying suppression masks.
-
-    Returns
-    -------
-    dict[str, DataFrame]
-        The aligned masks.
-    """
-    aligned_masks = {}
-    for name, mask in masks.items():
-        m = mask
-
-        # handle index level mismatch
-        if m.index.nlevels > table.index.nlevels:
-            m = m.droplevel(0, axis=0)
-
-        m = _align_mask_columns(m, table)
-
-        # reindex if still necessary
-        if not m.index.equals(table.index) or not m.columns.equals(table.columns):
-            try:
-                m = m.reindex(
-                    index=table.index, columns=table.columns, fill_value=False
-                )
-            except (ValueError, TypeError):  # pragma: no cover
-                logger.warning("Could not reindex mask %s", name)
-        aligned_masks[name] = m
-    return aligned_masks
-
-
-def apply_suppression(
-    table: DataFrame, masks: dict[str, DataFrame]
-) -> tuple[DataFrame, DataFrame]:
-    """Apply suppression to a table.
-
-    Parameters
-    ----------
-    table : DataFrame
-        Table to apply suppression.
-    masks : dict[str, DataFrame]
-        Dictionary of tables specifying suppression masks for application.
-
-    Returns
-    -------
-    DataFrame
-        Table to output with any suppression applied.
-    DataFrame
-        Table with outcomes of suppression checks.
-    """
-    logger.debug("apply_suppression()")
-    # align masks
-    masks = align_masks(table, masks)
-    safe_df = table.copy()
-    outcome_df = DataFrame(index=table.index, columns=table.columns)
-    outcome_df.fillna("", inplace=True)
-    # don't apply suppression if negatives are present
-    if "negative" in masks:
-        mask = masks["negative"]
-        outcome_df[mask.values] = "negative"
-    # don't apply suppression if missing values are present
-    elif "missing" in masks:
-        mask = masks["missing"]
-        outcome_df[mask.values] = "missing"
-    # apply suppression masks
-    else:
-        for name, mask in masks.items():
-            try:
-                safe_df[mask.values] = np.nan
-                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
-                tmp_df.fillna("", inplace=True)
-                tmp_df[mask.values] = name + "; "
-                outcome_df += tmp_df
-            except TypeError:
-                logger.warning("problem mask %s is not binary", name)
-            except ValueError as error:  # pragma: no cover
-                error_message = (
-                    f"An error occurred with the following details"
-                    f":\n Name: {name}\n Mask: {mask}\n Table: {table}"
-                )
-                raise ValueError(error_message) from error
-
-        outcome_df = outcome_df.replace({"": "ok"})
-    logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
-    return safe_df, outcome_df
-
-
-def create_dataframe(index: Any, columns: Any) -> DataFrame:
-    """Combine the index and columns in a dataframe and return the dataframe.
-
-    Parameters
-    ----------
-    index : array-like, Series, or list of arrays/Series
-        Values to group by in the rows.
-    columns : array-like, Series, or list of arrays/Series
-        Values to group by in the columns.
-
-    Returns
-    -------
-    Dataframe
-        Table of the index and columns combined.
-    """
-    empty_dataframe = pd.DataFrame([])
-
-    index_df = empty_dataframe
-    try:
-        if isinstance(index, list):
-            index_df = pd.concat(index, axis=1)
-        elif isinstance(index, pd.Series):
-            index_df = pd.DataFrame({index.name: index})
-    except (ValueError, TypeError):
-        index_df = empty_dataframe
-
-    columns_df = empty_dataframe
-    try:
-        if isinstance(columns, list):
-            columns_df = pd.concat(columns, axis=1)
-        elif isinstance(columns, pd.Series):
-            columns_df = pd.DataFrame({columns.name: columns})
-    except (ValueError, TypeError):
-        columns_df = empty_dataframe
-
-    try:
-        data = pd.concat([index_df, columns_df], axis=1)
-    except (ValueError, TypeError):  # pragma: no cover
-        data = empty_dataframe
-
-    return data

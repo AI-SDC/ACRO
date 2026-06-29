@@ -32,30 +32,7 @@ However, TRE airlock procedures mean it is may not be  possible to read from w3i
 
 ## Flowchart
 ```mermaid
-<<<<<<< HEAD
-flowchart TD
-  A[acro.___init__] --> B[Create SDCChecks instance];
-  B --> C[populate instance from .json files and config.yaml];
-  C --> D[analysis method called];
-  D --> E{Table or Regression};
-  E -- regression --> F[collect name of regression];
-  E -- table/plot --> G[collect list of aggregation functions requested];
-  G --> H[make  _TableDetails_ instance];
-  F --> I[lookup lists of statbarn, risks and checks];
-  H --> I;
-  I --> J[lookup list of evidence required for checks];
-  J -->K[collect evidence in _SDCEvidence_ instance];
-  K --> K1{Using trusted aggregator?};
-  K1 -- YES --> K2[output to aggregator];
-  K1 -- NO -->  L{run checks on evidence};
-  L -- pass --> M[add record to acro session];
-  L -- fail and suppress --> N[identify and redact vulnerable records, rerun analysis];
-  N --> M;
-  L -- fail and round --> O[round outputs to appropriate base];
-  O --> M;
-  L -- review --> M;
 
-=======
 flowchart LR
 
   subgraph INIT["Session Initialisation"]
@@ -111,7 +88,6 @@ flowchart LR
   
 INIT --> Evidence;
 Evidence --> Output;
->>>>>>> 3f7722c (improved flowcharts)
 
 
 

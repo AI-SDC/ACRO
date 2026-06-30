@@ -1,8 +1,0 @@
-parents,finance,not_recom,priority,spec_prior,very_recom,All
-great_pret,convenient,3.0,1.0,3.0,,1
-great_pret,inconv,2.0,1.0,3.0,,1
-pretentious,convenient,2.0,1.0,3.0,1.0,1
-pretentious,inconv,2.0,1.0,3.0,1.0,1
-usual,convenient,1.0,1.0,3.0,1.0,2
-usual,inconv,1.0,3.0,3.0,1.0,1
-All,,1.0,1.0,3.0,1.0,3

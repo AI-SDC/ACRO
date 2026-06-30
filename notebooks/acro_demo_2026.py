@@ -19,6 +19,7 @@ author Jim Smith.
 # - To run (or render) a cell click the *run* icon (at the top of the page) or *shift-return* on your keyboard.
 #   That will display any output created (for a code cell) and move the focus to the next cell.
 
+# %% [markdown]
 # ## A: The basic concepts
 # ### 1: A research _session_:
 # by which we mean the activity of running a series of commands (interactively or via a script) that:
@@ -35,7 +36,7 @@ author Jim Smith.
 #
 # ### 3: Risk Assessment vs decision making:
 # SACRO stands for Semi-Automated Checking of Research Outputs. <br>
-#  The prefix 'Semi' is important here - because it in a principles-based system humans should make _decisions_ about output requests. <br>
+#  The prefix 'Semi' is important here - because in a principles-based system humans should make _decisions_ about output requests. <br>
 # To help with that we provide the SACRO-Viewer, which collates all the relevant information for them.
 #
 # A key part of that information is the  _Risk Assessment_.
@@ -43,24 +44,24 @@ author Jim Smith.
 # - This is what the ACRO tool does when you use it as part of your workflow.
 #
 # ### 4: What ACRO does
-# The ACRO package aims to support you in producing *Safe Outputs* within minimal changes to your work flow.
+# The ACRO package aims to support you in producing *Safe Outputs* with minimal changes to your work flow.
 # To do that we provide:
 # - drop-in replacements for the most commonly used *output commands*,
 #   - keeping the same syntax as the originals, and
-#   - supporting as many of the options as we can (features supported will increase over time in response demand).
+#   - supporting as many of the options as we can (features supported will increase over time in response to demand).
 # - a set of *session-management* commands to help you manage the set of files you request for output.
 # - **Important to note** that currently acro outputs results (tables, details of regression models etc.) as `.csv` files. <br>
 #   - In other words we separate the processes of _creating_ outputs - which *must* be done *inside* the TRE.<br>
 #     from the process of _formatting_ them for publication - which can be done outside the TRE with your preferred toolchain.
 #   - ACRO handles creation. We are interested in hearing from researchers whether it is important to support them with formatting
 
+# %% [markdown]
 # ## B: Getting Started with the demonstration
 #
 # ### Step 1: Setting up the environment with the tools we will use
 # We will begin by importing some standard data science packages, and also the acro  package itself.
 
-# In[1]:
-
+# %%
 import os
 
 import numpy as np
@@ -68,6 +69,7 @@ import pandas as pd
 
 from acro import ACRO
 
+# %% [markdown]
 # ### Step 2: Starting an ACRO session
 # To do this we create an acro object by running the cell below.
 #
@@ -80,12 +82,10 @@ from acro import ACRO
 # - the TRE's risk appetite: that defines the rules your outputs will be checked against.
 # - whether suppression is automatically applied to disclosive outputs.
 
-# In[2]:
-
-
+# %%
 acro = ACRO(config="default", suppress=False)
 
-
+# %% [markdown]
 # ### Step 3: Loading some test data
 #
 # The following cells in this step just contain standard *ingestion* and *manipulation* commands to load some data into a Pandas dataframe ready to be queried.<br>
@@ -93,13 +93,11 @@ acro = ACRO(config="default", suppress=False)
 #
 # **There is no change to your workflow here**
 # - Do whatever you want in this step!
-# - We just assume you end up with your data in a panda dataframe.
+# - We just assume you end up with your data in a pandas dataframe.
 #
 #
 
-# In[3]:
-
-
+# %%
 from scipy.io.arff import loadarff
 
 ##--- Manipulation  commands ---
@@ -130,27 +128,57 @@ df["children"] = df.apply(
     axis=1,
 )
 
-
-# In[4]:
-
-
+# %%
 ##--- Feedback Command ----
 # show the first 5 rows to make sure everything is how we would expect
 df.head()
 
-
+# %% [markdown]
 # ## C: Producing tables that are 'Safe Outputs'
+#
+# ### Producing tables using standard python libraries
 #
 # The easiest way to make tables in python is to use the industry-standard pandas *crosstab()* function.
 # - There are hundreds (thousands?) of web sites showing how to do this.
-# - You can make (hierarchical) two-D tables (or 1-D if you add a 'dummy' variable containing the same value for each row)
+# - You can make (hierarchical) 2-D tables (or 1-D if you add a 'dummy' variable containing the same value for each row)
 # - you can specify what the table cells contain by:
 #    - providing a statistic - for example: mean, count, std deviation, median etc.(pandas calls these *aggregation functions*)
 #    - specifying what variable to report on
 #
-# The acro version uses all the pandas code - but it adds extra code that checks for disclosure risks depending on the statistic you ask for
+# In the next example:
+# - We will use the Pandas *crosstab()* function to create a summary table.
 #
-# ### Example 1: A simple 2-D table of frequencies stratified by two variables
+# - The table will calculate the **mean number of children** for every combination of **Recommendation** and **Parental status**. Going through the parameters in order:
+#    - `index=df.recommendation`: Defines the rows of the table using the recommendation column from the dataset.
+#
+#    - `columns=df.parents`: Defines the columns of the table using the parents column from the dataset.
+#    - `values=df.children`: Specifies that we want to perform calculations on the children (the name of a column in the dataset).
+#
+#    - `aggfunc="mean"`: Tells the function to calculate the **average (mean)** for those values.
+
+# %%
+pd.crosstab(
+    index=df.recommendation, columns=df.parents, values=df.children, aggfunc="mean"
+)
+
+# %% [markdown]
+# ### Getting this table out of the TRE
+#
+# - If you submit just this table to get it out of the TRE, you're going to get an email from the output checkers asking you to produce the table of counts so that they can check minimum thresholds, and maybe some other data to help them check for 'dominance' if it is financial data.
+#
+# - Defining the disclosive cells by just looking at this table can be tricky. For example, did you spot that cell on the third row and third column with a mean of 1? How many families are being aggregated to get that suspiciously integer value? Would you say that this cell is safe or not safe, and why?
+#
+# - All this to-and-fro adds effort and delays to the process of getting your output from the TRE.
+#
+# - Acro is actually designed to help you with this!
+#
+# - Because you asked for a `mean` statistic, it knows about the possible risks and so checks them for you (and the output checkers).
+
+# %% [markdown]
+#
+# ### Producing tables using acro
+#
+# In the next example we will use **acro** to produce the same table. The acro version uses all the pandas code - but it adds extra code that checks for disclosure risks depending on the statistic you ask for.
 #
 # Note that having imported the pandas package with the shortname `pd`(most people do)  you would normally  write
 # ````
@@ -159,25 +187,22 @@ df.head()
 # so the only change is to use the prefix `acro.` rather than `pd.`
 #
 # _NB_: the first two parameters to crosstab() are mandatory, so you could just do `crosstab(df.recommendation,df.parents)` to save typing.
-#
-# Now run the next cell.
 
-# In[5]:
+# %%
+acro.crosstab(
+    index=df.recommendation, columns=df.parents, values=df.children, aggfunc="mean"
+)
 
-
-acro.crosstab(index=df.recommendation, columns=df.parents)
-
-
+# %% [markdown]
 # ### How to understand this output
-# The top part (with a pink background) is the risk analysis produced by acro.
+# The top part (with a pink background) is the result of the automatic risk analysis done in the background by acro.
 # It is telling us that:
-# - the overall summary is _fail_ because 4 cells are failing the 'minimum threshold' check
+# - the overall summary is _fail_ because 4 cells are failing the 'p-ratio and nk-rule' checks and 1 cell is failing the 'minimum threshold' check
 # - then it is showing which cells failed so you can choose how to respond
 # - finally it is telling us that is has saved the table and risk assessment to our acro session with id "output_0"
 #
-# The part below is the normal output produced by the pandas _crosstab()_ function.
-# - As this is such a small table it is not hard to spot the four problematic cells with zero or low counts
-# - but of course this might be harder for a bigger table.
+# The part below is the normal output produced by the pandas _crosstab()_ function, same as the table we produced above using Pandas.
+#
 #
 # ### How to respond to this input
 # There are basically three choices:
@@ -195,44 +220,42 @@ acro.crosstab(index=df.recommendation, columns=df.parents)
 # 3. We can redact the disclosive cells - and **acro will do this for us**.<br>
 # We simply enable the option to suppress disclosive cells and re-run the query.
 #
-# The cell below shows option 3.
+# The cell below shows option 3.b
 # When you run the cell below you should see that:
 # - the status now changes to `review` (so the output-checker knows what has been applied)
 # - the code automatically adds an exception request saying that suppression has been applied
 # - and, most importantly,  the cells are redacted.
 
-# In[6]:
-
-
+# %%
 acro.enable_suppression()
-acro.crosstab(index=df.recommendation, columns=df.parents)
+acro.crosstab(
+    index=df.recommendation, columns=df.parents, values=df.children, aggfunc="mean"
+)
 
-
+# %% [markdown]
 # ## An example of a  more complex table
-# Just to show off the sort of tables that `cross_tab()` can produce, let's make something more complex.<br>
+# Just to show off the sort of tables that `crosstab()` can produce, let's make something more complex.<br>
 # Going through the parameters in order:
 # - passing a list of variable names to `index`  (rather than a single variable/column name) tells it we want a hierarchy within the rows.
 #   - we can do the same to columns as well (or instead) if we want to
-# - setting `values=df.children`(the name of a column in the dataset) tells it we want to report something about the number of children for each sub-group (table cell)
-# - setting `aggfunc=mean` tells it the statistic we want to report is the  mean number of children (which introduces additional risks of *dominance*)
+# - setting `values=df.children` tells it we want to report something about the number of children for each sub-group (table cell)
+# - setting `aggfunc=mode` tells it the statistic we want to report is the mode of children
 # - setting `margins=True` tells it to display row and column sub-totals
 #
 # It's worth noting that including the totals there are  6 columns in the risk assessment and 5 in the suppressed table. <br>
 # This is because after suppression has replaced numbers with `NaN`, pandas removes the fully suppressed column (_'recommend'_) from the table.
 
-# In[7]:
-
-
+# %%
 acro.suppress = True
 acro.crosstab(
     index=[df.parents, df.finance],
     columns=df.recommendation,
     values=df.children,
-    aggfunc="mean",
+    aggfunc="mode",
     margins=True,
 )
 
-
+# %% [markdown]
 # ## D: What other sorts of analysis does ACRO currently support?
 # We are continually adding support for more types of analysis as users prioritise them.
 #
@@ -246,12 +269,10 @@ acro.crosstab(
 #
 # You can get help on using any of these using the standard python `help()` syntax as shown in the next cell
 
-# In[8]:
-
-
+# %%
 help(acro.logit)
 
-
+# %% [markdown]
 # ## E: ACRO functionality to let users manage their outputs
 # As explained above, you need to create an "acro session" whenever your code is run.
 #
@@ -268,55 +289,48 @@ help(acro.logit)
 #
 # Therefore acro provides the following commands for  'session management'
 # ### 1: Listing the  current contents of an  ACRO session
-# This output is not beautiful (there's a GUI come soon) but should let you identify outputs you want to rename,comment on, or delete
+# This output is not beautiful (there's a GUI coming soon) but it should let you identify outputs you want to rename,comment on, or delete.
 
-# In[9]:
-
-
+# %%
 _ = acro.print_outputs()
 
-
+# %% [markdown]
 # ### 2: Remove some ACRO outputs before finalising
 # At the start of this demo we made a disclosive output -it;s the first one with status _fail_.
 #
 # We don't want to waste the output checker's time so lets remove it.
 
-# In[10]:
-
-
+# %%
 acro.remove_output("output_0")
 
-
+# %% [markdown]
 # ### 3: Rename ACRO outputs before finalising
 # This is an example of renaming the outputs to provide  more descriptive names.
 
-# In[11]:
-
-
+# %%
 acro.rename_output("output_1", " crosstab_recommendation_vs_parents")
 acro.rename_output("output_2", "mean_children_by_parents_finance_recommendation")
 
-
+# %% [markdown]
 # ### 4: Add a comment to output
 # This is an example of adding a comment to outputs.
 # It can be used to provide a description or to pass additional information to the TRE staff.<br>
 # They will see it alongside your file in the output checking viewer - rather than having it in an email somewhere.
 
-# In[12]:
-
-
+# %%
 acro.add_comments(
     "mean_children_by_parents_finance_recommendation",
     "too few cases of recommend to report",
 )
 
-
+# %% [markdown]
 # ### 5. Request an exception
 # An example of providing a reason why an exception should be made
 # ````
 # acro.add_exception("output_n", "This is evidence of systematic bias?")
 # ````
 
+# %% [markdown]
 # ### 6: Adding a custom output.
 #
 # As mentioned above you might want to request release of all sorts of things
@@ -325,12 +339,10 @@ acro.add_comments(
 #
 # In ACRO we can add a file to our session with a comment describing what it is
 
-# In[13]:
-
-
+# %%
 acro.custom_output("acro_demo_2026.py", "This is the code that produced this session")
 
-
+# %% [markdown]
 # ## F: Finishing your session and producing a folder of files to release.
 # This is an example of the function _finalise()_ which the users must call at the end of each session.
 # - It takes each output and saves it to a CSV file (or the original file type for custom outputs)
@@ -344,12 +356,10 @@ acro.custom_output("acro_demo_2026.py", "This is the code that produced this ses
 #   - delete the previous folder, or
 #   - provide a new folder name
 
-# In[14]:
-
-
+# %%
 output = acro.finalise("my_acro_outputs_v1")
 
-
+# %% [markdown]
 # ## G: Reminder about getting help while you work
 #
 # - if you remember the name of the command and want an explanation or to explain the syntax <br>
@@ -359,4 +369,4 @@ output = acro.finalise("my_acro_outputs_v1")
 # - if you can't remember the name of the command, from the python prompt type: `help(acro.ACRO)`
 #   - not as user friendly but will list all the available commands
 
-# In[ ]:
+# %%

@@ -44,14 +44,14 @@ repos:
 
  # Format docstrings
   - repo: https://github.com/DanielNoord/pydocstringformatter
-    rev: v0.7.5
+    rev: v1.0.0
     hooks:
       - id: pydocstringformatter
         args: ["--style=numpydoc"]
 
   # Ruff, the Python auto-correcting linter/formatter written in Rust
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.15
+    rev: v0.15.20
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]

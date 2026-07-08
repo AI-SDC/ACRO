@@ -590,7 +590,7 @@ def aggfunc_to_strings(aggfunc: Any) -> list[str]:
     return analysis_names
 
 
-def round_table(table: DataFrame, base: int) -> DataFrame:
+def round_table(table: DataFrame, base: int | None) -> DataFrame:
     """Round numeric cells to the nearest multiple of ``base`` (NaNs preserved)."""
     logger.debug("round_table(base=%s)", base)
     if base is None or base <= 0:
@@ -637,11 +637,11 @@ def append_rounded_margins(
         return rounded_table
 
     name = aggnames[0]
-    if aggfunc is None or name in (None, "count", "sum", "mode_aggfunc"):
+    if aggfunc is None or name in (None, "FrequencyTable", "Sum", "ModeCalculation"):
         agg_method = "sum"
-    elif name == "mean":
+    elif name == "Mean":
         agg_method = "mean"
-    elif name == "median":
+    elif name == "Median":
         agg_method = "median"
     else:
         logger.info(

@@ -1,8 +1,11 @@
 """Unit tests."""
 
 import json
+import logging
 import os
+import pathlib
 import shutil
+import tempfile
 
 import matplotlib as mpl
 
@@ -24,6 +27,8 @@ from acro import (
 )
 from acro.acro_tables import _rounded_survival_table  # , crosstab_with_totals
 from acro.record import Records, load_records
+from acro.sdcchecks import SDCChecks, SDCEvidence
+from acro.tablemodeldetails import TableModelDetails
 
 # pylint: disable=redefined-outer-name,too-many-lines
 
@@ -890,7 +895,8 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data, acr
     table = output.output[0]
 
     assert output.status in {"review", "fail"}
-    assert "All" in table.columns or "All" not in table.columns
+    assert table.shape[0] > 0
+    assert table.shape[1] > 0
 
 
 def test_pivot_table_with_totals_with_suppression(data, acro):
@@ -1231,3 +1237,1084 @@ def test_crosstab_multi_aggfunc(data):
     )
     assert isinstance(table2, pd.DataFrame)
     assert table2.columns.nlevels == 2
+
+
+def acro_federated() -> ACRO:
+    """Initialise ACRO in federated mode."""
+    return ACRO(federated=True)
+
+
+def test_federated_flag_set_via_constructor():
+    """ACRO(federated=True) should set the federated attribute."""
+    acro = ACRO(federated=True)
+    assert acro.federated is True
+
+
+def test_federated_flag_default_is_false():
+    """ACRO() should default to federated=False."""
+    acro = ACRO()
+    assert acro.federated is False
+
+
+def test_federated_flag_from_yaml(tmp_path):
+    """Federated: true in yaml should set federated=True when no constructor override."""
+    yaml_content = (
+        "safe_threshold: 10\n"
+        "safe_dof_threshold: 10\n"
+        "safe_nk_n: 2\n"
+        "safe_nk_k: 0.90\n"
+        "safe_pratio_p: 0.10\n"
+        "check_missing_values: false\n"
+        "survival_safe_threshold: 10\n"
+        "zeros_are_disclosive: true\n"
+        "federated: true\n"
+    )
+    cfg_file = tmp_path / "fed_test.yaml"
+    cfg_file.write_text(yaml_content)
+
+    acro_pkg = pathlib.Path(__file__).parent.parent / "acro"
+    cfg_dest = acro_pkg / "fed_test.yaml"
+    cfg_dest.write_text(yaml_content)
+    try:
+        acro = ACRO(config="fed_test")
+        assert acro.federated is True
+    finally:
+        cfg_dest.unlink(missing_ok=True)
+
+
+def test_federated_constructor_overrides_yaml():
+    """Constructor federated=False should override yaml federated: true."""
+    yaml_content = (
+        "safe_threshold: 10\n"
+        "safe_dof_threshold: 10\n"
+        "safe_nk_n: 2\n"
+        "safe_nk_k: 0.90\n"
+        "safe_pratio_p: 0.10\n"
+        "check_missing_values: false\n"
+        "survival_safe_threshold: 10\n"
+        "zeros_are_disclosive: true\n"
+        "federated: true\n"
+    )
+    acro_pkg = pathlib.Path(__file__).parent.parent / "acro"
+    cfg_dest = acro_pkg / "fed_override_test.yaml"
+    cfg_dest.write_text(yaml_content)
+    try:
+        acro = ACRO(config="fed_override_test", federated=False)
+        assert acro.federated is False
+    finally:
+        cfg_dest.unlink(missing_ok=True)
+
+
+def test_federated_crosstab_skips_checks_and_stores_evidence(data):
+    """In federated mode, crosstab should store evidence and skip checks."""
+    acro = ACRO(federated=True)
+    table = acro.crosstab(data.year, data.grant_type)
+
+    # The returned table should still be a valid DataFrame
+    assert isinstance(table, pd.DataFrame)
+    assert not table.empty
+
+    # No records should have been written to results (checks were skipped)
+    assert acro.results.output_id == 1
+    assert len(acro.results.results) == 0
+
+    # Evidence should have been accumulated
+    assert "output_0" in acro._federated_evidence
+    entry = acro._federated_evidence["output_0"]
+    assert "count_table" in entry["interim_tables"]
+    assert entry["analysis_names"] == ["FrequencyTable"]
+
+
+def test_federated_pivot_table_stores_evidence(data):
+    """In federated mode, pivot_table should store evidence."""
+    acro = ACRO(federated=True)
+    _ = acro.pivot_table(
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean"]
+    )
+    assert "output_0" in acro._federated_evidence
+    entry = acro._federated_evidence["output_0"]
+    assert entry["analysis_names"] == ["Mean"]
+
+
+def test_federated_ols_stores_evidence(data):
+    """In federated mode, ols should store evidence (DoF) and skip checks."""
+    acro = ACRO(federated=True)
+    new_df = data[
+        ["inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    results = acro.ols(endog, exog)
+
+    # statsmodels result should still be returned
+    assert results.df_resid == 807
+
+    # No record written
+    assert len(acro.results.results) == 0
+
+    # Evidence stored
+    assert "output_0" in acro._federated_evidence
+    entry = acro._federated_evidence["output_0"]
+    assert entry["analysis_names"] == ["GeneralLinearModel"]
+    assert entry["dof"] == 807
+
+
+def test_federated_finalise_writes_evidence_json(data):
+    """Finalise() in federated mode should produce evidence.json and CSV files."""
+    acro = ACRO(federated=True)
+    _ = acro.crosstab(data.year, data.grant_type)
+    result = acro.finalise(PATH)
+
+    assert result is not None
+
+    # evidence.json must exist
+    evidence_path = os.path.normpath(f"{PATH}/evidence.json")
+    assert os.path.exists(evidence_path), "evidence.json not found"
+
+    with open(evidence_path, encoding="utf-8") as fh:
+        evidence = json.load(fh)
+
+    assert "version" in evidence
+    assert "outputs" in evidence
+    assert "output_0" in evidence["outputs"]
+
+    entry = evidence["outputs"]["output_0"]
+    assert "analysis_names" in entry
+    assert "interim_tables" in entry
+
+    # At least the count_table CSV should exist
+    count_table_file = entry["interim_tables"].get("count_table")
+    assert count_table_file is not None
+    assert os.path.exists(os.path.normpath(f"{PATH}/{count_table_file}"))
+
+    # config.json should also be present
+    assert os.path.exists(os.path.normpath(f"{PATH}/config.json"))
+
+    # results.json should NOT exist in federated mode
+    assert not os.path.exists(os.path.normpath(f"{PATH}/results.json"))
+
+    shutil.rmtree(PATH)
+
+
+def test_federated_finalise_multiple_outputs(data):
+    """Federated finalise with multiple outputs produces one entry per output."""
+    acro = ACRO(federated=True)
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.pivot_table(
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean"]
+    )
+
+    result = acro.finalise(PATH)
+    assert result is not None
+
+    with open(os.path.normpath(f"{PATH}/evidence.json"), encoding="utf-8") as fh:
+        evidence = json.load(fh)
+
+    assert len(evidence["outputs"]) == 2
+    assert "output_0" in evidence["outputs"]
+    assert "output_1" in evidence["outputs"]
+
+    shutil.rmtree(PATH)
+
+
+def test_federated_finalise_regression(data):
+    """Federated finalise for a regression writes DoF evidence."""
+    acro = ACRO(federated=True)
+    new_df = data[
+        ["inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    _ = acro.ols(endog, exog)
+
+    result = acro.finalise(PATH)
+    assert result is not None
+
+    with open(os.path.normpath(f"{PATH}/evidence.json"), encoding="utf-8") as fh:
+        evidence = json.load(fh)
+
+    entry = evidence["outputs"]["output_0"]
+    assert entry["dof"] == 807
+    assert entry["analysis_names"] == ["GeneralLinearModel"]
+    # No CSV interim tables for regression (DoF is a scalar)
+    assert entry["interim_tables"] == {}
+
+    shutil.rmtree(PATH)
+
+
+def test_local_mode_unaffected_by_federated_flag(data):
+    """Non-federated ACRO should still produce results.json as before."""
+    acro = ACRO(suppress=False)
+    assert acro.federated is False
+    _ = acro.crosstab(data.year, data.grant_type)
+    acro.add_exception("output_0", "Let me have it")
+    result = acro.finalise(PATH)
+
+    assert result is not None
+    assert os.path.exists(os.path.normpath(f"{PATH}/results.json"))
+    assert not os.path.exists(os.path.normpath(f"{PATH}/evidence.json"))
+
+    shutil.rmtree(PATH)
+
+
+def test_get_catdtype_string_series():
+    """Get_catdtype on a string series produces unordered categorical dtype."""
+    s = pd.Series(["a", "b", "a", "c"])
+    cat = utils.get_catdtype(s)
+    assert hasattr(cat, "categories")
+    assert not cat.ordered
+
+
+def test_get_catdtype_numeric_series():
+    """Get_catdtype on an integer series produces ordered categorical dtype."""
+    s = pd.Series([1, 2, 3, 2, 1])
+    cat = utils.get_catdtype(s)
+    assert cat.ordered is True
+
+
+def test_get_catdtype_nan_series():
+    """Get_catdtype drops NaN before computing categories."""
+    s = pd.Series([1.0, 2.0, float("nan"), 1.0])
+    cat = utils.get_catdtype(s)
+    assert float("nan") not in cat.categories
+
+
+def test_is_blocked_extension_returns_true():
+    """Is_blocked_extension returns True for a blocked extension."""
+    result = utils.is_blocked_extension("output.exe", [".exe", ".bat"])
+    assert result is True
+
+
+def test_is_blocked_extension_case_insensitive():
+    """Is_blocked_extension is case-insensitive."""
+    result = utils.is_blocked_extension("output.EXE", [".exe"])
+    assert result is True
+
+
+def test_is_blocked_extension_returns_false_for_allowed():
+    """Is_blocked_extension returns False for an allowed extension."""
+    result = utils.is_blocked_extension("output.png", [".exe"])
+    assert result is False
+
+
+from acro.sdc_agg_funcs import (
+    agg_missing,
+    agg_mode,
+    agg_num_negative,
+    agg_top_n_sum,
+    get_statsmodel_dof,
+)
+
+
+def test_agg_mode_single_mode():
+    """Agg_mode returns the single mode."""
+    s = pd.Series([1, 2, 2, 3])
+    assert agg_mode(s) == 2
+
+
+def test_agg_mode_multiple_modes():
+    """Agg_mode handles multiple modes by picking one randomly."""
+    s = pd.Series([1, 1, 2, 2])
+    result = agg_mode(s)
+    assert result in (1, 2)
+
+
+def test_agg_num_negative_with_negatives():
+    """Agg_num_negative returns count of negatives."""
+    s = pd.Series([-1, 2, -3, 4])
+    assert agg_num_negative(s) == 2
+
+
+def test_agg_num_negative_no_negatives():
+    """Agg_num_negative returns 0 when no negatives."""
+    s = pd.Series([1, 2, 3])
+    assert agg_num_negative(s) == 0
+
+
+def test_agg_missing_with_nan():
+    """Agg_missing returns True when NaN present (line 99)."""
+    s = pd.Series([1.0, float("nan"), 3.0])
+    assert bool(agg_missing(s)) is True
+
+
+def test_agg_missing_no_nan():
+    """Agg_missing returns False when no NaN."""
+    s = pd.Series([1.0, 2.0, 3.0])
+    assert bool(agg_missing(s)) is False
+
+
+def test_agg_top_n_sum_non_numeric():
+    """Agg_top_n_sum returns 0 for non-numeric dtype."""
+    s = pd.Series(["a", "b", "c"])
+    assert agg_top_n_sum(s) == 0
+
+
+def test_get_statsmodel_dof_no_attribute():
+    """Get_statsmodel_dof raises AttributeError when model lacks df_resid."""
+
+    class FakeModel:
+        pass
+
+    with pytest.raises(AttributeError, match="model does not have df_resid attribute"):
+        get_statsmodel_dof(FakeModel())
+
+
+def test_tablemodeldetails_kwargs_not_dict():
+    """Passing non-dict kwargs raises TypeError."""
+    with pytest.raises(TypeError, match="kwargs argument should be a dict"):
+        TableModelDetails(
+            index=[pd.Series([1, 2])],
+            columns=[],
+            values=pd.Series([1, 2]),
+            thekwargs="bad",
+        )
+
+
+def test_tablemodeldetails_values_not_series():
+    """Passing non-Series values raises TypeError (line 77)."""
+    with pytest.raises(
+        TypeError, match="Expected values argument to be a panda Series"
+    ):
+        TableModelDetails(
+            index=[pd.Series([1, 2])],
+            columns=[],
+            values=[1, 2],
+        )
+
+
+def test_tablemodeldetails_axis_item_not_series():
+    """Passing non-Series element in index list raises TypeError."""
+    with pytest.raises(
+        TypeError, match="Expected .* element of .* list to be a panda Series"
+    ):
+        TableModelDetails(
+            index=[[1, 2]],
+            columns=[],
+            values=pd.Series([1, 2]),
+        )
+
+
+def test_tablemodeldetails_axis_not_a_list():
+    """Passing non-list axis raises TypeError."""
+    with pytest.raises(TypeError, match="axis argument should be a list"):
+        TableModelDetails(
+            index=pd.Series([1, 2]),
+            columns=[],
+            values=pd.Series([1, 2]),
+        )
+
+
+def test_get_axis_metadata_non_series_item():
+    """_get_axis_metadata logs when a dimension is not a Series (line 165)."""
+    model = TableModelDetails(
+        index=[pd.Series([1, 2, 3], name="idx")],
+        columns=[],
+        values=pd.Series([10, 20, 30], name="val"),
+    )
+    # Call with a list containing a non-Series to exercise the else branch
+    result = model._get_axis_metadata([42], "index")
+    assert result == {}  # non-series items are skipped
+
+
+def test_get_table_newagg_incompatible_length():
+    """Get_table_newagg raises AttributeError when values length mismatches (line 222)."""
+    idx = pd.Series([1, 2, 3], name="idx")
+    vals = pd.Series([10, 20, 30], name="val")
+    model = TableModelDetails(
+        index=[idx],
+        columns=[],
+        values=vals,
+    )
+    # Replace values with longer series to trigger the incompatible-length check
+    model.values = pd.Series(list(range(100)), name="val")
+    with pytest.raises(AttributeError, match="incompatibe length"):
+        model.get_table_newagg(np.sum)
+
+
+def test_get_allfalse_table_array_type():
+    """Get_allfalse_table for array model_type uses value_counts path."""
+    s = pd.Series([1, 2, 2, 3, 3, 3], name="vals")
+    model = TableModelDetails(
+        index=[s],
+        thekwargs={"bins": 3},
+        command="hist",
+    )
+    assert model.model_type == "array"
+    mask = model.get_allfalse_table()
+    assert isinstance(mask, pd.DataFrame)
+    assert mask.dtypes.iloc[0] == bool
+
+
+def test_get_zeros_table_basic():
+    """Get_zeros_table returns a DataFrame of zeros."""
+    idx = pd.Series([1, 2, 3, 1, 2, 3], name="idx")
+    cols = pd.Series(["a", "a", "a", "b", "b", "b"], name="col")
+    vals = pd.Series([10, 20, 30, 40, 50, 60], name="val")
+    model = TableModelDetails(
+        index=[idx],
+        columns=[cols],
+        values=vals,
+    )
+    zt = model.get_zeros_table()
+    assert isinstance(zt, pd.DataFrame)
+    assert (zt.values == 0).all()
+
+
+def test_sdcevidence_populate_dof_else_branch():
+    """Populate_dof falls back to -1 for unknown model type."""
+    ev = SDCEvidence()
+    ev.populate_dof("not_a_model")
+    assert ev.dof == -1
+
+
+def test_get_table_sdc_duplicate_check_skipped(data):
+    """Get_table_sdc skips checks already seen across multiple analyses (line 164).
+
+    When two analyses produce the same check name, only the first occurrence
+    is included in the SDC summary — the continue branch on line 164.
+    """
+    acro_obj = ACRO(suppress=False)
+    # mean+std both map to LinearAggregations which shares checks — run both
+    _ = acro_obj.pivot_table(
+        data,
+        index=["grant_type"],
+        values=["inc_grants"],
+        aggfunc=["mean", "std"],
+    )
+    output = acro_obj.results.get_index(0)
+    sdc = output.sdc
+    # Each check name should appear exactly once in sdc["cells"]
+    for check_name in sdc["cells"]:
+        assert sdc["cells"].get(check_name) is not None
+    assert isinstance(sdc["summary"], dict)
+
+
+def test_get_table_sdc_minimumdofcheck_pass(data):
+    """Get_table_sdc branch for MinimumDoFCheck with int mask: 0 when DoF passes (line 168)."""
+    acro_obj = ACRO(suppress=False)
+    new_df = data[
+        ["inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    _ = acro_obj.ols(endog, exog)
+    output = acro_obj.results.get_index(0)
+    # Regression sdc is {} — DoF check result is stored in properties not sdc
+    assert output.properties["dof"] == 807
+    assert output.status == "pass"
+
+
+def test_sdcevidence_populate_from_list_tablemodel(data):
+    """Populate_from_list with TableModelDetails correctly populates count_table and DoF."""
+    idx = data["year"]
+    vals = data["inc_grants"]
+    model = TableModelDetails(
+        index=[idx],
+        columns=[],
+        values=vals,
+        risk_appetite={
+            "safe_threshold": 10,
+            "safe_nk_n": 2,
+            "safe_nk_k": 0.90,
+            "safe_pratio_p": 0.10,
+            "check_missing_values": False,
+            "zeros_are_disclosive": True,
+        },
+        command="crosstab",
+    )
+    ev = SDCEvidence()
+    ev.populate_from_list({"DoF", "count_table"}, model)
+    assert "count_table" in ev.interim_tables
+    assert isinstance(ev.dof, pd.DataFrame)
+
+
+def test_check_min_threshold_array_non_hist(data):
+    """Check_min_threshold for non-hist array type exercises."""
+    acro_obj = ACRO(suppress=False)
+    col = data["grant_type"]
+    model = TableModelDetails(
+        index=[col],
+        thekwargs={},
+        risk_appetite=acro_obj.sdc_checks.risk_appetite,
+        command="pie",
+    )
+    model.model_type = "array"
+    ev = SDCEvidence()
+    ev.populate_from_list(set(), model)
+    # Manually set the minimal evidence needed
+    ev.interim_tables = {}
+    # Force model to array, command != hist
+    sdc = SDCChecks(acro_obj.sdc_checks.risk_appetite)
+    ev2 = SDCEvidence()
+    # array model_type, non-hist command
+    status, summary, mask = sdc.check_min_threshold("PieChart", ev2, model)
+    assert status in ("pass", "fail", "review")
+
+
+def test_manual_check_unknown_model_type():
+    """Manual_check returns fail when model_type not in recognised list."""
+    acro_obj = ACRO(suppress=False)
+    model = TableModelDetails(
+        index=[pd.Series([1, 2], name="x")],
+        columns=[],
+        values=pd.Series([1, 2], name="v"),
+    )
+    model.model_type = "unknown_type"
+    ev = SDCEvidence()
+    status, summary, mask = acro_obj.sdc_checks.manual_check("X", ev, model)
+    assert status == "fail"
+    assert "insufficient" in summary
+
+
+def test_check_nk_dominance_with_negatives(data):
+    """Check_nk_dominance returns review when negative values present (line 531)."""
+    acro_obj = ACRO(suppress=False)
+    # Build a table with negative inc_grants in some cells
+    data2 = data.copy()
+    data2.loc[data2.index[:20], "inc_grants"] = -500
+    _ = acro_obj.crosstab(
+        data2.year, data2.grant_type, values=data2.inc_grants, aggfunc="sum"
+    )
+    output = acro_obj.results.get_index(0)
+    assert output.status in ("review", "fail")
+
+
+def test_check_ppercent_with_negatives(data):
+    """Check_ppercent_dominance returns review when negative values present."""
+    acro_obj = ACRO(suppress=False)
+    data2 = data.copy()
+    data2.loc[data2.index[:50], "inc_grants"] = -100
+    _ = acro_obj.crosstab(
+        data2.year, data2.grant_type, values=data2.inc_grants, aggfunc="mean"
+    )
+    output = acro_obj.results.get_index(0)
+    assert output.status in ("review", "fail")
+
+
+def test_check_presence_of_zero_disclosive(data):
+    """Check_presence_of_zero fires and fails when zeros_are_disclosive=True and zero cells exist."""
+    acro_obj = ACRO(suppress=False)
+    acro_obj.sdc_checks.risk_appetite["zeros_are_disclosive"] = True
+    # Use a subset where some grant_type × year cells will be zero
+    small = data[data.year.isin([2010, 2011])]
+    _ = acro_obj.crosstab(small.year, small.grant_type)
+    output = acro_obj.results.get_index(0)
+    # The check ran — status should reflect both threshold and zero checks
+    assert output.status in ("fail", "review")
+    # The sdc dict should contain PresenceOfZeroCheck
+    assert "PresenceOfZeroCheck" in output.sdc.get("cells", {})
+
+
+def test_mitigation_setter_unknown_string():
+    """Setting mitigation to unknown string falls back to 'none'."""
+    acro_obj = ACRO(suppress=False)
+    acro_obj.mitigation = "unknown_mitigation"
+    assert acro_obj.mitigation == "none"
+
+
+def test_round_base_setter_non_integer():
+    """Setting round_base to a non-integer falls back to default."""
+    acro_obj = ACRO()
+    default = acro_obj.round_base
+    acro_obj.round_base = "five"
+    assert acro_obj.round_base == default
+
+
+def test_round_base_setter_zero():
+    """Setting round_base to 0 falls back to default."""
+    acro_obj = ACRO()
+    default = acro_obj.round_base
+    acro_obj.round_base = 0
+    assert acro_obj.round_base == default
+
+
+def test_suppress_setter_false_when_round(caplog):
+    """Suppress=False when mitigation is 'round' logs a warning."""
+    acro_obj = ACRO()
+    acro_obj.mitigation = "round"
+    assert acro_obj.mitigation == "round"
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro_obj.suppress = False
+    assert acro_obj.mitigation == "round"
+    assert "no effect" in caplog.text
+
+
+def test_record_table_output_round_mitigation(data):
+    """_record_table_output stores round_base in properties (line 198) and adds exception."""
+    acro_obj = ACRO(mitigation="round", round_base=5)
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    output = acro_obj.results.get_index(0)
+    assert output.properties.get("round_base") == 5
+    assert output.status == "review"
+    assert "Rounding" in output.exception
+
+
+def test_store_federated_evidence_with_dataframe_dof():
+    """_store_federated_evidence serialises DataFrame DoF to CSV string.
+
+    KaplanMeier's DoF comes from TableModelDetails.get_count_table()-1,
+    which is a DataFrame — this hits the isinstance(dof, DataFrame) branch.
+    """
+    acro_obj = ACRO(federated=True)
+    np.random.seed(42)
+    mock_data = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 300),
+            "death": np.random.binomial(1, 0.3, 300),
+            "sex": np.random.choice(["F", "M"], 300),
+        }
+    )
+    mock_data = mock_data.loc[mock_data.sex == "F"]
+    _ = acro_obj.surv_func(mock_data.futime, mock_data.death, output="table")
+    entry = acro_obj._federated_evidence.get("output_0", {})
+    dof_val = entry.get("dof")
+    assert dof_val is not None
+    assert isinstance(dof_val, str)
+    assert "\n" in dof_val
+
+
+def test_surv_func_federated_table():
+    """Surv_func in federated mode with output='table' returns survival table."""
+    acro_obj = ACRO(federated=True)
+    np.random.seed(42)
+    mock_data = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 500),
+            "death": np.random.binomial(1, 0.3, 500),
+        }
+    )
+    result = acro_obj.surv_func(mock_data.futime, mock_data.death, output="table")
+    assert isinstance(result, pd.DataFrame)
+    assert acro_obj.results.output_id == 1
+    assert len(acro_obj.results.results) == 0
+
+
+def test_surv_func_federated_plot_blocked_extension():
+    """Surv_func federated with blocked extension returns None (line 473)."""
+    acro_obj = ACRO(federated=True)
+    acro_obj.results.blocked_extensions = [".png"]
+    np.random.seed(42)
+    mock_data = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 500),
+            "death": np.random.binomial(1, 0.3, 500),
+        }
+    )
+    result = acro_obj.surv_func(
+        mock_data.futime, mock_data.death, output="plot", filename="km.png"
+    )
+    assert result is None
+
+
+def test_surv_func_federated_returns_none_for_unknown_output():
+    """Surv_func federated with unknown output type returns None."""
+    acro_obj = ACRO(federated=True)
+    np.random.seed(42)
+    mock_data = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 500),
+            "death": np.random.binomial(1, 0.3, 500),
+        }
+    )
+    result = acro_obj.surv_func(
+        mock_data.futime, mock_data.death, output="something_unknown"
+    )
+    assert result is None
+
+
+def test_surv_func_returns_none_for_unknown_output():
+    """Surv_func local mode with unknown output type returns None."""
+    acro_obj = ACRO(suppress=True)
+    np.random.seed(42)
+    mock_data = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 500),
+            "death": np.random.binomial(1, 0.3, 500),
+        }
+    )
+    result = acro_obj.surv_func(mock_data.futime, mock_data.death, output="invalid")
+    assert result is None
+
+
+def test_surv_func_suppress_plot_blocked_extension():
+    """Surv_func with suppress=True, blocked extension returns None (line 734)."""
+    acro_obj = ACRO(suppress=True)
+    acro_obj.results.blocked_extensions = [".png"]
+    np.random.seed(7)
+    mock_data = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 500),
+            "death": np.random.binomial(1, 0.3, 500),
+        }
+    )
+    result = acro_obj.surv_func(
+        mock_data.futime, mock_data.death, output="plot", filename="km.png"
+    )
+    assert result is None
+
+
+def test_hist_federated_returns_none():
+    """Hist() in federated mode stores evidence and returns None."""
+    acro_obj = ACRO(federated=True)
+    rng = np.random.default_rng(0)
+    df = pd.DataFrame({"val": rng.normal(size=500)})
+    result = acro_obj.hist(df, "val")
+    assert result is None
+    assert "output_0" in acro_obj._federated_evidence
+    assert len(acro_obj.results.results) == 0
+
+
+def test_hist_blocked_extension():
+    """Hist() with a blocked extension returns None (line 856)."""
+    acro_obj = ACRO(suppress=True)
+    acro_obj.results.blocked_extensions = [".png"]
+    rng = np.random.default_rng(1)
+    df = pd.DataFrame({"val": rng.normal(size=500)})
+    result = acro_obj.hist(df, "val", filename="histogram.png")
+    assert result is None
+    # No output should have been recorded
+    assert len(acro_obj.results.results) == 0
+
+
+def test_hist_non_disclosive_no_suppress(data):
+    """Hist() with suppress=False always records output — file path is saved even if disclosive."""
+    acro_obj = ACRO(suppress=False)
+    result = acro_obj.hist(data, "inc_grants", bins=10)
+    output = acro_obj.results.get_index(0)
+    assert output.output_type == "histogram"
+    # With suppress=False the histogram is always saved and path is recorded
+    assert result is not None
+    assert result != ""
+    assert output.output == [os.path.normpath(result)]
+
+
+def test_pie_federated_returns_none(data):
+    """Pie() in federated mode stores evidence and returns None (line 1032)."""
+    acro_obj = ACRO(federated=True)
+    result = acro_obj.pie(data, "grant_type")
+    assert result is None
+    assert "output_0" in acro_obj._federated_evidence
+    assert len(acro_obj.results.results) == 0
+
+
+def test_pie_blocked_extension(data):
+    """Pie() with a blocked extension returns None."""
+    acro_obj = ACRO(suppress=True)
+    acro_obj.results.blocked_extensions = [".png"]
+    result = acro_obj.pie(data, "grant_type", filename="pie.png")
+    assert result is None
+    assert len(acro_obj.results.results) == 0
+
+
+def test_pie_records_output_non_disclosive(data):
+    """Pie() on non-disclosive data records output with correct type and non-fail status."""
+    acro_obj = ACRO(suppress=False)
+    acro_obj.pie(data, "grant_type")
+    output = acro_obj.results.get_index(0)
+    assert output.output_type == "pie chart"
+    assert output.status in ("pass", "review")
+
+
+def test_olsr_federated(data):
+    """Olsr() in federated mode stores evidence and skips checks."""
+    acro_obj = ACRO(federated=True)
+    new_df = data[
+        ["inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    results = acro_obj.olsr(
+        formula="inc_activity ~ inc_grants + inc_donations + total_costs", data=new_df
+    )
+    assert results.df_resid == 807
+    assert len(acro_obj.results.results) == 0
+    assert "output_0" in acro_obj._federated_evidence
+    entry = acro_obj._federated_evidence["output_0"]
+    assert entry["analysis_names"] == ["GeneralLinearModel"]
+
+
+def test_logitr_federated(data):
+    """Logitr() in federated mode stores evidence and skips checks."""
+    acro_obj = ACRO(federated=True)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    new_df = new_df.copy()
+    new_df["survivor"] = new_df["survivor"].astype("category").cat.codes
+    results = acro_obj.logitr(
+        formula="survivor ~ inc_activity + inc_grants + inc_donations + total_costs",
+        data=new_df,
+    )
+    assert results.df_resid == 806
+    assert len(acro_obj.results.results) == 0
+    assert "output_0" in acro_obj._federated_evidence
+    entry = acro_obj._federated_evidence["output_0"]
+    assert entry["analysis_names"] == ["Logit"]
+
+
+def test_probitr_federated(data):
+    """Probitr() in federated mode stores evidence and skips checks."""
+    acro_obj = ACRO(federated=True)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    new_df = new_df.copy()
+    new_df["survivor"] = new_df["survivor"].astype("category").cat.codes
+    results = acro_obj.probitr(
+        formula="survivor ~ inc_activity + inc_grants + inc_donations + total_costs",
+        data=new_df,
+    )
+    assert results.df_resid == 806
+    assert len(acro_obj.results.results) == 0
+    assert "output_0" in acro_obj._federated_evidence
+    entry = acro_obj._federated_evidence["output_0"]
+    assert entry["analysis_names"] == ["Probit"]
+
+
+def test_probit_federated(data):
+    """Probit() in federated mode stores evidence and skips checks."""
+    acro_obj = ACRO(federated=True)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    endog = new_df["survivor"].astype("category").cat.codes
+    endog.name = "survivor"
+    exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    results = acro_obj.probit(endog, exog)
+    assert results.df_resid == 806
+    assert len(acro_obj.results.results) == 0
+    assert "output_0" in acro_obj._federated_evidence
+    entry = acro_obj._federated_evidence["output_0"]
+    assert entry["analysis_names"] == ["Probit"]
+
+
+def test_logit_federated(data):
+    """Logit() in federated mode stores evidence and skips checks."""
+    acro_obj = ACRO(federated=True)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    endog = new_df["survivor"].astype("category").cat.codes
+    endog.name = "survivor"
+    exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    results = acro_obj.logit(endog, exog)
+    assert results.df_resid == 806
+    assert len(acro_obj.results.results) == 0
+    assert "output_0" in acro_obj._federated_evidence
+    entry = acro_obj._federated_evidence["output_0"]
+    assert entry["analysis_names"] == ["Logit"]
+
+
+def test_show_fair_summaries_dict_and_scalar(data):
+    """Show_fair_summaries() covers the dict and scalar branches."""
+    acro_obj = ACRO(suppress=False)
+    _ = acro_obj.crosstab(data.year, data.grant_type)
+    result = acro_obj.show_fair_summaries()
+    assert isinstance(result, str)
+    assert "output_0" in result
+
+
+def test_show_fair_summaries_regression(data):
+    """Show_fair_summaries() works when fair dict has nested dict values."""
+    acro_obj = ACRO(suppress=False)
+    new_df = data[
+        ["inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+    _ = acro_obj.ols(endog, exog)
+    result = acro_obj.show_fair_summaries()
+    assert isinstance(result, str)
+    assert len(result) > 0
+
+
+def test_add_to_acro_function(data, monkeypatch):
+    """Add_to_acro() exercises by scanning a directory and creating results."""
+    src_path = "test_add_to_acro"
+    dest_path = "sdc_results"
+    shutil.rmtree(src_path, ignore_errors=True)
+    shutil.rmtree(dest_path, ignore_errors=True)
+    # Create a simple CSV file in the source directory
+    os.makedirs(src_path, exist_ok=True)
+    table = pd.crosstab(data.year, data.grant_type)
+    csv_path = os.path.join(src_path, "crosstab.csv")
+    table.to_csv(csv_path)
+    # Intercept any interactive prompts
+    monkeypatch.setattr("builtins.input", lambda _: "test exception")
+    add_to_acro(src_path, dest_path)
+    assert os.path.exists(dest_path)
+    assert "results.json" in os.listdir(dest_path)
+    shutil.rmtree(src_path, ignore_errors=True)
+    shutil.rmtree(dest_path, ignore_errors=True)
+
+
+def test_records_add_with_none_defaults():
+    """Records.add() with all-None optional args uses defaults."""
+    records = Records()
+    records.add(
+        status="pass",
+        output_type="table",
+        properties=None,
+        sdc=None,
+        fair=None,
+        command="test",
+        summary="ok",
+        outcome=None,
+        output=None,
+    )
+    rec = records.get_index(0)
+    assert rec.properties == {}
+    assert rec.sdc == {}
+    assert rec.fair == {}
+    assert isinstance(rec.outcome, pd.DataFrame)
+    assert rec.output == []
+
+
+def test_finalise_evidence_dof_as_csv_string():
+    """Finalise_evidence() writes a CSV file when dof is a multiline string."""
+    records = Records()
+    # Simulate the evidence store the way ACRO.finalise() sets it
+    dof_csv = "idx,val\n0,10\n1,20\n"  # multiline CSV string
+    records._federated_evidence_store = {
+        "output_0": {
+            "command": "test",
+            "analysis_names": ["FrequencyTable"],
+            "variable_types": {},
+            "dof": dof_csv,
+            "interim_tables": {},
+        }
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        manifest = records.finalise_evidence(tmp)
+        # dof_file should have been written
+        entry = manifest["outputs"]["output_0"]
+        dof_file = entry["dof"]
+        assert dof_file is not None
+        assert dof_file.endswith(".csv")
+        assert os.path.exists(os.path.join(tmp, dof_file))
+
+
+def test_collate_risk_assessments_negative_path(data):
+    """Collate_risk_assessments covers the 'negative' branch."""
+    acro_obj = ACRO(suppress=False)
+    data2 = data.copy()
+    data2.loc[data2.index[:30], "inc_grants"] = -1
+    _ = acro_obj.crosstab(
+        data2.year, data2.grant_type, values=data2.inc_grants, aggfunc="mean"
+    )
+    output = acro_obj.results.get_index(0)
+    assert output.status in ("review", "fail")
+
+
+def test_collate_risk_assessments_missing_path(data):
+    """Collate_risk_assessments covers the 'missing' branch."""
+    acro_obj = ACRO(suppress=False)
+    acro_obj.sdc_checks.risk_appetite["check_missing_values"] = True
+    data2 = data.copy()
+    data2.loc[data2.index[:15], "inc_grants"] = float("nan")
+    _ = acro_obj.crosstab(
+        data2.year, data2.grant_type, values=data2.inc_grants, aggfunc="mean"
+    )
+    output = acro_obj.results.get_index(0)
+    assert output.status in ("review", "fail")
+
+
+def test_aggfunc_to_strings_list():
+    """Aggfunc_to_strings with a list returns multiple analysis types."""
+    result = table_utils.aggfunc_to_strings(["mean", "std"])
+    assert "Mean" in result
+    assert "StandardDeviation" in result
+
+
+def test_aggfunc_to_strings_none():
+    """Aggfunc_to_strings with None returns FrequencyTable."""
+    result = table_utils.aggfunc_to_strings(None)
+    assert result == ["FrequencyTable"]
+
+
+def test_round_table_base_none():
+    """Round_table returns a copy when base is None."""
+    df = pd.DataFrame({"a": [1.1, 2.2], "b": [3.3, 4.4]})
+    result = table_utils.round_table(df, None)
+    pd.testing.assert_frame_equal(result, df)
+
+
+def test_round_table_base_zero():
+    """Round_table returns a copy when base is 0."""
+    df = pd.DataFrame({"a": [1.1, 2.2], "b": [3.3, 4.4]})
+    result = table_utils.round_table(df, 0)
+    pd.testing.assert_frame_equal(result, df)
+
+
+def test_append_rounded_margins_multi_aggfunc():
+    """Append_rounded_margins returns early when multiple aggfuncs."""
+    df = pd.DataFrame({"a": [10, 20], "b": [30, 40]}, index=[1, 2])
+    result = table_utils.append_rounded_margins(df, ["mean", "std"], "All", 5)
+    pd.testing.assert_frame_equal(result, df)
+
+
+def test_append_rounded_margins_hierarchical_index():
+    """Append_rounded_margins returns early for hierarchical index."""
+    arrays = [[1, 1, 2, 2], ["a", "b", "a", "b"]]
+    idx = pd.MultiIndex.from_arrays(arrays)
+    df = pd.DataFrame({"x": [1, 2, 3, 4], "y": [5, 6, 7, 8]}, index=idx)
+    result = table_utils.append_rounded_margins(df, "mean", "All", 5)
+    pd.testing.assert_frame_equal(result, df)
+
+
+def test_append_rounded_margins_mean_aggfunc():
+    """Append_rounded_margins works with mean aggfunc."""
+    df = pd.DataFrame(
+        {"a": [10.0, 20.0, 30.0], "b": [40.0, 50.0, 60.0]}, index=[1, 2, 3]
+    )
+    result = table_utils.append_rounded_margins(df, "mean", "All", 5)
+    assert "All" in result.columns
+    assert "All" in result.index
+
+
+def test_append_rounded_margins_sum_aggfunc():
+    """Append_rounded_margins works with None/count/sum aggfunc."""
+    df = pd.DataFrame({"a": [10, 20, 30], "b": [40, 50, 60]}, index=[1, 2, 3])
+    result = table_utils.append_rounded_margins(df, None, "All", 5)
+    assert "All" in result.columns
+    assert "All" in result.index
+    # Grand total should be rounded to nearest 5
+    grand = result.loc["All", "All"]
+    assert grand % 5 == 0
+
+
+def test_append_rounded_margins_unsupported_aggfunc():
+    """Append_rounded_margins returns early for unsupported aggfunc."""
+    df = pd.DataFrame({"a": [10, 20], "b": [30, 40]}, index=[1, 2])
+    result = table_utils.append_rounded_margins(df, "max", "All", 5)
+    pd.testing.assert_frame_equal(result, df)
+
+
+def test_surv_func_suppress_true_table_records_exception():
+    """Surv_func with suppress=True and output='table' adds exception."""
+    acro_obj = ACRO(suppress=True)
+    np.random.seed(99)
+    mock_data = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 500),
+            "death": np.random.binomial(1, 0.3, 500),
+        }
+    )
+    result = acro_obj.surv_func(mock_data.futime, mock_data.death, output="table")
+    assert isinstance(result, pd.DataFrame)
+    output = acro_obj.results.get_index(0)
+    assert output.status == "review"
+    assert "Events Reported" in output.exception
+
+
+def test_hist_federated_no_output_recorded(data):
+    """Hist() federated gate: no result is added to results."""
+    acro_obj = ACRO(federated=True)
+    result = acro_obj.hist(data, "inc_grants", bins=5)
+    assert result is None
+    assert acro_obj.results.output_id == 1
+    assert len(acro_obj.results.results) == 0

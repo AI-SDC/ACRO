@@ -29,4 +29,8 @@ survival_safe_threshold: 10
 
 # consider zeros to be disclosive
 zeros_are_disclosive: True
+
+# federated mode: if true, skip checks and output evidence.json for the
+# trusted aggregator instead of running checks locally
+federated: false
 ...

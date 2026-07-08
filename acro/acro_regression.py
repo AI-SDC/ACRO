@@ -31,6 +31,8 @@ class Regression:
         self.config: dict[str, Any] = {}
         self.results: Records = Records()
         self.sdc_checks = SDCChecks({})
+        self.federated: bool = False
+        self._federated_evidence: dict = {}
 
     def ols(
         self,
@@ -79,6 +81,19 @@ class Regression:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis_name], model
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._federated_evidence[uid] = {
+                "command": command,
+                "analysis_names": [analysis_name],
+                "variable_types": evidence.variable_type_dict,
+                "dof": evidence.dof,
+                "interim_tables": {},
+            }
+            self.results.output_id += 1
+            return results
+
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, evidence, model
         )
@@ -169,6 +184,19 @@ class Regression:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis_name], model
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._federated_evidence[uid] = {
+                "command": command,
+                "analysis_names": [analysis_name],
+                "variable_types": evidence.variable_type_dict,
+                "dof": evidence.dof,
+                "interim_tables": {},
+            }
+            self.results.output_id += 1
+            return results
+
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, evidence, model
         )
@@ -237,6 +265,19 @@ class Regression:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis_name], model
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._federated_evidence[uid] = {
+                "command": command,
+                "analysis_names": [analysis_name],
+                "variable_types": evidence.variable_type_dict,
+                "dof": evidence.dof,
+                "interim_tables": {},
+            }
+            self.results.output_id += 1
+            return results
+
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, evidence, model
         )
@@ -327,6 +368,19 @@ class Regression:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis_name], model
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._federated_evidence[uid] = {
+                "command": command,
+                "analysis_names": [analysis_name],
+                "variable_types": evidence.variable_type_dict,
+                "dof": evidence.dof,
+                "interim_tables": {},
+            }
+            self.results.output_id += 1
+            return results
+
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, evidence, model
         )
@@ -395,6 +449,19 @@ class Regression:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis_name], model
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._federated_evidence[uid] = {
+                "command": command,
+                "analysis_names": [analysis_name],
+                "variable_types": evidence.variable_type_dict,
+                "dof": evidence.dof,
+                "interim_tables": {},
+            }
+            self.results.output_id += 1
+            return results
+
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, evidence, model
         )
@@ -485,6 +552,19 @@ class Regression:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis_name], model
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._federated_evidence[uid] = {
+                "command": command,
+                "analysis_names": [analysis_name],
+                "variable_types": evidence.variable_type_dict,
+                "dof": evidence.dof,
+                "interim_tables": {},
+            }
+            self.results.output_id += 1
+            return results
+
         checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
             analysis_name, evidence, model
         )

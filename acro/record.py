@@ -224,6 +224,7 @@ class Records:
         self.blocked_extensions: list[str] = [
             ext.lower() for ext in (blocked_extensions or [])
         ]
+        self._federated_evidence_store: dict = {}
 
     def add(  # pylint: disable=too-many-arguments
         self,
@@ -580,6 +581,67 @@ class Records:
                 for table in output.output:
                     start = 1 + writer.sheets[output_id].max_row
                     table.to_excel(writer, sheet_name=output_id, startrow=start)
+
+    def finalise_evidence(self, path: str) -> dict:
+        """Serialise federated evidence to CSV files and return the manifest dict.
+
+        Each interim table (DataFrame) is saved as a separate CSV file in *path*.
+        The returned dictionary is suitable for writing to ``evidence.json``.
+
+        Parameters
+        ----------
+        path : str
+            Directory where CSV files and ``evidence.json`` will be written.
+
+        Returns
+        -------
+        dict
+            Manifest describing every output's evidence and the CSV filenames.
+        """
+        os.makedirs(path, exist_ok=True)
+        outputs: dict[str, Any] = {}
+
+        # Merge evidence from both Tables and Regression (stored on the ACRO obj
+        # via _federated_evidence on each mixin).  At this point self is a Records
+        # instance; the caller (ACRO.finalise) passes the merged dict directly.
+        # We receive it as a parameter so the method stays on Records.
+        # NOTE: the actual evidence dict is passed in via the ``_evidence`` attr
+        # attached by ACRO.finalise() just before calling this method.
+        evidence_store: dict = getattr(self, "_federated_evidence_store", {})
+
+        for uid, entry in evidence_store.items():
+            table_files: dict[str, str] = {}
+            for table_name, csv_text in entry.get("interim_tables", {}).items():
+                filename = f"{uid}_{table_name}.csv"
+                filepath = os.path.normpath(f"{path}/{filename}")
+                with open(filepath, "w", newline="", encoding="utf-8") as fh:
+                    fh.write(csv_text)
+                table_files[table_name] = filename
+
+            dof = entry.get("dof")
+            dof_file: str | None = None
+            if isinstance(dof, str) and "\n" in dof:
+                dof_file = f"{uid}_dof.csv"
+                with open(
+                    os.path.normpath(f"{path}/{dof_file}"),
+                    "w",
+                    newline="",
+                    encoding="utf-8",
+                ) as fh:
+                    fh.write(dof)
+                dof_val: Any = dof_file
+            else:
+                dof_val = dof
+
+            outputs[uid] = {
+                "command": entry.get("command", ""),
+                "analysis_names": entry.get("analysis_names", []),
+                "variable_types": entry.get("variable_types", {}),
+                "dof": dof_val,
+                "interim_tables": table_files,
+            }
+
+        return {"version": __version__, "outputs": outputs}
 
     def write_checksums(self, path: str) -> None:
         """Write checksums for each file to checksums folder.

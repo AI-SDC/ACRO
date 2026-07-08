@@ -54,6 +54,7 @@ class ACRO(Tables, Regression):
         suppress: bool = False,
         mitigation: str | None = None,
         round_base: int | None = None,
+        federated: bool | None = None,
     ) -> None:
         """Construct a new ACRO object and reads parameters from config.
 
@@ -71,9 +72,15 @@ class ACRO(Tables, Regression):
         round_base : int, optional
             The base to round to when ``mitigation="round"``. Defaults to the
             ``safe_round_base`` value from the yaml config.
+        federated : bool, optional
+            Whether to run in federated mode. When ``True``, checks are skipped
+            and evidence is written to ``evidence.json`` for a trusted
+            aggregator. When ``None``, falls back to the yaml config value
+            (default ``False``).
         """
         Tables.__init__(self, suppress=suppress, mitigation=mitigation)
         Regression.__init__(self, config)
+        self._federated_override = federated  # applied after yaml is loaded
         self.config: dict[str, Any] = {}
         path: pathlib.Path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
@@ -118,6 +125,13 @@ class ACRO(Tables, Regression):
         # make object to handle all the ontology-driven checking
         self.sdc_checks = sdcchecks.SDCChecks(self.config)
 
+        if self._federated_override is not None:
+            self.federated: bool = bool(self._federated_override)
+        else:
+            self.federated = bool(self.config.get("federated", False))
+        self.config["federated"] = self.federated
+        logger.info("federated: %s", self.federated)
+
     def finalise(
         self, path: str = "outputs", ext: str = "json", interactive: bool = False
     ) -> Records | None:
@@ -145,7 +159,20 @@ class ACRO(Tables, Regression):
                 path,
             )
             return None
-        self.results.finalise(path, ext, interactive)
+
+        if self.federated:
+            os.makedirs(path, exist_ok=True)
+            merged_evidence: dict = {}
+            merged_evidence.update(getattr(self, "_federated_evidence", {}))
+            self.results._federated_evidence_store = merged_evidence
+            evidence_data = self.results.finalise_evidence(path)
+            evidence_filename: str = os.path.normpath(f"{path}/evidence.json")
+            with open(evidence_filename, "w", newline="", encoding="utf-8") as fh:
+                json.dump(evidence_data, fh, indent=4, sort_keys=False)
+            logger.info("federated evidence written to: %s", path)
+        else:
+            self.results.finalise(path, ext, interactive)
+
         config_filename: str = os.path.normpath(f"{path}/config.json")
         try:
             with open(config_filename, "w", newline="", encoding="utf-8") as file:

@@ -1568,7 +1568,7 @@ def test_tablemodeldetails_kwargs_not_dict():
             index=[pd.Series([1, 2])],
             columns=[],
             values=pd.Series([1, 2]),
-            thekwargs="bad",
+            thekwargs="bad",  # type: ignore[arg-type]
         )
 
 
@@ -1819,7 +1819,7 @@ def test_round_base_setter_non_integer():
     """Setting round_base to a non-integer falls back to default."""
     acro_obj = ACRO()
     default = acro_obj.round_base
-    acro_obj.round_base = "five"
+    acro_obj.round_base = "five"  # type: ignore[assignment]
     assert acro_obj.round_base == default
 
 

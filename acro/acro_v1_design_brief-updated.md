@@ -39,11 +39,11 @@ flowchart LR
         direction TB
         A([acro session
            created]) --> B[Create SDCChecks
-                                 instance]; 
-        B --> C[populate instance]; 
-        B1[(Local copy  
-           of SDCStatbarn  
-           ontology)] --> C; 
+                                 instance];
+        B --> C[populate instance];
+        B1[(Local copy
+           of SDCStatbarn
+           ontology)] --> C;
         B2[(risk
             appetite)]--> C;
         C --> SDCParams@{ shape: bow-rect, label: "SDC session params." };
@@ -59,7 +59,7 @@ flowchart LR
        instance"];
       E -- regression --> F[collect type
                              of regression];
-      F --> I[lookup lists of 
+      F --> I[lookup lists of
                 statbarn, risks
                  and checks];
       H --> I;
@@ -85,7 +85,7 @@ flowchart LR
       L -- review --> M;
       M -->ACROitem@{ shape: bow-rect, label: "ACRO record" };
     end
-  
+
 INIT --> Evidence;
 Evidence --> Output;
 

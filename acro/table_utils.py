@@ -590,7 +590,7 @@ def aggfunc_to_strings(aggfunc: Any) -> list[str]:
     return analysis_names
 
 
-def round_table(table: DataFrame, base: int | None) -> DataFrame:
+def round_table(table: DataFrame, base: int) -> DataFrame:
     """Round numeric cells to the nearest multiple of ``base`` (NaNs preserved)."""
     logger.debug("round_table(base=%s)", base)
     if base is None or base <= 0:

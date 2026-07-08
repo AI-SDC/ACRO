@@ -144,7 +144,33 @@ ignore = [
   "S301",    # unsafe pickle — used intentionally in this project
 ]
 
-# per-file-ignores - temporarily disabled due to TOML format compatibility
+extend-ignore = [
+  "ANN001",  # missing argument type annotation - style preference
+  "ANN101",  # missing self type annotation - style preference
+  "ANN201",  # missing return type annotation - style preference
+  "T201",    # print statements - used in debugging
+  "C901",    # function too complex - existing code
+  "C417",    # unnecessary map - existing code
+  "EM101",   # exception string literal - existing code
+  "EM102",   # exception f-string literal - existing code
+  "B026",    # star-arg unpacking - existing code
+  "PLR0912", # too many branches - existing code
+  "PLR0913", # too many arguments - existing code
+  "PLW2901", # for loop variable overwritten - acceptable pattern
+  "PLC1901", # comparison to empty string - acceptable pattern
+  "S506",    # unsafe loader - intentional in yaml.load
+  "DTZ005",  # datetime.now without tz - acceptable
+  "PD002",   # inplace=True - acceptable for existing code
+  "PD011",   # .values vs .to_numpy() - acceptable for existing code
+  "PD901",   # bad variable name (df) - existing code
+  "E402",    # module level imports not at top - acceptable for notebooks
+  "SIM102",  # combine if statements - existing code
+  "SIM118",  # use in dict instead of in dict.keys() - minor
+  "SIM210",  # use bool() instead of if-else - minor
+  "ARG001",  # unused argument - acceptable for override methods
+  "PT001",   # pytest style - acceptable
+  "PD003",   # pandas style - acceptable
+]
 
 [tool.ruff.pylint]
 max-args = 12

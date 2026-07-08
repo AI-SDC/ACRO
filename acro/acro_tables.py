@@ -17,6 +17,7 @@ from .record import Records
 from .sdc_agg_funcs import agg_mode
 from .sdcchecks import ManyChecksResults, SDCChecks, SDCEvidence
 from .table_utils import (
+    AGGFUNC_TO_TYPE,
     aggfunc_to_strings,
     append_rounded_margins,
     axis_to_list,
@@ -40,6 +41,7 @@ SAFE_ROUND_BASE: int = 5
 
 # Re-export so existing callers that imported from this module keep working.
 _ALLOWED_MITIGATIONS = ALLOWED_MITIGATIONS
+AGGFUNC = AGGFUNC_TO_TYPE  # Alias for backwards compatibility
 
 
 class Tables:

@@ -140,9 +140,8 @@ def extract_aggfun_values_from_options(
                 if word in varnames:
                     if word not in cell_content["values"]:
                         cell_content["values"].append(word)
-                else:
-                    if word not in cell_content["aggfuncs"]:
-                        cell_content["aggfuncs"].append(word)
+                elif word not in cell_content["aggfuncs"]:
+                    cell_content["aggfuncs"].append(word)
     return cell_content
 
 
@@ -545,16 +544,15 @@ def extract_strings(input_string: str) -> list[str]:
         colstring = words[-1]
 
     # If the string has parentheses
-    else:
-        # If there are parentheses at the start of the string
-        if input_string.startswith("("):
-            rowstring, input_string = extract_var_within_parentheses(input_string)
-            colstring, tablestring = extract_colstring_tablestring(input_string)
+    # If there are parentheses at the start of the string
+    elif input_string.startswith("("):
+        rowstring, input_string = extract_var_within_parentheses(input_string)
+        colstring, tablestring = extract_colstring_tablestring(input_string)
 
-        else:
-            # If there are parentheses at the middle of the string
-            rowstring, input_string = extract_var_before_parentheses(input_string)
-            colstring, tablestring = extract_colstring_tablestring(input_string)
+    else:
+        # If there are parentheses at the middle of the string
+        rowstring, input_string = extract_var_before_parentheses(input_string)
+        colstring, tablestring = extract_colstring_tablestring(input_string)
     varlist = [rowstring, colstring, tablestring]
     return varlist
 

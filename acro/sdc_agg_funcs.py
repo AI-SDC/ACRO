@@ -75,7 +75,7 @@ def agg_values_are_same(vals: pd.Series) -> bool:
         Whether the values are the same.
     """
     # the observations are not the same
-    return vals.nunique(dropna=True) == 1
+    return (vals.iloc[0] == vals).all() if len(vals) > 0 else True
 
 
 def agg_top_n_sum(vals: pd.Series) -> float:

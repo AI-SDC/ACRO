@@ -297,11 +297,9 @@ def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
         Name of the folder to save outputs.
     """
     acro: ACRO = ACRO()
-    output_id: int = 0
     # add the files from the folder to an acro obj
-    for file in os.listdir(src_path):
+    for output_id, file in enumerate(os.listdir(src_path)):
         filename: str = os.path.join(src_path, file)
         acro.custom_output(filename)
         acro.rename_output(f"output_{output_id}", file)
-        output_id += 1
     acro.finalise(dest_path, "json")

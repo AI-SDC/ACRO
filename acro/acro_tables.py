@@ -70,6 +70,49 @@ class Tables:
         self.mitigation = mitigation
         self.results: Records = Records()
         self.sdc_checks = SDCChecks({})
+        self.federated: bool = False
+        self._federated_evidence: dict = {}
+
+    def _store_federated_evidence(
+        self,
+        uid: str,
+        command: str,
+        analysis_names: list,
+        evidence: SDCEvidence,
+    ) -> None:
+        """Accumulate evidence for a single output when running in federated mode.
+
+        Parameters
+        ----------
+        uid : str
+            The output identifier that will be written to evidence.json
+            (e.g. ``"output_0"``).
+        command : str
+            The researcher's original command string (for traceability).
+        analysis_names : list[str]
+            Names of the analyses performed (e.g. ``["FrequencyTable"]``).
+        evidence : SDCEvidence
+            The collected evidence object to serialise.
+        """
+        tables: dict[str, str] = {}
+        for name, df in evidence.interim_tables.items():
+            tables[name] = df.to_csv()
+
+        dof_val = None
+        if evidence.dof is not None:
+            dof_val = (
+                evidence.dof.to_csv()
+                if isinstance(evidence.dof, pd.DataFrame)
+                else evidence.dof
+            )
+
+        self._federated_evidence[uid] = {
+            "command": command,
+            "analysis_names": analysis_names,
+            "variable_types": evidence.variable_type_dict,
+            "dof": dof_val,
+            "interim_tables": tables,
+        }
 
     @property
     def mitigation(self) -> str:
@@ -293,6 +336,12 @@ class Tables:
             analysis_names, model_details
         )
 
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._store_federated_evidence(uid, command, analysis_names, evidence)
+            self.results.output_id += 1
+            return table
+
         # extra layer of loops as requested tables may have more than one agg func
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
@@ -490,6 +539,13 @@ class Tables:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             analysis_names, model_details
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._store_federated_evidence(uid, command, analysis_names, evidence)
+            self.results.output_id += 1
+            return table
+
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
             collatedres.allchecksresults[analysis] = (
@@ -607,6 +663,27 @@ class Tables:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis], model_details
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._store_federated_evidence(uid, command, [analysis], evidence)
+            self.results.output_id += 1
+            # return the unmodified survival table / plot path as in local mode
+            if output == "table":
+                return survival_table
+            if output == "plot":
+                if utils.is_blocked_extension(
+                    filename, self.results.blocked_extensions
+                ):
+                    return None
+                unique_filename = utils.get_unique_artefact_filename(filename)
+                if unique_filename == "None":
+                    return None
+                survival_func.plot()  # pragma: no cover
+                plt.savefig(unique_filename)
+                return (None, unique_filename)
+            return None
+
         collatedres = ManyChecksResults()
         collatedres.allchecksresults[analysis] = (
             self.sdc_checks.run_checks_for_analysis(analysis, evidence, model_details)
@@ -835,6 +912,13 @@ class Tables:
             evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
                 [analysis], model_details
             )
+
+            if self.federated:
+                uid = f"output_{self.results.output_id}"
+                self._store_federated_evidence(uid, command, [analysis], evidence)
+                self.results.output_id += 1
+                return None
+
             collatedres = ManyChecksResults()
             collatedres.allchecksresults[analysis] = (
                 self.sdc_checks.run_checks_for_analysis(
@@ -955,6 +1039,13 @@ class Tables:
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis], model_details
         )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._store_federated_evidence(uid, command, [analysis], evidence)
+            self.results.output_id += 1
+            return None
+
         collatedres = ManyChecksResults()
         collatedres.allchecksresults[analysis] = (
             self.sdc_checks.run_checks_for_analysis(analysis, evidence, model_details)

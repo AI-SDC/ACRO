@@ -301,7 +301,7 @@ class Tables:
             "aggfunc": aggfunc,
             "margins": pandas_margins,
             "margins_name": margins_name,
-            "dropna": False, 
+            "dropna": False,
             "normalize": normalize,
         }
         if aggfunc == "mode":
@@ -438,7 +438,7 @@ class Tables:
         DataFrame
             Cross tabulation of the data.
         """
-        _ = dropna  
+        _ = dropna
 
         logger.debug("pivot_table()")
         command: str = utils.get_command("pivot_table()", stack())
@@ -845,7 +845,7 @@ class Tables:
             logger.info("status: %s", status)
             fair_dict = {}
 
-        else:  
+        else:
             analysis = "Histogram"
             model_details = TableModelDetails(
                 index=[data[column]],

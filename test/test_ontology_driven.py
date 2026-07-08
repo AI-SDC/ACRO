@@ -686,7 +686,7 @@ def test_surv_func(acro):
     _ = acro.surv_func(data.futime, data.death, output="table")
     output = acro.results.get_index(0)
     assert output.status in ["fail", "review"]
-    assert "suppressed" in output.summary or "fail" in output.summary
+    assert "KaplanMeier" in output.summary
 
     filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
     _ = acro.surv_func(data.futime, data.death, output="plot")

@@ -120,7 +120,7 @@ class Regression:
         )
         return results
 
-    def olsr(  # pylint: disable=keyword-arg-before-vararg
+    def olsr(
         self,
         formula: str,
         data: Any,
@@ -174,7 +174,7 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,  # noqa: B026
+            *args,
             **kwargs,
         )
         results = model.fit()
@@ -304,7 +304,7 @@ class Regression:
         )
         return results
 
-    def logitr(  # pylint: disable=keyword-arg-before-vararg
+    def logitr(
         self,
         formula: str,
         data: Any,
@@ -358,7 +358,7 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,  # noqa: B026
+            *args,
             **kwargs,
         )
         results = model.fit()
@@ -488,7 +488,7 @@ class Regression:
         )
         return results
 
-    def probitr(  # pylint: disable=keyword-arg-before-vararg
+    def probitr(
         self,
         formula: str,
         data: Any,
@@ -542,7 +542,7 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,  # noqa: B026
+            *args,
             **kwargs,
         )
         results = model.fit()

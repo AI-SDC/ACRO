@@ -1,6 +1,5 @@
 """ACRO: Tables functions."""
 
-# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import logging
@@ -14,6 +13,7 @@ from matplotlib import pyplot as plt
 from pandas import DataFrame
 
 from . import utils
+from .constants import ARTIFACTS_DIR
 from .record import Records
 from .sdc_agg_funcs import agg_mode
 from .sdcchecks import ManyChecksResults, SDCChecks, SDCEvidence
@@ -290,6 +290,12 @@ class Tables:
                     "you must also specify a single values column "
                     "to aggregate over."
                 )
+        # When rounding, compute the table without margins first and then
+        # derive margins from the rounded cells (so the inner cells add up
+        # to the displayed totals). See append_rounded_margins() / Jim
+        # Smith's review on PR #381.
+        recompute_margins = margins and self._mitigation == "round"
+        pandas_margins = False if recompute_margins else margins
 
         # standardise format to simplify later code
         index = axis_to_list(index)

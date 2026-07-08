@@ -5,6 +5,7 @@ Jim Smith 2023 @james.smith@uwe.ac.uk
 MIT licenses apply.
 """
 
+import logging
 import os
 import re
 from typing import Any
@@ -14,7 +15,9 @@ from statsmodels.iolib import summary as sm_iolib_summary
 
 from acro import ACRO, acro_regression, add_constant, stata_config
 from acro.acro_tables import AGGFUNC
-from acro.utils import prettify_table_string
+from acro.utils import ALLOWED_MITIGATIONS, prettify_table_string
+
+logger = logging.getLogger("acro")
 
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
@@ -256,7 +259,7 @@ def get_rows_cols_v17on(varlist: list[Any]) -> dict[str, Any]:
     return rows_cols
 
 
-def parse_and_run(  # pylint: disable=too-many-arguments
+def parse_and_run(
     mydata: pd.DataFrame,
     command: str,
     varlist_as_str: str,
@@ -301,6 +304,8 @@ def parse_and_run(  # pylint: disable=too-many-arguments
         "finalise",
         "enable_suppression",
         "disable_suppression",
+        "enable_rounding",
+        "disable_rounding",
         "print_outputs",
     ]
     output_commands = [
@@ -330,20 +335,50 @@ def parse_and_run(  # pylint: disable=too-many-arguments
     return outcome
 
 
+def _parse_init_options(options: str) -> dict[str, Any]:
+    """Parse the init command options into ACRO constructor kwargs."""
+    args: dict[str, Any] = {}
+    found, config = find_brace_word("config", options)
+    if found:
+        assert len(config) == 1, "can only supply one config file name"
+        args["config"] = config[0]
+    found, suppress = find_brace_word("suppress", options)
+    if found:
+        args["suppress"] = suppress
+    found, mitigation = find_brace_word("mitigation", options)
+    if found:
+        assert len(mitigation) == 1, "can only supply one mitigation value"
+        proposed = mitigation[0]
+        if proposed in ALLOWED_MITIGATIONS:
+            args["mitigation"] = proposed
+        else:
+            logger.info(
+                "Sorry, I don't recognise the mitigation %r. "
+                "It should be one of %s. Proceeding with no mitigation.",
+                proposed,
+                sorted(ALLOWED_MITIGATIONS),
+            )
+            args["mitigation"] = "none"
+    found, round_base = find_brace_word("round_base", options)
+    if found:
+        assert len(round_base) == 1, "can only supply one round_base value"
+        try:
+            args["round_base"] = int(round_base[0])
+        except (TypeError, ValueError):
+            logger.info(
+                "round_base value %r is not an integer; "
+                "falling back to the default round_base from the config.",
+                round_base[0],
+            )
+    return args
+
+
 def run_session_command(command: str, varlist: list[str], options: str) -> str:
     """Run session commands that are data-independent."""
     outcome = ""
 
     if command == "init":
-        args: dict[str, Any] = {}
-        found, config = find_brace_word("config", options)
-        if found:
-            assert len(config) == 1, "can only supply one config file name"
-            args["config"] = config[0]
-        found, suppress = find_brace_word("suppress", options)
-        if found:
-            args["suppress"] = suppress
-        stata_config.stata_acro = ACRO(**args)
+        stata_config.stata_acro = ACRO(**_parse_init_options(options))
         outcome = "acro analysis session created\n"
 
     elif command == "enable_suppression":
@@ -352,6 +387,23 @@ def run_session_command(command: str, varlist: list[str], options: str) -> str:
     elif command == "disable_suppression":
         stata_config.stata_acro.suppress = False
         outcome = "suppression toggled off for subsequent commands"
+    elif command == "enable_rounding":
+        base_arg: int | None = None
+        if varlist:
+            try:
+                base_arg = int(varlist[0])
+            except (TypeError, ValueError):
+                logger.info(
+                    "rounding base %r is not an integer; "
+                    "turning rounding on with the default base.",
+                    varlist[0],
+                )
+                base_arg = None
+        stata_config.stata_acro.enable_rounding(base_arg)
+        outcome = "rounding toggled on for subsequent commands"
+    elif command == "disable_rounding":
+        stata_config.stata_acro.disable_rounding()
+        outcome = "rounding toggled off for subsequent commands"
     elif command == "finalise":
         suffix = "json"
         out_dir = "stata_outputs"
@@ -376,12 +428,10 @@ def add_custom_output(varlist: list[str]) -> str:
     except IndexError:
         return "syntax error: please pass the name of the output to be added"
 
-    # .gph extension contain data
-    _, file_extension = os.path.splitext(the_output)
-    if file_extension == ".gph":
-        return "Warning: .gph files may not be exported as they contain data."
     comment_str = " ".join(varlist)
-    stata_config.stata_acro.custom_output(the_output, comment_str)
+    if not stata_config.stata_acro.custom_output(the_output, comment_str):
+        _, ext = os.path.splitext(the_output)
+        return f"Warning: {ext} files are not allowed and cannot be exported."
     outcome = f"file {the_output} with comment {comment_str} added to session."
     return outcome
 
@@ -398,9 +448,7 @@ def run_output_command(command: str, varlist: list[str]) -> str:
         return "syntax error: please pass the name of the output to be changed"
 
     # safety- rest of commands need an existing output to work on
-    if (  # pylint:disable=consider-iterating-dictionary
-        the_output not in stata_config.stata_acro.results.results.keys()
-    ):
+    if the_output not in stata_config.stata_acro.results.results:
         return f"no output with name  {the_output} in current acro session.\n"
 
     if command == "remove_output":

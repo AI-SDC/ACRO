@@ -27,8 +27,6 @@ from acro import (
 from acro.acro_tables import _rounded_survival_table
 from acro.record import Records, load_records
 
-# pylint: disable=redefined-outer-name,too-many-lines
-
 PATH: str = "RES_PYTEST"
 
 
@@ -521,6 +519,61 @@ def test_custom_output(acro):
     shutil.rmtree(PATH)
 
 
+def test_blocked_extension(acro, tmp_path):
+    """Test that blocked file extensions are rejected in custom output."""
+    # create temporary files with blocked extensions
+    svg_file = tmp_path / "test.svg"
+    svg_file.write_text("<svg></svg>")
+    gph_file = tmp_path / "test.gph"
+    gph_file.write_text("data")
+
+    # blocked extensions should be rejected
+    acro.custom_output(str(svg_file))
+    acro.custom_output(str(gph_file))
+    assert len(acro.results.results) == 0
+
+    # allowed extensions should be accepted
+    txt_file = tmp_path / "test.txt"
+    txt_file.write_text("hello")
+    acro.custom_output(str(txt_file))
+    assert len(acro.results.results) == 1
+
+    # case-insensitive check
+    svg_upper = tmp_path / "test.SVG"
+    svg_upper.write_text("<svg></svg>")
+    acro.custom_output(str(svg_upper))
+    assert len(acro.results.results) == 1
+
+
+def test_blocked_extension_hist(data, acro):
+    """Test that blocked file extensions are rejected for histograms."""
+    result = acro.hist(data, "inc_grants", bins=1, filename="hist.svg")
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
+def test_blocked_extension_pie(data, acro):
+    """Test that blocked file extensions are rejected for pie charts."""
+    result = acro.pie(data, "grant_type", filename="pie.svg")
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
+def test_blocked_extension_survival(acro):
+    """Test that blocked file extensions are rejected for survival plots."""
+    result = acro.survival_plot(
+        survival_table=pd.DataFrame(),
+        survival_func=None,
+        filename="surv.svg",
+        status="pass",
+        sdc={},
+        command="test",
+        summary="test",
+    )
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
 def test_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with negative values."""
     acro_tables.CHECK_MISSING_VALUES = True
@@ -721,7 +774,7 @@ def test_surv_func(acro):
         assert "cells suppressed" in output.summary
 
     # plot
-    filename = os.path.normpath("acro_artifacts/kaplan-meier_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/kaplan-meier_0.png")
     _ = acro.surv_func(data.futime, data.death, output="plot")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "I need this")
@@ -1091,7 +1144,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(
 
 def test_histogram_disclosive(data, acro, caplog):
     """Test a discolsive histogram."""
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
     _ = acro.hist(data, "inc_grants")
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
@@ -1108,8 +1161,12 @@ def test_histogram_disclosive(data, acro, caplog):
 
 def test_histogram_non_disclosive(data, acro):
     """Test a non disclosive histogram."""
-    filename = os.path.normpath("acro_artifacts/histogram_0.png")
-    _ = acro.hist(data, "inc_grants", bins=1)
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    # Bracket explicit bin edges outside the data extremes so extreme-value-leak
+    # cannot fire on the real-world min/max of inc_grants.
+    low = float(data["inc_grants"].min()) - 1.0
+    high = float(data["inc_grants"].max()) + 1.0
+    _ = acro.hist(data, "inc_grants", bins=[low, high])
     assert os.path.exists(filename)
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(path=PATH)
@@ -1119,16 +1176,227 @@ def test_histogram_non_disclosive(data, acro):
     shutil.rmtree(PATH)
 
 
+def _make_wage_df(extra_low_count: int = 0) -> pd.DataFrame:
+    """Build a synthetic wage DataFrame with controllable low-end mass."""
+    np.random.seed(0)
+    low = np.random.uniform(0.0, 10.0, size=extra_low_count) if extra_low_count else []
+    mid = np.random.uniform(10.0, 90.0, size=10)
+    high = np.random.uniform(90.0, 100.0, size=15)
+    return pd.DataFrame({"wage": np.concatenate([low, mid, high])})
+
+
+def test_histogram_interior_threshold_only():
+    """Interior bins fail threshold but edge bins meet it."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(0)
+    low = np.random.uniform(0.0, 10.0, size=15)
+    high = np.random.uniform(90.0, 100.0, size=15)
+    interior = np.linspace(15.0, 85.0, 10)
+    df = pd.DataFrame({"val": np.concatenate([low, interior, high])})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "val", bins=10)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["edge-bin"] == 0
+    assert output.sdc["summary"]["threshold"] > 0
+    assert "edge-bin" not in output.summary
+    assert "threshold:" in output.summary
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_edge_bin_only():
+    """First bin falls below threshold; interior + last bins pass."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    # First bin [0,10): 5 rows. Bins 1..9 each get 10 rows evenly.
+    low = np.linspace(1.0, 9.0, 5)
+    interior = np.repeat(np.arange(15.0, 100.0, 10.0), 10)
+    df = pd.DataFrame({"val": np.concatenate([low, interior])})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "val", bins=10)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["edge-bin"] == 1
+    assert output.sdc["bins"]["edge-bin"] == [0]
+    assert "edge-bin:" in output.summary
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_by_val_range_mismatch():
+    """Stratified histogram where subgroups have different ranges."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(2)
+    male_wages = np.random.uniform(5.0, 10.0, size=30)
+    female_wages = np.random.uniform(4.0, 10.0, size=30)
+    df = pd.DataFrame(
+        {
+            "sex": ["M"] * 30 + ["F"] * 30,
+            "wage": np.concatenate([male_wages, female_wages]),
+        }
+    )
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "wage", by_val="sex", bins=6)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["by-val-range-mismatch"] is True
+    assert "by-val-range-mismatch:" in output.summary
+    assert "sex" in output.sdc["by_val_detail"]
+    assert set(output.sdc["by_val_detail"]["sex"]) == {"M", "F"}
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_extreme_value_leak():
+    """A single individual holds the minimum; leftmost edge reveals them."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(3)
+    rest = np.random.uniform(5.0, 10.0, size=50)
+    df = pd.DataFrame({"wage": np.concatenate([[1.0], rest])})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "wage", bins=10)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["extreme-value-leak"] >= 1
+    assert output.sdc["min_count"] == 1
+    assert "extreme-value-leak:" in output.summary
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_explicit_bins_no_leak():
+    """User-supplied bin edges that don't coincide with data extremes don't leak."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    # Data in [4.5, 10]; bin edges [4, 6, 8, 10.5] bracket away from the extremes.
+    # Each bin gets at least 10 rows.
+    values = np.concatenate(
+        [
+            np.linspace(4.5, 5.9, 10),
+            np.linspace(6.0, 7.9, 15),
+            np.linspace(8.0, 10.0, 12),
+        ]
+    )
+    df = pd.DataFrame({"val": values})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "val", bins=[4.0, 6.0, 8.0, 10.5])
+    output = a.results.get_index(0)
+    assert output.status == "review"
+    assert output.sdc["summary"]["extreme-value-leak"] == 0
+    assert output.sdc["summary"]["edge-bin"] == 0
+    assert output.sdc["summary"]["threshold"] == 0
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_nan_handling():
+    """Drop NaNs before SDC math; all-NaN column returns None."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(5)
+    valid = np.random.uniform(0.0, 100.0, size=15)
+    df = pd.DataFrame({"val": np.concatenate([valid, [np.nan] * 5])})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "val", bins=5)
+    output = a.results.get_index(0)
+    assert sum(output.sdc["counts"]) == 15
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_by_val_unnamed_series():
+    """Accept an unnamed pd.Series as by_val without breaking by_val_detail keys."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    np.random.seed(6)
+    wages = np.concatenate(
+        [np.random.uniform(5.0, 10.0, size=30), np.random.uniform(4.0, 10.0, size=30)]
+    )
+    df = pd.DataFrame({"wage": wages})
+    grouper = pd.Series(["M"] * 30 + ["F"] * 30)  # no .name set
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "wage", by_val=grouper, bins=6)
+    output = a.results.get_index(0)
+    assert "by_val" in output.sdc["by_val_detail"]
+    assert set(output.sdc["by_val_detail"]["by_val"]) == {"M", "F"}
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_integer_column_extreme_leak():
+    """Integer-valued column with a single maximum trips extreme-value-leak."""
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+    shutil.rmtree(PATH, ignore_errors=True)
+    df = pd.DataFrame({"age": [20] * 30 + [65]})
+    a = ACRO(suppress=False)
+    _ = a.hist(df, "age", bins=10)
+    output = a.results.get_index(0)
+    assert output.status == "fail"
+    assert output.sdc["summary"]["extreme-value-leak"] >= 1
+    assert output.sdc["max_count"] == 1
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
+
+
+def test_histogram_zeros_not_disclosive(acro):
+    """Empty tail bins do not flag a histogram when zeros_are_disclosive=False."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    # 100 obs at each of 6 distinct values spanning [0, 10]; with bins=20, the
+    # only sub-threshold bins are the empty ones between the populated values.
+    df = pd.DataFrame({"x": np.repeat([0.0, 1.0, 2.0, 3.0, 5.0, 10.0], 100)})
+    acro_tables.ZEROS_ARE_DISCLOSIVE = False
+    try:
+        _ = acro.hist(df, "x", bins=20)
+    finally:
+        acro_tables.ZEROS_ARE_DISCLOSIVE = True
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "review"
+    shutil.rmtree(PATH)
+
+
+def test_histogram_zeros_disclosive_default(acro, caplog):
+    """Empty bins remain disclosive under the default zeros_are_disclosive=True."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    df = pd.DataFrame({"x": np.repeat([0.0, 1.0, 2.0, 3.0, 5.0, 10.0], 100)})
+    _ = acro.hist(df, "x", bins=20)
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "fail"
+    assert "Histogram will not be shown as the x column is disclosive." in caplog.text
+    shutil.rmtree(PATH)
+
+
+def test_histogram_nonempty_below_threshold_still_disclosive(acro):
+    """A non-empty bin below threshold remains disclosive even when zeros are not."""
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/histogram_0.png")
+    # bins=2 over [0, 5]: one bin has 100 obs, the other has 5 (non-empty, < THRESHOLD).
+    df = pd.DataFrame({"x": np.r_[np.repeat(0.0, 100), np.repeat(5.0, 5)]})
+    acro_tables.ZEROS_ARE_DISCLOSIVE = False
+    try:
+        _ = acro.hist(df, "x", bins=2)
+    finally:
+        acro_tables.ZEROS_ARE_DISCLOSIVE = True
+    assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.status == "fail"
+    shutil.rmtree(PATH)
+
+
 def test_pie_disclosive(acro, caplog):
     """Test a disclosive pie chart (a category has fewer than threshold observations)."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
 
     df = pd.DataFrame(
         {"grant_type": (["A"] * 20) + (["B"] * 15) + (["C"] * 12) + (["D"] * 5)}
     )
 
-    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/pie_0.png")
     _ = acro.pie(df, "grant_type", filename="pie.png")
 
     assert os.path.exists(filename)
@@ -1147,9 +1415,9 @@ def test_pie_disclosive(acro, caplog):
 
 def test_pie_non_disclosive(data, acro):
     """Test a non-disclosive pie chart (all categories meet the threshold)."""
-    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    shutil.rmtree(ARTIFACTS_DIR, ignore_errors=True)
     shutil.rmtree(PATH, ignore_errors=True)
-    filename = os.path.normpath("acro_artifacts/pie_0.png")
+    filename = os.path.normpath(f"{ARTIFACTS_DIR}/pie_0.png")
     result = acro.pie(data, "grant_type", filename="pie.png")
     assert os.path.normpath(result) == filename
     assert os.path.exists(filename)
@@ -1219,10 +1487,9 @@ def test_finalise_non_interactive(data):
 
 
 def test_finalise_interactive(data):
-    """Test finalise_interactive.
+    """Test interactive version of finalising acro.
 
-    Test that interactive version of finalising acro
-    leaves exceptions as they should be disclosive table.
+    Leaves exceptions as they should be disclosive table.
     """
     acro = ACRO(suppress=False)
     _ = acro.crosstab(data.year, data.grant_type)

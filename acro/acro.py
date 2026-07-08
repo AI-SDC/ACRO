@@ -200,7 +200,7 @@ class ACRO(Tables, Regression):
         """
         return self.results.print()
 
-    def custom_output(self, filename: str, comment: str = "") -> None:
+    def custom_output(self, filename: str, comment: str = "") -> bool:
         """Add an unsupported output to the results dictionary.
 
         Parameters
@@ -209,8 +209,13 @@ class ACRO(Tables, Regression):
             The name of the file that will be added to the list of the outputs.
         comment : str
             An optional comment.
+
+        Returns
+        -------
+        bool
+            False if the file extension is blocked, True otherwise.
         """
-        self.results.add_custom(filename, comment)
+        return self.results.add_custom(filename, comment)
 
     def rename_output(self, old: str, new: str) -> None:
         """Rename an output.

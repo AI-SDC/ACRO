@@ -72,7 +72,7 @@ TRE Risk Appetite Settings
    Minimum observations for survival analysis outputs
 
 **zeros_are_disclosive** (default: true)
-   Whether zero values are considered disclosive. TREs can set this to false for datasets where class disclosure is not relevant
+   Whether zero values are considered disclosive. TREs can set this to false for datasets where class disclosure is not relevant. Also controls whether empty bins (count == 0) are excluded from the disclosure threshold check in ``hist()``.
 
 Behavioral Settings
 -------------------

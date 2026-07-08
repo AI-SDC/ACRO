@@ -13,7 +13,6 @@ from matplotlib import pyplot as plt
 from pandas import DataFrame
 
 from . import utils
-from .constants import ARTIFACTS_DIR
 from .record import Records
 from .sdc_agg_funcs import agg_mode
 from .sdcchecks import ManyChecksResults, SDCChecks, SDCEvidence

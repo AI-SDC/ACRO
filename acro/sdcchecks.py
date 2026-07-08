@@ -517,27 +517,27 @@ class SDCChecks:
             )
             status, summary = get_status_summary_from_mask(mask)
             return status, summary, mask
-        else:  # array
-            data = model.index[0]
-            if model.command == "hist":
-                bins = model.kwargs.get("bins", 10)
-                hist, bin_edges = np.histogram(data.dropna(), bins)
-                binids = np.digitize(data.dropna(), bin_edges)
-                # account for all possible bin ids (1..num_bins inclusive)
-                possibles = list(range(1, len(bin_edges)))
-                cat_type = pd.CategoricalDtype(categories=possibles)
-                the_array = pd.Series(binids, dtype=cat_type)
-            else:
-                the_array = data
-            count_series = the_array.value_counts()
-            mask_series = count_series < self.risk_appetite["safe_threshold"]
-            mask = mask_to_boolmask(pd.DataFrame(mask_series))
-            status, summary = get_status_summary_from_mask(mask)
-            if model.command == "hist":
-                summary += (
-                    " Review Notes: Please check extreme bin edges are not disclosive."
-                )
-            return status, summary, mask
+        # array
+        data = model.index[0]
+        if model.command == "hist":
+            bins = model.kwargs.get("bins", 10)
+            hist, bin_edges = np.histogram(data.dropna(), bins)
+            binids = np.digitize(data.dropna(), bin_edges)
+            # account for all possible bin ids (1..num_bins inclusive)
+            possibles = list(range(1, len(bin_edges)))
+            cat_type = pd.CategoricalDtype(categories=possibles)
+            the_array = pd.Series(binids, dtype=cat_type)
+        else:
+            the_array = data
+        count_series = the_array.value_counts()
+        mask_series = count_series < self.risk_appetite["safe_threshold"]
+        mask = mask_to_boolmask(pd.DataFrame(mask_series))
+        status, summary = get_status_summary_from_mask(mask)
+        if model.command == "hist":
+            summary += (
+                " Review Notes: Please check extreme bin edges are not disclosive."
+            )
+        return status, summary, mask
 
     def manual_check(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails

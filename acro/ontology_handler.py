@@ -71,7 +71,7 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
             and not oval.startswith("https://w3id.org")
             and not oval.startswith(PREFIX)
         ):
-            if key in othersuperclasses.keys():
+            if key in othersuperclasses:
                 othersuperclasses[key].append(oval)
             else:
                 othersuperclasses[key] = [oval]
@@ -160,7 +160,7 @@ def make_save_analyses(
         p,
         o,
     ) in g:
-        if str(p) == SUBCLASS and str(o).replace(PREFIX, "") in statbarns.keys():
+        if str(p) == SUBCLASS and str(o).replace(PREFIX, "") in statbarns:
             key = str(s).replace(PREFIX, "")
             analyses[key] = {
                 "name": key,

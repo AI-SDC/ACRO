@@ -118,7 +118,7 @@ def test_crosstab_without_suppression(data):
     assert output.summary == correct_summary, (
         f"expected:\n{correct_summary}\n---\ngot\n{output.summary}\n---"
     )
-    assert 48 == output.output[0]["R/G"].sum()
+    assert output.output[0]["R/G"].sum() == 48
 
 
 def test_crosstab_with_aggfunc_mode(data):
@@ -130,7 +130,7 @@ def test_crosstab_with_aggfunc_mode(data):
     output = acro.results.get_index(0)
     # correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
     # ##TODO    assert output.summary == correct_summary
-    assert 913000 == output.output[0]["R/G"].iat[0]
+    assert output.output[0]["R/G"].iat[0] == 913000
 
 
 def test_crosstab_with_aggfunc_sum(data, acro):
@@ -225,7 +225,7 @@ def test_pivot_table_without_suppression(data):
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
     output_0 = acro.results.get_index(0)
-    assert 36293992.0 == output_0.output[0]["mean"]["inc_grants"].sum()
+    assert output_0.output[0]["mean"]["inc_grants"].sum() == 36293992.0
     assert output_0.status in ["pass", "fail", "review"]
 
 
@@ -742,7 +742,7 @@ def test_crosstab_with_totals_without_suppression(data, acro):
     acro.suppress = False
     _ = acro.crosstab(data.year, data.grant_type, margins=True)
     output = acro.results.get_index(0)
-    assert 153 == output.output[0]["All"].iat[0]
+    assert output.output[0]["All"].iat[0] == 153
 
     total_rows = output.output[0].iloc[-1, 0:4].sum()
     total_cols = output.output[0].loc[2010:2015, "All"].sum()

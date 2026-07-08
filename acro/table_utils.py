@@ -67,11 +67,11 @@ def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
     for drop in to_drops:
         outcome = outcome.drop(drop, axis="columns")
 
-    outcome.fillna("", inplace=True)
+    outcome = outcome.fillna("")
     return outcome
 
 
-def collate_risk_assessments(  # noqa: C901
+def collate_risk_assessments(  # noqa: C901, PLR0912
     table: DataFrame, allcheckresults: dict[str, ChecksResults]
 ) -> DataFrame:
     """Collate the Risk Assessment for a table.
@@ -91,7 +91,7 @@ def collate_risk_assessments(  # noqa: C901
     outcome_df = DataFrame(index=table.index, columns=table.columns)
     if isinstance(list(outcome_df)[0], tuple):
         outcome_df = drop_duplicate_columns(outcome_df)
-    outcome_df.fillna("", inplace=True)
+    outcome_df = outcome_df.fillna("")
     # logger.info(f"at start outcome_df:\n{outcome_df}")
 
     checks_seen: list[str] = []
@@ -100,11 +100,11 @@ def collate_risk_assessments(  # noqa: C901
         # report if negatives are present
         if "negative" in masks:
             mask = masks["negative"]
-            outcome_df[mask.values] = "negative"
+            outcome_df[mask.to_numpy()] = "negative"
         #   report if missing values are present
         elif "missing" in masks:
             mask = masks["missing"]
-            outcome_df[mask.values] = "missing"
+            outcome_df[mask.to_numpy()] = "missing"
         # collate at-risk cells from individual risk masks
         else:
             for name, mask in masks.items():
@@ -112,7 +112,7 @@ def collate_risk_assessments(  # noqa: C901
                     continue
                 checks_seen.append(name)
                 tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
-                tmp_df.fillna("", inplace=True)
+                tmp_df = tmp_df.fillna("")
                 if not isinstance(mask, DataFrame):
                     continue
                 n_diff = outcome_df.columns.nlevels - mask.columns.nlevels
@@ -199,10 +199,7 @@ def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
                 f"cells {sup}; "
             )
             status = "review" if sdc_summary["suppressed"] else "fail"
-    if summary != "":
-        summary = f"{status}; {summary}"
-    else:
-        summary = status
+    summary = f"{status}; {summary}" if summary else status
     logger.info("get_summary(): %s", summary)
     return status, summary
 
@@ -241,7 +238,7 @@ def get_redacted_table(
         newkwargs["values"] = None
     table = pd.crosstab(*newargs, **newkwargs)
     if model.risk_appetite["zeros_are_disclosive"]:
-        table.replace({0: np.nan}, inplace=True)
+        table = table.replace({0: np.nan})
 
     return table
 
@@ -274,7 +271,7 @@ def get_redacted_pivottable(
 
     table = pd.pivot_table(redacted_data, **newkwargs)
     if model.risk_appetite["zeros_are_disclosive"]:
-        table.replace({0: np.nan}, inplace=True)
+        table = table.replace({0: np.nan})
 
     return table
 
@@ -314,15 +311,15 @@ def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
     """
     parts = []
     if isinstance(label, tuple):
-        for level, val in zip(level_names, label, strict=False):
-            level = add_backticks(str(level))
-            if isinstance(val, (int, float)):
-                parts.append(f"({level} == {val})")
+        for orig_level_name, val in zip(level_names, label, strict=False):
+            level_name = add_backticks(str(orig_level_name))
+            if isinstance(val, int | float):
+                parts.append(f"({level_name} == {val})")
             else:
-                parts.append(f'({level} == "{val}")')
+                parts.append(f'({level_name} == "{val}")')
     else:
         level = add_backticks(str(level_names[0]))
-        if isinstance(label, (int, float)):
+        if isinstance(label, int | float):
             parts.append(f"({level} == {label})")
         else:
             parts.append(f'({level} == "{label}")')
@@ -393,7 +390,8 @@ def translate_args_to_newdf(arguments: tuple, redacted_data: DataFrame) -> list:
     # instead of raising valueerror
     newargs: list = []
     if not (isinstance(arguments, tuple) and len(arguments) == 2):
-        raise ValueError("list passed as positional args has wrong type or length")
+        msg = "list passed as positional args has wrong type or length"
+        raise ValueError(msg)
     for contents in arguments:
         if isinstance(contents, pd.Series):
             newargs.append(redacted_data[contents.name])
@@ -464,12 +462,10 @@ def get_queries_from_collated_risk(
     """
     true_cell_queries = []
     themask = collated_risk.copy()
-
     themask = themask.replace({"ok": False})
-    themask = themask.mask(themask != False, other=True)
-    if aggfunc is not None:
-        if themask.columns.nlevels > 1:
-            themask = themask.droplevel(0, axis=1)
+    themask = themask.mask(themask != False, other=True)  # noqa: E712
+    if aggfunc is not None and themask.columns.nlevels > 1:
+        themask = themask.droplevel(0, axis=1)
     index_level_names = themask.index.names
     column_level_names = themask.columns.names
     for col_index, _ in enumerate(themask.columns):
@@ -521,7 +517,7 @@ def get_redacted_data(
 
     for query in queries:
         # logger.info(f'applying query{query}')
-        redacted_data.query(f"not ({query})", inplace=True)
+        redacted_data = redacted_data.query(f"not ({query})")
         # logger.info(f'now redacted data has shape {redacted_data.shape}')
 
     # logger.info(f'after querying, columns are {list(redacted_data)}')
@@ -535,7 +531,7 @@ def get_redacted_data(
                 oldtypes[dimension]
             )
 
-    if not set(data.columns) == set(redacted_data.columns):
+    if set(data.columns) != set(redacted_data.columns):
         logger.warning("Error created redacted data - unable to apply suppression")
         return data
     return redacted_data

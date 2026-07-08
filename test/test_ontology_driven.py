@@ -1,8 +1,11 @@
 """Unit tests."""
 
 import json
+import logging
 import os
+import pathlib
 import shutil
+import tempfile
 
 import matplotlib as mpl
 
@@ -24,6 +27,8 @@ from acro import (
 )
 from acro.acro_tables import _rounded_survival_table  # , crosstab_with_totals
 from acro.record import Records, load_records
+from acro.sdcchecks import SDCChecks, SDCEvidence
+from acro.tablemodeldetails import TableModelDetails
 
 # pylint: disable=redefined-outer-name,too-many-lines
 
@@ -890,7 +895,8 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data, acr
     table = output.output[0]
 
     assert output.status in {"review", "fail"}
-    assert table.shape[0] > 0 and table.shape[1] > 0
+    assert table.shape[0] > 0
+    assert table.shape[1] > 0
 
 
 def test_pivot_table_with_totals_with_suppression(data, acro):
@@ -1266,8 +1272,6 @@ def test_federated_flag_from_yaml(tmp_path):
     cfg_file = tmp_path / "fed_test.yaml"
     cfg_file.write_text(yaml_content)
 
-    import pathlib
-
     acro_pkg = pathlib.Path(__file__).parent.parent / "acro"
     cfg_dest = acro_pkg / "fed_test.yaml"
     cfg_dest.write_text(yaml_content)
@@ -1278,10 +1282,8 @@ def test_federated_flag_from_yaml(tmp_path):
         cfg_dest.unlink(missing_ok=True)
 
 
-def test_federated_constructor_overrides_yaml(tmp_path):
+def test_federated_constructor_overrides_yaml():
     """Constructor federated=False should override yaml federated: true."""
-    import pathlib
-
     yaml_content = (
         "safe_threshold: 10\n"
         "safe_dof_threshold: 10\n"
@@ -1342,8 +1344,6 @@ def test_federated_ols_stores_evidence(data):
     ].dropna()
     endog = new_df.inc_activity
     exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
-    from acro import add_constant
-
     exog = add_constant(exog)
     results = acro.ols(endog, exog)
 
@@ -1426,8 +1426,6 @@ def test_federated_finalise_regression(data):
     ].dropna()
     endog = new_df.inc_activity
     exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
-    from acro import add_constant
-
     exog = add_constant(exog)
     _ = acro.ols(endog, exog)
 
@@ -1563,9 +1561,6 @@ def test_get_statsmodel_dof_no_attribute():
         get_statsmodel_dof(FakeModel())
 
 
-from acro.tablemodeldetails import TableModelDetails
-
-
 def test_tablemodeldetails_kwargs_not_dict():
     """Passing non-dict kwargs raises TypeError."""
     with pytest.raises(TypeError, match="kwargs argument should be a dict"):
@@ -1669,8 +1664,6 @@ def test_get_zeros_table_basic():
 
 def test_sdcevidence_populate_dof_else_branch():
     """Populate_dof falls back to -1 for unknown model type."""
-    from acro.sdcchecks import SDCEvidence
-
     ev = SDCEvidence()
     ev.populate_dof("not_a_model")
     assert ev.dof == -1
@@ -1716,8 +1709,6 @@ def test_get_table_sdc_minimumdofcheck_pass(data):
 
 def test_sdcevidence_populate_from_list_tablemodel(data):
     """Populate_from_list with TableModelDetails correctly populates count_table and DoF."""
-    from acro.sdcchecks import SDCEvidence
-
     idx = data["year"]
     vals = data["inc_grants"]
     model = TableModelDetails(
@@ -1751,15 +1742,11 @@ def test_check_min_threshold_array_non_hist(data):
         command="pie",
     )
     model.model_type = "array"
-    from acro.sdcchecks import SDCEvidence
-
     ev = SDCEvidence()
     ev.populate_from_list(set(), model)
     # Manually set the minimal evidence needed
     ev.interim_tables = {}
     # Force model to array, command != hist
-    from acro.sdcchecks import SDCChecks
-
     sdc = SDCChecks(acro_obj.sdc_checks.risk_appetite)
     ev2 = SDCEvidence()
     # array model_type, non-hist command
@@ -1770,8 +1757,6 @@ def test_check_min_threshold_array_non_hist(data):
 def test_manual_check_unknown_model_type():
     """Manual_check returns fail when model_type not in recognised list."""
     acro_obj = ACRO(suppress=False)
-    from acro.sdcchecks import SDCEvidence
-
     model = TableModelDetails(
         index=[pd.Series([1, 2], name="x")],
         columns=[],
@@ -1848,8 +1833,6 @@ def test_round_base_setter_zero():
 
 def test_suppress_setter_false_when_round(caplog):
     """Suppress=False when mitigation is 'round' logs a warning."""
-    import logging
-
     acro_obj = ACRO()
     acro_obj.mitigation = "round"
     assert acro_obj.mitigation == "round"
@@ -1869,7 +1852,7 @@ def test_record_table_output_round_mitigation(data):
     assert "Rounding" in output.exception
 
 
-def test_store_federated_evidence_with_dataframe_dof(data):
+def test_store_federated_evidence_with_dataframe_dof():
     """_store_federated_evidence serialises DataFrame DoF to CSV string.
 
     KaplanMeier's DoF comes from TableModelDetails.get_count_table()-1,
@@ -2029,7 +2012,7 @@ def test_pie_blocked_extension(data):
 def test_pie_records_output_non_disclosive(data):
     """Pie() on non-disclosive data records output with correct type and non-fail status."""
     acro_obj = ACRO(suppress=False)
-    result = acro_obj.pie(data, "grant_type")
+    acro_obj.pie(data, "grant_type")
     output = acro_obj.results.get_index(0)
     assert output.output_type == "pie chart"
     assert output.status in ("pass", "review")
@@ -2193,8 +2176,6 @@ def test_records_add_with_none_defaults():
 
 def test_finalise_evidence_dof_as_csv_string():
     """Finalise_evidence() writes a CSV file when dof is a multiline string."""
-    import tempfile
-
     records = Records()
     # Simulate the evidence store the way ACRO.finalise() sets it
     dof_csv = "idx,val\n0,10\n1,20\n"  # multiline CSV string
@@ -2214,9 +2195,7 @@ def test_finalise_evidence_dof_as_csv_string():
         dof_file = entry["dof"]
         assert dof_file is not None
         assert dof_file.endswith(".csv")
-        import os as _os
-
-        assert _os.path.exists(_os.path.join(tmp, dof_file))
+        assert os.path.exists(os.path.join(tmp, dof_file))
 
 
 def test_collate_risk_assessments_negative_path(data):

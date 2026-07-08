@@ -14,6 +14,7 @@ from typing import Any
 import pandas as pd
 from pandas import DataFrame
 
+from .constants import ARTIFACTS_DIR
 from .utils import is_blocked_extension
 from .version import __version__
 
@@ -488,9 +489,9 @@ class Records:
         else:
             raise ValueError("Invalid file extension. Options: {json, xlsx}")
         self.write_checksums(path)
-        # check if the directory acro_artifacts exists and delete it
-        if os.path.exists("acro_artifacts"):
-            shutil.rmtree("acro_artifacts")
+        # check if the artifacts directory exists and delete it
+        if os.path.exists(ARTIFACTS_DIR):
+            shutil.rmtree(ARTIFACTS_DIR)
         logger.info("outputs written to: %s", path)
 
     def finalise_json(self, path: str) -> None:

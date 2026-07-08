@@ -34,6 +34,11 @@ class ACRO(Tables, Regression):
     mitigation : str
         The disclosure-control strategy applied to outputs, one of ``"none"``,
         ``"suppress"``, ``"round"``.
+    round_base : int
+        The base to round to when ``mitigation == "round"``.
+    suppress : bool
+        Backward-compatible alias. ``True`` is equivalent to
+        ``mitigation == "suppress"``.
 
     Examples
     --------
@@ -102,15 +107,6 @@ class ACRO(Tables, Regression):
         # callers that need to re-enforce suppression for disclosive outputs.
         self.config["suppress"] = suppress
 
-        # # set globals needed for aggregation functions
-        # acro_tables.THRESHOLD = self.config["safe_threshold"]
-        # acro_tables.SAFE_PRATIO_P = self.config["safe_pratio_p"]
-        # acro_tables.SAFE_NK_N = self.config["safe_nk_n"]
-        # acro_tables.SAFE_NK_K = self.config["safe_nk_k"]
-        # acro_tables.CHECK_MISSING_VALUES = self.config["check_missing_values"]
-        # acro_tables.ZEROS_ARE_DISCLOSIVE = self.config["zeros_are_disclosive"]
-        # # set globals for survival analysis
-        # acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
         # set globals and instance state for the round mitigation strategy
         acro_tables.SAFE_ROUND_BASE = self.config.get(
             "safe_round_base", acro_tables.SAFE_ROUND_BASE

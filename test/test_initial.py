@@ -1,9 +1,14 @@
 """Unit tests."""
 
 import json
+import logging
 import os
 import shutil
 from unittest.mock import patch
+
+import matplotlib as mpl
+
+mpl.use("Agg")
 
 import numpy as np
 import pandas as pd
@@ -19,7 +24,7 @@ from acro import (
     table_utils,
     utils,
 )
-from acro.acro_tables import _rounded_survival_table  # , crosstab_with_totals
+from acro.acro_tables import _rounded_survival_table
 from acro.record import Records, load_records
 
 # pylint: disable=redefined-outer-name,too-many-lines
@@ -1392,3 +1397,214 @@ def test_align_masks_droplevel():
     assert aligned["multi_col"].index.tolist() == ["r1", "r2"]
     assert aligned["multi_idx"].index.tolist() == ["r1", "r2"]
     assert aligned["multi_idx"].columns.tolist() == ["c1", "c2"]
+
+
+def test_blocked_extension(acro, tmp_path):
+    """Test that blocked file extensions are rejected in custom output."""
+    svg_file = tmp_path / "test.svg"
+    svg_file.write_text("<svg></svg>")
+    gph_file = tmp_path / "test.gph"
+    gph_file.write_text("data")
+    acro.custom_output(str(svg_file))
+    acro.custom_output(str(gph_file))
+    assert len(acro.results.results) == 0
+    txt_file = tmp_path / "test.txt"
+    txt_file.write_text("hello")
+    acro.custom_output(str(txt_file))
+    assert len(acro.results.results) == 1
+    svg_upper = tmp_path / "test.SVG"
+    svg_upper.write_text("<svg></svg>")
+    acro.custom_output(str(svg_upper))
+    assert len(acro.results.results) == 1
+
+
+def test_blocked_extension_hist(data, acro):
+    """Test that blocked file extensions are rejected for histograms."""
+    result = acro.hist(data, "inc_grants", bins=1, filename="hist.svg")
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
+def test_blocked_extension_pie(data, acro):
+    """Test that blocked file extensions are rejected for pie charts."""
+    result = acro.pie(data, "grant_type", filename="pie.svg")
+    assert result is None
+    assert len(acro.results.results) == 0
+
+
+def _rounded_cells(table: pd.DataFrame) -> np.ndarray:
+    """Return the non-NaN numeric values of a table as a flat numpy array."""
+    numeric = table.select_dtypes(include=["number"]).to_numpy().ravel()
+    return numeric[~np.isnan(numeric)]
+
+
+def _assert_rounded_margins_consistent(
+    table: pd.DataFrame, base: int, margins_name: str = "All"
+) -> None:
+    """Assert margins equal rounded sums of inner cells across both axes."""
+    inner_cols = [c for c in table.columns if c != margins_name]
+    inner_rows = [r for r in table.index if r != margins_name]
+    for row in inner_rows:
+        expected = (table.loc[row, inner_cols].sum() / base).round() * base
+        assert table.loc[row, margins_name] == expected
+    for col in inner_cols:
+        expected = (table.loc[inner_rows, col].sum() / base).round() * base
+        assert table.loc[margins_name, col] == expected
+    grand_from_cols = (table.loc[margins_name, inner_cols].sum() / base).round() * base
+    grand_from_rows = (table.loc[inner_rows, margins_name].sum() / base).round() * base
+    assert table.loc[margins_name, margins_name] == grand_from_cols
+    assert table.loc[margins_name, margins_name] == grand_from_rows
+
+
+def test_crosstab_with_rounding_base_5(data):
+    """Crosstab with mitigation='round' rounds every cell to nearest 5."""
+    acro = ACRO(mitigation="round")
+    table = acro.crosstab(data.year, data.grant_type)
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    output = acro.results.get_index(0)
+    assert output.status == "review"
+    assert "rounded to nearest 5" in output.summary
+    assert output.properties["mitigation"] == "round"
+    assert output.properties["round_base"] == 5
+
+
+def test_crosstab_with_rounding_base_10(data):
+    """Crosstab with round_base=10 rounds every cell to nearest 10."""
+    acro = ACRO(mitigation="round", round_base=10)
+    table = acro.crosstab(data.year, data.grant_type)
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 10 == 0)
+    output = acro.results.get_index(0)
+    assert "rounded to nearest 10" in output.summary
+
+
+def test_pivot_table_with_rounding(data):
+    """Pivot_table with mitigation='round' rounds every cell."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.pivot_table(
+        data, index="year", columns="grant_type", values="inc_grants", aggfunc="count"
+    )
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    output = acro.results.get_index(0)
+    assert output.properties["mitigation"] == "round"
+    assert output.properties["round_base"] == 5
+
+
+def test_rounding_with_margins_crosstab_recomputes_totals(data):
+    """Crosstab with margins=True under rounding recomputes margins from rounded cells."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.crosstab(data.year, data.grant_type, margins=True)
+    assert "All" in table.columns
+    assert "All" in table.index
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    _assert_rounded_margins_consistent(table, base=5)
+
+
+def test_rounding_with_margins_pivot_table_recomputes_totals(data):
+    """Pivot_table with margins=True under rounding recomputes margins from rounded cells."""
+    acro = ACRO(mitigation="round", round_base=5)
+    table = acro.pivot_table(
+        data,
+        index="year",
+        columns="grant_type",
+        values="inc_grants",
+        aggfunc="count",
+        margins=True,
+    )
+    assert "All" in table.columns
+    assert "All" in table.index
+    values = _rounded_cells(table)
+    assert values.size > 0
+    assert np.all(values % 5 == 0)
+    _assert_rounded_margins_consistent(table, base=5)
+
+
+def test_suppress_backward_compat():
+    """The suppress property stays in sync with mitigation."""
+    acro = ACRO(suppress=True)
+    assert acro.mitigation == "suppress"
+    assert acro.suppress is True
+    acro.suppress = False
+    assert acro.mitigation == "none"
+    assert acro.suppress is False
+    acro.suppress = True
+    assert acro.mitigation == "suppress"
+
+
+def test_enable_rounding_disable_rounding():
+    """Enable_rounding / disable_rounding toggle the mitigation field."""
+    acro = ACRO()
+    assert acro.mitigation == "none"
+    acro.enable_rounding(base=10)
+    assert acro.mitigation == "round"
+    assert acro.round_base == 10
+    acro.disable_rounding()
+    assert acro.mitigation == "none"
+
+
+def test_disable_rounding_does_not_restore_prior_suppress():
+    """Disable_rounding always falls back to 'none', not to prior suppress=True."""
+    acro = ACRO(suppress=True)
+    assert acro.mitigation == "suppress"
+    acro.enable_rounding()
+    assert acro.mitigation == "round"
+    acro.disable_rounding()
+    assert acro.mitigation == "none"
+    assert acro.suppress is False
+
+
+def test_round_base_loaded_from_config():
+    """Round_base is picked up from the yaml config by default."""
+    acro = ACRO()
+    assert acro.round_base == 5
+
+
+def test_round_base_rejects_non_positive(caplog):
+    """Setting round_base to zero or negative logs a message and falls back to default."""
+    acro = ACRO()
+    default = acro.round_base
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.round_base = 0
+    assert acro.round_base == default
+    assert "positive integer" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.round_base = -3
+    assert acro.round_base == default
+    assert "positive integer" in caplog.text
+
+
+def test_suppress_false_while_rounding_is_noop(caplog):
+    """Setting suppress=False while rounding is active logs a message and is a no-op."""
+    acro = ACRO(mitigation="round")
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.suppress = False
+    assert acro.mitigation == "round"
+    assert "disable_rounding" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.disable_suppression()
+    assert acro.mitigation == "round"
+    assert "disable_rounding" in caplog.text
+
+
+def test_mitigation_setter_rejects_invalid_value(caplog):
+    """Setting mitigation to an unknown value logs a message and falls back to 'none'."""
+    acro = ACRO()
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro.mitigation = "obfuscate"
+    assert acro.mitigation == "none"
+    assert "obfuscate" in caplog.text
+
+
+def test_round_base_passed_to_constructor():
+    """ACRO(round_base=...) overrides the yaml default."""
+    acro = ACRO(round_base=7)
+    assert acro.round_base == 7

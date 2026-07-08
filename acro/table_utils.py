@@ -36,16 +36,18 @@ def axis_to_list(axis: Series | list[Series]) -> list[Series]:
     """Translate axis into standard format.
 
     Convert variables describing an axis (row/column) into a list
-    to simplify code. Wraps the  input inside a list if it   is a single series
-    or leaves it unchanged if it is already a list of series
+    to simplify code. Wraps input inside a list if it is a single series
+    or leaves it unchanged if it is already a list of series.
 
     Parameters
     ----------
-    axis : pandas series or list of series
+    axis : Series or list of Series
+        Pandas series or list of series describing an axis.
 
     Returns
     -------
-    list [Series]
+    list
+        List of Series objects.
     """
     if not isinstance(axis, list):
         foo: list = []
@@ -334,6 +336,8 @@ def get_relevant_dataframe(model: TableModelDetails) -> DataFrame:
 
     Parameters
     ----------
+    model : TableModelDetails
+        the table model details object containing index, columns, and values
     args : list[str|list]
         list of index, columns from call to crosstab function
         should have already been converted to lists
@@ -450,6 +454,8 @@ def get_queries_from_collated_risk(
 
     Parameters
     ----------
+    collated_risk : DataFrame
+        DataFrame with collated risk assessment outcomes per cell.
     masks : dict[str, DataFrame]
         Dictionary of tables specifying suppression masks for application.
     aggfunc : str | None

@@ -87,7 +87,7 @@ class SDCEvidence:
 
 @dataclass
 class ChecksResults:
-    """Class holding results of running checks  for an analysis.
+    """Class holding results of running checks for an analysis.
 
     overall_status : str
         'fail', 'review', or 'pass'
@@ -116,7 +116,10 @@ class ManyChecksResults:
     def get_overall_summary(self) -> str:
         """Get overall summary from multiple statistics.
 
-        Don't include details for tests that pass
+        Returns
+        -------
+        str
+            Summary of checks, excluding those that pass.
         """
         allsummary = ""
         for analysis, checksresults in self.allchecksresults.items():
@@ -189,10 +192,15 @@ def mask_to_boolmask(mask: pd.DataFrame) -> pd.DataFrame:
 def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
     """Get status and summary from mask.
 
+    Parameters
+    ----------
+    mask : pd.DataFrame
+        Binary mask indicating disclosive cells.
+
     Returns
     -------
-    str : status -one of 'pass','fail'
-    str : summary string
+    tuple
+        Status and summary string.
     """
     mask = mask_to_boolmask(mask)
     truecount = int(np.nansum(mask.to_numpy()))
@@ -202,7 +210,6 @@ def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
     return status, summary
 
 
-###################################################################################
 class SDCChecks:
     """Implements range of SDC checks.
 
@@ -273,12 +280,13 @@ class SDCChecks:
 
         Parameters
         ----------
-        analysis | str
-            prefix label for a statbarnsdc analysis type
+        statname : str
+            Analysis prefix label for a statbarnsdc analysis type.
 
         Returns
         -------
-        dict of sdc terms to be saved
+        dict
+            SDC terms to be saved.
         """
         prefix = "https://www.w3id.org/statbarnsdc#"
         statbarn = self.analyses.get(statname)["statbarn"]
@@ -403,6 +411,8 @@ class SDCChecks:
         ----------
         name : str
             The name of the model.
+        evidence : SDCEvidence
+            The collected evidence object.
         model
             A statsmodels model.
 
@@ -443,6 +453,7 @@ class SDCChecks:
         name : str
             The name of the model.
         evidence : SDCEvidence
+            The collected evidence object.
         model : TableModelDetails
             definition of a table
 
@@ -495,6 +506,8 @@ class SDCChecks:
         ----------
         name : str
             The name of the model.
+        evidence : SDCEvidence
+            The collected evidence object.
         model : dict
             definition of a table
 
@@ -521,7 +534,7 @@ class SDCChecks:
         data = model.index[0]
         if model.command == "hist":
             bins = model.kwargs.get("bins", 10)
-            hist, bin_edges = np.histogram(data.dropna(), bins)
+            _, bin_edges = np.histogram(data.dropna(), bins)
             binids = np.digitize(data.dropna(), bin_edges)
             # account for all possible bin ids (1..num_bins inclusive)
             possibles = list(range(1, len(bin_edges)))
@@ -548,6 +561,8 @@ class SDCChecks:
         ----------
         name : str
             The name of the model.
+        evidence : SDCEvidence
+            The collected evidence object.
         model : TableModelDetails
             definition of a table
 
@@ -591,6 +606,8 @@ class SDCChecks:
         ----------
         name : str
             The name of the model.
+        evidence : SDCEvidence
+            The collected evidence object.
         model : TableModelDetails
             definition of a table
 
@@ -703,6 +720,8 @@ class SDCChecks:
         ----------
         name : str
             The name of the model.
+        evidence : SDCEvidence
+            The collected evidence object.
         model : TableModelDetails
             definition of a table
 
@@ -733,6 +752,8 @@ class SDCChecks:
         ----------
         name : str
             The name of the model.
+        evidence : SDCEvidence
+            The collected evidence object.
         model : TableModelDetails
             definition of a table
 
@@ -764,7 +785,7 @@ class SDCChecks:
         """Summarise the contents of a mask."""
         mask_sdc: dict[
             str, Any
-        ] = {}  #  {"summary": {"suppressed": suppress}, "cells": {}}
+        ] = {}  # {"summary": {"suppressed": suppress}, "cells": {}}
         mask_sdc["vulnerable"][name] = int(np.nansum(mask.to_numpy()))
         # positions of cells to be suppressed
         mask_sdc["cells"][name] = []

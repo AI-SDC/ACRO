@@ -32,14 +32,11 @@ from .utils import ALLOWED_MITIGATIONS
 
 logger = logging.getLogger("acro")
 
-
-# survival analysis parameters
 SURVIVAL_THRESHOLD: int = 10
 
-# default base for the 'round' mitigation strategy
 SAFE_ROUND_BASE: int = 5
 
-# Re-export so existing callers that imported from this module keep working.
+
 _ALLOWED_MITIGATIONS = ALLOWED_MITIGATIONS
 AGGFUNC = AGGFUNC_TO_TYPE  # Alias for backwards compatibility
 
@@ -55,7 +52,8 @@ class Tables:
     round_base : int
         The base to round to when ``mitigation == "round"``. Must be a positive integer.
     suppress : bool
-        Backward-compatible alias. ``True`` is equivalent to ``mitigation == "suppress"``.
+        Backward-compatible alias. ``True`` is equivalent to
+        ``mitigation == "suppress"``.
     """
 
     def __init__(
@@ -278,12 +276,6 @@ class Tables:
         _ = show_suppressed  # hide complaint about unused legacy variable
         _ = dropna  # hide complaint about unused param
 
-        #### Step 0 standardise syntax and capture all relevant information
-        #### in a TableModelDetails instance
-        #### this could be done in a separate function if the parameters
-        #### to the call can be cleanly passed across
-        #### resulting details are held in a TableModelDetails object
-        # syntax checking
         if aggfunc is not None:
             if values is None or isinstance(values, list):
                 raise ValueError(
@@ -291,25 +283,16 @@ class Tables:
                     "you must also specify a single values column "
                     "to aggregate over."
                 )
-        # When rounding, compute the table without margins first and then
-        # derive margins from the rounded cells (so the inner cells add up
-        # to the displayed totals). See append_rounded_margins() / Jim
-        # Smith's review on PR #381.
+
         recompute_margins = margins and self._mitigation == "round"
         pandas_margins = False if recompute_margins else margins
 
-        # standardise format to simplify later code
         index = axis_to_list(index)
         columns = axis_to_list(columns)
 
-        # When rounding, compute the table without margins first and then
-        # derive margins from the rounded cells (so the inner cells add up
-        # to the displayed totals). See append_rounded_margins() / Jim
-        # Smith's review on PR #381.
         recompute_margins = margins and self._mitigation == "round"
         pandas_margins = False if recompute_margins else margins
 
-        # save list and dict to reduce code clutter
         args = (index, columns)
         kwargs = {
             "values": values,
@@ -318,7 +301,7 @@ class Tables:
             "aggfunc": aggfunc,
             "margins": pandas_margins,
             "margins_name": margins_name,
-            "dropna": False,  # enforced for SDC reasons
+            "dropna": False, 
             "normalize": normalize,
         }
         if aggfunc == "mode":
@@ -334,10 +317,8 @@ class Tables:
             command="crosstab",
         )
 
-        #### Step 1  make the requested output
         table: DataFrame = pd.crosstab(*args, **kwargs)
 
-        #### Step 2 run the checks and gather evidence
         analysis_names: list[str] = aggfunc_to_strings(aggfunc)
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             analysis_names, model_details
@@ -349,7 +330,6 @@ class Tables:
             self.results.output_id += 1
             return table
 
-        # extra layer of loops as requested tables may have more than one agg func
         collatedres = ManyChecksResults()
         for analysis in analysis_names:
             collatedres.allchecksresults[analysis] = (
@@ -367,7 +347,6 @@ class Tables:
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
 
-        #### Step 3 apply mitigations
         if self.suppress:
             table = get_redacted_table(model_details, collated_assessment)
         elif self._mitigation == "round":
@@ -377,7 +356,6 @@ class Tables:
                     table, aggfunc, margins_name, self._round_base
                 )
 
-        ##### Step 4: store evidence & output
         self._record_table_output(
             method="crosstab",
             status=collatedres.get_overall_status(),
@@ -460,13 +438,11 @@ class Tables:
         DataFrame
             Cross tabulation of the data.
         """
-        _ = dropna  # hide complaint about unused param
+        _ = dropna  
 
         logger.debug("pivot_table()")
         command: str = utils.get_command("pivot_table()", stack())
 
-        #### Step 0 standardise syntax and capture all relevant information
-        # syntax checking
         if values is None:
             raise ValueError(
                 "You must  specify at least one values column "
@@ -478,16 +454,11 @@ class Tables:
                 "Specifying multiple values columns is not currently supported."
             )
 
-        # standardise format to simplify later code
         index = axis_to_list(index)
         columns = axis_to_list(columns)
 
-        # When rounding, compute the table without pandas-managed margins
-        # and re-derive them from the rounded cells; see append_rounded_margins()
-
         recompute_margins = margins and self._mitigation == "round"
         pandas_margins = False if recompute_margins else margins
-        # save list and dict to reduce code clutter
 
         thiskwargs = {
             "values": values,
@@ -496,12 +467,11 @@ class Tables:
             "aggfunc": aggfunc,
             "fill_value": fill_value,
             "margins": pandas_margins,
-            "dropna": False,  # forced for sdc reasons
+            "dropna": False,
             "margins_name": margins_name,
             "observed": observed,
             "sort": sort,
         }
-        # use our mode function
 
         if aggfunc == "mode":
             aggfunc = "agg_mode"
@@ -516,7 +486,6 @@ class Tables:
             for name in columns:
                 series_columns.append(data[name])
 
-        # Extract single series if values is a list with one element
         values_series = data[values[0]] if isinstance(values, list) else data[values]
 
         model_details = TableModelDetails(
@@ -530,7 +499,8 @@ class Tables:
 
         # from previous version- if needed i suggesgt we move this code to
         # the function append_rounded_margins()?
-        # Separate variable so param (str|list[str]) isn't reassigned to callable type (mypy)
+        # Separate variable so param (str|list[str]) isn't reassigned
+        # to callable type (mypy)
         # resolved_aggfunc: (
         #     str | Callable[..., Any] | list[str | Callable[..., Any]] | None
         # ) = get_aggfuncs(aggfunc)
@@ -538,10 +508,10 @@ class Tables:
         #     1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
         # )
 
-        #### Step 1  make the requested output
+        # Step 1: make the requested output
         table: DataFrame = pd.pivot_table(data, **thiskwargs)
 
-        #### Step 2 run the checks and gather evidence
+        # Step 2: run the checks and gather evidence
         analysis_names: list[str] = aggfunc_to_strings(aggfunc)
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             analysis_names, model_details
@@ -570,7 +540,6 @@ class Tables:
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
 
-        #### Step 3 apply mitigations
         if self.suppress:
             table = get_redacted_pivottable(model_details, collated_assessment)
         elif self._mitigation == "round":
@@ -582,7 +551,6 @@ class Tables:
             table = append_rounded_margins(
                 table, aggfunc, margins_name, self._round_base
             )
-        ##### Step 4: store evidence & output
         self._record_table_output(
             method="pivot_table",
             status=collatedres.get_overall_status(),
@@ -616,8 +584,9 @@ class Tables:
         time : array_like
             An array of times (censoring times or event times)
         status : array_like
-            Status at the event time, status==1 is the ‘event’ (e.g. death, failure), meaning
-            that the event occurs at the given value in time; status==0 indicatesthat censoring
+            Status at the event time, status==1 is the ‘event’
+            (e.g. death, failure), meaning the event occurs at the
+            given value in time; status==0 indicates that censoring
             has occurred, meaning that the event occurs after the given value in time.
         output : str
             A string determine the type of output. Available options are ‘table’, ‘plot’.
@@ -643,7 +612,6 @@ class Tables:
         logger.debug("surv_func()")
         command: str = utils.get_command("surv_func()", stack())
 
-        #### Step 1  make the requested output
         survival_func: Any = sm.SurvfuncRight(
             time,
             status,
@@ -655,8 +623,6 @@ class Tables:
         )
         survival_table: pd.DataFrame = survival_func.summary()
 
-        #### Step 0 standardise syntax and capture all relevant information
-        ##out of order because what we do SDC on is a by product of the analysis
         model_details = TableModelDetails(
             index=[survival_table["num at risk"]],
             risk_appetite=self.sdc_checks.risk_appetite,
@@ -665,7 +631,6 @@ class Tables:
         model_details.model_type = "survival"
         model_details.df_resid = len(status) - len(time.unique())
 
-        #### Step 2 run the checks and gather evidence
         analysis = "KaplanMeier"
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis], model_details
@@ -675,7 +640,6 @@ class Tables:
             uid = f"output_{self.results.output_id}"
             self._store_federated_evidence(uid, command, [analysis], evidence)
             self.results.output_id += 1
-            # return the unmodified survival table / plot path as in local mode
             if output == "table":
                 return survival_table
             if output == "plot":
@@ -699,11 +663,9 @@ class Tables:
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
 
-        #### Step 3 apply mitigations
         if self.suppress:
             survival_table = _rounded_survival_table(survival_table)
 
-        ##### Step 4: store evidence & output
         if output == "table":
             # record output
             self.results.add(
@@ -738,10 +700,8 @@ class Tables:
             unique_filename = utils.get_unique_artefact_filename(filename)
             if unique_filename == "None":
                 return None
-            # save the plot to the acro artifacts directory
             plt.savefig(unique_filename)
 
-            # record output
             self.results.add(
                 status=collatedres.get_overall_status(),
                 output_type="survival plot",
@@ -754,8 +714,6 @@ class Tables:
             )
             return (plot, unique_filename)
         return None
-
-    #### end step 4
 
     def hist(
         self,
@@ -880,27 +838,6 @@ class Tables:
         oldway = False
         status: str = ""
         if oldway:
-            # col_min = float(col_series.min())
-            # col_max = float(col_series.max())
-            # masks, bin_edges, freq, left_count, right_count = _build_histogram_masks(
-            #     col_series, bins, col_min, col_max
-            # )
-            # by_val, mismatch, sub_stats = _analyse_by_val_ranges(data, column, by_val)
-
-            # sdc = get_histogram_sdc(
-            #     masks,
-            #     self.suppress,
-            #     bin_edges,
-            #     freq,
-            #     col_min,
-            #     col_max,
-            #     left_count,
-            #     right_count,
-            #     mismatch,
-            #     sub_stats,
-            # )
-            # status, summary = get_histogram_summary(sdc, column, col_min, col_max)
-            # outcome = build_histogram_outcome(bin_edges, freq, masks)
             status, summary = (
                 "not ready-needs ontology change",
                 "not ready-needs ontology change",
@@ -908,7 +845,7 @@ class Tables:
             logger.info("status: %s", status)
             fair_dict = {}
 
-        else:  # ontology-driven
+        else:  
             analysis = "Histogram"
             model_details = TableModelDetails(
                 index=[data[column]],
@@ -939,8 +876,6 @@ class Tables:
             fair_dict.update(model_details.get_variable_type_dict())
             summary = collatedres.get_overall_summary()
 
-        # plot the histogram (skip when suppressed and disclosive)
-        #### Step 3 apply mitigations
         if status == "fail" and self.suppress:
             logger.warning(
                 "Histogram will not be shown as the %s column is disclosive.",
@@ -1028,12 +963,6 @@ class Tables:
         if utils.is_blocked_extension(filename, self.results.blocked_extensions):
             return None
         command: str = utils.get_command("pie()", stack())
-        #### Step 0 standardise syntax and capture all relevant information
-        #### Step 1  make the requested output
-        #### Step 3 apply mitigations
-        ##### Step 4: store evidence & output
-
-        ## run the checks and get the masks
         analysis = "PieChart"
         model_details = TableModelDetails(
             index=[data[column]],
@@ -1042,7 +971,6 @@ class Tables:
             command="pie",
         )
 
-        #### Step 2 run the checks and gather evidence
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
             [analysis], model_details
         )
@@ -1087,7 +1015,6 @@ class Tables:
             plt.savefig(unique_filename)
             output = [os.path.normpath(unique_filename)]
 
-        # RECORD OUTPUT
         self.results.add(
             status=overall_status,
             output_type="pie chart",
@@ -1156,7 +1083,6 @@ def _rounded_survival_table(
             total_death = 0
             sub_total = 0
 
-    # calculate the surv prob
     rounded_survival_func = []
     for i, data in enumerate(rounded_num_of_deaths):
         if i == 0:

@@ -124,15 +124,13 @@ def get_statsmodel_dof(model: Any) -> int:
 
     Parameters
     ----------
-    model
+    model : Any
         A statsmodels model.
 
     Returns
     -------
-    bool
-        whether the get action worked
     int
-        the residual degrees of freedom.
+        The residual degrees of freedom.
     """
     if not hasattr(model, "df_resid"):
         raise AttributeError("model does not have df_resid attribute")

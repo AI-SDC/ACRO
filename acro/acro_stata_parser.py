@@ -21,7 +21,10 @@ logger = logging.getLogger("acro")
 
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
-    """Parse an if statement from stata format then use it to subset a dataframe by contents."""
+    """Parse an if statement from stata format.
+
+    Uses it to subset a dataframe by contents.
+    """
     if len(raw) == 0:
         return all_data
     # lose any stray 'if' keywords that have got across
@@ -60,7 +63,10 @@ def parse_location_token(token: str, last: int) -> int:
 
 
 def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
-    """Parse an in exp statement from stata and use it to subset a dataframe by row indices."""
+    """Parse an in exp statement from stata.
+
+    Uses it to subset a dataframe by row indices.
+    """
     last = len(all_data) - 1
     if "/" not in raw:
         pos = parse_location_token(raw, last)
@@ -89,7 +95,7 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
 
 
 def find_brace_word(word: str, raw: str) -> tuple[bool, list[str] | str]:
-    """Return contents as a list of strings between '(' following a word and the closing ')'.
+    """Return contents as a list of strings between '(' following a word and closing ')'.
 
     First returned value is True/False depending on parsing ok.
     """
@@ -130,7 +136,8 @@ def extract_aggfun_values_from_options(
     -------
      cell contents: (dictionary)
     """
-    # content from find_brace_word is list[str]|str; normalize so iteration is over list (mypy)
+    # content from find_brace_word is list[str]|str;
+    # normalize so iteration is over list (mypy)
     content_list: list[str] = content if isinstance(content, list) else [content]
     cell_content: dict[str, list[str]] = {"aggfuncs": [], "values": []}
     if contents_found and len(content_list) > 0:
@@ -245,7 +252,8 @@ def get_rows_cols_v17on(varlist: list[Any]) -> dict[str, Any]:
     Get table details for the syntax used by stata_version >= 17.
 
     https://www.stata.com/manuals/tablesintro.pdf
-    syntax: table (rowspec) (colspec) [ (tabspec) ] [ if ] [ in ] [ weight ] [, options ].
+    # syntax: table (rowspec) (colspec) [ (tabspec) ] [ if ] [ in ]
+    # [ weight ] [, options ].
     """
     rows_cols: dict[str, Any] = {}
     rows_cols["rowvars"] = stata_details_to_list(varlist.pop(0))
@@ -508,7 +516,8 @@ def extract_table_var(input_string: str) -> str:
 def extract_colstring_tablestring(input_string: str) -> tuple[str, str]:
     """Extract the column and the tables variables as a string.
 
-    It goes through different options eg. whether the column string is between paranthese or not.
+    It goes through different options e.g. whether the column string
+    is between parentheses or not.
     """
     colstring: str = ""
     tablestring: str = ""
@@ -531,7 +540,8 @@ def extract_colstring_tablestring(input_string: str) -> tuple[str, str]:
 def extract_strings(input_string: str) -> list[str]:
     """Extract the index, column and the tables variables as a string.
 
-    It goes through different options eg. whether the index string is between paranthese or not.
+    It goes through different options e.g. whether the index string
+    is between parentheses or not.
     """
     rowstring: str = ""
     colstring: str = ""
@@ -569,7 +579,8 @@ def creates_datasets(
     msg = ""
     # if tables var parameter was assigned, each table will
     # be treated as an exclusion which will be applied to the data.
-    # The number of datasets will be equal to the number of unique values in the tables var
+    # The number of datasets will be equal to the number of unique
+    # values in the tables var
     # Crosstabulation will be calculate for each dataset
     if "tables" in details and details["tables"] != []:
         # print(f"table is {details['tables']}")
@@ -597,7 +608,10 @@ def run_table_command(
     options: str,
     stata_version: float,
 ) -> str:
-    """Convert a stata table command into an acro.crosstab and return a prettified dataframe."""
+    """Convert a stata table command into an acro.crosstab.
+
+    Returns a prettified dataframe.
+    """
     weights_empty = len(weights) == 0
     if not weights_empty:  # pragma
         return f"weights not currently implemented for _{weights}_\n"

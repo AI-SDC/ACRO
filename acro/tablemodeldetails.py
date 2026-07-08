@@ -49,7 +49,8 @@ class TableModelDetails:
         columns : list
             columns series names
         values : pd.Series
-        kwargs : dict
+            the values series (measure) for the table, if any
+        thekwargs : dict
             specifiers for table and command
         risk_appetite : dict
             statement of TREs risk appetite
@@ -131,7 +132,7 @@ class TableModelDetails:
             holding  name of dependent variable and list of independent (exogenous) variables
         """
         mydict: dict[str, Any] = {"dependent": "unknown", "independent": []}
-        for varname in self.variable_metadata.keys():
+        for varname in self.variable_metadata:
             if self.variable_metadata[varname]["dependent"]:
                 mydict["dependent"] = varname
             else:
@@ -186,8 +187,9 @@ class TableModelDetails:
     ) -> dict[str, dict]:
         """Create data dictionary.
 
-        TODO
-        expand docstring
+        Notes
+        -----
+        Expand docstring and handle arraylike as well as series.
         """
         # TODO handle arraylike as well as series
         # TODO handle rownames/colnames

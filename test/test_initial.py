@@ -1748,7 +1748,7 @@ def test_check_min_threshold_array_non_hist(data):
     sdc = SDCChecks(acro_obj.sdc_checks.risk_appetite)
     ev2 = SDCEvidence()
     # array model_type, non-hist command
-    status, summary, mask = sdc.check_min_threshold("PieChart", ev2, model)
+    status, _, mask = sdc.check_min_threshold("PieChart", ev2, model)
     assert status in ("pass", "fail", "review")
 
 
@@ -1762,7 +1762,7 @@ def test_manual_check_unknown_model_type():
     )
     model.model_type = "unknown_type"
     ev = SDCEvidence()
-    status, summary, mask = acro_obj.sdc_checks.manual_check("X", ev, model)
+    status, summary, _ = acro_obj.sdc_checks.manual_check("X", ev, model)
     assert status == "fail"
     assert "insufficient" in summary
 

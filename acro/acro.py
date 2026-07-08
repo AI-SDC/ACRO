@@ -151,7 +151,8 @@ class ACRO(Tables, Regression):
         if os.path.exists(path):
             logger.warning(
                 "Results file can not be created. "
-                "Directory %s already exists. Please choose a different directory name.",
+                "Directory %s already exists. "
+                "Please choose a different directory name.",
                 path,
             )
             return None
@@ -262,21 +263,27 @@ class ACRO(Tables, Regression):
         self.suppress = False
 
     def enable_rounding(self, base: int | None = None) -> None:
-        """Turn rounding on; overwrites any prior suppress=True (not restored on disable_rounding)."""
+        """Turn rounding on.
+
+        Overwrites any prior suppress=True (not restored on disable_rounding).
+        """
         if base is not None:
             self.round_base = base
         self.mitigation = "round"
 
     def disable_rounding(self) -> None:
-        """Turn rounding off; always falls back to mitigation='none' (prior suppress not restored)."""
+        """Turn rounding off.
+
+        Always falls back to mitigation='none' (prior suppress not restored).
+        """
         if self.mitigation == "round":
             self.mitigation = "none"
 
     def show_fair_summaries(self) -> str:
         """Print ids and fair summaries for all outputs in session."""
         thestr = ""
-        for id, value in self.results.results.items():
-            thestr += id + "\n"
+        for uid, value in self.results.results.items():
+            thestr += uid + "\n"
             for key, val in value.fair.items():
                 if isinstance(val, dict):
                     for key2, val2 in val.items():

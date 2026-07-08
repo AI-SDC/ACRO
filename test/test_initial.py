@@ -122,9 +122,13 @@ def test_crosstab_without_suppression(data):
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
 
+<<<<<<< HEAD
     assert output.summary == correct_summary, (
         f"expected:\n{correct_summary}\n---\ngot\n{output.summary}\n---"
     )
+=======
+    assert output.summary == correct_summary
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
     assert output.output[0]["R/G"].sum() == 48
 
 
@@ -135,8 +139,13 @@ def test_crosstab_with_aggfunc_mode(data):
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mode"
     )
     output = acro.results.get_index(0)
+<<<<<<< HEAD
     # correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
     # ##TODO    assert output.summary == correct_summary
+=======
+    correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
+    assert output.summary == correct_summary
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
     assert output.output[0]["R/G"].iat[0] == 913000
 
 
@@ -233,7 +242,11 @@ def test_pivot_table_without_suppression(data):
     )
     output_0 = acro.results.get_index(0)
     assert output_0.output[0]["mean"]["inc_grants"].sum() == 36293992.0
+<<<<<<< HEAD
     assert output_0.status in ["pass", "fail", "review"]
+=======
+    assert output_0.summary == "pass"
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
 
 
 def test_pivot_table_pass(data, acro):
@@ -760,7 +773,11 @@ def test_crosstab_with_totals_with_suppression(data, acro):
     """Test the crosstab with both margins and suppression enabled."""
     _ = acro.crosstab(data.year, data.grant_type, margins=True)
     output = acro.results.get_index(0)
+<<<<<<< HEAD
     table = output.output[0]
+=======
+    assert output.output[0]["All"].iat[0] == 145
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
 
     assert "All" in table.columns
     assert table["All"].iat[6] > 0
@@ -774,7 +791,11 @@ def test_crosstab_with_totals_with_suppression_hierarchical(data, acro):
         [data.year, data.survivor], [data.grant_type, data.status], margins=True
     )
     output = acro.results.get_index(0)
+<<<<<<< HEAD
     table = output.output[0]
+=======
+    assert output.output[0]["All"].iat[0] == 47
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
 
     assert "All" in table.columns
     assert table["All"].iat[12] > 0
@@ -791,12 +812,18 @@ def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
         margins=True,
     )
     output = acro.results.get_index(0)
+<<<<<<< HEAD
     table = output.output[0]
 
     assert "All" in table.columns
     assert table["All"].iat[0] > 0
     assert table["All"].iat[6] > 0
     assert output.status in {"review", "fail"}
+=======
+    assert output.output[0]["All"].iat[0] == 8689781
+    assert output.output[0]["All"].iat[6] == 5425170.5
+    assert "R/G" not in output.output[0].columns
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
 
 
 def test_crosstab_with_totals_and_empty_data(data, acro):
@@ -820,7 +847,11 @@ def test_crosstab_with_manual_totals_with_suppression(data, acro):
     """Test manual totals path when suppression is enabled."""
     _ = acro.crosstab(data.year, data.grant_type, margins=True, show_suppressed=True)
     output = acro.results.get_index(0)
+<<<<<<< HEAD
     table = output.output[0]
+=======
+    assert output.output[0]["All"].iat[0] == 145
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
 
     assert "All" in table.columns
     assert table["All"].iat[0] > 0
@@ -840,6 +871,18 @@ def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
         show_suppressed=True,
     )
     output = acro.results.get_index(0)
+<<<<<<< HEAD
+=======
+    assert output.output[0]["All"].iat[0] == 47
+
+    total_rows = (output.output[0].loc[("All", ""), :].sum()) - output.output[0][
+        "All"
+    ].iat[12]
+    total_cols = (output.output[0].loc[:, "All"].sum()) - output.output[0]["All"].iat[
+        12
+    ]
+    assert total_cols == total_rows == output.output[0]["All"].iat[12] == 852
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
     assert ("G", "dead") in output.output[0].columns
     assert "All" in output.output[0].columns
     assert np.isnan(output.output[0][("G", "dead")].iat[0])
@@ -857,12 +900,19 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, ac
         show_suppressed=True,
     )
     output = acro.results.get_index(0)
+<<<<<<< HEAD
     table = output.output[0]
 
     assert "All" in table.columns
     assert table["All"].iat[0] > 0
     assert table["All"].iat[6] > 0
     assert output.status in {"review", "fail"}
+=======
+    assert round(output.output[0]["All"].iat[0]) == 8689780
+    assert round(output.output[0]["All"].iat[6]) == 5425170
+    assert "R/G" in output.output[0].columns
+    assert np.isnan(output.output[0]["R/G"].iat[0])
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
 
 
 def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
@@ -881,6 +931,11 @@ def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
         show_suppressed=True,
     )
     output = acro.results.get_index(0)
+<<<<<<< HEAD
+=======
+    assert round(output.output[0]["All"].iat[0]) == 1385162
+    assert round(output.output[0]["All"].iat[12]) == 5434959
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
     assert ("G", "Dead in 2015") in output.output[0].columns
     assert "All" in output.output[0].columns
     assert np.isnan(output.output[0][("G", "Dead in 2015")].iat[0])
@@ -917,6 +972,19 @@ def test_pivot_table_with_totals_with_suppression(data, acro):
         margins=True,
     )
     output = acro.results.get_index(0)
+<<<<<<< HEAD
+=======
+    assert output.output[0][("inc_grants", "All")].iat[0] == 74
+
+    total_rows = output.output[0].iloc[-1, 0:3].sum()
+    total_cols = output.output[0].loc[2010:2015, ("inc_grants", "All")].sum()
+    assert (
+        766
+        == total_cols
+        == total_rows
+        == output.output[0][("inc_grants", "All")].iat[6]
+    )
+>>>>>>> da7ccf38f0c2c54d40681e2d654f9e02dbea701c
     assert "R/G" not in output.output[0].columns
     assert ("inc_grants", "All") in output.output[0].columns
     assert output.output[0][("inc_grants", "All")].iat[0] > 0

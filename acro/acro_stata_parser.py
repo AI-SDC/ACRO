@@ -21,10 +21,7 @@ logger = logging.getLogger("acro")
 
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
-    """Parse an if statement from stata format.
-
-    Uses it to subset a dataframe by contents.
-    """
+    """Parse an if statement from stata format. Uses it to subset a dataframe by contents."""
     if len(raw) == 0:
         return all_data
     # lose any stray 'if' keywords that have got across
@@ -63,10 +60,7 @@ def parse_location_token(token: str, last: int) -> int:
 
 
 def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
-    """Parse an in exp statement from stata.
-
-    Uses it to subset a dataframe by row indices.
-    """
+    """Parse an in exp statement from stata. Uses it to subset a dataframe by row indices."""
     last = len(all_data) - 1
     if "/" not in raw:
         pos = parse_location_token(raw, last)
@@ -95,10 +89,7 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
 
 
 def find_brace_word(word: str, raw: str) -> tuple[bool, list[str] | str]:
-    """Return contents as a list of strings between '(' following a word and closing ')'.
-
-    First returned value is True/False depending on parsing ok.
-    """
+    """Return contents as a list of strings between '(' following a word and closing ')'. First returned value is True/False depending on parsing ok."""
     result: list[str] = []
     idx = raw.find(word)
     if idx == -1:
@@ -608,10 +599,7 @@ def run_table_command(
     options: str,
     stata_version: float,
 ) -> str:
-    """Convert a stata table command into an acro.crosstab.
-
-    Returns a prettified dataframe.
-    """
+    """Convert a stata table command into an acro.crosstab. Returns a prettified dataframe."""
     weights_empty = len(weights) == 0
     if not weights_empty:  # pragma
         return f"weights not currently implemented for _{weights}_\n"

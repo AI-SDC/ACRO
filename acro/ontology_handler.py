@@ -1,4 +1,6 @@
-"""Ontology_handler.py.
+"""# noqa: D212,D213.
+
+Ontology_handler.py.
 
 @author Jim Smith March 2026
 Functionality to load semantic information from statbarnssdc ontology
@@ -25,13 +27,7 @@ def is_uri(thing: Any) -> bool:
 
 
 def print_nested_dict(s: dict) -> None:
-    """Pretty print nested dict.
-
-    Parameter s
-    -----------
-    s:dict
-      the nested dictionary to be printed
-    """
+    """Pretty print nested dict. s is the nested dictionary to be printed."""
     for key, val in s.items():
         print(key)
         for key2, val2 in val.items():
@@ -39,8 +35,12 @@ def print_nested_dict(s: dict) -> None:
 
 
 def populate_useful_dicts(g: rdflib.Graph) -> tuple:
-    """
-    Create useful dicts to save time.
+    """Create useful dicts to save time.  # noqa: D212,D213,D413.
+
+    Parameters
+    ----------
+    g : rdflib.Graph
+        representation of the statbarnsdc ontology in RDF triples
 
     Returns
     -------
@@ -49,11 +49,6 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
        labels
        list of BNode immediate superclasses
        for each element of ontology
-
-    Parameter
-    ---------
-    g : rdflib.Graph
-    representation of the statbarnsdc ontology in RDF triples
     """
     definitions: dict = {}
     pref_labels: dict = {}
@@ -130,8 +125,7 @@ def make_save_statbarns(
 def make_save_analyses(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, statbarns: dict
 ) -> dict:
-    """
-    Create analysis dicts/json from ontology.
+    """Create analysis dicts/json from ontology.  # noqa: D212,D213,D413,D417.
 
     parse the rdf graph from the ontology
     create lookup dict of analyses
@@ -140,11 +134,13 @@ def make_save_analyses(
     Parameters
     ----------
     g : rdflib.Graph
-    representation of the statbarnsdc ontology in RDF triples
-    definitions : dict,
-    pref_labels : dict,
+        representation of the statbarnsdc ontology in RDF triples
+    definitions : dict
+        lookup table of definitions from ontology
+    pref_labels : dict
+        lookup table of preferred labels from ontology
     statbarns : dict
-       lookup tables
+        lookup table of statbarns
 
     Returns
     -------

@@ -263,19 +263,13 @@ class ACRO(Tables, Regression):
         self.suppress = False
 
     def enable_rounding(self, base: int | None = None) -> None:
-        """Turn rounding on.
-
-        Overwrites any prior suppress=True (not restored on disable_rounding).
-        """
+        """Turn rounding on. Overwrites any prior suppress=True (not restored on disable_rounding)."""
         if base is not None:
             self.round_base = base
         self.mitigation = "round"
 
     def disable_rounding(self) -> None:
-        """Turn rounding off.
-
-        Always falls back to mitigation='none' (prior suppress not restored).
-        """
+        """Turn rounding off. Always falls back to mitigation='none' (prior suppress not restored)."""
         if self.mitigation == "round":
             self.mitigation = "none"
 

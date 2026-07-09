@@ -12,8 +12,7 @@ logger = logging.getLogger("acro")
 
 
 def agg_mode(values: pd.Series) -> float:
-    """
-    Calculate the mode or randomly selects one of the modes from a pandas Series.
+    """Calculate the mode or randomly selects one of the modes from a pandas Series.  # noqa: D212,D213,D413.
 
     Parameters
     ----------

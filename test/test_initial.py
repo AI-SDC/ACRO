@@ -1160,7 +1160,8 @@ def test_finalise_non_interactive(data):
 
 
 def test_finalise_interactive(data):
-    """Test finalise_interactive.
+    """
+    Test finalise_interactive.
 
     Test that interactive version of finalising acro
     leaves exceptions as they should be disclosive table.
@@ -1688,7 +1689,8 @@ def test_sdcevidence_populate_dof_else_branch():
 
 
 def test_get_table_sdc_duplicate_check_skipped(data):
-    """Get_table_sdc skips checks already seen across multiple analyses (line 164).
+    """
+    Get_table_sdc skips checks already seen across multiple analyses (line 164).
 
     When two analyses produce the same check name, only the first occurrence
     is included in the SDC summary — the continue branch on line 164.
@@ -1768,7 +1770,7 @@ def test_check_min_threshold_array_non_hist(data):
     sdc = SDCChecks(acro_obj.sdc_checks.risk_appetite)
     ev2 = SDCEvidence()
     # array model_type, non-hist command
-    status, _, mask = sdc.check_min_threshold("PieChart", ev2, model)
+    status, _, _ = sdc.check_min_threshold("PieChart", ev2, model)
     assert status in ("pass", "fail", "review")
 
 
@@ -1871,7 +1873,8 @@ def test_record_table_output_round_mitigation(data):
 
 
 def test_store_federated_evidence_with_dataframe_dof():
-    """_store_federated_evidence serialises DataFrame DoF to CSV string.
+    """
+    _store_federated_evidence serialises DataFrame DoF to CSV string.
 
     KaplanMeier's DoF comes from TableModelDetails.get_count_table()-1,
     which is a DataFrame — this hits the isinstance(dof, DataFrame) branch.
@@ -2639,7 +2642,7 @@ def test_get_analysis_summary_threshold_fail():
 
 def test_get_analysis_summary_threshold_suppressed():
     """Suppressed threshold violations are treated as review."""
-    status, summary = get_analysis_summary(_make_sdc(threshold=3, suppressed=True))
+    status, _ = get_analysis_summary(_make_sdc(threshold=3, suppressed=True))
     assert status == "review"
 
 
@@ -2727,7 +2730,7 @@ _RISK_APPETITE = {
 
 
 def test_check_model_dof_dataframe_dof_fail():
-    """DataFrame dof values below threshold are flagged as failures."""
+    """Dataframe dof values below threshold are flagged as failures."""
     sdc = SDCChecks(_RISK_APPETITE)
     ev = SDCEvidence()
     ev.dof = pd.DataFrame({"a": [5, 15], "b": [3, 20]})
@@ -2737,11 +2740,11 @@ def test_check_model_dof_dataframe_dof_fail():
 
 
 def test_check_model_dof_dataframe_dof_pass():
-    """DataFrame dof values at or above threshold pass."""
+    """Dataframe dof values at or above threshold pass."""
     sdc = SDCChecks(_RISK_APPETITE)
     ev = SDCEvidence()
     ev.dof = pd.DataFrame({"a": [15, 20], "b": [12, 30]})
-    status, summary, _ = sdc.check_model_dof("FrequencyTable", ev, None)
+    status, _, _ = sdc.check_model_dof("FrequencyTable", ev, None)
     assert status == "pass"
 
 
@@ -2950,7 +2953,7 @@ def test_check_all_same_no_identical() -> None:
         columns=[],
         values=pd.Series([10.0, 20.0], name="v"),
     )
-    status, summary, _ = sdc.check_all_same("Mean", ev, dummy_model)
+    status, _, _ = sdc.check_all_same("Mean", ev, dummy_model)
     assert status == "pass"
 
 
@@ -2964,7 +2967,7 @@ def test_check_missing_with_missings() -> None:
         columns=[],
         values=pd.Series([10.0, 20.0], name="v"),
     )
-    status, summary, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
+    status, _, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
     assert status == "fail"
 
 
@@ -2978,7 +2981,7 @@ def test_check_missing_no_missings() -> None:
         columns=[],
         values=pd.Series([10.0, 20.0], name="v"),
     )
-    status, summary, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
+    status, _, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
     assert status == "pass"
 
 
@@ -2992,7 +2995,7 @@ def test_manual_check_unknown_model_type_returns_fail() -> None:
         command="something",
     )
     model.model_type = "unknown_type"
-    status, summary, _ = sdc.manual_check("TestAnalysis", ev, model)
+    status, _, _ = sdc.manual_check("TestAnalysis", ev, model)
     assert status == "fail"
 
 
@@ -3039,13 +3042,13 @@ def test_check_presence_of_zero_not_disclosive() -> None:
         risk_appetite=_RA_NO_ZERO,
         command="crosstab",
     )
-    status, summary, mask = sdc.check_presence_of_zero("FrequencyTable", ev, model)
+    status, summary, _ = sdc.check_presence_of_zero("FrequencyTable", ev, model)
     assert status == "pass"
     assert "not disclosive" in summary
 
 
 def test_get_table_sdc_minimum_dof_check_as_int() -> None:
-    """MinimumDoF checks stored as integers are summarized correctly."""
+    """Minimumdof checks stored as integers are summarized correctly."""
     from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
 
     cr_result = ChecksResults(
@@ -3061,7 +3064,7 @@ def test_get_table_sdc_minimum_dof_check_as_int() -> None:
 
 
 def test_get_table_sdc_minimum_dof_check_as_int_fail() -> None:
-    """MinimumDoF checks that fail are summarized as one."""
+    """Minimumdof checks that fail are summarized as one."""
     from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
 
     cr_result = ChecksResults(
@@ -3189,7 +3192,7 @@ def test_prettify_table_string_with_separator() -> None:
 
 def test_populate_useful_dicts_othersuperclasses_branch() -> None:
     """Populate_useful_dicts() appends to existing list when key already in othersuperclasses (lines 74-77)."""
-    from acro.ontology_handler import PREFIX, populate_useful_dicts  # noqa: PLC0415
+    from acro.ontology_handler import populate_useful_dicts  # noqa: PLC0415
 
     g = rdflib.Graph()
     subclass_ref = rdflib.URIRef("http://www.w3.org/2000/01/rdf-schema#subClassOf")
@@ -3205,7 +3208,7 @@ def test_populate_useful_dicts_othersuperclasses_branch() -> None:
     g.add((subject, subclass_ref, parent1))
     g.add((subject, subclass_ref, parent2))
 
-    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
+    _, _, othersuperclasses = populate_useful_dicts(g)
 
     key = "TestClass"
     assert key in othersuperclasses

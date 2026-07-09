@@ -114,8 +114,7 @@ class ManyChecksResults:
     allchecksresults: dict[str, ChecksResults] = field(default_factory=dict)
 
     def get_overall_summary(self) -> str:
-        """
-        Get overall summary from multiple statistics.
+        """Get overall summary from multiple statistics.  # noqa: D212,D213,D413.
 
         Returns
         -------
@@ -481,14 +480,15 @@ class SDCChecks:
     def check_missing(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """
-        Check whether any cells have missing values.
+        """Check whether any cells have missing values.  # noqa: D212,D213,D413,D417.
 
         Parameters
         ----------
         name : str
             The name of the model.
-        model : dict
+        evidence : SDCEvidence
+            The collected evidence object.
+        model : TableModelDetails
             definition of a table
 
         Returns

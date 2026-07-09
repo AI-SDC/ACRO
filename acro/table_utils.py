@@ -33,8 +33,7 @@ AGGFUNC_TO_TYPE: dict[str, str] = {
 
 
 def axis_to_list(axis: Series | list[Series]) -> list[Series]:
-    """
-    Translate axis into standard format.
+    """Translate axis into standard format.  # noqa: D212,D213,D413.
 
     Convert variables describing an axis (row/column) into a list
     to simplify code. Wraps input inside a list if it is a single series
@@ -351,7 +350,7 @@ def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
 
 
 def get_relevant_dataframe(model: TableModelDetails) -> DataFrame:
-    """Extract copy of data relevant to crosstab into new DataFrame.
+    """Extract copy of data relevant to crosstab into new DataFrame.  # noqa: D212,D213,D413.
 
     Assumes preprocessing has happeneded, so
     index and columns in args should both have been converted into lists of Series
@@ -636,7 +635,7 @@ def append_rounded_margins(
     margins_name: str,
     base: int,
 ) -> DataFrame:
-    """Append row/column/grand-total margins to a pre-rounded table.
+    """Append row/column/grand-total margins to a pre-rounded table.  # noqa: D212,D213,D413.
 
     Once cells have been rounded,
     margins are computed by aggregating the rounded cells (so rounded inner

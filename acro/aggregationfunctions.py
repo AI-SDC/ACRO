@@ -68,8 +68,7 @@ SURVIVAL_THRESHOLD: int = 10
 
 
 def agg_p_percent(vals: Series) -> bool:
-    """
-    Return whether the p percent rule is violated.
+    """Return whether the p percent rule is violated.  # noqa: D212,D213,D413.
 
     That is, the uncertainty (as a fraction) of the estimate that the second
     highest respondent can make of the highest value. Assuming there are n

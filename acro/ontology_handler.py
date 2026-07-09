@@ -1,5 +1,4 @@
-"""
-Ontology_handler.py.
+"""Ontology_handler.py.
 
 @author Jim Smith March 2026
 Functionality to load semantic information from statbarnssdc ontology
@@ -40,7 +39,8 @@ def print_nested_dict(s: dict) -> None:
 
 
 def populate_useful_dicts(g: rdflib.Graph) -> tuple:
-    """Create useful dicts to save time.
+    """
+    Create useful dicts to save time.
 
     Returns
     -------
@@ -83,7 +83,8 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
 def make_save_statbarns(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, othersuperclasses: dict
 ) -> dict:
-    """Create statbarn dicts/json from ontology.
+    """
+    Create statbarn dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of statbarns
@@ -129,7 +130,8 @@ def make_save_statbarns(
 def make_save_analyses(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, statbarns: dict
 ) -> dict:
-    """Create analysis dicts/json from ontology.
+    """
+    Create analysis dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of analyses
@@ -176,7 +178,8 @@ def make_save_analyses(
 
 
 def make_ismitigatedby(g: rdflib.Graph, risks: list) -> dict:
-    """Create lookup of mitigations for risks dicts/json from ontology.
+    """
+    Create lookup of mitigations for risks dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of mitigations for each risk
@@ -217,7 +220,8 @@ def make_ismitigatedby(g: rdflib.Graph, risks: list) -> dict:
 
 
 def make_ischeckedby(g: rdflib.Graph, risks: list) -> dict:
-    """Create lookup of checks for risks dicts/json from ontology.
+    """
+    Create lookup of checks for risks dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of checks for each risk
@@ -271,7 +275,8 @@ def make_save_risks(
     ischeckedby: dict,
     ismitigatedby: dict,
 ) -> dict:
-    """Create risks dicts/json from ontology.
+    """
+    Create risks dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of risks
@@ -281,11 +286,14 @@ def make_save_risks(
     ----------
     g : rdflib.Graph
         representation of the statbarnsdc ontology in RDF triples
-    definitions : dict,
-    pref_labels : dict,
+    definitions : dict
+        lookup table of definitions from ontology
+    pref_labels : dict
+        lookup table of preferred labels from ontology
     ischeckedby : dict
+        lookup table mapping risks to checks
     ismitigatedby : dict
-       lookup tables
+        lookup table mapping risks to mitigations
 
     Returns
     -------

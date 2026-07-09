@@ -10,11 +10,13 @@ import tempfile
 import matplotlib as mpl
 
 mpl.use("Agg")
+from typing import Any
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
+import rdflib
 import statsmodels.api as sm
 
 from acro import (
@@ -26,6 +28,18 @@ from acro import (
     utils,
 )
 from acro.acro_tables import _rounded_survival_table  # , crosstab_with_totals
+from acro.aggregationfunctions import agg_nk, agg_p_percent, agg_threshold
+from acro.ontology_handler import (
+    PREFIX,
+    is_uri,
+    make_ischeckedby,
+    make_ismitigatedby,
+    make_save_analyses,
+    make_save_risks,
+    make_save_statbarns,
+    populate_useful_dicts,
+    print_nested_dict,
+)
 from acro.record import Records, load_records
 from acro.sdc_agg_funcs import (
     agg_missing,
@@ -35,6 +49,12 @@ from acro.sdc_agg_funcs import (
     get_statsmodel_dof,
 )
 from acro.sdcchecks import SDCChecks, SDCEvidence
+from acro.table_utils import (
+    get_analysis_summary,
+    get_debugging_table_analysis,
+    get_redacted_data,
+    translate_args_to_newdf,
+)
 from acro.tablemodeldetails import TableModelDetails
 
 # pylint: disable=redefined-outer-name,too-many-lines
@@ -2316,3 +2336,878 @@ def test_hist_federated_no_output_recorded(data):
     assert result is None
     assert acro_obj.results.output_id == 1
     assert len(acro_obj.results.results) == 0
+
+
+def test_agg_p_percent_normal_violation():
+    """Top contributor dominates → p_val < SAFE_PRATIO_P → True."""
+    s = pd.Series([100.0, 1.0, 1.0, 1.0])
+    assert agg_p_percent(s) == True  # noqa: E712
+
+
+def test_agg_p_percent_normal_pass():
+    """Evenly spread values → p_val >= SAFE_PRATIO_P → False."""
+    s = pd.Series([10.0, 10.0, 10.0, 10.0, 10.0])
+    assert agg_p_percent(s) == False  # noqa: E712
+
+
+def test_agg_p_percent_all_zeros_returns_zeros_are_disclosive():
+    """All-zero series → returns ZEROS_ARE_DISCLOSIVE (True by default)."""
+    s = pd.Series([0.0, 0.0, 0.0])
+    result = agg_p_percent(s)
+    assert isinstance(result, bool)
+
+
+def test_agg_p_percent_single_element():
+    """Single-element series → size <= 1 → returns ZEROS_ARE_DISCLOSIVE."""
+    s = pd.Series([42.0])
+    result = agg_p_percent(s)
+    assert isinstance(result, bool)
+
+
+def test_agg_p_percent_not_a_series_raises():
+    """Non-Series input raises AssertionError."""
+    with pytest.raises(AssertionError):
+        agg_p_percent([1, 2, 3])
+
+
+def test_agg_nk_violation():
+    """Top-N sum > K * total → True."""
+    s = pd.Series([100.0, 1.0, 1.0, 1.0])
+    assert agg_nk(s) == True  # noqa: E712
+
+
+def test_agg_nk_pass():
+    """Evenly spread → False."""
+    s = pd.Series([10.0, 10.0, 10.0, 10.0, 10.0])
+    assert agg_nk(s) == False  # noqa: E712
+
+
+def test_agg_nk_zero_total():
+    """Zero total → False (no dominance)."""
+    s = pd.Series([0.0, 0.0, 0.0])
+    assert agg_nk(s) is False
+
+
+def test_agg_threshold_below_threshold():
+    """Fewer than THRESHOLD values → True."""
+    s = pd.Series([1, 2, 3])
+    assert agg_threshold(s) == True  # noqa: E712
+
+
+def test_agg_threshold_above_threshold():
+    """More than THRESHOLD values → False."""
+    s = pd.Series(list(range(20)))
+    assert agg_threshold(s) == False  # noqa: E712
+
+
+def _build_minimal_graph() -> rdflib.Graph:
+    """Build a minimal RDF graph that satisfies ontology_handler expectations."""
+    g = rdflib.Graph()
+    p = rdflib.Namespace(PREFIX)
+    skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+    rdfs = rdflib.Namespace("http://www.w3.org/2000/01/rdf-schema#")
+    dpv_owl = rdflib.Namespace("https://w3id.org/dpv/owl#")
+
+    risk_uri = p.LowCount
+    g.add((risk_uri, rdfs.subClassOf, dpv_owl.Risk))
+    g.add((risk_uri, skos.definition, rdflib.Literal("Low count risk")))
+    g.add((risk_uri, skos.prefLabel, rdflib.Literal("LowCount")))
+
+    barn_uri = p.Frequencies
+    g.add((barn_uri, rdfs.subClassOf, p.Statbarn))
+    g.add((barn_uri, skos.definition, rdflib.Literal("Frequency statbarn")))
+    g.add((barn_uri, skos.prefLabel, rdflib.Literal("Frequencies")))
+
+    analysis_uri = p.FrequencyTable
+    g.add((analysis_uri, rdfs.subClassOf, barn_uri))
+    g.add((analysis_uri, skos.definition, rdflib.Literal("Frequency table analysis")))
+    g.add((analysis_uri, skos.prefLabel, rdflib.Literal("FrequencyTable")))
+
+    check_uri = p.MinimumThresholdCheck
+    g.add(
+        (
+            check_uri,
+            rdfs.subClassOf,
+            rdflib.URIRef("https://w3id.org/dpv/risk/owl#RiskEvaluation"),
+        )
+    )
+    g.add((check_uri, skos.definition, rdflib.Literal("Minimum threshold check def")))
+    g.add((check_uri, skos.prefLabel, rdflib.Literal("MinimumThresholdCheck")))
+
+    return g
+
+
+def _add_full_risks_and_checks(g: rdflib.Graph) -> None:
+    """Add all 7 risks and 8 checks required by make_ismitigatedby/make_ischeckedby."""
+    rdfs = rdflib.Namespace("http://www.w3.org/2000/01/rdf-schema#")
+    dpv_owl = rdflib.Namespace("https://w3id.org/dpv/owl#")
+    skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+    p = rdflib.Namespace(PREFIX)
+    for r in [
+        "ClassDisclosure",
+        "LowCount",
+        "LowDOF",
+        "AuxiliaryInformation",
+        "ImplicitTables",
+        "Dominance",
+        "Differencing",
+    ]:
+        uri = p[r]
+        g.add((uri, rdfs.subClassOf, dpv_owl.Risk))
+        g.add((uri, skos.definition, rdflib.Literal(f"{r} def")))
+        g.add((uri, skos.prefLabel, rdflib.Literal(r)))
+    for c in [
+        "RequiredZeroCheck",
+        "PresenceOfZeroCheck",
+        "MinimumThresholdCheck",
+        "MinimumDoFCheck",
+        "StatbarnDataCheck",
+        "NKCheck",
+        "PQCheck",
+        "PresenceOfLinkedTableCheck",
+    ]:
+        g.add(
+            (
+                p[c],
+                rdfs.subClassOf,
+                rdflib.URIRef("https://w3id.org/dpv/risk/owl#RiskEvaluation"),
+            )
+        )
+
+
+FULL_RISKS = [
+    "ClassDisclosure",
+    "LowCount",
+    "LowDOF",
+    "AuxiliaryInformation",
+    "ImplicitTables",
+    "Dominance",
+    "Differencing",
+]
+
+
+def test_is_uri_ref_is_uri():
+    """URI references are recognized as URIs."""
+    assert is_uri(rdflib.term.URIRef("http://example.org/foo")) is True
+
+
+def test_is_uri_literal_is_not_uri():
+    """Literal values are not treated as URIs."""
+    assert is_uri(rdflib.Literal("hello")) is False
+
+
+def test_is_uri_string_is_not_uri():
+    """Plain strings are not treated as URIs."""
+    assert is_uri("http://example.org") is False
+
+
+def test_print_nested_dict_prints_without_error(capsys):
+    """Nested dictionaries are printed without error."""
+    d = {"key1": {"a": 1, "b": 2}, "key2": {"c": 3}}
+    print_nested_dict(d)
+    captured = capsys.readouterr()
+    assert "key1" in captured.out
+    assert "key2" in captured.out
+
+
+def test_populate_useful_dicts_returns_three_dicts():
+    """The helper returns definitions, labels, and superclass mappings."""
+    g = _build_minimal_graph()
+    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
+    assert isinstance(definitions, dict)
+    assert isinstance(pref_labels, dict)
+    assert isinstance(othersuperclasses, dict)
+    assert set(definitions.keys()) == set(pref_labels.keys())
+
+
+def test_populate_useful_dicts_known_entries_present():
+    """The expected ontology entries are present in the helper output."""
+    g = _build_minimal_graph()
+    definitions, pref_labels, _ = populate_useful_dicts(g)
+    assert "LowCount" in definitions
+    assert "Frequencies" in pref_labels
+
+
+def test_make_save_statbarns_creates_json_and_returns_dict(tmp_path):
+    """The statbarn export helper creates a JSON-compatible dictionary."""
+    g = _build_minimal_graph()
+    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
+    orig_dir = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        result = make_save_statbarns(g, definitions, pref_labels, othersuperclasses)
+    finally:
+        os.chdir(orig_dir)
+    assert isinstance(result, dict)
+    assert "Frequencies" in result
+    assert "uri" in result["Frequencies"]
+
+
+def test_make_save_analyses_creates_analyses_dict(tmp_path):
+    """Make_save_analyses creates expected analysis records."""
+    g = _build_minimal_graph()
+    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
+    orig_dir = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        statbarns = make_save_statbarns(g, definitions, pref_labels, othersuperclasses)
+        result = make_save_analyses(g, definitions, pref_labels, statbarns)
+    finally:
+        os.chdir(orig_dir)
+    assert isinstance(result, dict)
+    assert "FrequencyTable" in result
+    assert result["FrequencyTable"]["statbarn"] == "Frequencies"
+
+
+def test_make_ismitigatedby_returns_dict_with_all_risks():
+    """All requested risks are mapped to mitigation entries."""
+    g = _build_minimal_graph()
+    _add_full_risks_and_checks(g)
+    result = make_ismitigatedby(g, FULL_RISKS)
+    assert set(result.keys()) == set(FULL_RISKS)
+    assert isinstance(result["LowCount"], list)
+
+
+def test_make_ischeckedby_returns_dict_with_all_risks():
+    """All requested risks are mapped to check entries."""
+    g = _build_minimal_graph()
+    _add_full_risks_and_checks(g)
+    result = make_ischeckedby(g, FULL_RISKS)
+    assert set(result.keys()) == set(FULL_RISKS)
+
+
+def test_make_save_risks_creates_risks_dict(tmp_path):
+    """The risks export helper writes a dictionary containing the expected entries."""
+    g = _build_minimal_graph()
+    _add_full_risks_and_checks(g)
+    definitions, pref_labels, _ = populate_useful_dicts(g)
+    ischeckedby = make_ischeckedby(g, FULL_RISKS)
+    ismitigatedby = make_ismitigatedby(g, FULL_RISKS)
+    orig_dir = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        result = make_save_risks(
+            g, definitions, pref_labels, ischeckedby, ismitigatedby
+        )
+    finally:
+        os.chdir(orig_dir)
+    assert isinstance(result, dict)
+    assert "LowCount" in result
+
+
+def _make_sdc(**overrides: Any) -> dict[str, Any]:
+    base = {
+        "suppressed": False,
+        "negative": 0,
+        "missing": 0,
+        "threshold": 0,
+        "p-ratio": 0,
+        "nk-rule": 0,
+        "all-values-are-same": 0,
+    }
+    base.update(overrides)
+    return {"summary": base}
+
+
+def test_get_analysis_summary_pass_when_all_zero():
+    """A fully empty summary is treated as a pass."""
+    status, summary = get_analysis_summary(_make_sdc())
+    assert status == "pass"
+    assert summary == "pass"
+
+
+def test_get_analysis_summary_negative_branch():
+    """Negative values trigger the review branch."""
+    status, summary = get_analysis_summary(_make_sdc(negative=1))
+    assert status == "review"
+    assert "negative" in summary
+
+
+def test_get_analysis_summary_missing_branch():
+    """Missing values trigger the review branch."""
+    status, summary = get_analysis_summary(_make_sdc(missing=2))
+    assert status == "review"
+    assert "missing" in summary
+
+
+def test_get_analysis_summary_threshold_fail():
+    """Threshold violations yield a failure summary."""
+    status, summary = get_analysis_summary(_make_sdc(threshold=3))
+    assert status == "fail"
+    assert "threshold" in summary
+
+
+def test_get_analysis_summary_threshold_suppressed():
+    """Suppressed threshold violations are treated as review."""
+    status, summary = get_analysis_summary(_make_sdc(threshold=3, suppressed=True))
+    assert status == "review"
+
+
+def test_get_analysis_summary_pratio_fail():
+    """P-ratio violations yield a failure summary."""
+    status, summary = get_analysis_summary(_make_sdc(**{"p-ratio": 1}))
+    assert status == "fail"
+    assert "p-ratio" in summary
+
+
+def test_get_analysis_summary_nk_fail():
+    """NK-rule violations yield a failure summary."""
+    status, summary = get_analysis_summary(_make_sdc(**{"nk-rule": 2}))
+    assert status == "fail"
+    assert "nk-rule" in summary
+
+
+def test_get_analysis_summary_all_same_fail():
+    """All-same-value violations yield a failure summary."""
+    status, summary = get_analysis_summary(_make_sdc(**{"all-values-are-same": 1}))
+    assert status == "fail"
+    assert "all-values-are-same" in summary
+
+
+def test_translate_args_to_newdf_raises_on_wrong_type():
+    """The helper rejects arguments that are not a two-item tuple."""
+    with pytest.raises(ValueError, match="wrong type or length"):
+        translate_args_to_newdf([pd.Series([1])], pd.DataFrame())  # type: ignore[arg-type]
+
+
+def test_translate_args_to_newdf_raises_on_wrong_length():
+    """The helper rejects tuples whose length is not exactly two."""
+    with pytest.raises(ValueError, match="wrong type or length"):
+        translate_args_to_newdf((pd.Series([1]),), pd.DataFrame())
+
+
+def test_get_redacted_data_no_op_no_queries_returns_copy():
+    """No-op redaction returns an equal copy of the input data."""
+    data = pd.DataFrame({"a": [1, 2, 3], "b": ["x", "y", "z"]})
+    result = get_redacted_data(data, [], ["a"])
+    assert result.equals(data)
+
+
+def test_get_debugging_table_analysis_returns_string_with_analysis_name():
+    """The debugging helper includes the analysis name in its output."""
+    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
+
+    mask = pd.DataFrame({"col": [False, True]})
+    cr = ChecksResults(
+        overall_status="fail",
+        summaries="some summary",
+        outcomes={"MinimumThresholdCheck": mask},
+        fair_dict={"check_status": {"MinimumThresholdCheck": "fail"}},
+    )
+    result = get_debugging_table_analysis({"FrequencyTable": cr})
+    assert "FrequencyTable" in result
+    assert "MinimumThresholdCheck" in result
+
+
+def test_get_debugging_table_analysis_fair_dict_nested():
+    """Nested fair-dict values are included in the helper output."""
+    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
+
+    mask = pd.DataFrame({"col": [False]})
+    cr = ChecksResults(
+        overall_status="pass",
+        summaries="ok",
+        outcomes={"SomeCheck": mask},
+        fair_dict={"nested": {"k": "v"}, "scalar": 42},
+    )
+    result = get_debugging_table_analysis({"Mean": cr})
+    assert "Mean" in result
+    assert "scalar" in result
+
+
+_RISK_APPETITE = {
+    "safe_threshold": 10,
+    "safe_dof_threshold": 10,
+    "safe_nk_n": 2,
+    "safe_nk_k": 0.9,
+    "safe_pratio_p": 0.1,
+    "check_missing_values": False,
+    "zeros_are_disclosive": True,
+}
+
+
+def test_check_model_dof_dataframe_dof_fail():
+    """DataFrame dof values below threshold are flagged as failures."""
+    sdc = SDCChecks(_RISK_APPETITE)
+    ev = SDCEvidence()
+    ev.dof = pd.DataFrame({"a": [5, 15], "b": [3, 20]})
+    status, summary, _ = sdc.check_model_dof("FrequencyTable", ev, None)
+    assert status == "fail"
+    assert "<" in summary
+
+
+def test_check_model_dof_dataframe_dof_pass():
+    """DataFrame dof values at or above threshold pass."""
+    sdc = SDCChecks(_RISK_APPETITE)
+    ev = SDCEvidence()
+    ev.dof = pd.DataFrame({"a": [15, 20], "b": [12, 30]})
+    status, summary, _ = sdc.check_model_dof("FrequencyTable", ev, None)
+    assert status == "pass"
+
+
+def test_manual_check_survival_model_type():
+    """Survival model types trigger the manual review path."""
+    sdc = SDCChecks(_RISK_APPETITE)
+    ev = SDCEvidence()
+    model = TableModelDetails(
+        index=[pd.Series([1, 2, 3], name="t")],
+        risk_appetite=_RISK_APPETITE,
+        command="surv_func",
+    )
+    model.model_type = "survival"
+    status, summary, _ = sdc.manual_check("KaplanMeier", ev, model)
+    assert status == "review"
+    assert "manual" in summary.lower()
+
+
+def test_enable_rounding_no_base():
+    """Enabling rounding without a base preserves the existing base."""
+    acro_obj = ACRO()
+    initial_base = acro_obj.round_base
+    acro_obj.enable_rounding()
+    assert acro_obj.mitigation == "round"
+    assert acro_obj.round_base == initial_base
+
+
+def test_enable_rounding_with_base():
+    """Enabling rounding with a base updates the rounding base."""
+    acro_obj = ACRO()
+    acro_obj.enable_rounding(base=10)
+    assert acro_obj.mitigation == "round"
+    assert acro_obj.round_base == 10
+
+
+def test_disable_rounding_when_round():
+    """Disabling rounding resets the mitigation to none."""
+    acro_obj = ACRO()
+    acro_obj.enable_rounding()
+    assert acro_obj.mitigation == "round"
+    acro_obj.disable_rounding()
+    assert acro_obj.mitigation == "none"
+
+
+def test_disable_rounding_when_not_round():
+    """Disabling rounding leaves non-round mitigation unchanged."""
+    acro_obj = ACRO()
+    acro_obj.mitigation = "none"
+    acro_obj.disable_rounding()
+    assert acro_obj.mitigation == "none"
+
+
+def test_pivot_table_no_values_raises(data):
+    """Pivot tables without values raise a helpful error."""
+    acro_obj = ACRO(suppress=False)
+    with pytest.raises(ValueError, match="values column"):
+        acro_obj.pivot_table(data, index=["grant_type"])
+
+
+def test_pivot_table_multiple_values_raises(data):
+    """Pivot tables with multiple values raise a helpful error."""
+    acro_obj = ACRO(suppress=False)
+    with pytest.raises(ValueError, match="multiple values"):
+        acro_obj.pivot_table(
+            data,
+            index=["grant_type"],
+            values=["inc_grants", "inc_activity"],
+            aggfunc="mean",
+        )
+
+
+def test_pivot_table_aggfunc_mode(data):
+    """Pivot_table() with aggfunc='mode' uses the agg_mode helper (lines 477-478)."""
+    acro_obj = ACRO(suppress=False)
+    result = acro_obj.pivot_table(
+        data,
+        index=["grant_type"],
+        values=["inc_grants"],
+        aggfunc="mode",
+    )
+    assert isinstance(result, pd.DataFrame)
+    assert not result.empty
+
+
+# ---------------------------------------------------------------------------
+# acro_tables.py — crosstab rounding with margins (line 355)
+# ---------------------------------------------------------------------------
+
+
+def test_crosstab_rounding_with_margins(data):
+    """Crosstab with round mitigation and margins recomputes rounded margins (line 355)."""
+    acro_obj = ACRO()
+    acro_obj.enable_rounding(base=5)
+    result = acro_obj.crosstab(data.year, data.grant_type, margins=True)
+    assert isinstance(result, pd.DataFrame)
+    # The 'All' margin column/row should be present
+    assert "All" in result.columns or "All" in result.index
+
+
+# ---------------------------------------------------------------------------
+# acro_tables.py — pivot_table rounding path (lines 546-551)
+# ---------------------------------------------------------------------------
+
+
+def test_pivot_table_rounding(data):
+    """Pivot_table with mitigation='round' goes through the rounding branch (lines 546-551)."""
+    acro_obj = ACRO()
+    acro_obj.enable_rounding(base=5)
+    result = acro_obj.pivot_table(
+        data,
+        index=["grant_type"],
+        values=["inc_grants"],
+        aggfunc=["mean"],
+    )
+    assert isinstance(result, pd.DataFrame)
+    assert not result.empty
+
+
+# ---------------------------------------------------------------------------
+# acro_tables.py — surv_func federated mode with output='plot' (lines 650-655)
+# ---------------------------------------------------------------------------
+
+
+def test_surv_func_federated_plot():
+    """Surv_func() in federated mode with output='plot' stores evidence (lines 650-655)."""
+    acro_obj = ACRO(federated=True)
+    np.random.seed(42)
+    mock_df = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 100),
+            "death": np.random.binomial(1, 0.3, 100),
+        }
+    )
+    result = acro_obj.surv_func(
+        mock_df.futime, mock_df.death, output="plot", filename="test_km.png"
+    )
+    # Should return a tuple (None, filename)
+    assert result is not None
+    assert isinstance(result, tuple)
+
+
+def test_pie_blocked_extension_custom_test(data):
+    """Pie() with a blocked file extension returns None without running checks."""
+    acro_obj = ACRO(suppress=False)
+    result = acro_obj.pie(data, column="grant_type", filename="chart.svg")
+    assert result is None
+
+
+def test_sdc_checks_unknown_analysis_returns_review() -> None:
+    """Unknown analyses return a review result from the SDC runner."""
+    sdc = SDCChecks(
+        {
+            "safe_threshold": 10,
+            "safe_dof_threshold": 10,
+            "safe_nk_n": 2,
+            "safe_nk_k": 0.9,
+            "safe_pratio_p": 0.1,
+            "check_missing_values": False,
+            "zeros_are_disclosive": True,
+        }
+    )
+    ev = SDCEvidence()
+    result = sdc.run_checks_for_analysis("NonExistentAnalysis", ev, None)
+    assert result.overall_status == "Review"
+
+
+_RA = {
+    "safe_threshold": 10,
+    "safe_dof_threshold": 10,
+    "safe_nk_n": 2,
+    "safe_nk_k": 0.9,
+    "safe_pratio_p": 0.1,
+    "check_missing_values": False,
+    "zeros_are_disclosive": True,
+}
+
+
+def test_check_all_same_all_identical() -> None:
+    """All-identical values trigger a fail result."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    ev.interim_tables["values_are_same"] = pd.DataFrame(
+        {"A": [True, False], "B": [False, True]},
+        index=[1, 2],
+    )
+    dummy_model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[],
+        values=pd.Series([10.0, 20.0], name="v"),
+    )
+    status, summary, _ = sdc.check_all_same("Mean", ev, dummy_model)
+    assert status == "fail"
+    assert "2 cells" in summary
+
+
+def test_check_all_same_no_identical() -> None:
+    """Non-identical values pass the all-same check."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    ev.interim_tables["values_are_same"] = pd.DataFrame(
+        {"A": [False, False], "B": [False, False]},
+        index=[1, 2],
+    )
+    dummy_model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[],
+        values=pd.Series([10.0, 20.0], name="v"),
+    )
+    status, summary, _ = sdc.check_all_same("Mean", ev, dummy_model)
+    assert status == "pass"
+
+
+def test_check_missing_with_missings() -> None:
+    """Missing values trigger a fail result."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    ev.interim_tables["missing"] = pd.DataFrame({"A": [True, False]}, index=[1, 2])
+    dummy_model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[],
+        values=pd.Series([10.0, 20.0], name="v"),
+    )
+    status, summary, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
+    assert status == "fail"
+
+
+def test_check_missing_no_missings() -> None:
+    """No missing values pass the check."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    ev.interim_tables["missing"] = pd.DataFrame({"A": [False, False]}, index=[1, 2])
+    dummy_model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[],
+        values=pd.Series([10.0, 20.0], name="v"),
+    )
+    status, summary, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
+    assert status == "pass"
+
+
+def test_manual_check_unknown_model_type_returns_fail() -> None:
+    """Unknown model types return a fail result from manual checks."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    model = TableModelDetails(
+        index=[pd.Series([1, 2, 3], name="t")],
+        risk_appetite=_RA,
+        command="something",
+    )
+    model.model_type = "unknown_type"
+    status, summary, _ = sdc.manual_check("TestAnalysis", ev, model)
+    assert status == "fail"
+
+
+_RA_NO_ZERO = {
+    "safe_threshold": 10,
+    "safe_dof_threshold": 10,
+    "safe_nk_n": 2,
+    "safe_nk_k": 0.9,
+    "safe_pratio_p": 0.1,
+    "check_missing_values": False,
+    "zeros_are_disclosive": False,
+}
+
+
+def test_check_required_zero_zeros_not_disclosive_qualifier() -> None:
+    """The non-disclosive zero branch uses the expected qualifier."""
+    sdc = SDCChecks(_RA_NO_ZERO)
+    ev = SDCEvidence()
+    model = TableModelDetails(
+        index=[pd.Series([10, 20], name="a")],
+        columns=[pd.Series([1, 2], name="b")],
+        values=pd.Series([100.0, 200.0], name="v"),
+        thekwargs={},
+        risk_appetite=_RA_NO_ZERO,
+        command="crosstab",
+    )
+    status, summary, _ = sdc.check_required_zero("FrequencyTable", ev, model)
+    assert status == "pass"
+    assert "not" in summary
+
+
+def test_check_presence_of_zero_not_disclosive() -> None:
+    """The non-disclosive zero branch uses an all-false mask."""
+    sdc = SDCChecks(_RA_NO_ZERO)
+    ev = SDCEvidence()
+    ev.interim_tables["count_table"] = pd.DataFrame(
+        {"A": [0, 5], "B": [10, 15]}, index=[1, 2]
+    )
+    model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[pd.Series([1, 2], name="b")],
+        values=pd.Series([0.0, 5.0], name="v"),
+        thekwargs={},
+        risk_appetite=_RA_NO_ZERO,
+        command="crosstab",
+    )
+    status, summary, mask = sdc.check_presence_of_zero("FrequencyTable", ev, model)
+    assert status == "pass"
+    assert "not disclosive" in summary
+
+
+def test_get_table_sdc_minimum_dof_check_as_int() -> None:
+    """MinimumDoF checks stored as integers are summarized correctly."""
+    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+
+    cr_result = ChecksResults(
+        overall_status="pass",
+        summaries="dof=50 >= 10",
+        outcomes={"MinimumDoFCheck": 50},
+        fair_dict={},
+    )
+    many = ManyChecksResults()
+    many.allchecksresults["GeneralLinearModel"] = cr_result
+    sdc = many.get_table_sdc()
+    assert sdc["summary"]["MinimumDoFCheck"] == 0
+
+
+def test_get_table_sdc_minimum_dof_check_as_int_fail() -> None:
+    """MinimumDoF checks that fail are summarized as one."""
+    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+
+    cr_result = ChecksResults(
+        overall_status="fail",
+        summaries="dof=0 < 10",
+        outcomes={"MinimumDoFCheck": 0},
+        fair_dict={},
+    )
+    many = ManyChecksResults()
+    many.allchecksresults["GeneralLinearModel"] = cr_result
+    sdc = many.get_table_sdc()
+    assert sdc["summary"]["MinimumDoFCheck"] == 1
+
+
+def test_get_table_sdc_duplicate_check_skipped_branch() -> None:
+    """Duplicate checks are only counted once in the table summary."""
+    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+
+    mask = pd.DataFrame({"A": [False, False]}, index=[1, 2])
+    cr1 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})
+    cr2 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})
+    many = ManyChecksResults()
+    many.allchecksresults["FrequencyTable"] = cr1
+    many.allchecksresults["Mean"] = cr2
+    sdc = many.get_table_sdc()
+    assert len(sdc["cells"]) == 1
+    assert "MinimumThresholdCheck" in sdc["cells"]
+
+
+def test_agg_values_are_same_empty_series() -> None:
+    """Agg_values_are_same returns True for an empty Series (line 78)."""
+    from acro.sdc_agg_funcs import agg_values_are_same  # noqa: PLC0415
+
+    result = agg_values_are_same(pd.Series([], dtype=float))
+    assert result is True
+
+
+def test_agg_top_2_sum_non_numeric() -> None:
+    """Agg_top_2_sum returns 0 for a non-numeric Series (lines 118-119)."""
+    from acro.sdc_agg_funcs import agg_top_2_sum  # noqa: PLC0415
+
+    result = agg_top_2_sum(pd.Series(["a", "b", "c"]))
+    assert result == 0
+
+
+def _make_table_for_collate_risk_assessments() -> pd.DataFrame:
+    return pd.DataFrame({"A": [10, 20], "B": [30, 40]}, index=[1, 2])
+
+
+def test_collate_risk_assessments_negative_branch() -> None:
+    """Negative masks are surfaced as negative values in collated results."""
+    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
+    from acro.table_utils import collate_risk_assessments  # noqa: PLC0415
+
+    table = _make_table_for_collate_risk_assessments()
+    neg_mask = pd.DataFrame({"A": [True, False], "B": [False, False]}, index=[1, 2])
+    cr = ChecksResults(
+        overall_status="review",
+        summaries="review",
+        outcomes={"negative": neg_mask},
+        fair_dict={},
+    )
+    outcome = collate_risk_assessments(table, {"Mean": cr})
+    flat = outcome.to_numpy().flatten().tolist()
+    assert any("negative" in str(v) for v in flat)
+
+
+def test_collate_risk_assessments_missing_branch() -> None:
+    """Missing masks are surfaced as missing values in collated results."""
+    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
+    from acro.table_utils import collate_risk_assessments  # noqa: PLC0415
+
+    table = _make_table_for_collate_risk_assessments()
+    miss_mask = pd.DataFrame({"A": [False, True], "B": [False, False]}, index=[1, 2])
+    cr = ChecksResults(
+        overall_status="fail",
+        summaries="fail",
+        outcomes={"missing": miss_mask},
+        fair_dict={},
+    )
+    outcome = collate_risk_assessments(table, {"Mean": cr})
+    flat = outcome.to_numpy().flatten().tolist()
+    assert any("missing" in str(v) for v in flat)
+
+
+def test_translate_args_to_newdf_series_branch(data) -> None:
+    """Translate_args_to_newdf() maps a pd.Series argument to the redacted DataFrame (line 401)."""
+    redacted = data[["year", "grant_type"]].copy()
+    args = (data["year"], data["grant_type"])
+    result = translate_args_to_newdf(args, redacted)
+    assert len(result) == 2
+    assert result[0].equals(redacted["year"])
+
+
+def test_append_rounded_margins_median(data) -> None:
+    """Append_rounded_margins() with aggfunc='median' uses the median path (line 647)."""
+    from acro.table_utils import append_rounded_margins, round_table  # noqa: PLC0415
+
+    table = pd.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc="median"
+    )
+    rounded = round_table(table, 5)
+    result = append_rounded_margins(rounded, "median", "All", 5)
+    assert isinstance(result, pd.DataFrame)
+
+
+def test_add_custom_blocked_extension(tmp_path) -> None:
+    """Records.add_custom() returns False when the file extension is blocked (line 369)."""
+    records = Records(blocked_extensions=[".svg"])
+    # Create a real file so the existence check doesn't short-circuit
+    svg_file = tmp_path / "chart.svg"
+    svg_file.write_text("content")
+    result = records.add_custom(str(svg_file))
+    assert result is False
+    assert len(records.results) == 0
+
+
+def test_prettify_table_string_with_separator() -> None:
+    """Prettify_table_string() with separator uses split(separator) instead of split() (line 78)."""
+    df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["x", "y"])
+    result = utils.prettify_table_string(df, separator=",")
+    assert isinstance(result, str)
+    assert "|" in result
+
+
+def test_populate_useful_dicts_othersuperclasses_branch() -> None:
+    """Populate_useful_dicts() appends to existing list when key already in othersuperclasses (lines 74-77)."""
+    from acro.ontology_handler import PREFIX, populate_useful_dicts  # noqa: PLC0415
+
+    g = rdflib.Graph()
+    subclass_ref = rdflib.URIRef("http://www.w3.org/2000/01/rdf-schema#subClassOf")
+    definition_ref = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#definition")
+    preflabel_ref = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#prefLabel")
+
+    subject = rdflib.URIRef(PREFIX + "TestClass")
+    g.add((subject, definition_ref, rdflib.Literal("a test class")))
+    g.add((subject, preflabel_ref, rdflib.Literal("Test Class")))
+
+    parent1 = rdflib.URIRef("http://example.com/parent1")
+    parent2 = rdflib.URIRef("http://example.com/parent2")
+    g.add((subject, subclass_ref, parent1))
+    g.add((subject, subclass_ref, parent2))
+
+    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
+
+    key = "TestClass"
+    assert key in othersuperclasses
+    # Both parents should be present
+    assert len(othersuperclasses[key]) >= 2

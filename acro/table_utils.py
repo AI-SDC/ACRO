@@ -33,7 +33,8 @@ AGGFUNC_TO_TYPE: dict[str, str] = {
 
 
 def axis_to_list(axis: Series | list[Series]) -> list[Series]:
-    """Translate axis into standard format.
+    """
+    Translate axis into standard format.
 
     Convert variables describing an axis (row/column) into a list
     to simplify code. Wraps input inside a list if it is a single series
@@ -76,7 +77,8 @@ def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
 def collate_risk_assessments(
     table: DataFrame, allcheckresults: dict[str, ChecksResults]
 ) -> DataFrame:
-    """Collate the Risk Assessment for a table.
+    """
+    Collate the Risk Assessment for a table.
 
     Parameters
     ----------
@@ -94,7 +96,6 @@ def collate_risk_assessments(
     if isinstance(list(outcome_df)[0], tuple):
         outcome_df = drop_duplicate_columns(outcome_df)
     outcome_df = outcome_df.fillna("")
-    # logger.info(f"at start outcome_df:\n{outcome_df}")
 
     checks_seen: list[str] = []
     for _, checkresults in allcheckresults.items():
@@ -117,31 +118,9 @@ def collate_risk_assessments(
                 tmp_df = tmp_df.fillna("")
                 if not isinstance(mask, DataFrame):
                     continue
-                n_diff = outcome_df.columns.nlevels - mask.columns.nlevels
-                if n_diff > 0:
-                    mask_cols_aligned = []
-                    for c in outcome_df.columns:
-                        if isinstance(c, tuple):
-                            sub_c = c[n_diff:]
-                            if len(sub_c) == 1:
-                                mask_cols_aligned.append(sub_c[0])
-                            else:
-                                mask_cols_aligned.append(sub_c)
-                        else:
-                            mask_cols_aligned.append(c)
-                    mask_aligned = DataFrame(
-                        index=mask.index, columns=outcome_df.columns
-                    )
-                    for col_out, col_mask in zip(
-                        outcome_df.columns, mask_cols_aligned, strict=False
-                    ):
-                        if col_mask in mask.columns:
-                            mask_aligned[col_out] = mask[col_mask]
-                elif n_diff < 0:
-                    mask_aligned = mask.droplevel(list(range(-n_diff)), axis=1)
-                else:
-                    mask_aligned = mask
-
+                mask_aligned = _align_mask_to_outcome(mask, outcome_df)
+                if mask_aligned is None:
+                    continue
                 shared_index = outcome_df.index.intersection(mask_aligned.index)
                 shared_cols = outcome_df.columns.intersection(mask_aligned.columns)
                 if shared_index.empty or shared_cols.empty:
@@ -160,8 +139,49 @@ def collate_risk_assessments(
     return outcome_df
 
 
+def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame | None:
+    """
+    Align a suppression mask to the column structure of the outcome DataFrame.
+
+    Parameters
+    ----------
+    mask : DataFrame
+        Suppression mask to align.
+    outcome_df : DataFrame
+        The target outcome DataFrame whose column structure is used for alignment.
+
+    Returns
+    -------
+    DataFrame or None
+        Aligned mask, or None if alignment is not possible.
+    """
+    n_diff = outcome_df.columns.nlevels - mask.columns.nlevels
+    if n_diff > 0:
+        mask_cols_aligned = []
+        for c in outcome_df.columns:
+            if isinstance(c, tuple):
+                sub_c = c[n_diff:]
+                if len(sub_c) == 1:
+                    mask_cols_aligned.append(sub_c[0])
+                else:
+                    mask_cols_aligned.append(sub_c)
+            else:
+                mask_cols_aligned.append(c)
+        mask_aligned = DataFrame(index=mask.index, columns=outcome_df.columns)
+        for col_out, col_mask in zip(
+            outcome_df.columns, mask_cols_aligned, strict=False
+        ):
+            if col_mask in mask.columns:
+                mask_aligned[col_out] = mask[col_mask]
+        return mask_aligned
+    if n_diff < 0:
+        return mask.droplevel(list(range(-n_diff)), axis=1)
+    return mask
+
+
 def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
-    """Return the status and summary of the suppression masks.
+    """
+    Return the status and summary of the suppression masks.
 
     Parameters
     ----------
@@ -279,7 +299,8 @@ def get_redacted_pivottable(
 
 
 def add_backticks(name: str) -> str:
-    """Add backticks to a name if it contains spaces and doesn't have them.
+    """
+    Add backticks to a name if it contains spaces and doesn't have them.
 
     Parameters
     ----------
@@ -297,7 +318,8 @@ def add_backticks(name: str) -> str:
 
 
 def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
-    """Format a label into a list of condition strings.
+    """
+    Format a label into a list of condition strings.
 
     Parameters
     ----------
@@ -375,7 +397,8 @@ def get_relevant_dataframe(model: TableModelDetails) -> DataFrame:
 
 
 def translate_args_to_newdf(arguments: tuple, redacted_data: DataFrame) -> list:
-    """Translate arguments or keys from one data frame to another.
+    """
+    Translate arguments or keys from one data frame to another.
 
     Parameters
     ----------
@@ -414,7 +437,8 @@ def _get_cell_query(
     index_level_names: list[Any],
     column_level_names: list[Any],
 ) -> str | None:
-    """Generate a query string for a cell if it's marked as true in the mask.
+    """
+    Generate a query string for a cell if it's marked as true in the mask.
 
     Parameters
     ----------
@@ -450,7 +474,8 @@ def _get_cell_query(
 def get_queries_from_collated_risk(
     collated_risk: DataFrame, aggfunc: str | None
 ) -> list[str]:
-    """Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
+    """
+    Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
 
     Parameters
     ----------
@@ -488,7 +513,8 @@ def get_queries_from_collated_risk(
 def get_redacted_data(
     data: DataFrame, queries: list[str], dimensions: list[str]
 ) -> DataFrame:
-    """Apply set of queries to remove sensitive data from  DataFrame.
+    """
+    Apply set of queries to remove sensitive data from DataFrame.
 
     Parameters
     ----------

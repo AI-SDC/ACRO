@@ -68,7 +68,8 @@ SURVIVAL_THRESHOLD: int = 10
 
 
 def agg_p_percent(vals: Series) -> bool:
-    """Return whether the p percent rule is violated.
+    """
+    Return whether the p percent rule is violated.
 
     That is, the uncertainty (as a fraction) of the estimate that the second
     highest respondent can make of the highest value. Assuming there are n
@@ -98,7 +99,8 @@ def agg_p_percent(vals: Series) -> bool:
 
 
 def agg_nk(vals: Series) -> bool:
-    """Return whether the top n items account for more than k percent of the total.
+    """
+    Return whether the top n items account for more than k percent of the total.
 
     Parameters
     ----------
@@ -119,7 +121,8 @@ def agg_nk(vals: Series) -> bool:
 
 
 def agg_threshold(vals: Series) -> bool:
-    """Return whether the number of contributors is below a threshold.
+    """
+    Return whether the number of contributors is below a threshold.
 
     Parameters
     ----------

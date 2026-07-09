@@ -40,7 +40,8 @@ class TableModelDetails:
         thekwargs: dict | None = None,
         risk_appetite: dict | None = None,
     ) -> None:
-        """Construct the TableModelDescriptor for a table/ array type analysis.
+        """
+        Construct the TableModelDescriptor for a table/ array type analysis.
 
         Parameters
         ----------
@@ -93,7 +94,8 @@ class TableModelDetails:
                     )
 
     def get_crosstab_args(self) -> tuple:
-        """Get arguments for a call to crosstab.
+        """
+        Get arguments for a call to crosstab.
 
         create dummy column if needed
         """
@@ -124,7 +126,8 @@ class TableModelDetails:
         return names
 
     def get_variable_type_dict(self) -> dict[str, Any]:
-        """Get dict listing dependent and independent variables from metadata catalogue.
+        """
+        Get dict listing dependent and independent variables from metadata catalogue.
 
         Returns
         -------
@@ -141,7 +144,8 @@ class TableModelDetails:
         return mydict
 
     def _get_axis_metadata(self, axis: list[pd.Series], where: str) -> dict:
-        """Get  metadata for categorical variables describing an axis.
+        """
+        Get metadata for categorical variables describing an axis.
 
         Cycle through the categorical variables that define an axis
         and construct a meta data dictionary describing them
@@ -185,7 +189,8 @@ class TableModelDetails:
     def _get_variable_metadata(
         self, index: list, columns: list, values: pd.Series | None
     ) -> dict[str, dict]:
-        """Create data dictionary.
+        """
+        Create data dictionary.
 
         Notes
         -----

@@ -85,7 +85,7 @@ def apply_stata_expstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
         if start > end:
             end = last
 
-    return all_data.iloc[start : end + 1]
+    return all_data.iloc[start:end + 1]
 
 
 def find_brace_word(word: str, raw: str) -> tuple[bool, list[str] | str]:
@@ -476,7 +476,7 @@ def extract_var_within_parentheses(input_string: str) -> tuple[str, str]:
     string_match = re.match(r"\((.*?)\)", input_string)
     if string_match:
         string = string_match.group(1).strip()
-        input_string = input_string[len(string_match.group(0)) :].strip()
+        input_string = input_string[len(string_match.group(0)):].strip()
     return string, input_string
 
 
@@ -486,7 +486,7 @@ def extract_var_before_parentheses(input_string: str) -> tuple[str, str]:
     string_match = re.match(r"^(.*?)\(", input_string)
     if string_match:
         string = string_match.group(1).strip()
-        input_string = input_string[len(string_match.group(1)) :].strip()
+        input_string = input_string[len(string_match.group(1)):].strip()
     return string, input_string
 
 
@@ -609,7 +609,7 @@ def run_table_command(
     if len(details["errmsg"]) > 0:
         return details["errmsg"]
 
-    aggfuncs = list(map(lambda x: x.replace("sd", "std"), details["aggfuncs"]))
+    aggfuncs = [x.replace("sd", "std") for x in details["aggfuncs"]]
     # validate what the user has asked for
     valids = list(AGGFUNC.keys())
     if any(item not in valids for item in aggfuncs):

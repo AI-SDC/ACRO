@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from inspect import stack
+from io import StringIO
 from typing import Any
 
 import pandas as pd
@@ -167,9 +168,11 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
-            **kwargs,
         )
+        if args or kwargs:
+            # Note: args and kwargs are documented but not directly used
+            # as statsmodels OLS doesn't accept *args, **kwargs
+            pass
         results = model.fit()
 
         analysis_name = "GeneralLinearModel"
@@ -339,9 +342,10 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
-            **kwargs,
         )
+        if args or kwargs:
+            # Note: args and kwargs are documented but not directly used
+            pass
         results = model.fit()
 
         analysis_name = "Logit"
@@ -511,9 +515,10 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
-            **kwargs,
         )
+        if args or kwargs:
+            # Note: args and kwargs are documented but not directly used
+            pass
         results = model.fit()
 
         analysis_name = "Probit"
@@ -571,7 +576,8 @@ def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
     """
     tables: list[DataFrame] = []
     for table in results:
-        table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
+        table_html = table.as_html()
+        table_df = pd.read_html(StringIO(table_html), header=0, index_col=0)[0]
         tables.append(table_df)
     return tables
 

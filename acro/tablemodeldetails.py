@@ -235,8 +235,7 @@ class TableModelDetails:
         kwargs: dict = self.get_crosstab_kwargs()
         kwargs["aggfunc"] = kwargs["values"] = None
         zeros_table = pd.crosstab(*args, **kwargs)
-        for col in zeros_table.columns:
-            zeros_table[col].values[:] = 0
+        zeros_table[:] = 0
         return zeros_table
 
     def get_allfalse_table(self) -> pd.DataFrame:
@@ -246,13 +245,12 @@ class TableModelDetails:
             thiskwargs = self.get_crosstab_kwargs()
             thiskwargs["aggfunc"] = thiskwargs["values"] = None
             mask = pd.crosstab(*args, **thiskwargs).astype(bool)
-            for col in mask.columns:
-                mask[col].values[:] = False
+            mask[:] = False
             # logger.info(f'get_allfalse_mask for table, mask=:\n{mask}')
 
         else:  # array
             series_mask = self.index[0].value_counts()
-            series_mask.iloc[:] = False
+            series_mask = pd.Series(False, index=series_mask.index, dtype=bool)
             mask = pd.DataFrame(series_mask, dtype=bool)
             # logger.info(f'get_allfalse_mask for other {model.model_type}, mask=:\n{mask}')
 

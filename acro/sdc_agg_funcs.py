@@ -29,8 +29,7 @@ def agg_mode(values: pd.Series) -> float:
 
 
 def agg_num_negative(vals: pd.Series) -> int:
-    """
-    Return whether any values are negative.
+    """Return whether any values are negative.
 
     Parameters
     ----------

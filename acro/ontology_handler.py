@@ -78,8 +78,7 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
 def make_save_statbarns(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, othersuperclasses: dict
 ) -> dict:
-    """
-    Create statbarn dicts/json from ontology.
+    """Create statbarn dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of statbarns

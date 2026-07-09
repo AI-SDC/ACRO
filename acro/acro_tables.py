@@ -79,7 +79,8 @@ class Tables:
         analysis_names: list,
         evidence: SDCEvidence,
     ) -> None:
-        """Accumulate evidence for a single output when running in federated mode.
+        """
+        Accumulate evidence for a single output when running in federated mode.
 
         Parameters
         ----------

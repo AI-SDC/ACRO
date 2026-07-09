@@ -1160,8 +1160,7 @@ def test_finalise_non_interactive(data):
 
 
 def test_finalise_interactive(data):
-    """
-    Test finalise_interactive.
+    """Test finalise_interactive.
 
     Test that interactive version of finalising acro
     leaves exceptions as they should be disclosive table.
@@ -3192,8 +3191,6 @@ def test_prettify_table_string_with_separator() -> None:
 
 def test_populate_useful_dicts_othersuperclasses_branch() -> None:
     """Populate_useful_dicts() appends to existing list when key already in othersuperclasses (lines 74-77)."""
-    from acro.ontology_handler import populate_useful_dicts  # noqa: PLC0415
-
     g = rdflib.Graph()
     subclass_ref = rdflib.URIRef("http://www.w3.org/2000/01/rdf-schema#subClassOf")
     definition_ref = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#definition")

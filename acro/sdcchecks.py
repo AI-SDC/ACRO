@@ -87,7 +87,8 @@ class SDCEvidence:
 
 @dataclass
 class ChecksResults:
-    """Class holding results of running checks for an analysis.
+    """
+    Class holding results of running checks for an analysis.
 
     overall_status : str
         'fail', 'review', or 'pass'
@@ -190,8 +191,7 @@ def mask_to_boolmask(mask: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
-    """
-    Get status and summary from mask.
+    """Get status and summary from mask.
 
     Parameters
     ----------
@@ -212,7 +212,8 @@ def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
 
 
 class SDCChecks:
-    """Implements range of SDC checks.
+    """
+    Implements range of SDC checks.
 
     All the information is read from json files
     that are separately generated from the online ontology .ttl file
@@ -657,6 +658,8 @@ class SDCChecks:
         ----------
         name : str
             The name of the model.
+        evidence : SDCEvidence
+            The collected evidence object.
         model : TableModelDetails
             definition of a table
 

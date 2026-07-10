@@ -98,7 +98,8 @@ def agg_p_percent(vals: Series) -> bool:
 
 
 def agg_nk(vals: Series) -> bool:
-    """Return whether the top n items account for more than k percent of the total.
+    """
+    Return whether the top n items account for more than k percent of the total.
 
     Parameters
     ----------

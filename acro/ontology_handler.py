@@ -1,6 +1,4 @@
-"""# noqa: D212,D213.
-
-Ontology_handler.py.
+"""Ontology_handler.py.
 
 @author Jim Smith March 2026
 Functionality to load semantic information from statbarnssdc ontology
@@ -35,7 +33,7 @@ def print_nested_dict(s: dict) -> None:
 
 
 def populate_useful_dicts(g: rdflib.Graph) -> tuple:
-    """Create useful dicts to save time.  # noqa: D212,D213,D413.
+    """Create useful dicts to save time.
 
     Parameters
     ----------
@@ -78,7 +76,8 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
 def make_save_statbarns(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, othersuperclasses: dict
 ) -> dict:
-    """Create statbarn dicts/json from ontology.
+    """
+    Create statbarn dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of statbarns
@@ -124,7 +123,7 @@ def make_save_statbarns(
 def make_save_analyses(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, statbarns: dict
 ) -> dict:
-    """Create analysis dicts/json from ontology.  # noqa: D212,D213,D413,D417.
+    """Create analysis dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of analyses
@@ -173,8 +172,7 @@ def make_save_analyses(
 
 
 def make_ismitigatedby(g: rdflib.Graph, risks: list) -> dict:
-    """
-    Create lookup of mitigations for risks dicts/json from ontology.
+    """Create lookup of mitigations for risks dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of mitigations for each risk
@@ -255,7 +253,7 @@ def make_ischeckedby(g: rdflib.Graph, risks: list) -> dict:
         if not isinstance(check, str):
             for c in check:
                 assert c in checks_in_graph, f"{check} not in {checks_in_graph}"
-        else:
+        else:  # pragma: no cover
             assert check in checks_in_graph, f"{check} not in {checks_in_graph}"
 
     assert set(ischeckedby.keys()) == set(risks)
@@ -317,7 +315,7 @@ def make_save_risks(
     return risks
 
 
-def main() -> None:
+def main() -> None:  # pragma: no cover
     """Generate json files."""
     g = rdflib.Graph()
     g.parse(STATBARNSDC)
@@ -346,5 +344,5 @@ def main() -> None:
     print_nested_dict(risks)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

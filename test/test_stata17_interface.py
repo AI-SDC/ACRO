@@ -7,8 +7,7 @@ import shutil
 import pandas as pd
 import pytest
 
-import acro.stata_config as stata_config
-from acro import ACRO
+from acro import ACRO, stata_config
 from acro.acro_stata_parser import find_brace_word, parse_and_run, parse_table_details
 from acro.acro_tables import AGGFUNC
 

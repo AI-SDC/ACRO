@@ -93,7 +93,7 @@ def test_crosstab_without_suppression(data):
     output = acro.results.get_index(0)
     correct_summary: str = "fail; threshold: 6 cells may need suppressing; "
     assert output.summary == correct_summary
-    assert 48 == output.output[0]["R/G"].sum()
+    assert output.output[0]["R/G"].sum() == 48
 
 
 def test_crosstab_with_aggfunc_mode(data):
@@ -105,7 +105,7 @@ def test_crosstab_with_aggfunc_mode(data):
     output = acro.results.get_index(0)
     correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
     assert output.summary == correct_summary
-    assert 913000 == output.output[0]["R/G"].iat[0]
+    assert output.output[0]["R/G"].iat[0] == 913000
 
 
 def test_crosstab_with_aggfunc_sum(data, acro):
@@ -200,8 +200,8 @@ def test_pivot_table_without_suppression(data):
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
     output_0 = acro.results.get_index(0)
-    assert 36293992.0 == output_0.output[0]["mean"]["inc_grants"].sum()
-    assert "pass" == output_0.summary
+    assert output_0.output[0]["mean"]["inc_grants"].sum() == 36293992.0
+    assert output_0.summary == "pass"
 
 
 def test_pivot_table_pass(data, acro):
@@ -832,7 +832,7 @@ def test_crosstab_with_totals_without_suppression(data, acro):
     acro.suppress = False
     _ = acro.crosstab(data.year, data.grant_type, margins=True)
     output = acro.results.get_index(0)
-    assert 153 == output.output[0]["All"].iat[0]
+    assert output.output[0]["All"].iat[0] == 153
 
     total_rows = output.output[0].iloc[-1, 0:4].sum()
     total_cols = output.output[0].loc[2010:2015, "All"].sum()
@@ -843,7 +843,7 @@ def test_crosstab_with_totals_with_suppression(data, acro):
     """Test the crosstab with both margins and suppression are true."""
     _ = acro.crosstab(data.year, data.grant_type, margins=True)
     output = acro.results.get_index(0)
-    assert 145 == output.output[0]["All"].iat[0]
+    assert output.output[0]["All"].iat[0] == 145
 
     total_rows = output.output[0].iloc[-1, 0:3].sum()
     total_cols = output.output[0].loc[2010:2015, "All"].sum()
@@ -857,7 +857,7 @@ def test_crosstab_with_totals_with_suppression_hierarchical(data, acro):
         [data.year, data.survivor], [data.grant_type, data.status], margins=True
     )
     output = acro.results.get_index(0)
-    assert 47 == output.output[0]["All"].iat[0]
+    assert output.output[0]["All"].iat[0] == 47
 
     total_rows = (output.output[0].loc[("All", ""), :].sum()) - output.output[0][
         "All"
@@ -879,8 +879,8 @@ def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
         margins=True,
     )
     output = acro.results.get_index(0)
-    assert 8689781 == output.output[0]["All"].iat[0]
-    assert 5425170.5 == output.output[0]["All"].iat[6]
+    assert output.output[0]["All"].iat[0] == 8689781
+    assert output.output[0]["All"].iat[6] == 5425170.5
     assert "R/G" not in output.output[0].columns
 
 
@@ -908,7 +908,7 @@ def test_crosstab_with_manual_totals_with_suppression(data, acro):
     """Test crosstab when margins and suppression are true with the total manual function."""
     _ = acro.crosstab(data.year, data.grant_type, margins=True, show_suppressed=True)
     output = acro.results.get_index(0)
-    assert 145 == output.output[0]["All"].iat[0]
+    assert output.output[0]["All"].iat[0] == 145
 
     total_rows = output.output[0].iloc[-1, 0:4].sum()
     total_cols = output.output[0].loc[2010:2015, "All"].sum()
@@ -929,7 +929,7 @@ def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
         show_suppressed=True,
     )
     output = acro.results.get_index(0)
-    assert 47 == output.output[0]["All"].iat[0]
+    assert output.output[0]["All"].iat[0] == 47
 
     total_rows = (output.output[0].loc[("All", ""), :].sum()) - output.output[0][
         "All"
@@ -957,8 +957,8 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, ac
         show_suppressed=True,
     )
     output = acro.results.get_index(0)
-    assert 8689780 == round(output.output[0]["All"].iat[0])
-    assert 5425170 == round(output.output[0]["All"].iat[6])
+    assert round(output.output[0]["All"].iat[0]) == 8689780
+    assert round(output.output[0]["All"].iat[6]) == 5425170
     assert "R/G" in output.output[0].columns
     assert np.isnan(output.output[0]["R/G"].iat[0])
 
@@ -979,8 +979,8 @@ def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
         show_suppressed=True,
     )
     output = acro.results.get_index(0)
-    assert 1385162 == round(output.output[0]["All"].iat[0])
-    assert 5434959 == round(output.output[0]["All"].iat[12])
+    assert round(output.output[0]["All"].iat[0]) == 1385162
+    assert round(output.output[0]["All"].iat[12]) == 5434959
     assert ("G", "Dead in 2015") in output.output[0].columns
     assert np.isnan(output.output[0][("G", "Dead in 2015")].iat[0])
 
@@ -1021,7 +1021,7 @@ def test_pivot_table_with_totals_with_suppression(data, acro):
         margins=True,
     )
     output = acro.results.get_index(0)
-    assert 74 == output.output[0][("inc_grants", "All")].iat[0]
+    assert output.output[0][("inc_grants", "All")].iat[0] == 74
 
     total_rows = output.output[0].iloc[-1, 0:3].sum()
     total_cols = output.output[0].loc[2010:2015, ("inc_grants", "All")].sum()

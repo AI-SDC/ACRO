@@ -6,7 +6,10 @@ import logging
 import os
 from inspect import FrameInfo, getframeinfo
 
+import numpy as np
 import pandas as pd
+
+from .constants import ARTIFACTS_DIR
 
 logger = logging.getLogger("acro")
 
@@ -96,3 +99,36 @@ def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> 
         outstr += as_strings[row] + vdelim + "\n"
     outstr += hdelim * rowlen + vdelim + "\n"
     return outstr
+
+
+def get_unique_artefact_filename(filename: str) -> str:
+    """Return a unique filename from a propsoed string."""
+    # CREATE artifacts DIRECTORY to save plot in
+    try:
+        os.makedirs(ARTIFACTS_DIR)
+        logger.debug("Directory %s created successfully", ARTIFACTS_DIR)
+    except FileExistsError:  # pragma: no cover
+        logger.debug("Directory %s already exists", ARTIFACTS_DIR)
+
+    # CREATE UNIQUE FILENAME to avoid overwrite
+
+    filename, extension = os.path.splitext(filename)
+    if not extension:  # pragma: no cover
+        logger.info("Please provide a valid file extension")
+        return "None"
+    increment_number = 0
+
+    while os.path.exists(
+        f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
+    ):  # pragma: no cover
+        increment_number += 1
+    unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
+    return unique_filename
+
+
+def get_catdtype(series: pd.Series) -> pd.CategoricalDtype:
+    """Get info for pandas datatype to convert series to CategoricalDtype."""
+    ordered = True if series.astype(int, errors="ignore").dtype == "int64" else False
+    categories = np.sort(series.dropna().unique())
+    cat_type = pd.CategoricalDtype(categories, ordered)
+    return cat_type

@@ -87,8 +87,7 @@ class SDCEvidence:
 
 @dataclass
 class ChecksResults:
-    """
-    Class holding results of running checks for an analysis.
+    """Class holding results of running checks for an analysis.
 
     overall_status : str
         'fail', 'review', or 'pass'
@@ -191,7 +190,8 @@ def mask_to_boolmask(mask: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
-    """Get status and summary from mask.
+    """
+    Get status and summary from mask.
 
     Parameters
     ----------
@@ -803,9 +803,7 @@ class SDCChecks:
 
     def get_mask_sdc(self, name: str, mask: pd.DataFrame) -> dict:
         """Summarise the contents of a mask."""
-        mask_sdc: dict[
-            str, Any
-        ] = {}  # {"summary": {"suppressed": suppress}, "cells": {}}
+        mask_sdc: dict[str, Any] = {"vulnerable": {}, "cells": {}}
         mask_sdc["vulnerable"][name] = int(np.nansum(mask.to_numpy()))
         # positions of cells to be suppressed
         mask_sdc["cells"][name] = []

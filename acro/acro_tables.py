@@ -79,8 +79,7 @@ class Tables:
         analysis_names: list,
         evidence: SDCEvidence,
     ) -> None:
-        """
-        Accumulate evidence for a single output when running in federated mode.
+        """Accumulate evidence for a single output when running in federated mode.
 
         Parameters
         ----------
@@ -836,46 +835,33 @@ class Tables:
             )
             return None
 
-        oldway = False
-        status: str = ""
-        if oldway:
-            status, summary = (
-                "not ready-needs ontology change",
-                "not ready-needs ontology change",
-            )
-            logger.info("status: %s", status)
-            fair_dict = {}
+        analysis = "Histogram"
+        model_details = TableModelDetails(
+            index=[data[column]],
+            thekwargs={"bins": bins},
+            risk_appetite=self.sdc_checks.risk_appetite,
+            command="hist",
+        )
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis], model_details
+        )
 
-        else:
-            analysis = "Histogram"
-            model_details = TableModelDetails(
-                index=[data[column]],
-                thekwargs={"bins": bins},
-                risk_appetite=self.sdc_checks.risk_appetite,
-                command="hist",
-            )
-            evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
-                [analysis], model_details
-            )
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._store_federated_evidence(uid, command, [analysis], evidence)
+            self.results.output_id += 1
+            return None
 
-            if self.federated:
-                uid = f"output_{self.results.output_id}"
-                self._store_federated_evidence(uid, command, [analysis], evidence)
-                self.results.output_id += 1
-                return None
+        collatedres = ManyChecksResults()
+        collatedres.allchecksresults[analysis] = (
+            self.sdc_checks.run_checks_for_analysis(analysis, evidence, model_details)
+        )
 
-            collatedres = ManyChecksResults()
-            collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(
-                    analysis, evidence, model_details
-                )
-            )
-
-            sdc_details: dict = collatedres.get_table_sdc()
-            status = collatedres.get_overall_status()
-            fair_dict = collatedres.get_overall_fair()
-            fair_dict.update(model_details.get_variable_type_dict())
-            summary = collatedres.get_overall_summary()
+        sdc_details: dict = collatedres.get_table_sdc()
+        status = collatedres.get_overall_status()
+        fair_dict = collatedres.get_overall_fair()
+        fair_dict.update(model_details.get_variable_type_dict())
+        summary = collatedres.get_overall_summary()
 
         if status == "fail" and self.suppress:
             logger.warning(

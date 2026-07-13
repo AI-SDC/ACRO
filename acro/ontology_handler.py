@@ -200,23 +200,23 @@ def make_ismitigatedby(g: rdflib.Graph, risks: list) -> dict:
 
     # hard coded for now
     ismitigatedby: dict = {
-        "ClassDisclosure": [PREFIX+"Noise", 
-                            PREFIX+"Suppression"],
-        "LowCount": [PREFIX+"Noise", 
-                     PREFIX+"Rounding", 
-                     PREFIX+"Suppression"],
-        "LowDOF": [PREFIX+"Aggregation", 
-                   PREFIX+"Noise", 
-                   PREFIX+"OutlierRemoval", 
-                   PREFIX+"Suppression"],
+        "ClassDisclosure": [PREFIX + "Noise", PREFIX + "Suppression"],
+        "LowCount": [PREFIX + "Noise", PREFIX + "Rounding", PREFIX + "Suppression"],
+        "LowDOF": [
+            PREFIX + "Aggregation",
+            PREFIX + "Noise",
+            PREFIX + "OutlierRemoval",
+            PREFIX + "Suppression",
+        ],
         "AuxiliaryInformation": [],
         "ImplicitTables": [],
-        "Dominance": [PREFIX+"Noise", 
-                      PREFIX+"OutlierRemoval", 
-                      PREFIX+"Rounding", 
-                      PREFIX+"Suppression"],
-        "Differencing": [PREFIX+"Noise", 
-                         PREFIX+"Suppression"],
+        "Dominance": [
+            PREFIX + "Noise",
+            PREFIX + "OutlierRemoval",
+            PREFIX + "Rounding",
+            PREFIX + "Suppression",
+        ],
+        "Differencing": [PREFIX + "Noise", PREFIX + "Suppression"],
     }
     assert set(ismitigatedby.keys()) == set(risks)
     return ismitigatedby

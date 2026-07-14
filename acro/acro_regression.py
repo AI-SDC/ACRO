@@ -55,7 +55,6 @@ class Regression:
             The SDC analysis name, e.g. ``"GeneralLinearModel"``.
         evidence : SDCEvidence
             Evidence object returned by ``get_evidence_forall_analyses``.
-
         """
         uid = f"output_{self.results.output_id}"
         self._federated_evidence[uid] = {

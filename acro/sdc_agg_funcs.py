@@ -57,7 +57,6 @@ def agg_missing(vals: pd.Series) -> bool:
     -------
     bool
         Whether a missing value was found.
-
     """
     logger.info("checking for missing values in series")
     return vals.isna().sum() != 0

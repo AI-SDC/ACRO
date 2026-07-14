@@ -2441,3 +2441,47 @@ def test_populate_useful_dicts_othersuperclasses_branch() -> None:
     assert key in othersuperclasses
     # Both parents should be present
     assert len(othersuperclasses[key]) >= 2
+
+
+def test_make_save_statbarns_with_somevaluesfrom_risks(tmp_path):
+    """Statbarns include risks via someValuesFrom relationship with superclasses."""
+    g = rdflib.Graph()
+    p = rdflib.Namespace(PREFIX)
+    skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+    rdfs = rdflib.Namespace("http://www.w3.org/2000/01/rdf-schema#")
+    dpv_owl = rdflib.Namespace("https://w3id.org/dpv/owl#")
+    owl = rdflib.Namespace("http://www.w3.org/2002/07/owl#")
+
+    # Add a risk
+    risk_uri = p.TestRisk
+    g.add((risk_uri, rdfs.subClassOf, dpv_owl.Risk))
+    g.add((risk_uri, skos.definition, rdflib.Literal("Test risk definition")))
+    g.add((risk_uri, skos.prefLabel, rdflib.Literal("TestRisk")))
+
+    # Add a statbarn
+    barn_uri = p.TestStatbarn
+    g.add((barn_uri, rdfs.subClassOf, p.Statbarn))
+    g.add((barn_uri, skos.definition, rdflib.Literal("Test statbarn")))
+    g.add((barn_uri, skos.prefLabel, rdflib.Literal("TestStatbarn")))
+
+    # Add a superclass as an external (non-PREFIX) URI
+    # This will be captured in othersuperclasses
+    superclass_uri = rdflib.URIRef("http://example.com/TestSuperclass")
+    g.add((barn_uri, rdfs.subClassOf, superclass_uri))
+
+    # Connect superclass to risk via owl:someValuesFrom
+    g.add((superclass_uri, owl.someValuesFrom, risk_uri))
+
+    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
+    orig_dir = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        result = make_save_statbarns(g, definitions, pref_labels, othersuperclasses)
+    finally:
+        os.chdir(orig_dir)
+
+    assert isinstance(result, dict)
+    assert "TestStatbarn" in result
+    # Verify that the risk was added via the someValuesFrom relationship
+    assert "risks" in result["TestStatbarn"]
+    assert str(risk_uri) in result["TestStatbarn"]["risks"]

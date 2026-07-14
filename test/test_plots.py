@@ -332,6 +332,31 @@ def test_hist_federated_no_output_recorded(data):
     assert len(acro_obj.results.results) == 0
 
 
+def test_surv_func_federated_plot_success():
+    """Surv_func federated with valid plot output returns tuple with filename."""
+    acro_obj = ACRO(federated=True)
+    np.random.seed(42)
+    mock_data = pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 500),
+            "death": np.random.binomial(1, 0.3, 500),
+        }
+    )
+    result = acro_obj.surv_func(
+        mock_data.futime, mock_data.death, output="plot", filename="km_test.png"
+    )
+    # Should return a tuple (None, filename) for federated plot
+    assert isinstance(result, tuple)
+    assert result[0] is None
+    assert isinstance(result[1], str)
+    assert "km_test" in result[1]
+    assert result[1].endswith(".png")
+    # Verify evidence was stored
+    assert "output_0" in acro_obj._federated_evidence
+    assert acro_obj.results.output_id == 1
+    assert len(acro_obj.results.results) == 0
+
+
 def test_surv_func_suppress_true_table_records_exception():
     """Surv_func with suppress=True and output='table' adds exception."""
     acro_obj = ACRO(suppress=True)

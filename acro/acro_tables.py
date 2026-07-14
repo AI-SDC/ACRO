@@ -648,7 +648,7 @@ class Tables:
                 ):
                     return None
                 unique_filename = utils.get_unique_artefact_filename(filename)
-                if unique_filename == "None":
+                if unique_filename is None:
                     return None
                 survival_func.plot()  # pragma: no cover
                 plt.savefig(unique_filename)
@@ -698,7 +698,7 @@ class Tables:
                 plot = survival_func.plot()
 
             unique_filename = utils.get_unique_artefact_filename(filename)
-            if unique_filename == "None":
+            if unique_filename is None:
                 return None
             plt.savefig(unique_filename)
 
@@ -892,7 +892,7 @@ class Tables:
                 **kwargs,
             )
             unique_filename = utils.get_unique_artefact_filename(filename)
-            if unique_filename == "None":
+            if unique_filename is None:
                 return None
             plt.savefig(unique_filename)
             output = [os.path.normpath(unique_filename)]
@@ -996,7 +996,7 @@ class Tables:
             ax.pie(counts.values, labels=counts.index, **kwargs)
 
             unique_filename = utils.get_unique_artefact_filename(filename)
-            if unique_filename == "None":
+            if unique_filename is None:
                 return None
 
             plt.savefig(unique_filename)

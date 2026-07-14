@@ -800,15 +800,3 @@ class SDCChecks:
             status, summary = get_status_summary_from_mask(mask)
             summary = summary + " - risk appetite states zeros not disclosive."
         return status, summary, mask
-
-    def get_mask_sdc(self, name: str, mask: pd.DataFrame) -> dict:
-        """Summarise the contents of a mask."""
-        mask_sdc: dict[str, Any] = {"vulnerable": {}, "cells": {}}
-        mask_sdc["vulnerable"][name] = int(np.nansum(mask.to_numpy()))
-        # positions of cells to be suppressed
-        mask_sdc["cells"][name] = []
-        true_positions = np.column_stack(np.where(mask.values))
-        for pos in true_positions:
-            row_index, col_index = pos
-            mask_sdc["cells"][name].append([int(row_index), int(col_index)])
-        return mask_sdc

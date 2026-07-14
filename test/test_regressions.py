@@ -9,7 +9,6 @@ import pandas as pd
 import pytest
 
 from acro import ACRO, add_constant
-from acro.record import Records
 
 PATH: str = "RES_PYTEST"
 
@@ -144,7 +143,9 @@ def test_olsr_federated(data):
     assert results.df_resid == 807
     assert len(acro_obj.results.results) == 0
     assert "output_0" in acro_obj._federated_evidence
-    assert acro_obj._federated_evidence["output_0"]["analysis_names"] == ["GeneralLinearModel"]
+    assert acro_obj._federated_evidence["output_0"]["analysis_names"] == [
+        "GeneralLinearModel"
+    ]
 
 
 def test_logitr_federated(data):

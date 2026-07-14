@@ -102,7 +102,6 @@ def make_save_statbarns(
     definitions:dict,
     pref_labels:dict,
        lookup tables
-
     """
     statbarns: dict = {}
     for s, p, o in g:

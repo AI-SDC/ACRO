@@ -35,6 +35,85 @@ class Regression:
         self.federated: bool = False
         self._federated_evidence: dict = {}
 
+    # ------------------------------------------------------------------
+    # Private helpers shared by all regression commands
+    # ------------------------------------------------------------------
+
+    def _add_federated_output(
+        self,
+        command: str,
+        analysis_name: str,
+        evidence: SDCEvidence,
+    ) -> None:
+        """Record federated evidence and advance the output counter.
+
+        Parameters
+        ----------
+        command : str
+            The command string captured from the call stack.
+        analysis_name : str
+            The SDC analysis name, e.g. ``"GeneralLinearModel"``.
+        evidence : SDCEvidence
+            Evidence object returned by ``get_evidence_forall_analyses``.
+        """
+        uid = f"output_{self.results.output_id}"
+        self._federated_evidence[uid] = {
+            "command": command,
+            "analysis_names": [analysis_name],
+            "variable_types": evidence.variable_type_dict,
+            "dof": evidence.dof,
+            "interim_tables": {},
+        }
+        self.results.output_id += 1
+
+    def _add_standalone_output(
+        self,
+        method: str,
+        command: str,
+        analysis_name: str,
+        evidence: SDCEvidence,
+        model: Any,
+        results: Any,
+    ) -> None:
+        """Run SDC checks and store the output record.
+
+        Parameters
+        ----------
+        method : str
+            Short method name stored in ``properties``, e.g. ``"ols"``.
+        command : str
+            The command string captured from the call stack.
+        analysis_name : str
+            The SDC analysis name, e.g. ``"GeneralLinearModel"``.
+        evidence : SDCEvidence
+            Evidence object returned by ``get_evidence_forall_analyses``.
+        model : Any
+            Fitted statsmodels model instance.
+        results : Any
+            Fitted results wrapper (used to extract summary tables and variable
+            type metadata).
+        """
+        checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
+            analysis_name, evidence, model
+        )
+        checkresults.fair_dict.update(get_variable_type_dict(results))
+
+        tables: list[SimpleTable] = results.summary().tables
+        self.results.add(
+            status=checkresults.overall_status,
+            output_type="regression",
+            properties={
+                "method": method,
+                "dof": checkresults.outcomes["MinimumDoFCheck"],
+            },
+            sdc={},
+            fair=checkresults.fair_dict,
+            command=command,
+            summary=checkresults.summaries,
+            outcome=DataFrame(),
+            output=get_summary_dataframes(tables),
+        )
+
     def ols(
         self,
         endog: ArrayLike,
@@ -82,36 +161,11 @@ class Regression:
         )
 
         if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._federated_evidence[uid] = {
-                "command": command,
-                "analysis_names": [analysis_name],
-                "variable_types": evidence.variable_type_dict,
-                "dof": evidence.dof,
-                "interim_tables": {},
-            }
-            self.results.output_id += 1
+            self._add_federated_output(command, analysis_name, evidence)
             return results
 
-        checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, evidence, model
-        )
-        checkresults.fair_dict.update(get_variable_type_dict(results))
-
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=checkresults.overall_status,
-            output_type="regression",
-            properties={
-                "method": "ols",
-                "dof": checkresults.outcomes["MinimumDoFCheck"],
-            },
-            sdc={},
-            fair=checkresults.fair_dict,
-            command=command,
-            summary=checkresults.summaries,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+        self._add_standalone_output(
+            "ols", command, analysis_name, evidence, model, results
         )
         return results
 
@@ -181,36 +235,11 @@ class Regression:
         )
 
         if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._federated_evidence[uid] = {
-                "command": command,
-                "analysis_names": [analysis_name],
-                "variable_types": evidence.variable_type_dict,
-                "dof": evidence.dof,
-                "interim_tables": {},
-            }
-            self.results.output_id += 1
+            self._add_federated_output(command, analysis_name, evidence)
             return results
 
-        checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, evidence, model
-        )
-        checkresults.fair_dict.update(get_variable_type_dict(results))
-
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=checkresults.overall_status,
-            output_type="regression",
-            properties={
-                "method": "olsr",
-                "dof": checkresults.outcomes["MinimumDoFCheck"],
-            },
-            sdc={},
-            fair=checkresults.fair_dict,
-            command=command,
-            summary=checkresults.summaries,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+        self._add_standalone_output(
+            "olsr", command, analysis_name, evidence, model, results
         )
         return results
 
@@ -256,36 +285,11 @@ class Regression:
         )
 
         if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._federated_evidence[uid] = {
-                "command": command,
-                "analysis_names": [analysis_name],
-                "variable_types": evidence.variable_type_dict,
-                "dof": evidence.dof,
-                "interim_tables": {},
-            }
-            self.results.output_id += 1
+            self._add_federated_output(command, analysis_name, evidence)
             return results
 
-        checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, evidence, model
-        )
-        checkresults.fair_dict.update(get_variable_type_dict(results))
-
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=checkresults.overall_status,
-            output_type="regression",
-            properties={
-                "method": "logit",
-                "dof": checkresults.outcomes["MinimumDoFCheck"],
-            },
-            sdc={},
-            fair=checkresults.fair_dict,
-            command=command,
-            summary=checkresults.summaries,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+        self._add_standalone_output(
+            "logit", command, analysis_name, evidence, model, results
         )
         return results
 
@@ -354,36 +358,11 @@ class Regression:
         )
 
         if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._federated_evidence[uid] = {
-                "command": command,
-                "analysis_names": [analysis_name],
-                "variable_types": evidence.variable_type_dict,
-                "dof": evidence.dof,
-                "interim_tables": {},
-            }
-            self.results.output_id += 1
+            self._add_federated_output(command, analysis_name, evidence)
             return results
 
-        checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, evidence, model
-        )
-        checkresults.fair_dict.update(get_variable_type_dict(results))
-
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=checkresults.overall_status,
-            output_type="regression",
-            properties={
-                "method": "logitr",
-                "dof": checkresults.outcomes["MinimumDoFCheck"],
-            },
-            sdc={},
-            fair=checkresults.fair_dict,
-            command=command,
-            summary=checkresults.summaries,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+        self._add_standalone_output(
+            "logitr", command, analysis_name, evidence, model, results
         )
         return results
 
@@ -429,36 +408,11 @@ class Regression:
         )
 
         if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._federated_evidence[uid] = {
-                "command": command,
-                "analysis_names": [analysis_name],
-                "variable_types": evidence.variable_type_dict,
-                "dof": evidence.dof,
-                "interim_tables": {},
-            }
-            self.results.output_id += 1
+            self._add_federated_output(command, analysis_name, evidence)
             return results
 
-        checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, evidence, model
-        )
-        checkresults.fair_dict.update(get_variable_type_dict(results))
-
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=checkresults.overall_status,
-            output_type="regression",
-            properties={
-                "method": "probit",
-                "dof": checkresults.outcomes["MinimumDoFCheck"],
-            },
-            sdc={},
-            fair=checkresults.fair_dict,
-            command=command,
-            summary=checkresults.summaries,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+        self._add_standalone_output(
+            "probit", command, analysis_name, evidence, model, results
         )
         return results
 
@@ -527,36 +481,11 @@ class Regression:
         )
 
         if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._federated_evidence[uid] = {
-                "command": command,
-                "analysis_names": [analysis_name],
-                "variable_types": evidence.variable_type_dict,
-                "dof": evidence.dof,
-                "interim_tables": {},
-            }
-            self.results.output_id += 1
+            self._add_federated_output(command, analysis_name, evidence)
             return results
 
-        checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, evidence, model
-        )
-        checkresults.fair_dict.update(get_variable_type_dict(results))
-
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=checkresults.overall_status,
-            output_type="regression",
-            properties={
-                "method": "probitr",
-                "dof": checkresults.outcomes["MinimumDoFCheck"],
-            },
-            sdc={},
-            fair=checkresults.fair_dict,
-            command=command,
-            summary=checkresults.summaries,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+        self._add_standalone_output(
+            "probitr", command, analysis_name, evidence, model, results
         )
         return results
 

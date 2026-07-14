@@ -159,10 +159,8 @@ class ACRO(Tables, Regression):
 
         if self.federated:
             os.makedirs(path, exist_ok=True)
-            merged_evidence: dict = {}
-            merged_evidence.update(getattr(self, "_federated_evidence", {}))
-            self.results._federated_evidence_store = merged_evidence
-            evidence_data = self.results.finalise_evidence(path)
+            merged_evidence: dict = dict(getattr(self, "_federated_evidence", {}))
+            evidence_data = self.results.finalise_evidence(path, merged_evidence)
             evidence_filename: str = os.path.normpath(f"{path}/evidence.json")
             with open(evidence_filename, "w", newline="", encoding="utf-8") as fh:
                 json.dump(evidence_data, fh, indent=4, sort_keys=False)

@@ -102,7 +102,7 @@ def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> 
 
 
 def get_unique_artefact_filename(filename: str) -> str:
-    """Return a unique filename from a propsoed string."""
+    """Return a unique filename from a proposed string."""
     # CREATE artifacts DIRECTORY to save plot in
     try:
         os.makedirs(ARTIFACTS_DIR)

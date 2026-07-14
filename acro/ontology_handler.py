@@ -8,9 +8,12 @@ and save in dicts/json to drive acro behaviour.
 import json
 
 # import acro
+import logging
 from typing import Any
 
 import rdflib
+
+logger = logging.getLogger(__name__)
 
 PREFIX = "https://www.w3id.org/statbarnsdc#"
 SUBCLASS = "http://www.w3.org/2000/01/rdf-schema#subClassOf"
@@ -27,9 +30,9 @@ def is_uri(thing: Any) -> bool:
 def print_nested_dict(s: dict) -> None:
     """Pretty print nested dict. s is the nested dictionary to be printed."""
     for key, val in s.items():
-        print(key)
+        logger.warning("%s", key)
         for key2, val2 in val.items():
-            print(f"   {key2}  :  {val2}")
+            logger.warning("   %s  :  %s", key2, val2)
 
 
 def populate_useful_dicts(g: rdflib.Graph) -> tuple:
@@ -345,7 +348,7 @@ def main() -> None:  # pragma: no cover
             object=rdflib.URIRef("https://w3id.org/dpv/owl#Risk"),
         )
     ]
-    print(risklist)
+    logger.warning("risklist: %s", risklist)
     ischeckedby = make_ischeckedby(g, risklist)
     ismitigatedby = make_ismitigatedby(g, risklist)
 

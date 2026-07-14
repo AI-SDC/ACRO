@@ -148,7 +148,6 @@ extend-ignore = [
   "ANN001",  # missing argument type annotation - style preference
   "ANN101",  # missing self type annotation - style preference
   "ANN201",  # missing return type annotation - style preference
-  "T201",    # print statements - used in debugging
   "C901",    # function too complex - existing code
   "C417",    # unnecessary map - existing code
   "EM101",   # exception string literal - existing code
@@ -182,8 +181,9 @@ ignore-names = ["X", "X_train", "X_predict"]
 [tool.ruff.pydocstyle]
 convention = "numpy"
 
-# Format configuration - disabled for ruff 0.0.272 compatibility
-# [tool.ruff.format]
+[tool.ruff.per-file-ignores]
+"notebooks/**" = ["T201"]
+"notebooks/old/**" = ["T201"]
 # docstring-code-format = true
 # docstring-code-line-length = 20
 

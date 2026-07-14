@@ -990,7 +990,7 @@ def test_table_stata17_2(data):
 
 
 def test_table_stata17_3(data):
-    """Check that the table command works as expected, with herichical tables."""
+    """Check that the table command works as expected, with hierarchical tables."""
     correct = (
         "Total\n"
         "-----------------------------------------------------------|\n"

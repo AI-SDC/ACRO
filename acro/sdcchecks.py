@@ -311,7 +311,7 @@ class SDCChecks:
 
         # TODOcommon mitigations - remove ones where count != len risks
         if False:
-            print(
+            print(  # noqa: T201
                 "todo on mitigations ",
                 np.unique(np.array(sdc_dict["common_mitigations"]), return_counts=True),
             )

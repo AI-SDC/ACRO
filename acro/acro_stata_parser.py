@@ -54,7 +54,7 @@ def parse_location_token(token: str, last: int) -> int:
             if pos > 0:
                 pos -= 1
         except ValueError:
-            print("valuerror")
+            logger.debug("valuerror parsing location token: %r", token)
             pos = 0
     return pos
 
@@ -252,7 +252,7 @@ def get_rows_cols_v17on(varlist: list[Any]) -> dict[str, Any]:
 
     if varlist:
         rows_cols["tables"] = varlist.pop(0).split()
-        # print(f"table is {details['tables']}")
+        logger.debug("table is %s", rows_cols["tables"])
 
     return rows_cols
 
@@ -285,16 +285,13 @@ def parse_and_run(
 
     fstata_version: float = float(stata_version)
     varlist: list[str] = varlist_as_str.split()
-    # print(varlist)
+    logger.debug("varlist: %s", varlist)
 
     # data reduction
-    # print(f'before in {mydata.shape}')
     if len(exp) > 0:
         mydata = apply_stata_expstmt(exp, mydata)
-    # print(f'after in, before if {mydata.shape}')
     if len(exclusion) > 0:
         mydata = apply_stata_ifstmt(exclusion, mydata)
-    # print(f'after both {mydata.shape}')
 
     # now look at the commands
     session_commands = [
@@ -568,25 +565,20 @@ def creates_datasets(
     """
     set_of_data: dict[str, pd.DataFrame] = {"Total": data}
     msg = ""
-    # if tables var parameter was assigned, each table will
-    # be treated as an exclusion which will be applied to the data.
-    # The number of datasets will be equal to the number of unique
-    # values in the tables var
-    # Crosstabulation will be calculate for each dataset
     if "tables" in details and details["tables"] != []:
-        # print(f"table is {details['tables']}")
+        logger.debug("table is %s", details["tables"])
         msg = (
             "You need to manually check all the outputs for the risk of differencing.\n"
         )
         for table in details["tables"]:
             unique_values = data[table].unique()
-            # print(f"unique_values are {unique_values}")
+            logger.debug("unique_values are %s", unique_values)
             for value in unique_values:
                 if isinstance(value, str):
                     exclusion = f"{table}=='{value}'"
                 else:  # pragma: no cover
                     exclusion = f"{table}=={value}"
-                # print(f"exclusion is {exclusion}")
+                logger.debug("exclusion is %s", exclusion)
                 my_data = apply_stata_ifstmt(exclusion, data)
                 set_of_data[exclusion] = my_data
     return set_of_data, msg
@@ -624,22 +616,14 @@ def run_table_command(
     results = ""
     for exclusion, my_data in set_of_data.items():
         rows, cols = [], []
-        # print(f"my data is {my_data}")
+        logger.debug("my_data shape: %s", my_data.shape)
         for row in details["rowvars"]:
             rows.append(my_data[row])
         for col in details["colvars"]:
             cols.append(my_data[col])
-        # print(f"rows are {rows}")
-        # print(f"cols are {cols}")
+        logger.debug("rows: %s", rows)
+        logger.debug("cols: %s", cols)
         if len(aggfuncs) > 0 and len(details["values"]) > 0:
-            # sanity checking
-            # if len(rows) > 1 or len(cols) > 1:
-            #     msg = (
-            #         "acro crosstab with an aggregation function "
-            #         " does not currently support hierarchies within rows or columns"
-            #     )
-            #     return msg
-
             if len(details["values"]) > 1:
                 msg = (
                     "pandas crosstab can  aggregate over multiple functions "
@@ -648,7 +632,7 @@ def run_table_command(
                 return msg
             val = details["values"][0]
             values = data[val]
-            print(exclusion)
+            logger.debug("exclusion: %s", exclusion)
             safe_output = stata_config.stata_acro.crosstab(
                 index=rows,
                 columns=cols,
@@ -659,7 +643,7 @@ def run_table_command(
             )
 
         else:
-            print(exclusion)
+            logger.debug("exclusion: %s", exclusion)
             safe_output = stata_config.stata_acro.crosstab(
                 index=rows,
                 columns=cols,

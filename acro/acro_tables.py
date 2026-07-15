@@ -79,7 +79,8 @@ class Tables:
         analysis_names: list,
         evidence: SDCEvidence,
     ) -> None:
-        """Accumulate evidence for a single output when running in federated mode.
+        """
+        Accumulate evidence for a single output when running in federated mode.
 
         Parameters
         ----------
@@ -214,6 +215,101 @@ class Tables:
             )
             self.results.results[just_added].status = "review"
 
+    def _process_table_output(
+        self,
+        method: str,
+        command: str,
+        table: DataFrame,
+        model_details: TableModelDetails,
+        aggfunc: str | list[str] | None,
+        margins: bool,
+        margins_name: str,
+        get_redacted_func,
+    ) -> DataFrame:
+        """
+        Process table output in federated or standalone mode.
+
+        Consolidates common logic for crosstab and pivot_table to eliminate
+        code duplication. Handles SDC checks, mitigation, and output recording.
+
+        Parameters
+        ----------
+        method : str
+            Table method name, e.g. "crosstab" or "pivot_table".
+        command : str
+            The command string captured from the call stack.
+        table : DataFrame
+            The computed table.
+        model_details : TableModelDetails
+            The model details for this table.
+        aggfunc : str | list[str] | None
+            The aggregation function(s) applied.
+        margins : bool
+            Whether margins were computed.
+        margins_name : str
+            Name of the margins row/column.
+        get_redacted_func : callable
+            Function to redact the table (get_redacted_table or
+            get_redacted_pivottable).
+
+        Returns
+        -------
+        DataFrame
+            The processed table (possibly modified by mitigation).
+        """
+        analysis_names: list[str] = aggfunc_to_strings(aggfunc)
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            analysis_names, model_details
+        )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._store_federated_evidence(uid, command, analysis_names, evidence)
+            self.results.output_id += 1
+            return table
+
+        collatedres = ManyChecksResults()
+        for analysis in analysis_names:
+            collatedres.allchecksresults[analysis] = (
+                self.sdc_checks.run_checks_for_analysis(
+                    analysis, evidence, model_details
+                )
+            )
+
+        logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
+
+        collated_assessment = collate_risk_assessments(
+            table, collatedres.allchecksresults
+        )
+
+        fair_dict = collatedres.get_overall_fair()
+        fair_dict.update(model_details.get_variable_type_dict())
+
+        recompute_margins = margins and self._mitigation == "round"
+
+        if self.suppress:
+            table = get_redacted_func(model_details, collated_assessment)
+        elif self._mitigation == "round":
+            table = round_table(table, self._round_base)
+            if recompute_margins:
+                table = append_rounded_margins(
+                    table, aggfunc, margins_name, self._round_base
+                )
+
+        self._record_table_output(
+            method=method,
+            status=collatedres.get_overall_status(),
+            sdc=collatedres.get_table_sdc(),
+            fair=fair_dict,
+            command=command,
+            summary=collatedres.get_overall_summary(),
+            outcome=collated_assessment,
+            table=table,
+            comments=[],
+        )
+
+        return table
+
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals,too-complex
         self,
         index: Any,
@@ -319,56 +415,16 @@ class Tables:
 
         table: DataFrame = pd.crosstab(*args, **kwargs)
 
-        analysis_names: list[str] = aggfunc_to_strings(aggfunc)
-        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
-            analysis_names, model_details
-        )
-
-        if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._store_federated_evidence(uid, command, analysis_names, evidence)
-            self.results.output_id += 1
-            return table
-
-        collatedres = ManyChecksResults()
-        for analysis in analysis_names:
-            collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(
-                    analysis, evidence, model_details
-                )
-            )
-
-        logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
-
-        collated_assessment = collate_risk_assessments(
-            table, collatedres.allchecksresults
-        )
-
-        fair_dict = collatedres.get_overall_fair()
-        fair_dict.update(model_details.get_variable_type_dict())
-
-        if self.suppress:
-            table = get_redacted_table(model_details, collated_assessment)
-        elif self._mitigation == "round":
-            table = round_table(table, self._round_base)
-            if recompute_margins:
-                table = append_rounded_margins(
-                    table, aggfunc, margins_name, self._round_base
-                )
-
-        self._record_table_output(
+        return self._process_table_output(
             method="crosstab",
-            status=collatedres.get_overall_status(),
-            sdc=collatedres.get_table_sdc(),
-            fair=fair_dict,
             command=command,
-            summary=collatedres.get_overall_summary(),
-            outcome=collated_assessment,
             table=table,
-            comments=[],
+            model_details=model_details,
+            aggfunc=aggfunc,
+            margins=margins,
+            margins_name=margins_name,
+            get_redacted_func=get_redacted_table,
         )
-
-        return table
 
     def pivot_table(
         self,
@@ -511,59 +567,16 @@ class Tables:
         # Step 1: make the requested output
         table: DataFrame = pd.pivot_table(data, **thiskwargs)
 
-        # Step 2: run the checks and gather evidence
-        analysis_names: list[str] = aggfunc_to_strings(aggfunc)
-        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
-            analysis_names, model_details
-        )
-
-        if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._store_federated_evidence(uid, command, analysis_names, evidence)
-            self.results.output_id += 1
-            return table
-
-        collatedres = ManyChecksResults()
-        for analysis in analysis_names:
-            collatedres.allchecksresults[analysis] = (
-                self.sdc_checks.run_checks_for_analysis(
-                    analysis, evidence, model_details
-                )
-            )
-
-        logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
-
-        collated_assessment = collate_risk_assessments(
-            table, collatedres.allchecksresults
-        )
-
-        fair_dict = collatedres.get_overall_fair()
-        fair_dict.update(model_details.get_variable_type_dict())
-
-        if self.suppress:
-            table = get_redacted_pivottable(model_details, collated_assessment)
-        elif self._mitigation == "round":
-            table = round_table(table, self._round_base)
-            # if recompute_margins:
-            #    table = append_rounded_margins(
-            #        table, resolved_aggfunc, margins_name, self._round_base
-            #    )    see comments  above
-            table = append_rounded_margins(
-                table, aggfunc, margins_name, self._round_base
-            )
-        self._record_table_output(
+        return self._process_table_output(
             method="pivot_table",
-            status=collatedres.get_overall_status(),
-            sdc=collatedres.get_table_sdc(),
-            fair=fair_dict,
             command=command,
-            summary=collatedres.get_overall_summary(),
-            outcome=collated_assessment,
             table=table,
-            comments=[],
+            model_details=model_details,
+            aggfunc=aggfunc,
+            margins=margins,
+            margins_name=margins_name,
+            get_redacted_func=get_redacted_pivottable,
         )
-
-        return table
 
     def surv_func(
         self,

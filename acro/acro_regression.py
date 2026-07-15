@@ -39,34 +39,7 @@ class Regression:
     # Private helpers shared by all regression commands
     # ------------------------------------------------------------------
 
-    def _add_federated_output(
-        self,
-        command: str,
-        analysis_name: str,
-        evidence: SDCEvidence,
-    ) -> None:
-        """Record federated evidence and advance the output counter.
-
-        Parameters
-        ----------
-        command : str
-            The command string captured from the call stack.
-        analysis_name : str
-            The SDC analysis name, e.g. ``"GeneralLinearModel"``.
-        evidence : SDCEvidence
-            Evidence object returned by ``get_evidence_forall_analyses``.
-        """
-        uid = f"output_{self.results.output_id}"
-        self._federated_evidence[uid] = {
-            "command": command,
-            "analysis_names": [analysis_name],
-            "variable_types": evidence.variable_type_dict,
-            "dof": evidence.dof,
-            "interim_tables": {},
-        }
-        self.results.output_id += 1
-
-    def _add_standalone_output(
+    def _process_output(
         self,
         method: str,
         command: str,
@@ -75,7 +48,11 @@ class Regression:
         model: Any,
         results: Any,
     ) -> None:
-        """Run SDC checks and store the output record.
+        """
+        Process regression output in federated or standalone mode.
+
+        Consolidates the logic for both _add_federated_output and
+        _add_standalone_output to eliminate code duplication.
 
         Parameters
         ----------
@@ -93,26 +70,37 @@ class Regression:
             Fitted results wrapper (used to extract summary tables and variable
             type metadata).
         """
-        checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
-            analysis_name, evidence, model
-        )
-        checkresults.fair_dict.update(get_variable_type_dict(results))
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._federated_evidence[uid] = {
+                "command": command,
+                "analysis_names": [analysis_name],
+                "variable_types": evidence.variable_type_dict,
+                "dof": evidence.dof,
+                "interim_tables": {},
+            }
+            self.results.output_id += 1
+        else:
+            checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
+                analysis_name, evidence, model
+            )
+            checkresults.fair_dict.update(get_variable_type_dict(results))
 
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=checkresults.overall_status,
-            output_type="regression",
-            properties={
-                "method": method,
-                "dof": checkresults.outcomes["MinimumDoFCheck"],
-            },
-            sdc={},
-            fair=checkresults.fair_dict,
-            command=command,
-            summary=checkresults.summaries,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
-        )
+            tables: list[SimpleTable] = results.summary().tables
+            self.results.add(
+                status=checkresults.overall_status,
+                output_type="regression",
+                properties={
+                    "method": method,
+                    "dof": checkresults.outcomes["MinimumDoFCheck"],
+                },
+                sdc={},
+                fair=checkresults.fair_dict,
+                command=command,
+                summary=checkresults.summaries,
+                outcome=DataFrame(),
+                output=get_summary_dataframes(tables),
+            )
 
     def ols(
         self,
@@ -160,13 +148,7 @@ class Regression:
             [analysis_name], model
         )
 
-        if self.federated:
-            self._add_federated_output(command, analysis_name, evidence)
-            return results
-
-        self._add_standalone_output(
-            "ols", command, analysis_name, evidence, model, results
-        )
+        self._process_output("ols", command, analysis_name, evidence, model, results)
         return results
 
     def olsr(
@@ -234,13 +216,7 @@ class Regression:
             [analysis_name], model
         )
 
-        if self.federated:
-            self._add_federated_output(command, analysis_name, evidence)
-            return results
-
-        self._add_standalone_output(
-            "olsr", command, analysis_name, evidence, model, results
-        )
+        self._process_output("olsr", command, analysis_name, evidence, model, results)
         return results
 
     def logit(
@@ -284,13 +260,7 @@ class Regression:
             [analysis_name], model
         )
 
-        if self.federated:
-            self._add_federated_output(command, analysis_name, evidence)
-            return results
-
-        self._add_standalone_output(
-            "logit", command, analysis_name, evidence, model, results
-        )
+        self._process_output("logit", command, analysis_name, evidence, model, results)
         return results
 
     def logitr(
@@ -357,13 +327,7 @@ class Regression:
             [analysis_name], model
         )
 
-        if self.federated:
-            self._add_federated_output(command, analysis_name, evidence)
-            return results
-
-        self._add_standalone_output(
-            "logitr", command, analysis_name, evidence, model, results
-        )
+        self._process_output("logitr", command, analysis_name, evidence, model, results)
         return results
 
     def probit(
@@ -407,13 +371,7 @@ class Regression:
             [analysis_name], model
         )
 
-        if self.federated:
-            self._add_federated_output(command, analysis_name, evidence)
-            return results
-
-        self._add_standalone_output(
-            "probit", command, analysis_name, evidence, model, results
-        )
+        self._process_output("probit", command, analysis_name, evidence, model, results)
         return results
 
     def probitr(
@@ -480,11 +438,7 @@ class Regression:
             [analysis_name], model
         )
 
-        if self.federated:
-            self._add_federated_output(command, analysis_name, evidence)
-            return results
-
-        self._add_standalone_output(
+        self._process_output(
             "probitr", command, analysis_name, evidence, model, results
         )
         return results

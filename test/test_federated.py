@@ -197,3 +197,25 @@ def test_local_mode_unaffected_by_federated_flag(data, cleanup_path):
     assert os.path.exists(os.path.normpath(f"{PATH}/results.json"))
     assert not os.path.exists(os.path.normpath(f"{PATH}/evidence.json"))
     shutil.rmtree(PATH)
+
+
+def test_process_table_output_federated_crosstab_via_refactoring(data, cleanup_path):
+    """Test _process_table_output in federated mode with crosstab (refactored method)."""
+    acro = ACRO(suppress=True, federated=True)
+    new_df = data[["year", "grant_type"]].copy()
+    new_df = new_df.dropna()
+
+    acro.crosstab(index=new_df["year"], columns=new_df["grant_type"])
+    assert acro.federated is True
+
+
+def test_process_table_output_federated_pivot_table_via_refactoring(data, cleanup_path):
+    """Test _process_table_output in federated mode with pivot_table (refactored method)."""
+    acro = ACRO(suppress=True, federated=True)
+    new_df = data[["year", "grant_type", "total_costs"]].copy()
+    new_df = new_df.dropna()
+
+    acro.pivot_table(
+        data=new_df, index="year", columns="grant_type", values="total_costs"
+    )
+    assert acro.federated is True

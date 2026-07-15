@@ -581,8 +581,7 @@ class Records:
                     table.to_excel(writer, sheet_name=output_id, startrow=start)
 
     def finalise_evidence(self, path: str, evidence_store: dict | None = None) -> dict:
-        """
-        Serialise federated evidence to CSV files and return the manifest dict.
+        """Serialise federated evidence to CSV files and return the manifest dict.
 
         Each interim table (DataFrame) is saved as a separate CSV file in *path*.
         The returned dictionary is suitable for writing to ``evidence.json``.

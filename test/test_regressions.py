@@ -227,3 +227,105 @@ def test_show_fair_summaries_regression(data):
     result = acro_obj.show_fair_summaries()
     assert isinstance(result, str)
     assert len(result) > 0
+
+
+def test_process_output_standalone_ols_via_refactoring(data, cleanup_path):
+    """Test _process_output in standalone mode with OLS (refactored method)."""
+    acro = ACRO(suppress=True)
+    new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    new_df = new_df.dropna()
+
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+
+    results = acro.ols(endog, exog)
+    assert results.df_resid == 807
+
+    res = acro.results.get_index(-1)
+    assert res.status == "pass"
+    assert res.output_type == "regression"
+    assert res.properties["method"] == "ols"
+
+
+def test_process_output_standalone_logit_via_refactoring(data, cleanup_path):
+    """Test _process_output in standalone mode with Logit (refactored method)."""
+    acro = ACRO(suppress=True)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ]
+    new_df = new_df.dropna()
+
+    endog = (new_df["survivor"] == "Dead in 2015").astype(int)
+    exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+
+    acro.logit(endog, exog)
+    res = acro.results.get_index(-1)
+    assert res.output_type == "regression"
+    assert res.properties["method"] == "logit"
+
+
+def test_process_output_standalone_probit_via_refactoring(data, cleanup_path):
+    """Test _process_output in standalone mode with Probit (refactored method)."""
+    acro = ACRO(suppress=True)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ]
+    new_df = new_df.dropna()
+
+    endog = (new_df["survivor"] == "Dead in 2015").astype(int)
+    exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+
+    acro.probit(endog, exog)
+    res = acro.results.get_index(-1)
+    assert res.output_type == "regression"
+    assert res.properties["method"] == "probit"
+
+
+def test_process_output_federated_ols_via_refactoring(data, cleanup_path):
+    """Test _process_output in federated mode with OLS (refactored method)."""
+    acro = ACRO(suppress=True, federated=True)
+    new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    new_df = new_df.dropna()
+
+    endog = new_df.inc_activity
+    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+
+    results = acro.ols(endog, exog)
+    assert results.df_resid == 807
+    assert acro.federated is True
+
+
+def test_process_output_federated_logit_via_refactoring(data, cleanup_path):
+    """Test _process_output in federated mode with Logit (refactored method)."""
+    acro = ACRO(suppress=True, federated=True)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ]
+    new_df = new_df.dropna()
+
+    endog = (new_df["survivor"] == "Dead in 2015").astype(int)
+    exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+
+    acro.logit(endog, exog)
+    assert acro.federated is True
+
+
+def test_process_output_federated_probit_via_refactoring(data, cleanup_path):
+    """Test _process_output in federated mode with Probit (refactored method)."""
+    acro = ACRO(suppress=True, federated=True)
+    new_df = data[
+        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ]
+    new_df = new_df.dropna()
+
+    endog = (new_df["survivor"] == "Dead in 2015").astype(int)
+    exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
+    exog = add_constant(exog)
+
+    acro.probit(endog, exog)
+    assert acro.federated is True

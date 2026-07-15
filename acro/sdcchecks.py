@@ -87,7 +87,8 @@ class SDCEvidence:
 
 @dataclass
 class ChecksResults:
-    """Class holding results of running checks for an analysis.
+    """
+    Class holding results of running checks for an analysis.
 
     overall_status : str
         'fail', 'review', or 'pass'
@@ -190,8 +191,7 @@ def mask_to_boolmask(mask: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
-    """
-    Get status and summary from mask.
+    """Get status and summary from mask.
 
     Parameters
     ----------

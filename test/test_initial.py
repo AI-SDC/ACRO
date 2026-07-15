@@ -947,8 +947,7 @@ def test_finalise_non_interactive(data):
 
 
 def test_finalise_interactive(data):
-    """
-    Test finalise_interactive.
+    """Test finalise_interactive.
 
     Test that interactive version of finalising acro
     leaves exceptions as they should be disclosive table.
@@ -1255,7 +1254,8 @@ def test_sdcevidence_populate_dof_else_branch():
 
 
 def test_get_table_sdc_duplicate_check_skipped(data):
-    """Get_table_sdc skips checks already seen across multiple analyses (line 164).
+    """
+    Get_table_sdc skips checks already seen across multiple analyses (line 164).
 
     When two analyses produce the same check name, only the first occurrence
     is included in the SDC summary — the continue branch on line 164.
@@ -1763,8 +1763,6 @@ def test_is_uri_string_is_not_uri():
 
 def test_print_nested_dict_prints_without_error(caplog):
     """Nested dictionaries are logged without error."""
-    import logging  # noqa: PLC0415
-
     d = {"key1": {"a": 1, "b": 2}, "key2": {"c": 3}}
     with caplog.at_level(logging.WARNING):
         print_nested_dict(d)
@@ -2485,3 +2483,74 @@ def test_make_save_statbarns_with_somevaluesfrom_risks(tmp_path):
     # Verify that the risk was added via the someValuesFrom relationship
     assert "risks" in result["TestStatbarn"]
     assert str(risk_uri) in result["TestStatbarn"]["risks"]
+
+
+def test_process_table_output_standalone_crosstab_via_refactoring():
+    """Test _process_table_output in standalone mode with crosstab (refactored method)."""
+    data = pd.read_stata(os.path.join("data", "test_data.dta"))
+    acro = ACRO(suppress=True)
+    new_df = data[["year", "grant_type"]].copy()
+    new_df = new_df.dropna()
+
+    acro.crosstab(index=new_df["year"], columns=new_df["grant_type"])
+
+    res = acro.results.get_index(-1)
+    assert res.output_type == "table"
+    assert res.properties["method"] == "crosstab"
+    assert res.status == "review"
+
+
+def test_process_table_output_standalone_pivot_table_via_refactoring():
+    """Test _process_table_output in standalone mode with pivot_table (refactored method)."""
+    data = pd.read_stata(os.path.join("data", "test_data.dta"))
+    acro = ACRO(suppress=True)
+    new_df = data[["year", "grant_type", "total_costs"]].copy()
+    new_df = new_df.dropna()
+
+    acro.pivot_table(
+        data=new_df, index="year", columns="grant_type", values="total_costs"
+    )
+
+    res = acro.results.get_index(-1)
+    assert res.output_type == "table"
+    assert res.properties["method"] == "pivot_table"
+
+
+def test_process_table_output_rounding_crosstab_via_refactoring():
+    """Test _process_table_output with rounding mitigation on crosstab (refactored method)."""
+    data = pd.read_stata(os.path.join("data", "test_data.dta"))
+    acro = ACRO(suppress=False)
+    acro.enable_rounding(5)
+    new_df = data[["year", "grant_type", "total_costs"]].copy()
+    new_df = new_df.dropna()
+
+    acro.crosstab(
+        index=new_df["year"],
+        columns=new_df["grant_type"],
+        values=new_df["total_costs"],
+        aggfunc="sum",
+        margins=True,
+    )
+
+    res = acro.results.get_index(-1)
+    assert res.properties["mitigation"] == "round"
+    assert res.properties["round_base"] == 5
+
+
+def test_process_table_output_suppression_pivot_table_via_refactoring():
+    """Test _process_table_output with suppression on pivot_table (refactored method)."""
+    data = pd.read_stata(os.path.join("data", "test_data.dta"))
+    acro = ACRO(suppress=True)
+    new_df = data[["year", "grant_type", "inc_activity"]].copy()
+    new_df = new_df.dropna()
+
+    acro.pivot_table(
+        data=new_df,
+        index="year",
+        columns="grant_type",
+        values="inc_activity",
+        aggfunc="sum",
+    )
+
+    res = acro.results.get_index(-1)
+    assert res.properties["mitigation"] == "suppress"

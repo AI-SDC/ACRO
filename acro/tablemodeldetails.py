@@ -17,7 +17,8 @@ logger = logging.getLogger("acro")
 
 
 class TableModelDetails:
-    """Class for details needed to create a table.
+    """
+    Class for details needed to create a table.
 
     FOR NOW this will effectively hold copies of all the data needed
     TODO refactor to hold pointers to reduce memory footprint and speed up
@@ -93,8 +94,7 @@ class TableModelDetails:
                     )
 
     def get_crosstab_args(self) -> tuple:
-        """
-        Get arguments for a call to crosstab.
+        """Get arguments for a call to crosstab.
 
         create dummy column if needed
         """

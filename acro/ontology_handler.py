@@ -1,4 +1,5 @@
-"""Ontology_handler.py.
+"""
+Ontology_handler.py.
 
 @author Jim Smith March 2026
 Functionality to load semantic information from statbarnssdc ontology
@@ -36,7 +37,8 @@ def print_nested_dict(s: dict) -> None:
 
 
 def populate_useful_dicts(g: rdflib.Graph) -> tuple:
-    """Create useful dicts to save time.
+    """
+    Create useful dicts to save time.
 
     Parameters
     ----------
@@ -79,8 +81,7 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
 def make_save_statbarns(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, othersuperclasses: dict
 ) -> dict:
-    """
-    Create statbarn dicts/json from ontology.
+    """Create statbarn dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of statbarns
@@ -126,7 +127,8 @@ def make_save_statbarns(
 def make_save_analyses(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, statbarns: dict
 ) -> dict:
-    """Create analysis dicts/json from ontology.
+    """
+    Create analysis dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of analyses
@@ -175,7 +177,8 @@ def make_save_analyses(
 
 
 def make_ismitigatedby(g: rdflib.Graph, risks: list) -> dict:
-    """Create lookup of mitigations for risks dicts/json from ontology.
+    """
+    Create lookup of mitigations for risks dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of mitigations for each risk

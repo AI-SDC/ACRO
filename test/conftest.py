@@ -17,7 +17,6 @@ logger = logging.getLogger("acro")
 
 
 class TableModelDetails:
-
     """Class for details needed to create a table.
 
     FOR NOW this will effectively hold copies of all the data needed
@@ -133,7 +132,6 @@ class TableModelDetails:
         -------
         dict
             holding  name of dependent variable and list of independent (exogenous) variables
-            
         """
         mydict: dict[str, Any] = {"dependent": "unknown", "independent": []}
         for varname in self.variable_metadata:

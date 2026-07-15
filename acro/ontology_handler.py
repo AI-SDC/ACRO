@@ -1,5 +1,4 @@
-"""
-Ontology_handler.py.
+"""Ontology_handler.py.
 
 @author Jim Smith March 2026
 Functionality to load semantic information from statbarnssdc ontology
@@ -52,6 +51,7 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
        labels
        list of BNode immediate superclasses
        for each element of ontology
+       
     """
     definitions: dict = {}
     pref_labels: dict = {}
@@ -81,7 +81,8 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
 def make_save_statbarns(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, othersuperclasses: dict
 ) -> dict:
-    """Create statbarn dicts/json from ontology.
+    """
+    Create statbarn dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of statbarns
@@ -103,6 +104,7 @@ def make_save_statbarns(
     definitions:dict,
     pref_labels:dict,
        lookup tables
+
     """
     statbarns: dict = {}
     for s, p, o in g:

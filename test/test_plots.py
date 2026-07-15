@@ -11,7 +11,6 @@ mpl.use("Agg")
 
 import numpy as np
 import pandas as pd
-import pytest
 import statsmodels.api as sm
 
 from acro import ACRO
@@ -21,27 +20,26 @@ from acro.record import Records
 PATH: str = "RES_PYTEST"
 
 
-@pytest.fixture
-def cleanup_path():
-    """Clean up output directories before and after each test."""
-    for d in ["RES_PYTEST", "outputs", "acro_artifacts"]:
-        shutil.rmtree(d, ignore_errors=True)
-    yield
-    for d in ["RES_PYTEST", "outputs", "acro_artifacts"]:
-        shutil.rmtree(d, ignore_errors=True)
+def create_mock_survival_data(seed: int = 42) -> pd.DataFrame:
+    """Create mock survival data for testing.
 
+    Parameters
+    ----------
+    seed : int, optional
+        Random seed for reproducibility. Default is 42.
 
-@pytest.fixture
-def data() -> pd.DataFrame:
-    """Load test data."""
-    path = os.path.join("data", "test_data.dta")
-    return pd.read_stata(path)
-
-
-@pytest.fixture
-def acro() -> ACRO:
-    """Initialise ACRO."""
-    return ACRO(suppress=True)
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with futime and death columns.
+    """
+    np.random.seed(seed)
+    return pd.DataFrame(
+        {
+            "futime": np.random.exponential(100, 500),
+            "death": np.random.binomial(1, 0.3, 500),
+        }
+    )
 
 
 def test_surv_func(acro, cleanup_path):
@@ -186,13 +184,7 @@ def test_store_federated_evidence_with_dataframe_dof():
 def test_surv_func_federated_table():
     """Surv_func in federated mode with output='table' returns survival table."""
     acro_obj = ACRO(federated=True)
-    np.random.seed(42)
-    mock_data = pd.DataFrame(
-        {
-            "futime": np.random.exponential(100, 500),
-            "death": np.random.binomial(1, 0.3, 500),
-        }
-    )
+    mock_data = create_mock_survival_data()
     result = acro_obj.surv_func(mock_data.futime, mock_data.death, output="table")
     assert isinstance(result, pd.DataFrame)
     assert acro_obj.results.output_id == 1
@@ -203,13 +195,7 @@ def test_surv_func_federated_plot_blocked_extension():
     """Surv_func federated with blocked extension returns None."""
     acro_obj = ACRO(federated=True)
     acro_obj.results.blocked_extensions = [".png"]
-    np.random.seed(42)
-    mock_data = pd.DataFrame(
-        {
-            "futime": np.random.exponential(100, 500),
-            "death": np.random.binomial(1, 0.3, 500),
-        }
-    )
+    mock_data = create_mock_survival_data()
     result = acro_obj.surv_func(
         mock_data.futime, mock_data.death, output="plot", filename="km.png"
     )
@@ -219,13 +205,7 @@ def test_surv_func_federated_plot_blocked_extension():
 def test_surv_func_federated_returns_none_for_unknown_output():
     """Surv_func federated with unknown output type returns None."""
     acro_obj = ACRO(federated=True)
-    np.random.seed(42)
-    mock_data = pd.DataFrame(
-        {
-            "futime": np.random.exponential(100, 500),
-            "death": np.random.binomial(1, 0.3, 500),
-        }
-    )
+    mock_data = create_mock_survival_data()
     result = acro_obj.surv_func(
         mock_data.futime, mock_data.death, output="something_unknown"
     )
@@ -235,13 +215,7 @@ def test_surv_func_federated_returns_none_for_unknown_output():
 def test_surv_func_returns_none_for_unknown_output():
     """Surv_func local mode with unknown output type returns None."""
     acro_obj = ACRO(suppress=True)
-    np.random.seed(42)
-    mock_data = pd.DataFrame(
-        {
-            "futime": np.random.exponential(100, 500),
-            "death": np.random.binomial(1, 0.3, 500),
-        }
-    )
+    mock_data = create_mock_survival_data()
     result = acro_obj.surv_func(mock_data.futime, mock_data.death, output="invalid")
     assert result is None
 
@@ -250,13 +224,7 @@ def test_surv_func_suppress_plot_blocked_extension():
     """Surv_func with suppress=True, blocked extension returns None."""
     acro_obj = ACRO(suppress=True)
     acro_obj.results.blocked_extensions = [".png"]
-    np.random.seed(7)
-    mock_data = pd.DataFrame(
-        {
-            "futime": np.random.exponential(100, 500),
-            "death": np.random.binomial(1, 0.3, 500),
-        }
-    )
+    mock_data = create_mock_survival_data(seed=7)
     result = acro_obj.surv_func(
         mock_data.futime, mock_data.death, output="plot", filename="km.png"
     )
@@ -335,13 +303,7 @@ def test_hist_federated_no_output_recorded(data):
 def test_surv_func_federated_plot_success():
     """Surv_func federated with valid plot output returns tuple with filename."""
     acro_obj = ACRO(federated=True)
-    np.random.seed(42)
-    mock_data = pd.DataFrame(
-        {
-            "futime": np.random.exponential(100, 500),
-            "death": np.random.binomial(1, 0.3, 500),
-        }
-    )
+    mock_data = create_mock_survival_data()
     result = acro_obj.surv_func(
         mock_data.futime, mock_data.death, output="plot", filename="km_test.png"
     )
@@ -360,13 +322,7 @@ def test_surv_func_federated_plot_success():
 def test_surv_func_suppress_true_table_records_exception():
     """Surv_func with suppress=True and output='table' adds exception."""
     acro_obj = ACRO(suppress=True)
-    np.random.seed(42)
-    mock_data = pd.DataFrame(
-        {
-            "futime": np.random.exponential(100, 500),
-            "death": np.random.binomial(1, 0.3, 500),
-        }
-    )
+    mock_data = create_mock_survival_data()
     result = acro_obj.surv_func(mock_data.futime, mock_data.death, output="table")
     assert isinstance(result, pd.DataFrame)
     output = acro_obj.results.get_index(0)

@@ -41,6 +41,7 @@ DETAIL_TO_AGG: dict[str, Callable] = {
 
 @dataclass
 class SDCEvidence:
+
     """Class for evidence needed to run risk assesSment checks for an analysis."""
 
     dof: Any = None
@@ -87,8 +88,8 @@ class SDCEvidence:
 
 @dataclass
 class ChecksResults:
-    """
-    Class holding results of running checks for an analysis.
+
+    """Class holding results of running checks for an analysis.
 
     overall_status : str
         'fail', 'review', or 'pass'
@@ -110,6 +111,7 @@ class ChecksResults:
 
 @dataclass
 class ManyChecksResults:
+
     """Class for running checks on multiple analysis."""
 
     allchecksresults: dict[str, ChecksResults] = field(default_factory=dict)
@@ -191,7 +193,8 @@ def mask_to_boolmask(mask: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
-    """Get status and summary from mask.
+    """
+    Get status and summary from mask.
 
     Parameters
     ----------
@@ -202,6 +205,7 @@ def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
     -------
     tuple
         Status and summary string.
+
     """
     mask = mask_to_boolmask(mask)
     truecount = int(np.nansum(mask.to_numpy()))
@@ -248,6 +252,7 @@ class SDCChecks:
         TODO
             move risk_appetite from constructor to model class
             as it is in TableModelDetails class anyway
+
         """
         # load lookup tables from json
         self.risk_appetite = risk_appetite

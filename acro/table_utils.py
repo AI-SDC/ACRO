@@ -76,7 +76,8 @@ def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
 def collate_risk_assessments(
     table: DataFrame, allcheckresults: dict[str, ChecksResults]
 ) -> DataFrame:
-    """Collate the Risk Assessment for a table.
+    """
+    Collate the Risk Assessment for a table.
 
     Parameters
     ----------
@@ -89,6 +90,7 @@ def collate_risk_assessments(
     -------
     DataFrame
         Table with collated outcomes of suppression checks.
+
     """
     outcome_df = DataFrame(index=table.index, columns=table.columns)
     if isinstance(list(outcome_df)[0], tuple):
@@ -138,8 +140,7 @@ def collate_risk_assessments(
 
 
 def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame | None:
-    """
-    Align a suppression mask to the column structure of the outcome DataFrame.
+    """Align a suppression mask to the column structure of the outcome DataFrame.
 
     Parameters
     ----------
@@ -152,6 +153,7 @@ def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame 
     -------
     DataFrame or None
         Aligned mask, or None if alignment is not possible.
+
     """
     n_diff = outcome_df.columns.nlevels - mask.columns.nlevels
     if n_diff > 0:

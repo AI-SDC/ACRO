@@ -98,7 +98,8 @@ def agg_p_percent(vals: Series) -> bool:
 
 
 def agg_nk(vals: Series) -> bool:
-    """Return whether the top n items account for more than k percent of the total.
+    """
+    Return whether the top n items account for more than k percent of the total.
 
     Parameters
     ----------
@@ -109,6 +110,7 @@ def agg_nk(vals: Series) -> bool:
     -------
     bool
         Whether the nk rule is violated.
+        
     """
     total: float = vals.sum()
     if total > 0:
@@ -119,8 +121,7 @@ def agg_nk(vals: Series) -> bool:
 
 
 def agg_threshold(vals: Series) -> bool:
-    """
-    Return whether the number of contributors is below a threshold.
+    """Return whether the number of contributors is below a threshold.
 
     Parameters
     ----------
@@ -131,6 +132,7 @@ def agg_threshold(vals: Series) -> bool:
     -------
     bool
         Whether the threshold rule is violated.
+
     """
     return vals.count() < THRESHOLD
 

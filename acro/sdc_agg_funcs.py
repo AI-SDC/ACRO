@@ -29,7 +29,8 @@ def agg_mode(values: pd.Series) -> float:
 
 
 def agg_num_negative(vals: pd.Series) -> int:
-    """Return whether any values are negative.
+    """
+    Return whether any values are negative.
 
     Parameters
     ----------
@@ -40,13 +41,13 @@ def agg_num_negative(vals: pd.Series) -> int:
     -------
     bool
         Whether a negative value was found.
+        
     """
     return sum(vals < 0)
 
 
 def agg_missing(vals: pd.Series) -> bool:
-    """
-    Return whether any values are missing.
+    """Return whether any values are missing.
 
     Parameters
     ----------
@@ -57,6 +58,7 @@ def agg_missing(vals: pd.Series) -> bool:
     -------
     bool
         Whether a missing value was found.
+
     """
     logger.info("checking for missing values in series")
     return vals.isna().sum() != 0

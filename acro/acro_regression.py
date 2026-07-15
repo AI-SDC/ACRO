@@ -48,8 +48,7 @@ class Regression:
         model: Any,
         results: Any,
     ) -> None:
-        """
-        Process regression output in federated or standalone mode.
+        """Process regression output in federated or standalone mode.
 
         Consolidates the logic for both _add_federated_output and
         _add_standalone_output to eliminate code duplication.
@@ -69,6 +68,7 @@ class Regression:
         results : Any
             Fitted results wrapper (used to extract summary tables and variable
             type metadata).
+            
         """
         if self.federated:
             uid = f"output_{self.results.output_id}"

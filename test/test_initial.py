@@ -947,7 +947,8 @@ def test_finalise_non_interactive(data):
 
 
 def test_finalise_interactive(data):
-    """Test finalise_interactive.
+    """
+    Test finalise_interactive.
 
     Test that interactive version of finalising acro
     leaves exceptions as they should be disclosive table.
@@ -1254,8 +1255,7 @@ def test_sdcevidence_populate_dof_else_branch():
 
 
 def test_get_table_sdc_duplicate_check_skipped(data):
-    """
-    Get_table_sdc skips checks already seen across multiple analyses (line 164).
+    """Get_table_sdc skips checks already seen across multiple analyses (line 164).
 
     When two analyses produce the same check name, only the first occurrence
     is included in the SDC summary — the continue branch on line 164.

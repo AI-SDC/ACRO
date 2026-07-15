@@ -2,38 +2,13 @@
 
 from __future__ import annotations
 
-import os
 import shutil
 
-import pandas as pd
 import pytest
 
 from acro import ACRO, add_constant
 
 PATH: str = "RES_PYTEST"
-
-
-@pytest.fixture
-def cleanup_path():
-    """Clean up output directories before and after each test."""
-    for d in ["RES_PYTEST", "outputs"]:
-        shutil.rmtree(d, ignore_errors=True)
-    yield
-    for d in ["RES_PYTEST", "outputs"]:
-        shutil.rmtree(d, ignore_errors=True)
-
-
-@pytest.fixture
-def data() -> pd.DataFrame:
-    """Load test data."""
-    path = os.path.join("data", "test_data.dta")
-    return pd.read_stata(path)
-
-
-@pytest.fixture
-def acro() -> ACRO:
-    """Initialise ACRO."""
-    return ACRO(suppress=True)
 
 
 def test_ols(data, acro, cleanup_path):

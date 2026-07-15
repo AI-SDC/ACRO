@@ -79,8 +79,7 @@ class Tables:
         analysis_names: list,
         evidence: SDCEvidence,
     ) -> None:
-        """
-        Accumulate evidence for a single output when running in federated mode.
+        """Accumulate evidence for a single output when running in federated mode.
 
         Parameters
         ----------
@@ -93,6 +92,7 @@ class Tables:
             Names of the analyses performed (e.g. ``["FrequencyTable"]``).
         evidence : SDCEvidence
             The collected evidence object to serialise.
+
         """
         tables: dict[str, str] = {}
         for name, df in evidence.interim_tables.items():
@@ -309,6 +309,55 @@ class Tables:
         )
 
         return table
+
+    def _process_analysis_output(
+        self,
+        command: str,
+        analysis_names: list[str],
+        model_details: TableModelDetails,
+    ) -> tuple[bool, ManyChecksResults]:
+        """
+        Process analysis output in federated or standalone mode.
+
+        Consolidates common logic for hist() and pie() to eliminate code
+        duplication. Gets evidence and either stores it (federated) or
+        runs checks (standalone).
+
+        Parameters
+        ----------
+        command : str
+            The command string captured from the call stack.
+        analysis_names : list[str]
+            Names of analyses being performed.
+        model_details : TableModelDetails
+            The model details for this analysis.
+
+        Returns
+        -------
+        tuple[bool, ManyChecksResults]
+            (is_federated, collated_results) where is_federated indicates whether
+            we're in federated mode, and collated_results contains check results
+            if standalone (empty if federated).
+        """
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            analysis_names, model_details
+        )
+
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._store_federated_evidence(uid, command, analysis_names, evidence)
+            self.results.output_id += 1
+            return True, ManyChecksResults()
+
+        collatedres = ManyChecksResults()
+        for analysis in analysis_names:
+            collatedres.allchecksresults[analysis] = (
+                self.sdc_checks.run_checks_for_analysis(
+                    analysis, evidence, model_details
+                )
+            )
+
+        return False, collatedres
 
     def crosstab(  # pylint: disable=too-many-arguments,too-many-locals,too-complex
         self,
@@ -855,20 +904,13 @@ class Tables:
             risk_appetite=self.sdc_checks.risk_appetite,
             command="hist",
         )
-        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
-            [analysis], model_details
+
+        is_federated, collatedres = self._process_analysis_output(
+            command, [analysis], model_details
         )
 
-        if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._store_federated_evidence(uid, command, [analysis], evidence)
-            self.results.output_id += 1
+        if is_federated:
             return None
-
-        collatedres = ManyChecksResults()
-        collatedres.allchecksresults[analysis] = (
-            self.sdc_checks.run_checks_for_analysis(analysis, evidence, model_details)
-        )
 
         sdc_details: dict = collatedres.get_table_sdc()
         status = collatedres.get_overall_status()
@@ -971,20 +1013,12 @@ class Tables:
             command="pie",
         )
 
-        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
-            [analysis], model_details
+        is_federated, collatedres = self._process_analysis_output(
+            command, [analysis], model_details
         )
 
-        if self.federated:
-            uid = f"output_{self.results.output_id}"
-            self._store_federated_evidence(uid, command, [analysis], evidence)
-            self.results.output_id += 1
+        if is_federated:
             return None
-
-        collatedres = ManyChecksResults()
-        collatedres.allchecksresults[analysis] = (
-            self.sdc_checks.run_checks_for_analysis(analysis, evidence, model_details)
-        )
 
         sdc_details: dict = collatedres.get_table_sdc()
         overall_status: str = collatedres.get_overall_status()

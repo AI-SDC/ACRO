@@ -275,7 +275,7 @@ class Tables:
                 )
             )
 
-        logging.debug(get_debugging_table_analysis(collatedres.allchecksresults))
+        logger.debug(get_debugging_table_analysis(collatedres.allchecksresults))
 
         collated_assessment = collate_risk_assessments(
             table, collatedres.allchecksresults
@@ -427,9 +427,6 @@ class Tables:
                     "you must also specify a single values column "
                     "to aggregate over."
                 )
-
-        recompute_margins = margins and self._mitigation == "round"
-        pandas_margins = False if recompute_margins else margins
 
         index = axis_to_list(index)
         columns = axis_to_list(columns)

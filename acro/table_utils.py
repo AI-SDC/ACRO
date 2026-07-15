@@ -50,10 +50,7 @@ def axis_to_list(axis: Series | list[Series]) -> list[Series]:
         List of Series objects.
     """
     if not isinstance(axis, list):
-        foo: list = []
-        if axis is not None:
-            foo.append(axis)
-        return foo
+        return [axis] if axis is not None else []
     return axis
 
 
@@ -349,40 +346,21 @@ def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
 
 
 def get_relevant_dataframe(model: TableModelDetails) -> DataFrame:
-    """Extract copy of data relevant to crosstab into new DataFrame.  # noqa: D212,D213,D413.
+    """Extract copy of data relevant to crosstab into new DataFrame.
 
-    Assumes preprocessing has happeneded, so
-    index and columns in args should both have been converted into lists of Series
+    Assumes preprocessing has happened, so index and columns in model
+    should both have been converted into lists of Series.
 
     Parameters
     ----------
     model : TableModelDetails
-        the table model details object containing index, columns, and values
-    args : list[str|list]
-        list of index, columns from call to crosstab function
-        should have already been converted to lists
-    kwargs : dict
-        kwargs for crosstab function
+        The table model details object containing index, columns, and values.
 
     Returns
     -------
-    dataframe containing copies of pandas series need to calculate the  crosstab
+    DataFrame
+        DataFrame containing copies of pandas series needed to calculate the crosstab.
     """
-    # series_list: list = []
-    # if "values" in kwargs.keys() and kwargs["values"] is not None:
-    #     series_list.append(kwargs["values"].copy())
-    # if not (isinstance(args, tuple) and len(args) == 2):
-    #     print(f"args is of type {type(args)} and contents {args}\n")
-    #     raise ValueError("list passed as positional args has wrong type or length")
-    # for contents in args:
-    #     if not isinstance(contents, list):
-    #         raise TypeError("index and columns should be lists")
-    #     for series in contents:
-    #         series_list.append(series.copy())
-
-    # relevant_data = DataFrame(series_list).T
-    # relevant_data.reset_index(drop=True, inplace=True)
-    # return relevant_data
     if isinstance(model.values, pd.Series) and len(model.values) > 0:
         relevant_data = pd.DataFrame(model.values)
     else:

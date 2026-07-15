@@ -78,10 +78,33 @@ class ACRO(Tables, Regression):
             The base to round to when ``mitigation="round"``. Defaults to the
             ``safe_round_base`` value from the yaml config.
         federated : bool, optional
-            Whether to run in federated mode. When ``True``, checks are skipped
-            and evidence is written to ``evidence.json`` for a trusted
-            aggregator. When ``None``, falls back to the yaml config value
-            (default ``False``).
+            Whether to run in federated mode. When ``True``, no SDC checks
+            are performed; instead, evidence is collected and written to
+            ``evidence.json`` for a trusted aggregator to review. When
+            ``None``, falls back to the yaml config value (default ``False``).
+            In standalone mode (``False``), outputs are checked and a
+            ``results.json`` file is created.
+
+        Notes
+        -----
+        **Federated vs Standalone Mode**:
+
+        - **Standalone (default)**: ACRO checks outputs locally and produces
+          ``results.json`` with pass/fail/review statuses.
+        - **Federated mode**: ACRO collects evidence in ``evidence.json``
+          without performing checks, for later review by a trusted aggregator.
+
+        Examples
+        --------
+        >>> import acro
+        >>> # Standalone mode with suppression
+        >>> acro_session = acro.ACRO(suppress=True)
+        >>>
+        >>> # Federated mode for TRE aggregator
+        >>> acro_fed = acro.ACRO(federated=True)
+        >>>
+        >>> # Custom configuration
+        >>> acro_custom = acro.ACRO(config="my_config", mitigation="round")
         """
         Tables.__init__(self, suppress=suppress, mitigation=mitigation)
         Regression.__init__(self, config)
@@ -272,7 +295,26 @@ class ACRO(Tables, Regression):
             self.mitigation = "none"
 
     def show_fair_summaries(self) -> str:
-        """Print ids and fair summaries for all outputs in session."""
+        """Print IDs and FAIR summaries for all outputs in session.
+
+        Returns a formatted string containing metadata about each output,
+        including dependent and independent variables tracked during analysis.
+
+        Returns
+        -------
+        str
+            Formatted summary of all outputs with their FAIR dictionaries.
+
+        Examples
+        --------
+        >>> import acro
+        >>> session = acro.ACRO()
+        >>> session.ols(y, X)  # doctest: +SKIP
+        >>> print(session.show_fair_summaries())  # doctest: +SKIP
+        output_0
+        dependent : income
+        independent : ['age', 'education']
+        """
         thestr = ""
         for uid, value in self.results.results.items():
             thestr += uid + "\n"

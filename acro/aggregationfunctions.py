@@ -110,7 +110,6 @@ def agg_nk(vals: Series) -> bool:
     -------
     bool
         Whether the nk rule is violated.
-        
     """
     total: float = vals.sum()
     if total > 0:
@@ -132,7 +131,6 @@ def agg_threshold(vals: Series) -> bool:
     -------
     bool
         Whether the threshold rule is violated.
-
     """
     return vals.count() < THRESHOLD
 

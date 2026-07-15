@@ -600,7 +600,6 @@ class Records:
         -------
         dict
             Manifest describing every output's evidence and the CSV filenames.
-            
         """
         os.makedirs(path, exist_ok=True)
         outputs: dict[str, Any] = {}

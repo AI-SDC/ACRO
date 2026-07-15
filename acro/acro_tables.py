@@ -92,7 +92,6 @@ class Tables:
             Names of the analyses performed (e.g. ``["FrequencyTable"]``).
         evidence : SDCEvidence
             The collected evidence object to serialise.
-
         """
         tables: dict[str, str] = {}
         for name, df in evidence.interim_tables.items():

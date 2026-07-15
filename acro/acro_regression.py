@@ -68,7 +68,6 @@ class Regression:
         results : Any
             Fitted results wrapper (used to extract summary tables and variable
             type metadata).
-            
         """
         if self.federated:
             uid = f"output_{self.results.output_id}"

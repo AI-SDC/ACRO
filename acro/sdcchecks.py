@@ -296,9 +296,7 @@ class SDCChecks:
         statbarn = self.analyses.get(statname)["statbarn"]
         sdc_dict: dict = {
             "context": "https://w3id.org/statbarnsdc#",
-            #"analysis_uri": self.analyses[statname]["uri"],
             "statbarn": self.analyses[statname]["statbarn"],
-            #"statbarn_uri": self.statbarns[statbarn]["uri"],
             "risks": self.statbarns[statbarn]["risks"],
             "checks_needed": [],
             "common_mitigations": [],

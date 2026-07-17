@@ -165,6 +165,9 @@ extend-ignore-names = ["X", "X_train", "X_predict"]
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
+[tool.ruff.lint]
+extend-ignore = ["D213"]
+
 [tool.ruff.format]
 docstring-code-format = true
 docstring-code-line-length = 20

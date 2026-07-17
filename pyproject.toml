@@ -142,8 +142,6 @@ ignore = [
   "RET504",  # unnecessary assignment before return — aids readability/debugging
   "S101",    # assert usage — standard in tests and production invariant checks
   "S301",    # unsafe pickle — used intentionally in this project
-  "D203", #formatting first line of docstrings for classes
-  "D213", #insist multiline docstrings start on line 2 - incompatible with D212
 ]
 
 extend-ignore = [
@@ -171,7 +169,6 @@ extend-ignore = [
   "ARG001",  # unused argument - acceptable for override methods
   "PT001",   # pytest style - acceptable
   "PD003",   # pandas style - acceptable
-  "D213", # positioning of first line in multi-line docstring conflicts with D212
 ]
 
 [tool.ruff.pylint]

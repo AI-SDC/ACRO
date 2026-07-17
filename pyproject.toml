@@ -169,6 +169,7 @@ extend-ignore = [
   "ARG001",  # unused argument - acceptable for override methods
   "PT001",   # pytest style - acceptable
   "PD003",   # pandas style - acceptable
+  "D213", # positioning of first line in multi-line docstring conflicts with D212
 ]
 
 [tool.ruff.pylint]
@@ -180,9 +181,6 @@ ignore-names = ["X", "X_train", "X_predict"]
 
 [tool.ruff.pydocstyle]
 convention = "numpy"
-
-[tool.ruff.lint]
-extend-ignore = ["D213"] #conflicts with D212
 
 
 

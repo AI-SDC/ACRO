@@ -143,7 +143,7 @@ ignore = [
   "S101",    # assert usage — standard in tests and production invariant checks
   "S301",    # unsafe pickle — used intentionally in this project
   "D203", #formatting first line of docstrings for classes
-  "D213", "insist multiline docstrings start on line 2 - incompatible with D212
+  "D213", #insist multiline docstrings start on line 2 - incompatible with D212
 ]
 
 extend-ignore = [

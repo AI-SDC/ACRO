@@ -181,6 +181,11 @@ ignore-names = ["X", "X_train", "X_predict"]
 [tool.ruff.pydocstyle]
 convention = "numpy"
 
+[tool.ruff.lint]
+extend-ignore = ["D213"] #conflicts with D212
+
+
+
 [tool.ruff.per-file-ignores]
 "notebooks/**" = ["T201"]
 "notebooks/old/**" = ["T201"]

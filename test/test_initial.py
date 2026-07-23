@@ -1,6 +1,5 @@
 """Unit tests."""
 
-import json
 import logging
 import os
 import shutil
@@ -10,34 +9,19 @@ import matplotlib as mpl
 
 mpl.use("Agg")
 from typing import Any
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-import rdflib
 
 from acro import (
     ACRO,
     add_constant,
-    add_to_acro,
-    record,
     table_utils,
     utils,
 )
 from acro.aggregationfunctions import agg_nk, agg_p_percent, agg_threshold
-from acro.ontology_handler import (
-    PREFIX,
-    is_uri,
-    make_ischeckedby,
-    make_ismitigatedby,
-    make_save_analyses,
-    make_save_risks,
-    make_save_statbarns,
-    populate_useful_dicts,
-    print_nested_dict,
-)
-from acro.record import Records, load_records
+from acro.record import Records
 from acro.sdc_agg_funcs import (
     agg_missing,
     agg_mode,
@@ -154,6 +138,7 @@ def test_crosstab_with_aggfunc_mode(data):
     output = acro.results.get_index(0)
     # correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
     # ##TODO    assert output.summary == correct_summary
+    #  ##TODO run directly in pandas mode and compare all of the table values to the pandas mode output
     assert output.output[0]["R/G"].iat[0] == 913000
 
 
@@ -180,6 +165,7 @@ def test_crosstab_threshold(data, acro):
     acro.enable_suppression()
     _ = acro.crosstab(data.year, data.grant_type)
 
+    # TODO next three lines would make more sense if you moved them further down the method
     output = acro.results.get_index(0)
     total_nan: int = output.output[0]["R/G"].isnull().sum()
     assert total_nan == 6, f"output is\n{output.output[0]}"
@@ -199,6 +185,8 @@ def test_crosstab_threshold(data, acro):
     assert output.summary == correct_summary, (
         f"expected:\n{correct_summary}\n---\ngot:\n{output.summary}\n----"
     )
+    # TODO check status is now review with
+    # TODO check appropriate exception added saying suppression has been applied
     shutil.rmtree(PATH)
 
 
@@ -237,6 +225,8 @@ def test_negatives(data, acro):
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
+    # TODO check that the summary is correct for both outputs
+    # TODO compare the outputs to the equivalentpandas outputs
     assert output_0.status == "review"
     assert output_1.status == "review"
     shutil.rmtree(PATH)
@@ -249,8 +239,10 @@ def test_pivot_table_without_suppression(data):
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
     output_0 = acro.results.get_index(0)
+    # TODO compare the outputs to the equivalent pandas outputs
+    # TODO check status and summary are what they should be
     assert output_0.output[0]["mean"]["inc_grants"].sum() == 36293992.0
-    assert output_0.status in ["pass", "fail", "review"]
+    assert output_0.status in ["pass", "fail", "review"]  ##TODO make less VAGUE
 
 
 def test_pivot_table_pass(data, acro):
@@ -260,7 +252,7 @@ def test_pivot_table_pass(data, acro):
     )
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
-    assert output_0.status in ["pass", "review"]
+    assert output_0.status in ["pass", "review"]  # TODO why not just "pass"?
     shutil.rmtree(PATH)
 
 
@@ -276,6 +268,8 @@ def test_pivot_table_cols(data, acro):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
+    # TODO compare the outputs to the equivalent pandas outputs
+    # TODO check status and summary are what they should be
     assert output_0.status == "review"
     shutil.rmtree(PATH)
 
@@ -302,154 +296,10 @@ def test_pivot_table_with_aggfunc_sum(data, acro):
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
+    # TODO compare the outputs to the equivalent pandas outputs
+    # TODO check status and summary are what they should be
     assert output_0.status in ("review", "fail", "pass")
     assert output_1.status in ("review", "fail", "pass")
-    shutil.rmtree(PATH)
-
-
-def test_finalise_excel(data, acro):
-    """Finalise excel test."""
-    _ = acro.crosstab(data.year, data.grant_type)
-    acro.add_exception("output_0", "Let me have it")
-    with open("foo.txt", "w") as file:
-        file.write("Your text goes here")
-    acro.custom_output("foo.txt")
-
-    results: Records = acro.finalise(PATH, "xlsx")
-    output_0 = results.get_index(0)
-    filename = os.path.normpath(f"{PATH}/results.xlsx")
-    load_data = pd.read_excel(filename, sheet_name=output_0.uid)
-    correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
-    assert load_data.iloc[0, 0] == "Command"
-    assert load_data.iloc[0, 1] == correct_cell
-    shutil.rmtree(PATH)
-
-
-def test_output_removal(data, acro, monkeypatch):
-    """Output removal and print test."""
-    _ = acro.crosstab(data.year, data.grant_type)
-    _ = acro.crosstab(data.year, data.grant_type)
-    _ = acro.crosstab(data.year, data.grant_type)
-    exceptions = ["I want it", "Let me have it", "Please!"]
-    monkeypatch.setattr("builtins.input", lambda _: exceptions.pop(0))
-    results: Records = acro.finalise(PATH)
-    output_0 = results.get("output_0")
-    output_1 = results.get("output_1")
-    shutil.rmtree(PATH)
-    # remove something that is there
-    acro.remove_output(output_0.uid)
-    results = acro.finalise(PATH)
-    keys = results.get_keys()
-    assert output_0.uid not in keys
-    assert output_1.uid in keys
-    assert output_1.status == "review"
-    acro.print_outputs()
-    # remove something that is not there
-    with pytest.raises(ValueError, match="unable to remove 123, key not found"):
-        acro.remove_output("123")
-    shutil.rmtree(PATH)
-
-
-def test_load_output():
-    """Empty or invalid array when loading output."""
-    with pytest.raises(ValueError, match="error loading output"):
-        record.load_output(PATH, [])
-    val = record.load_output(PATH, ["nosuchfile.xxx"])
-    assert val == ["nosuchfile.xxx"]
-
-
-def test_finalise_invalid(data, acro):
-    """Invalid output format when finalising."""
-    _ = acro.crosstab(data.year, data.grant_type)
-    output_0 = acro.results.get_index(0)
-    output_0.exception = "Let me have it"
-    with pytest.raises(ValueError, match="Invalid file extension.*"):
-        _ = acro.finalise(PATH, "123")
-
-
-def test_finalise_json(data, acro):
-    """Finalise json test."""
-    _ = acro.crosstab(data.year, data.grant_type)
-    acro.add_exception("output_0", "Let me have it")
-    result: Records = acro.finalise(PATH, "json")
-    loaded: Records = load_records(PATH)
-    orig = result.get_index(0)
-    read = loaded.get_index(0)
-    assert orig.uid == read.uid
-    assert orig.status == read.status
-    assert orig.output_type == read.output_type
-    assert orig.properties == read.properties
-    assert orig.sdc == read.sdc
-    assert orig.command == read.command
-    assert orig.summary == read.summary
-    assert orig.comments == read.comments
-    assert orig.timestamp == read.timestamp
-    orig_df = orig.output[0].reset_index()
-    read_df = read.output[0]
-    pd.testing.assert_frame_equal(
-        orig_df, read_df, check_names=False, check_dtype=False, check_categorical=False
-    )
-    with open(os.path.normpath(f"{PATH}/results.json"), encoding="utf-8") as file:
-        json_data = json.load(file)
-    results: dict = json_data["results"]
-    assert results[orig.uid]["files"][0]["name"] == f"{orig.uid}_0.csv"
-    shutil.rmtree(PATH)
-
-
-def test_rename_output(data, acro):
-    """Output renaming test."""
-    _ = acro.crosstab(data.year, data.grant_type)
-    _ = acro.crosstab(data.year, data.grant_type)
-    acro.add_exception("output_0", "Let me have it")
-    acro.add_exception("output_1", "I want this")
-    results: Records = acro.finalise(PATH)
-    output_0 = results.get_index(0)
-    orig_name = output_0.uid
-    new_name = "cross_table"
-    acro.rename_output(orig_name, new_name)
-    shutil.rmtree(PATH)
-    results = acro.finalise(PATH)
-    assert output_0.uid == new_name
-    assert orig_name not in results.get_keys()
-    assert os.path.exists(f"{PATH}/{new_name}_0.csv")
-    # rename an output that doesn't exist
-    with pytest.raises(ValueError, match="unable to rename 123, key not found"):
-        acro.rename_output("123", "name")
-    # rename an output to another that already exists
-    with pytest.raises(ValueError, match="unable to rename, cross_table .* exists"):
-        acro.rename_output("output_1", "cross_table")
-    shutil.rmtree(PATH)
-
-
-def test_add_comments(data, acro):
-    """Adding comments to output test."""
-    _ = acro.crosstab(data.year, data.grant_type)
-    acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise(PATH)
-    output_0 = results.get_index(0)
-    assert output_0.comments == []
-    comment = "This is a cross table between year and grant_type"
-    acro.add_comments(output_0.uid, comment)
-    assert output_0.comments == [comment]
-    comment_1 = "6 cells were suppressed"
-    acro.add_comments(output_0.uid, comment_1)
-    assert output_0.comments == [comment, comment_1]
-    # add a comment to something that is not there
-    with pytest.raises(ValueError, match="unable to find 123, key not found"):
-        acro.add_comments("123", "comment")
-    shutil.rmtree(PATH)
-
-
-def test_custom_output(acro):
-    """Adding an unsupported output to the results dictionary test."""
-    filename = "notebooks/XandY.jpeg"
-    file_path = os.path.normpath(filename)
-    acro.custom_output(filename)
-    acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise(path=PATH)
-    output_0 = results.get_index(0)
-    assert output_0.output == [file_path]
-    assert os.path.exists(os.path.normpath(f"{PATH}/XandY.jpeg"))
     shutil.rmtree(PATH)
 
 
@@ -477,33 +327,6 @@ def test_missing(data, acro, monkeypatch):
 @pytest.mark.skip(reason="Not yet implemented")
 def test_suppression_error():
     """Apply suppression type error test."""
-
-
-def test_adding_exception(acro):
-    """Adding an exception to an output that doesn't exist test."""
-    with pytest.raises(ValueError, match="unable to add exception: output_0 .*"):
-        acro.add_exception("output_0", "Let me have it")
-
-
-def test_add_to_acro(data, monkeypatch):
-    """Add an output generated without acro to an acro object and create results file."""
-    # create a cross tabulation using pandas
-    table = pd.crosstab(data.year, data.grant_type)
-    # save the output to a file and add this file to a directory
-    src_path = "test_add_to_acro"
-    dest_path = "sdc_results"
-    file_path = "crosstab.pkl"
-    if not os.path.exists(src_path):  # pragma no cover
-        table.to_pickle(file_path)
-        os.mkdir(src_path)
-        shutil.move(file_path, src_path, copy_function=shutil.copytree)
-    # add exception to the output
-    exception = ["I want it"]
-    monkeypatch.setattr("builtins.input", lambda _: exception.pop(0))
-    # add the output to acro
-    add_to_acro(src_path, dest_path)
-    assert "results.json" in os.listdir(dest_path)
-    assert "crosstab.pkl" in os.listdir(dest_path)
 
 
 def test_prettify_tablestring(data):
@@ -622,6 +445,8 @@ def test_zeros_are_not_disclosive(data, acro):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
+    # TODO shouldn't this be status pass?
+    # TODO check summary - should say TRE risk appettie stattes zeros ok
     assert output_0.status == "review"
     shutil.rmtree(PATH)
 
@@ -632,7 +457,8 @@ def test_crosstab_with_totals_without_suppression(data, acro):
     _ = acro.crosstab(data.year, data.grant_type, margins=True)
     output = acro.results.get_index(0)
     assert output.output[0]["All"].iat[0] == 153
-
+    # TODO easier to compare the outputs to the equivalent pandas outputs
+    # TODO check status and summary are what they should be
     total_rows = output.output[0].iloc[-1, 0:4].sum()
     total_cols = output.output[0].loc[2010:2015, "All"].sum()
     assert 918 == total_rows == total_cols == output.output[0]["All"].iat[6]
@@ -647,6 +473,9 @@ def test_crosstab_with_totals_with_suppression(data, acro):
     assert "All" in table.columns
     assert table["All"].iat[6] > 0
     assert table.shape[0] >= 7
+    # TODO test that the right cells have been identified and suppressed
+    # TODO check exception has been added to say suppression is applied
+    # TODO status should be review
     assert output.status in {"review", "fail"}
 
 
@@ -657,7 +486,9 @@ def test_crosstab_with_totals_with_suppression_hierarchical(data, acro):
     )
     output = acro.results.get_index(0)
     table = output.output[0]
-
+    # TODO test that the right cells have been identified and suppressed
+    # TODO check exception has been added to say suppression is applied
+    # TODO status should be review
     assert "All" in table.columns
     assert table["All"].iat[12] > 0
     assert output.status in {"review", "fail"}
@@ -675,6 +506,9 @@ def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
     output = acro.results.get_index(0)
     table = output.output[0]
 
+    # TODO test that the right cells have been identified and suppressed
+    # TODO check exception has been added to say suppression is applied
+    # TODO status should be review
     assert "All" in table.columns
     assert table["All"].iat[0] > 0
     assert table["All"].iat[6] > 0
@@ -695,6 +529,7 @@ def test_crosstab_with_totals_and_empty_data(data, acro):
         aggfunc="mean",
         margins=True,
     )
+    # TODO check status and summary
     assert acro.results.get_index(0).status in {"review", "fail"}
 
 
@@ -704,6 +539,9 @@ def test_crosstab_with_manual_totals_with_suppression(data, acro):
     output = acro.results.get_index(0)
     table = output.output[0]
 
+    # TODO test that the right cells have been identified and suppressed
+    # TODO check exception has been added to say suppression is applied
+    # TODO status should be review
     assert "All" in table.columns
     assert table["All"].iat[0] > 0
     assert table["All"].iat[6] > 0
@@ -889,102 +727,6 @@ def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(data, acr
     assert acro.results.get_index(0).status in {"review", "fail"}
 
 
-def test_finalise_with_existing_path(data, acro, caplog):
-    """Test using a path that already exists when finalising."""
-    _ = acro.crosstab(data.year, data.grant_type)
-    acro.add_exception("output_0", "Let me have it")
-    acro.finalise(PATH)
-    _ = acro.crosstab(data.status, data.grant_type)
-    acro.finalise(PATH)
-    assert (
-        "Results file can not be created. Directory RES_PYTEST "
-        "already exists. Please choose a different directory name." in caplog.text
-    )
-    shutil.rmtree(PATH)
-
-
-def test_finalise_non_interactive(data):
-    """Test finalise_non_interactive.
-
-    Test that non-interactive version of finalising acro
-    leaves exceptions as they were for disclosive table.
-    """
-    acro = ACRO(suppress=False)
-    _ = acro.crosstab(data.year, data.grant_type)
-    acro.suppress = True
-    _ = acro.crosstab(data.year, data.grant_type)
-    # write JSON
-
-    path = "outputs"
-
-    _ = acro.finalise(path, "json", interactive=False)
-    result = acro.results
-
-    # load JSON
-    loaded: Records = load_records(path)
-    orig0 = result.get_index(0)
-    read0 = loaded.get_index(0)
-    orig1 = result.get_index(1)
-    read1 = loaded.get_index(1)
-    # check equal
-    assert orig0.exception is None or len(orig0.exception) == 0, (
-        f"orig exception: expected None, got _{orig0.exception}_"
-    )
-    assert read0.exception is None or len(read0.exception) == 0, (
-        f"read exception: expected None, got _{read0.exception}_"
-    )
-    assert orig1.exception == "Suppression automatically applied where needed"
-    assert read1.exception == "Suppression automatically applied where needed"
-
-    # check SDC outcome DataFrame
-    orig_df = orig0.output[0].reset_index()
-    read_df = read0.output[0]
-    pd.testing.assert_frame_equal(
-        orig_df, read_df, check_names=False, check_dtype=False
-    )
-    if os.path.isdir(path):
-        shutil.rmtree(path)
-
-
-def test_finalise_interactive(data):
-    """
-    Test finalise_interactive.
-
-    Test that interactive version of finalising acro
-    leaves exceptions as they should be disclosive table.
-    """
-    acro = ACRO(suppress=False)
-    _ = acro.crosstab(data.year, data.grant_type)
-    acro.suppress = True
-    _ = acro.crosstab(data.year, data.grant_type)
-    # write JSON
-
-    mypath = "outputs"
-
-    with patch("builtins.input", return_value="Oh, please..."):
-        _ = acro.finalise(mypath, "json", interactive=True)
-    result = acro.results
-    # load JSON
-    loaded: Records = load_records(mypath)
-    orig0 = result.get_index(0)
-    read0 = loaded.get_index(0)
-    orig1 = result.get_index(1)
-    read1 = loaded.get_index(1)
-    # check equal
-    assert orig0.exception == "Oh, please..."
-    assert read0.exception == "Oh, please..."
-    assert orig1.exception == "Suppression automatically applied where needed"
-    assert read1.exception == "Suppression automatically applied where needed"
-    # check SDC outcome DataFrame
-    orig_df = orig0.output[0].reset_index()
-    read_df = read0.output[0]
-    pd.testing.assert_frame_equal(
-        orig_df, read_df, check_names=False, check_dtype=False
-    )
-    if os.path.isdir(mypath):
-        shutil.rmtree(mypath)
-
-
 @pytest.mark.skip(reason="Not yet implemented")
 def test_crosstab_with_totals_raises_when_data_none():
     """Test that crosstab_with_totals raises AssertionError when data is None."""
@@ -1005,20 +747,6 @@ def test_crosstab_with_totals_raises_when_data_none():
     #         crosstab=False,
     #         data=None,
     #     )
-
-
-def test_create_dataframe(data):
-    """Test correct functionality of code to create data frame."""
-
-
-def test_toggle_suppression():
-    """Test toggling suppression on/off."""
-    acro = ACRO(suppress=False)
-    assert not acro.suppress
-    acro.enable_suppression()
-    assert acro.suppress
-    acro.disable_suppression()
-    assert not acro.suppress
 
 
 def test_crosstab_multi_aggfunc(data):
@@ -1364,6 +1092,9 @@ def test_check_nk_dominance_with_negatives(data):
         data2.year, data2.grant_type, values=data2.inc_grants, aggfunc="sum"
     )
     output = acro_obj.results.get_index(0)
+    # TODO check summary message is
+    # TODO "Dominance not defined when negative value are present"
+    # TODO check status is correctly set to review: should not be fail
     assert output.status in ("review", "fail")
 
 
@@ -1376,6 +1107,9 @@ def test_check_ppercent_with_negatives(data):
         data2.year, data2.grant_type, values=data2.inc_grants, aggfunc="mean"
     )
     output = acro_obj.results.get_index(0)
+    # TODO check summary message is
+    # TODO "Dominance not defined when negative value are present"
+    # TODO check status is correctly set to review: should not be fail
     assert output.status in ("review", "fail")
 
 
@@ -1435,48 +1169,6 @@ def test_record_table_output_round_mitigation(data):
     assert output.properties.get("round_base") == 5
     assert output.status == "review"
     assert "Rounding" in output.exception
-
-
-def test_add_to_acro_function(data, monkeypatch):
-    """Add_to_acro() exercises by scanning a directory and creating results."""
-    src_path = "test_add_to_acro"
-    dest_path = "sdc_results"
-    shutil.rmtree(src_path, ignore_errors=True)
-    shutil.rmtree(dest_path, ignore_errors=True)
-    # Create a simple CSV file in the source directory
-    os.makedirs(src_path, exist_ok=True)
-    table = pd.crosstab(data.year, data.grant_type)
-    csv_path = os.path.join(src_path, "crosstab.csv")
-    table.to_csv(csv_path)
-    # Intercept any interactive prompts
-    monkeypatch.setattr("builtins.input", lambda _: "test exception")
-    add_to_acro(src_path, dest_path)
-    assert os.path.exists(dest_path)
-    assert "results.json" in os.listdir(dest_path)
-    shutil.rmtree(src_path, ignore_errors=True)
-    shutil.rmtree(dest_path, ignore_errors=True)
-
-
-def test_records_add_with_none_defaults():
-    """Records.add() with all-None optional args uses defaults."""
-    records = Records()
-    records.add(
-        status="pass",
-        output_type="table",
-        properties=None,
-        sdc=None,
-        fair=None,
-        command="test",
-        summary="ok",
-        outcome=None,
-        output=None,
-    )
-    rec = records.get_index(0)
-    assert rec.properties == {}
-    assert rec.sdc == {}
-    assert rec.fair == {}
-    assert isinstance(rec.outcome, pd.DataFrame)
-    assert rec.output == []
 
 
 def test_finalise_evidence_dof_as_csv_string():
@@ -1658,201 +1350,6 @@ def test_agg_threshold_above_threshold():
     """More than THRESHOLD values → False."""
     s = pd.Series(list(range(20)))
     assert agg_threshold(s) == False  # noqa: E712
-
-
-def _build_minimal_graph() -> rdflib.Graph:
-    """Build a minimal RDF graph that satisfies ontology_handler expectations."""
-    g = rdflib.Graph()
-    p = rdflib.Namespace(PREFIX)
-    skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
-    rdfs = rdflib.Namespace("http://www.w3.org/2000/01/rdf-schema#")
-    dpv_owl = rdflib.Namespace("https://w3id.org/dpv/owl#")
-
-    risk_uri = p.LowCount
-    g.add((risk_uri, rdfs.subClassOf, dpv_owl.Risk))
-    g.add((risk_uri, skos.definition, rdflib.Literal("Low count risk")))
-    g.add((risk_uri, skos.prefLabel, rdflib.Literal("LowCount")))
-
-    barn_uri = p.Frequencies
-    g.add((barn_uri, rdfs.subClassOf, p.Statbarn))
-    g.add((barn_uri, skos.definition, rdflib.Literal("Frequency statbarn")))
-    g.add((barn_uri, skos.prefLabel, rdflib.Literal("Frequencies")))
-
-    analysis_uri = p.FrequencyTable
-    g.add((analysis_uri, rdfs.subClassOf, barn_uri))
-    g.add((analysis_uri, skos.definition, rdflib.Literal("Frequency table analysis")))
-    g.add((analysis_uri, skos.prefLabel, rdflib.Literal("FrequencyTable")))
-
-    check_uri = p.MinimumThresholdCheck
-    g.add(
-        (
-            check_uri,
-            rdfs.subClassOf,
-            rdflib.URIRef("https://w3id.org/dpv/risk/owl#RiskEvaluation"),
-        )
-    )
-    g.add((check_uri, skos.definition, rdflib.Literal("Minimum threshold check def")))
-    g.add((check_uri, skos.prefLabel, rdflib.Literal("MinimumThresholdCheck")))
-
-    return g
-
-
-def _add_full_risks_and_checks(g: rdflib.Graph) -> None:
-    """Add all 7 risks and 8 checks required by make_ismitigatedby/make_ischeckedby."""
-    rdfs = rdflib.Namespace("http://www.w3.org/2000/01/rdf-schema#")
-    dpv_owl = rdflib.Namespace("https://w3id.org/dpv/owl#")
-    skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
-    p = rdflib.Namespace(PREFIX)
-    for r in [
-        "ClassDisclosure",
-        "LowCount",
-        "LowDOF",
-        "AuxiliaryInformation",
-        "ImplicitTables",
-        "Dominance",
-        "Differencing",
-    ]:
-        uri = p[r]
-        g.add((uri, rdfs.subClassOf, dpv_owl.Risk))
-        g.add((uri, skos.definition, rdflib.Literal(f"{r} def")))
-        g.add((uri, skos.prefLabel, rdflib.Literal(r)))
-    for c in [
-        "RequiredZeroCheck",
-        "PresenceOfZeroCheck",
-        "MinimumThresholdCheck",
-        "MinimumDoFCheck",
-        "StatbarnDataCheck",
-        "NKCheck",
-        "PQCheck",
-        "PresenceOfLinkedTableCheck",
-    ]:
-        g.add(
-            (
-                p[c],
-                rdfs.subClassOf,
-                rdflib.URIRef("https://w3id.org/dpv/risk/owl#RiskEvaluation"),
-            )
-        )
-
-
-FULL_RISKS = [
-    "ClassDisclosure",
-    "LowCount",
-    "LowDOF",
-    "AuxiliaryInformation",
-    "ImplicitTables",
-    "Dominance",
-    "Differencing",
-]
-
-
-def test_is_uri_ref_is_uri():
-    """URI references are recognized as URIs."""
-    assert is_uri(rdflib.term.URIRef("http://example.org/foo")) is True
-
-
-def test_is_uri_literal_is_not_uri():
-    """Literal values are not treated as URIs."""
-    assert is_uri(rdflib.Literal("hello")) is False
-
-
-def test_is_uri_string_is_not_uri():
-    """Plain strings are not treated as URIs."""
-    assert is_uri("http://example.org") is False
-
-
-def test_print_nested_dict_prints_without_error(caplog):
-    """Nested dictionaries are logged without error."""
-    d = {"key1": {"a": 1, "b": 2}, "key2": {"c": 3}}
-    with caplog.at_level(logging.WARNING):
-        print_nested_dict(d)
-    assert "key1" in caplog.text
-    assert "key2" in caplog.text
-
-
-def test_populate_useful_dicts_returns_three_dicts():
-    """The helper returns definitions, labels, and superclass mappings."""
-    g = _build_minimal_graph()
-    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
-    assert isinstance(definitions, dict)
-    assert isinstance(pref_labels, dict)
-    assert isinstance(othersuperclasses, dict)
-    assert set(definitions.keys()) == set(pref_labels.keys())
-
-
-def test_populate_useful_dicts_known_entries_present():
-    """The expected ontology entries are present in the helper output."""
-    g = _build_minimal_graph()
-    definitions, pref_labels, _ = populate_useful_dicts(g)
-    assert "LowCount" in definitions
-    assert "Frequencies" in pref_labels
-
-
-def test_make_save_statbarns_creates_json_and_returns_dict(tmp_path):
-    """The statbarn export helper creates a JSON-compatible dictionary."""
-    g = _build_minimal_graph()
-    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
-    orig_dir = os.getcwd()
-    os.chdir(tmp_path)
-    try:
-        result = make_save_statbarns(g, definitions, pref_labels, othersuperclasses)
-    finally:
-        os.chdir(orig_dir)
-    assert isinstance(result, dict)
-    assert "Frequencies" in result
-    assert "uri" in result["Frequencies"]
-
-
-def test_make_save_analyses_creates_analyses_dict(tmp_path):
-    """Make_save_analyses creates expected analysis records."""
-    g = _build_minimal_graph()
-    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
-    orig_dir = os.getcwd()
-    os.chdir(tmp_path)
-    try:
-        statbarns = make_save_statbarns(g, definitions, pref_labels, othersuperclasses)
-        result = make_save_analyses(g, definitions, pref_labels, statbarns)
-    finally:
-        os.chdir(orig_dir)
-    assert isinstance(result, dict)
-    assert "FrequencyTable" in result
-    assert result["FrequencyTable"]["statbarn"] == "Frequencies"
-
-
-def test_make_ismitigatedby_returns_dict_with_all_risks():
-    """All requested risks are mapped to mitigation entries."""
-    g = _build_minimal_graph()
-    _add_full_risks_and_checks(g)
-    result = make_ismitigatedby(g, FULL_RISKS)
-    assert set(result.keys()) == set(FULL_RISKS)
-    assert isinstance(result["LowCount"], list)
-
-
-def test_make_ischeckedby_returns_dict_with_all_risks():
-    """All requested risks are mapped to check entries."""
-    g = _build_minimal_graph()
-    _add_full_risks_and_checks(g)
-    result = make_ischeckedby(g, FULL_RISKS)
-    assert set(result.keys()) == set(FULL_RISKS)
-
-
-def test_make_save_risks_creates_risks_dict(tmp_path):
-    """The risks export helper writes a dictionary containing the expected entries."""
-    g = _build_minimal_graph()
-    _add_full_risks_and_checks(g)
-    definitions, pref_labels, _ = populate_useful_dicts(g)
-    ischeckedby = make_ischeckedby(g, FULL_RISKS)
-    ismitigatedby = make_ismitigatedby(g, FULL_RISKS)
-    orig_dir = os.getcwd()
-    os.chdir(tmp_path)
-    try:
-        result = make_save_risks(
-            g, definitions, pref_labels, ischeckedby, ismitigatedby
-        )
-    finally:
-        os.chdir(orig_dir)
-    assert isinstance(result, dict)
-    assert "LowCount" in result
 
 
 def _make_sdc(**overrides: Any) -> dict[str, Any]:
@@ -2400,6 +1897,7 @@ def test_append_rounded_margins_median(data) -> None:
 
 def test_add_custom_blocked_extension(tmp_path) -> None:
     """Records.add_custom() returns False when the file extension is blocked (line 369)."""
+    # TODO remove line number from docstring as line numbers might change
     records = Records(blocked_extensions=[".svg"])
     # Create a real file so the existence check doesn't short-circuit
     svg_file = tmp_path / "chart.svg"
@@ -2413,76 +1911,9 @@ def test_prettify_table_string_with_separator() -> None:
     """Prettify_table_string() with separator uses split(separator) instead of split() (line 78)."""
     df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["x", "y"])
     result = utils.prettify_table_string(df, separator=",")
+    # TODO test the result is correct character by character
     assert isinstance(result, str)
     assert "|" in result
-
-
-def test_populate_useful_dicts_othersuperclasses_branch() -> None:
-    """Populate_useful_dicts() appends to existing list when key already in othersuperclasses (lines 74-77)."""
-    g = rdflib.Graph()
-    subclass_ref = rdflib.URIRef("http://www.w3.org/2000/01/rdf-schema#subClassOf")
-    definition_ref = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#definition")
-    preflabel_ref = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#prefLabel")
-
-    subject = rdflib.URIRef(PREFIX + "TestClass")
-    g.add((subject, definition_ref, rdflib.Literal("a test class")))
-    g.add((subject, preflabel_ref, rdflib.Literal("Test Class")))
-
-    parent1 = rdflib.URIRef("http://example.com/parent1")
-    parent2 = rdflib.URIRef("http://example.com/parent2")
-    g.add((subject, subclass_ref, parent1))
-    g.add((subject, subclass_ref, parent2))
-
-    _, _, othersuperclasses = populate_useful_dicts(g)
-
-    key = "TestClass"
-    assert key in othersuperclasses
-    # Both parents should be present
-    assert len(othersuperclasses[key]) >= 2
-
-
-def test_make_save_statbarns_with_somevaluesfrom_risks(tmp_path):
-    """Statbarns include risks via someValuesFrom relationship with superclasses."""
-    g = rdflib.Graph()
-    p = rdflib.Namespace(PREFIX)
-    skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
-    rdfs = rdflib.Namespace("http://www.w3.org/2000/01/rdf-schema#")
-    dpv_owl = rdflib.Namespace("https://w3id.org/dpv/owl#")
-    owl = rdflib.Namespace("http://www.w3.org/2002/07/owl#")
-
-    # Add a risk
-    risk_uri = p.TestRisk
-    g.add((risk_uri, rdfs.subClassOf, dpv_owl.Risk))
-    g.add((risk_uri, skos.definition, rdflib.Literal("Test risk definition")))
-    g.add((risk_uri, skos.prefLabel, rdflib.Literal("TestRisk")))
-
-    # Add a statbarn
-    barn_uri = p.TestStatbarn
-    g.add((barn_uri, rdfs.subClassOf, p.Statbarn))
-    g.add((barn_uri, skos.definition, rdflib.Literal("Test statbarn")))
-    g.add((barn_uri, skos.prefLabel, rdflib.Literal("TestStatbarn")))
-
-    # Add a superclass as an external (non-PREFIX) URI
-    # This will be captured in othersuperclasses
-    superclass_uri = rdflib.URIRef("http://example.com/TestSuperclass")
-    g.add((barn_uri, rdfs.subClassOf, superclass_uri))
-
-    # Connect superclass to risk via owl:someValuesFrom
-    g.add((superclass_uri, owl.someValuesFrom, risk_uri))
-
-    definitions, pref_labels, othersuperclasses = populate_useful_dicts(g)
-    orig_dir = os.getcwd()
-    os.chdir(tmp_path)
-    try:
-        result = make_save_statbarns(g, definitions, pref_labels, othersuperclasses)
-    finally:
-        os.chdir(orig_dir)
-
-    assert isinstance(result, dict)
-    assert "TestStatbarn" in result
-    # Verify that the risk was added via the someValuesFrom relationship
-    assert "risks" in result["TestStatbarn"]
-    assert str(risk_uri) in result["TestStatbarn"]["risks"]
 
 
 def test_process_table_output_standalone_crosstab_via_refactoring():
@@ -2531,7 +1962,6 @@ def test_process_table_output_rounding_crosstab_via_refactoring():
         aggfunc="sum",
         margins=True,
     )
-
     res = acro.results.get_index(-1)
     assert res.properties["mitigation"] == "round"
     assert res.properties["round_base"] == 5

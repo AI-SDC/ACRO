@@ -142,6 +142,8 @@ ignore = [
   "RET504",  # unnecessary assignment before return — aids readability/debugging
   "S101",    # assert usage — standard in tests and production invariant checks
   "S301",    # unsafe pickle — used intentionally in this project
+  "D203",    # one-blank-line-before-class — conflicts with D211 (numpy convention uses D211)
+  "D212",    # multi-line-summary-first-line — conflicts with D213 (numpy convention uses D213)
 ]
 
 extend-ignore = [

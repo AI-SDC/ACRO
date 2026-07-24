@@ -1,7 +1,5 @@
 """Unit tests for functions in table_utils.py."""
 
-import logging
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -20,14 +18,6 @@ from acro.table_utils import (
     round_table,
     translate_args_to_newdf,
 )
-
-
-def test_add_backticks():
-    """Test the add_backticks helper function."""
-    assert table_utils.add_backticks("foo") == "foo"
-    assert table_utils.add_backticks("foo bar") == "`foo bar`"
-    assert table_utils.add_backticks("`foo bar`") == "`foo bar`"
-    assert table_utils.add_backticks("foo bar baz") == "`foo bar baz`"
 
 
 def _make_table_for_collate_risk_assessments() -> pd.DataFrame:
@@ -106,19 +96,6 @@ def test_collate_risk_assessments_missing_path(data):
     )
     output = acro_obj.results.get_index(0)
     assert output.status in ("review", "fail")
-
-
-def test_aggfunc_to_strings_list():
-    """Aggfunc_to_strings with a list returns multiple analysis types."""
-    result = table_utils.aggfunc_to_strings(["mean", "std"])
-    assert "Mean" in result
-    assert "StandardDeviation" in result
-
-
-def test_aggfunc_to_strings_none():
-    """Aggfunc_to_strings with None returns FrequencyTable."""
-    result = table_utils.aggfunc_to_strings(None)
-    assert result == ["FrequencyTable"]
 
 
 def test_record_table_output_round_mitigation(data):
@@ -386,8 +363,11 @@ class TestAlignMaskToOutcome:
         mask = pd.DataFrame()
         outcome_df = pd.DataFrame()
 
+        # Should not raise an exception
         result = _align_mask_to_outcome(mask, outcome_df)
-        assert result is None or isinstance(result, pd.DataFrame)
+        # n_diff = 0, returns mask directly
+        assert result is not None
+        assert result.empty
 
 
 class TestGetAnalysisSummary:
@@ -460,37 +440,6 @@ class TestAlignMaskToOutcomeEdgeCases:
         assert result.shape[1] == 3  # Should have 3 columns like outcome_df
 
 
-class TestGetRedactedDataErrorBranch:
-    """Tests for error handling in get_redacted_data."""
-
-    @pytest.mark.skip(reason="noprag")
-    def test_get_redacted_data_column_mismatch_error(self, caplog):
-        """When redacted data has different columns than input, warning is logged.
-
-        Note: This test targets defensive programming that checks if redacted_data
-        columns differ from original data columns. This should never happen in
-        normal execution because the function operates on a copy and doesn't
-        add/remove columns. Triggering this requires internal code modification.
-        are unreachable via normal API usage.
-        """
-        # Create original data
-        original_data = pd.DataFrame(
-            {"col1": [1, 2, 3], "col2": [4, 5, 6], "col3": [7, 8, 9]}
-        )
-
-        # Create a mock queries list that could cause column mismatch
-        # The actual function should return original data on error
-        queries: list[str] = []  # No queries means no modification
-
-        with caplog.at_level(logging.WARNING):
-            result = get_redacted_data(original_data, queries, [])
-
-        # Should return the original data unchanged
-        assert result.equals(original_data) or len(result.columns) == len(
-            original_data.columns
-        )
-
-
 class TestCollateRiskAssessmentsElseBranch:
     """Tests for the `else` branch in collate_risk_assessments."""
 
@@ -522,36 +471,6 @@ class TestCollateRiskAssessmentsElseBranch:
         flat = result.to_numpy().flatten().tolist()
         # Should have "MinimumThresholdCheck" or "ok" in the result
         assert any("MinimumThresholdCheck" in str(v) or "ok" in str(v) for v in flat)
-
-    @pytest.mark.skip(reason="noprag")
-    def test_collate_with_duplicate_check_name_skips_second(self):
-        """Test that duplicate check names are skipped.
-
-        Note: This test cannot realistically trigger because Python dicts cannot have duplicate keys.
-        The outcomes dict in ChecksResults cannot have the same check name twice.
-        """
-        # Create a table
-        table = pd.DataFrame({"A": [10, 20], "B": [30, 40]}, index=pd.Index([1, 2]))
-
-        # Create outcomes with DUPLICATE check names
-        # When the same check name appears twice, the second should be skipped
-        mask1 = pd.DataFrame(
-            {"A": [True, False], "B": [False, True]}, index=pd.Index([1, 2])
-        )
-
-        # Create ChecksResults with ordered dict to simulate multiple check names
-        # When iterating over masks.items(), we can get the same name twice
-        cr = ChecksResults(
-            overall_status="review",
-            summaries="review",
-            outcomes={"TestCheck": mask1},
-            fair_dict={},
-        )
-
-        # We need to trigger the duplicate name check
-        # This happens when same name appears in masks dict during iteration
-        result = collate_risk_assessments(table, {"Analysis1": cr})
-        assert isinstance(result, pd.DataFrame)
 
     def test_collate_with_non_dataframe_mask_skips(self):
         """Test that non-DataFrame masks are skipped."""

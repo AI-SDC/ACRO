@@ -16,10 +16,17 @@ PATH: str = "RES_PYTEST"
 @pytest.fixture
 def cleanup_path():
     """Clean up output directories before and after each test."""
-    for d in ["RES_PYTEST", "outputs", "acro_artifacts"]:
+    dirs = [
+        "RES_PYTEST",
+        "outputs",
+        "acro_artifacts",
+        "sdc_results",
+        "test_add_to_acro",
+    ]
+    for d in dirs:
         shutil.rmtree(d, ignore_errors=True)
     yield
-    for d in ["RES_PYTEST", "outputs", "acro_artifacts"]:
+    for d in dirs:
         shutil.rmtree(d, ignore_errors=True)
 
 

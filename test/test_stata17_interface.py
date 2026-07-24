@@ -11,11 +11,6 @@ from acro import ACRO, stata_config
 from acro.acro_stata_parser import find_brace_word, parse_and_run, parse_table_details
 from acro.acro_tables import AGGFUNC
 
-# @pytest.fixture
-# def acro() -> ACRO:
-#    """Initialise ACRO."""
-#    return ACRO()
-
 
 @pytest.fixture
 def data() -> pd.DataFrame:
@@ -94,15 +89,6 @@ def test_parse_table_details(data):
 
 # -----acro management----------------------------------------------------
 
-# def test_stata_acro_notinit():
-#     ''' should have to call init first'''
-#     ret = dummy_acrohandler(
-#         data, command="finalise", varlist="", exclusion="", exp="", weights="", options=""
-#     )
-#     assert (
-#         ret == "You must run acro init before any other acro commands\n"
-#     ), f"wrong string for acro command before init: {ret}\n"
-
 
 def test_stata_acro_init_options():
     """
@@ -129,7 +115,6 @@ def test_stata_acro_init_options():
             "zeros_are_disclosive: True\n"
             "...\n"
         )
-    # assert isinstance(stata_config.stata_acro, str)
     ret2 = dummy_acrohandler(
         data,
         command="init",
@@ -163,7 +148,6 @@ def test_stata_acro_init():
     """
     # reset acro so we can reinitialise
     stata_config.stata_acro = "empty"
-    # assert isinstance(stata_config.stata_acro, str)
     ret = dummy_acrohandler(
         data,
         command="init",
@@ -1156,7 +1140,3 @@ def test_cleanup():
     names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]
     for name in names:
         clean_up(name)
-    # next piece of code is there to achieve 100% code coverage of tests
-    with open("foo.txt", "w") as file:
-        file.write("Your text goes here")
-    clean_up("foo.txt")

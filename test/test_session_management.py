@@ -24,42 +24,6 @@ from acro.record import Records, load_records
 PATH: str = "RES_PYTEST"
 
 
-@pytest.fixture(autouse=True)
-def cleanup_path():
-    """Clean up output directories before and after each test."""
-    for d in [
-        "RES_PYTEST",
-        "outputs",
-        "acro_artifacts",
-        "sdc_results",
-        "test_add_to_acro",
-    ]:
-        shutil.rmtree(d, ignore_errors=True)
-    yield
-    for d in [
-        "RES_PYTEST",
-        "outputs",
-        "acro_artifacts",
-        "sdc_results",
-        "test_add_to_acro",
-    ]:
-        shutil.rmtree(d, ignore_errors=True)
-
-
-@pytest.fixture
-def data() -> pd.DataFrame:
-    """Load test data."""
-    path = os.path.join("data", "test_data.dta")
-    data = pd.read_stata(path)
-    return data
-
-
-@pytest.fixture
-def acro() -> ACRO:
-    """Initialise ACRO."""
-    return ACRO(suppress=True)
-
-
 def test_finalise_excel(data, acro):
     """Finalise excel test."""
     _ = acro.crosstab(data.year, data.grant_type)
@@ -339,10 +303,6 @@ def test_finalise_interactive(data):
     )
     if os.path.isdir(mypath):
         shutil.rmtree(mypath)
-
-
-def test_create_dataframe(data):
-    """Test correct functionality of code to create data frame."""
 
 
 def test_toggle_suppression():

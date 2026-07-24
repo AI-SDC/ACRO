@@ -7,7 +7,9 @@ from acro.sdc_agg_funcs import (
     agg_missing,
     agg_mode,
     agg_num_negative,
+    agg_top_2_sum,
     agg_top_n_sum,
+    agg_values_are_same,
     get_statsmodel_dof,
 )
 
@@ -67,15 +69,11 @@ def test_get_statsmodel_dof_no_attribute():
 
 def test_agg_values_are_same_empty_series() -> None:
     """Agg_values_are_same returns True for an empty Series."""
-    from acro.sdc_agg_funcs import agg_values_are_same
-
     result = agg_values_are_same(pd.Series([], dtype=float))
     assert result is True
 
 
 def test_agg_top_2_sum_non_numeric() -> None:
     """Agg_top_2_sum returns 0 for a non-numeric Series."""
-    from acro.sdc_agg_funcs import agg_top_2_sum
-
     result = agg_top_2_sum(pd.Series(["a", "b", "c"]))
     assert result == 0

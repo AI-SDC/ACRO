@@ -10,12 +10,14 @@ from acro import ACRO, table_utils
 from acro.sdcchecks import ChecksResults
 from acro.table_utils import (
     _align_mask_to_outcome,
+    append_rounded_margins,
     axis_to_list,
     collate_risk_assessments,
     drop_duplicate_columns,
     get_analysis_summary,
     get_debugging_table_analysis,
     get_redacted_data,
+    round_table,
     translate_args_to_newdf,
 )
 
@@ -73,8 +75,6 @@ def test_translate_args_to_newdf_series_branch(data) -> None:
 
 def test_append_rounded_margins_median(data) -> None:
     """Append_rounded_margins() with aggfunc='median' uses the median path."""
-    from acro.table_utils import append_rounded_margins, round_table
-
     table = pd.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="median"
     )

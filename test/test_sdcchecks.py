@@ -362,7 +362,7 @@ def test_check_presence_of_zero_not_disclosive() -> None:
 
 def test_get_table_sdc_minimum_dof_check_as_int() -> None:
     """Minimumdof checks stored as integers are summarized correctly."""
-    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+    from acro.sdcchecks import ChecksResults, ManyChecksResults
 
     cr_result = ChecksResults(
         overall_status="pass",
@@ -378,7 +378,7 @@ def test_get_table_sdc_minimum_dof_check_as_int() -> None:
 
 def test_get_table_sdc_minimum_dof_check_as_int_fail() -> None:
     """Minimumdof checks that fail are summarized as one."""
-    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+    from acro.sdcchecks import ChecksResults, ManyChecksResults
 
     cr_result = ChecksResults(
         overall_status="fail",
@@ -394,7 +394,7 @@ def test_get_table_sdc_minimum_dof_check_as_int_fail() -> None:
 
 def test_get_table_sdc_duplicate_check_skipped_branch() -> None:
     """Duplicate checks are only counted once in the table summary."""
-    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+    from acro.sdcchecks import ChecksResults, ManyChecksResults
 
     mask = pd.DataFrame({"A": [False, False]}, index=[1, 2])
     cr1 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})

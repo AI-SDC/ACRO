@@ -34,8 +34,8 @@ def _make_table_for_collate_risk_assessments() -> pd.DataFrame:
 
 def test_collate_risk_assessments_negative_branch() -> None:
     """Negative masks are surfaced as negative values in collated results."""
-    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
-    from acro.table_utils import collate_risk_assessments  # noqa: PLC0415
+    from acro.sdcchecks import ChecksResults
+    from acro.table_utils import collate_risk_assessments
 
     table = _make_table_for_collate_risk_assessments()
     neg_mask = pd.DataFrame({"A": [True, False], "B": [False, False]}, index=[1, 2])
@@ -52,8 +52,8 @@ def test_collate_risk_assessments_negative_branch() -> None:
 
 def test_collate_risk_assessments_missing_branch() -> None:
     """Missing masks are surfaced as missing values in collated results."""
-    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
-    from acro.table_utils import collate_risk_assessments  # noqa: PLC0415
+    from acro.sdcchecks import ChecksResults
+    from acro.table_utils import collate_risk_assessments
 
     table = _make_table_for_collate_risk_assessments()
     miss_mask = pd.DataFrame({"A": [False, True], "B": [False, False]}, index=[1, 2])
@@ -79,7 +79,7 @@ def test_translate_args_to_newdf_series_branch(data) -> None:
 
 def test_append_rounded_margins_median(data) -> None:
     """Append_rounded_margins() with aggfunc='median' uses the median path."""
-    from acro.table_utils import append_rounded_margins, round_table  # noqa: PLC0415
+    from acro.table_utils import append_rounded_margins, round_table
 
     table = pd.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="median"

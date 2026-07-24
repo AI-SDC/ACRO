@@ -207,7 +207,7 @@ def test_custom_output(acro):
 
 
 def test_add_custom_blocked_extension(tmp_path) -> None:
-    """Records.add_custom() returns False when the file extension is blocked (line 369)."""
+    """Records.add_custom() returns False when the file extension is blocked."""
     # TODO remove line number from docstring as line numbers might change
     records = Records(blocked_extensions=[".svg"])
     # Create a real file so the existence check doesn't short-circuit

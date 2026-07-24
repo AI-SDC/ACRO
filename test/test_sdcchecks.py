@@ -35,10 +35,10 @@ def test_sdcevidence_populate_dof_else_branch():
 
 
 def test_get_table_sdc_duplicate_check_skipped(data):
-    """Get_table_sdc skips checks already seen across multiple analyses (line 164).
+    """Get_table_sdc skips checks already seen across multiple analyses.
 
     When two analyses produce the same check name, only the first occurrence
-    is included in the SDC summary — the continue branch on line 164.
+    is included in the SDC summary.
     """
     acro_obj = ACRO(suppress=False)
     # mean+std both map to LinearAggregations which shares checks — run both
@@ -57,7 +57,7 @@ def test_get_table_sdc_duplicate_check_skipped(data):
 
 
 def test_get_table_sdc_minimumdofcheck_pass(data):
-    """Get_table_sdc branch for MinimumDoFCheck with int mask: 0 when DoF passes (line 168)."""
+    """Get_table_sdc branch for MinimumDoFCheck with int mask: 0 when DoF passes."""
     acro_obj = ACRO(suppress=False)
     new_df = data[
         ["inc_activity", "inc_grants", "inc_donations", "total_costs"]
@@ -135,7 +135,7 @@ def test_manual_check_unknown_model_type():
 
 
 def test_check_nk_dominance_with_negatives(data):
-    """Check_nk_dominance returns review when negative values present (line 531)."""
+    """Check_nk_dominance returns review when negative values present."""
     acro_obj = ACRO(suppress=False)
     # Build a table with negative inc_grants in some cells
     data2 = data.copy()

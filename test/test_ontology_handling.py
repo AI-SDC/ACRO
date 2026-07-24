@@ -214,7 +214,7 @@ def test_make_save_risks_creates_risks_dict(tmp_path):
 
 
 def test_populate_useful_dicts_othersuperclasses_branch() -> None:
-    """Populate_useful_dicts() appends to existing list when key already in othersuperclasses (lines 74-77)."""
+    """Populate_useful_dicts() appends to existing list when key already in othersuperclasses."""
     g = rdflib.Graph()
     subclass_ref = rdflib.URIRef("http://www.w3.org/2000/01/rdf-schema#subClassOf")
     definition_ref = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#definition")

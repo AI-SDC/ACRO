@@ -38,7 +38,7 @@ def test_agg_num_negative_no_negatives():
 
 
 def test_agg_missing_with_nan():
-    """Agg_missing returns True when NaN present (line 99)."""
+    """Agg_missing returns True when NaN present."""
     s = pd.Series([1.0, float("nan"), 3.0])
     assert bool(agg_missing(s)) is True
 
@@ -66,7 +66,7 @@ def test_get_statsmodel_dof_no_attribute():
 
 
 def test_agg_values_are_same_empty_series() -> None:
-    """Agg_values_are_same returns True for an empty Series (line 78)."""
+    """Agg_values_are_same returns True for an empty Series."""
     from acro.sdc_agg_funcs import agg_values_are_same  # noqa: PLC0415
 
     result = agg_values_are_same(pd.Series([], dtype=float))
@@ -74,7 +74,7 @@ def test_agg_values_are_same_empty_series() -> None:
 
 
 def test_agg_top_2_sum_non_numeric() -> None:
-    """Agg_top_2_sum returns 0 for a non-numeric Series (lines 118-119)."""
+    """Agg_top_2_sum returns 0 for a non-numeric Series."""
     from acro.sdc_agg_funcs import agg_top_2_sum  # noqa: PLC0415
 
     result = agg_top_2_sum(pd.Series(["a", "b", "c"]))

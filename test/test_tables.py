@@ -761,8 +761,8 @@ def test_pivot_table_multiple_values_raises(data):
 
 
 def test_pivot_table_aggfunc_mode(data):
-    """Pivot_table() with aggfunc='mode' uses the agg_mode helper (lines 477-478)."""
-    # TODO edit doctstring to remove references to line numbers which can change
+    """Pivot_table() with aggfunc='mode' uses the agg_mode helper"""
+    # TODO edit docstring if needed
     acro_obj = ACRO(suppress=False)
     result = acro_obj.pivot_table(
         data,
@@ -775,13 +775,12 @@ def test_pivot_table_aggfunc_mode(data):
 
 
 # ---------------------------------------------------------------------------
-# acro_tables.py — crosstab rounding with margins (line 355)
+# acro_tables.py — crosstab rounding with margins
 # ---------------------------------------------------------------------------
 
 
 def test_crosstab_rounding_with_margins(data):
-    """Crosstab with round mitigation and margins recomputes rounded margins (line 355)."""
-    # TODO edit doctstring to remove references to line numbers which can change
+    """Crosstab with round mitigation and margins recomputes rounded margins."""
     acro_obj = ACRO()
     acro_obj.enable_rounding(base=5)
     result = acro_obj.crosstab(data.year, data.grant_type, margins=True)
@@ -791,13 +790,12 @@ def test_crosstab_rounding_with_margins(data):
 
 
 # ---------------------------------------------------------------------------
-# acro_tables.py — pivot_table rounding path (lines 546-551)
+# acro_tables.py — pivot_table rounding path
 # ---------------------------------------------------------------------------
 
 
 def test_pivot_table_rounding(data):
-    """Pivot_table with mitigation='round' goes through the rounding branch (lines 546-551)."""
-    # TODO edit doctstring to remove references to line numbers which can change
+    """Pivot_table with mitigation='round' goes through the rounding branch."""
     acro_obj = ACRO()
     acro_obj.enable_rounding(base=5)
     result = acro_obj.pivot_table(

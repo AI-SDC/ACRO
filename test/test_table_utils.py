@@ -69,7 +69,7 @@ def test_collate_risk_assessments_missing_branch() -> None:
 
 
 def test_translate_args_to_newdf_series_branch(data) -> None:
-    """Translate_args_to_newdf() maps a pd.Series argument to the redacted DataFrame (line 401)."""
+    """Translate_args_to_newdf() maps a pd.Series argument to the redacted DataFrame."""
     redacted = data[["year", "grant_type"]].copy()
     args = (data["year"], data["grant_type"])
     result = translate_args_to_newdf(args, redacted)
@@ -78,7 +78,7 @@ def test_translate_args_to_newdf_series_branch(data) -> None:
 
 
 def test_append_rounded_margins_median(data) -> None:
-    """Append_rounded_margins() with aggfunc='median' uses the median path (line 647)."""
+    """Append_rounded_margins() with aggfunc='median' uses the median path."""
     from acro.table_utils import append_rounded_margins, round_table  # noqa: PLC0415
 
     table = pd.crosstab(
@@ -128,7 +128,7 @@ def test_aggfunc_to_strings_none():
 
 
 def test_record_table_output_round_mitigation(data):
-    """_record_table_output stores round_base in properties (line 198) and adds exception."""
+    """_record_table_output stores round_base in properties and adds exception."""
     acro_obj = ACRO(mitigation="round", round_base=5)
     _ = acro_obj.crosstab(data.year, data.grant_type)
     output = acro_obj.results.get_index(0)
@@ -447,10 +447,10 @@ class TestCollateRiskAssessmentsEdgeCases:
 
 
 class TestAlignMaskToOutcomeEdgeCases:
-    """Tests for edge cases in _align_mask_to_outcome (line 163)."""
+    """Tests for edge cases in _align_mask_to_outcome."""
 
     def test_align_mask_column_not_in_mask_columns(self):
-        """When col_mask not in mask.columns, that cell stays NaN (line 163 not executed)."""
+        """When col_mask not in mask.columns, that cell stays NaN."""
         # Outcome with 2-level MultiIndex columns
         outcome_cols = pd.MultiIndex.from_tuples(
             [("A", 1), ("A", 2), ("B", 1)], names=["level0", "level1"]
@@ -531,17 +531,16 @@ class TestCollateRiskAssessmentsElseBranch:
 
     @pytest.mark.skip(reason="noprag")
     def test_collate_with_duplicate_check_name_skips_second(self):
-        """Test that duplicate check names (line 110: if name in checks_seen) are skipped.
+        """Test that duplicate check names are skipped.
 
         Note: This test cannot realistically trigger because Python dicts cannot have duplicate keys.
         The outcomes dict in ChecksResults cannot have the same check name twice.
-        Line 110 is defensive programming that cannot be reached via normal API usage.
         """
         # Create a table
         table = pd.DataFrame({"A": [10, 20], "B": [30, 40]}, index=pd.Index([1, 2]))
 
         # Create outcomes with DUPLICATE check names
-        # When the same check name appears twice, the second should be skipped (line 110)
+        # When the same check name appears twice, the second should be skipped
         mask1 = pd.DataFrame(
             {"A": [True, False], "B": [False, True]}, index=pd.Index([1, 2])
         )
@@ -555,13 +554,13 @@ class TestCollateRiskAssessmentsElseBranch:
             fair_dict={},
         )
 
-        # We need to trigger the duplicate name check (line 110)
+        # We need to trigger the duplicate name check
         # This happens when same name appears in masks dict during iteration
         result = collate_risk_assessments(table, {"Analysis1": cr})
         assert isinstance(result, pd.DataFrame)
 
     def test_collate_with_non_dataframe_mask_skips(self):
-        """Test that non-DataFrame masks (line 115: if not isinstance(mask, DataFrame)) are skipped."""
+        """Test that non-DataFrame masks are skipped."""
         # Create a table
         table = pd.DataFrame({"A": [10, 20], "B": [30, 40]}, index=pd.Index([1, 2]))
 
@@ -580,9 +579,9 @@ class TestCollateRiskAssessmentsElseBranch:
         assert isinstance(result, pd.DataFrame)
 
     def test_align_mask_with_multiindex_columns(self):
-        """Test _align_mask_to_outcome with MultiIndex columns including non-tuple columns (line 163)."""
+        """Test _align_mask_to_outcome with MultiIndex columns including non-tuple columns."""
         # Create outcome_df with mixed column types: some tuples, some non-tuples
-        # This mixed scenario should trigger line 163 (else branch for non-tuple columns)
+        # This mixed scenario should trigger the alignment logic for non-tuple columns
         outcome_df = pd.DataFrame(
             [[1, 2, 3], [4, 5, 6]],
             columns=[
@@ -598,7 +597,7 @@ class TestCollateRiskAssessmentsElseBranch:
             columns=["x", "y", "SimpleColumn"],
         )
 
-        # This should trigger the alignment logic that executes line 163
+        # This should trigger the alignment logic that executes
         # for the non-tuple "SimpleColumn"
         result = _align_mask_to_outcome(mask, outcome_df)
 

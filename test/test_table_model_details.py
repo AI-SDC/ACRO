@@ -19,7 +19,7 @@ def test_tablemodeldetails_kwargs_not_dict():
 
 
 def test_tablemodeldetails_values_not_series():
-    """Passing non-Series values raises TypeError (line 77)."""
+    """Passing non-Series values raises TypeError."""
     with pytest.raises(
         TypeError, match="Expected values argument to be a panda Series"
     ):
@@ -53,7 +53,7 @@ def test_tablemodeldetails_axis_not_a_list():
 
 
 def test_get_axis_metadata_non_series_item():
-    """_get_axis_metadata logs when a dimension is not a Series (line 165)."""
+    """_get_axis_metadata logs when a dimension is not a Series."""
     model = TableModelDetails(
         index=[pd.Series([1, 2, 3], name="idx")],
         columns=[],
@@ -65,7 +65,7 @@ def test_get_axis_metadata_non_series_item():
 
 
 def test_get_table_newagg_incompatible_length():
-    """Get_table_newagg raises AttributeError when values length mismatches (line 222)."""
+    """Get_table_newagg raises AttributeError when values length mismatches."""
     idx = pd.Series([1, 2, 3], name="idx")
     vals = pd.Series([10, 20, 30], name="val")
     model = TableModelDetails(

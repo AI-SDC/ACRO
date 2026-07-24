@@ -260,7 +260,7 @@ def test_pivot_table_cols(data, acro):
     )
     output_0 = results.get_index(0)
     assert output_0.summary == correct_summary
-    # TODO check exeption status
+    # TODO check exception status
     assert output_0.status == "review"
     shutil.rmtree(PATH)
 
@@ -531,7 +531,7 @@ def test_crosstab_with_totals_and_empty_data(data, acro, caplog):
     assert acro.results.get_index(0).status in {"review", "fail"}
 
 
-def REDO_test_crosstab_with_manual_totals_with_suppression(data, acro):
+def redo_test_crosstab_with_manual_totals_with_suppression(data, acro):
     """Test manual totals path when suppression is enabled."""
     _ = acro.crosstab(data.year, data.grant_type, margins=True, show_suppressed=True)
     output = acro.results.get_index(0)
@@ -548,7 +548,7 @@ def REDO_test_crosstab_with_manual_totals_with_suppression(data, acro):
 
 # don't think the below are needed as we no longer do manually recalculation of totals
 # TODO rewrite once we have the redcted adta set available
-def REDO_test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
+def redo_test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
     """Test crosstab when margins and suppression are true with hierarchical data.
 
     Tests with multilevel indexes and columns while using the total manual function.
@@ -566,7 +566,7 @@ def REDO_test_crosstab_with_manual_totals_with_suppression_hierarchical(data, ac
     assert output.output[0]["All"].iat[12] > 0
 
 
-def REDO_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(
+def redo_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(
     data, acro
 ):
     """Test mean crosstab with manual totals and suppression enabled."""
@@ -587,7 +587,7 @@ def REDO_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(
     assert output.status in {"review", "fail"}
 
 
-def REDO_test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
+def redo_test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
     """Test crosstab.
 
     Test the crosstab with both margins and suppression are true, with aggfunc
@@ -610,7 +610,7 @@ def REDO_test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
     assert output.output[0]["All"].iat[12] > 0
 
 
-def REDO_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data, acro):
+def redo_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data, acro):
     """Test std crosstab with suppression enabled."""
     _ = acro.crosstab(
         data.year,
@@ -628,7 +628,7 @@ def REDO_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data
     assert table.shape[1] > 0
 
 
-def REDO_test_pivot_table_with_totals_with_suppression(data, acro):
+def redo_test_pivot_table_with_totals_with_suppression(data, acro):
     """Test the pivot table with both margins and suppression are true."""
     _ = acro.pivot_table(
         data,
@@ -645,7 +645,7 @@ def REDO_test_pivot_table_with_totals_with_suppression(data, acro):
     assert output.output[0][("inc_grants", "All")].iat[6] > 0
 
 
-def REDO_test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
+def redo_test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
     """Test crosstab.
 
     Test the crosstab with both margins and suppression are true and with a
@@ -683,7 +683,7 @@ def REDO_test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro
     assert output_3.shape == output_4.shape
 
 
-def REDO_test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
+def redo_test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
     data, acro
 ):
     """Test crosstab.
@@ -704,7 +704,7 @@ def REDO_test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchic
     assert ("std", "G", "Alive in 2015") in output.output[0].columns
 
 
-def REDO_test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(data, acro):
+def redo_test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(data, acro):
     """Test multi-aggfunc crosstab with suppression enabled."""
     _ = acro.crosstab(
         data.year,

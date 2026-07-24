@@ -761,7 +761,7 @@ def test_pivot_table_multiple_values_raises(data):
 
 
 def test_pivot_table_aggfunc_mode(data):
-    """Pivot_table() with aggfunc='mode' uses the agg_mode helper"""
+    """Pivot_table() with aggfunc='mode' uses the agg_mode helper."""
     # TODO edit docstring if needed
     acro_obj = ACRO(suppress=False)
     result = acro_obj.pivot_table(

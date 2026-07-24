@@ -205,6 +205,7 @@ def test_custom_output(acro):
     assert os.path.exists(os.path.normpath(f"{PATH}/XandY.jpeg"))
     shutil.rmtree(PATH)
 
+
 def test_add_custom_blocked_extension(tmp_path) -> None:
     """Records.add_custom() returns False when the file extension is blocked (line 369)."""
     # TODO remove line number from docstring as line numbers might change
@@ -360,6 +361,7 @@ def test_mitigation_setter_unknown_string():
     acro_obj.mitigation = "unknown_mitigation"
     assert acro_obj.mitigation == "none"
 
+
 def test_enable_rounding_no_base():
     """Enabling rounding without a base preserves the existing base."""
     acro_obj = ACRO()
@@ -392,6 +394,7 @@ def test_disable_rounding_when_not_round():
     acro_obj.mitigation = "none"
     acro_obj.disable_rounding()
     assert acro_obj.mitigation == "none"
+
 
 def test_round_base_setter_non_integer():
     """Setting round_base to a non-integer falls back to default."""

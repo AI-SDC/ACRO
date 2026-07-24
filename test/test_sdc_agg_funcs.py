@@ -64,6 +64,7 @@ def test_get_statsmodel_dof_no_attribute():
     with pytest.raises(AttributeError, match="model does not have df_resid attribute"):
         get_statsmodel_dof(FakeModel())
 
+
 def test_agg_values_are_same_empty_series() -> None:
     """Agg_values_are_same returns True for an empty Series (line 78)."""
     from acro.sdc_agg_funcs import agg_values_are_same  # noqa: PLC0415

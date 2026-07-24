@@ -1,8 +1,8 @@
 """Unit tests."""
 
-from asyncio.log import logger
 import os
 import shutil
+from asyncio.log import logger
 
 import matplotlib as mpl
 
@@ -10,7 +10,6 @@ mpl.use("Agg")
 
 import numpy as np
 import pandas as pd
-import scipy.stats as stats
 import pytest
 
 from acro import (
@@ -18,11 +17,6 @@ from acro import (
     utils,
 )
 from acro.record import Records
-from acro.sdcchecks import SDCChecks, SDCEvidence
-from acro.table_utils import (
-    translate_args_to_newdf,
-)
-from acro.tablemodeldetails import TableModelDetails
 
 # pylint: disable=redefined-outer-name,too-many-lines
 
@@ -110,20 +104,23 @@ def test_crosstab_without_suppression(data):
 def test_crosstab_with_aggfunc_mode(data):
     """Crosstab threshold without automatic suppression."""
     acro = ACRO(suppress=False)
-    acroversion= acro.crosstab(
+    acroversion = acro.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mode"
     )
     output = acro.results.get_index(0)
-    correct_summary: str = ("ModeCalculation : \n"
-                            "PresenceOfLinkedTableCheck:"
-                            " A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
+    correct_summary: str = (
+        "ModeCalculation : \n"
+        "PresenceOfLinkedTableCheck:"
+        " A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
     )
     assert output.summary == correct_summary
-    pandas_version= pd.crosstab(data.year, data.grant_type, values=data.inc_grants, aggfunc=pd.Series.mode)
+    pandas_version = pd.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc=pd.Series.mode
+    )
     logger.info(f"output.output[0]is {output.output[0]}")
-    #assert output.output[0].equals(pandas_version)
+    # assert output.output[0].equals(pandas_version)
     assert acroversion.equals(pandas_version)
-    
+
     assert output.output[0]["R/G"].iat[0] == 913000
 
 
@@ -152,7 +149,7 @@ def test_crosstab_threshold(data, acro):
 
     output = acro.results.get_index(-1)
 
-    #six cells should be suppressed
+    # six cells should be suppressed
     total_nan: int = output.output[0]["R/G"].isnull().sum()
     assert total_nan == 6, f"output is\n{output.output[0]}"
 
@@ -160,20 +157,20 @@ def test_crosstab_threshold(data, acro):
     for pos in positions:
         row, col = pos
         assert np.isnan(output.output[0].iloc[row, col])
-    #results: Records = acro.finalise(PATH)
+    # results: Records = acro.finalise(PATH)
     correct_summary: str = (
         "FrequencyTable : \n"
         " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
-    #output = results.get_index(0)
+    # output = results.get_index(0)
     assert output.summary == correct_summary, (
         f"expected:\n{correct_summary}\n---\ngot:\n{output.summary}\n----"
     )
-    assert output.status =="review"
+    assert output.status == "review"
 
     # TODO check appropriate exception added saying suppression has been applied
-    #shutil.rmtree(PATH)
+    # shutil.rmtree(PATH)
 
 
 def test_crosstab_multiple(data, acro):
@@ -230,7 +227,7 @@ def test_pivot_table_without_suppression(data):
     # TODO compare the outputs to the equivalent pandas outputs
     # TODO check status and summary are what they should be
     assert output_0.output[0]["mean"]["inc_grants"].sum() == 36293992.0
-    assert output_0.status =="pass"
+    assert output_0.status == "pass"
 
 
 def test_pivot_table_pass(data, acro):
@@ -240,7 +237,7 @@ def test_pivot_table_pass(data, acro):
     )
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
-    assert output_0.status =="pass"
+    assert output_0.status == "pass"
     shutil.rmtree(PATH)
 
 
@@ -263,7 +260,7 @@ def test_pivot_table_cols(data, acro):
     )
     output_0 = results.get_index(0)
     assert output_0.summary == correct_summary
-    #TODO check exeption status 
+    # TODO check exeption status
     assert output_0.status == "review"
     shutil.rmtree(PATH)
 
@@ -292,8 +289,8 @@ def test_pivot_table_with_aggfunc_sum(data, acro):
     output_1 = results.get_index(1)
     # TODO compare the outputs to the equivalent pandas outputs
     # TODO check status and summary are what they should be
-    assert output_0.status =='fail'
-    assert output_1.status =='fail'
+    assert output_0.status == "fail"
+    assert output_1.status == "fail"
     shutil.rmtree(PATH)
 
 
@@ -320,6 +317,7 @@ def test_tables_missing(data, acro, monkeypatch):
     assert output_1.exception == "Let me have it"
     shutil.rmtree(PATH)
 
+
 def test_crosstab_multiple_aggregate_function_no_suppression(data, acro):
     """Crosstab with multiple agg funcs."""
     acro = ACRO(suppress=False)
@@ -338,6 +336,7 @@ def test_crosstab_multiple_aggregate_function_no_suppression(data, acro):
     assert output.status == "fail"
     correctval = 97383496.0
     assert output.output[0]["mean"]["R/G"].sum() == correctval
+
 
 def test_crosstab_multi_aggfunc(data):
     """Test acro crosstab with multi-aggfunc list e.g. ['mean', 'std']."""
@@ -369,7 +368,6 @@ def test_crosstab_multi_aggfunc(data):
     )
     assert isinstance(table2, pd.DataFrame)
     assert table2.columns.nlevels == 2
-
 
 
 @pytest.mark.skip(reason="Not yet implemented")
@@ -511,7 +509,7 @@ def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
     assert output.status in {"review", "fail"}
 
 
-def test_crosstab_with_totals_and_empty_data(data, acro,caplog):
+def test_crosstab_with_totals_and_empty_data(data, acro, caplog):
     """Test crosstab with margins on a fully disclosive subset."""
     data = data[
         (data.year == 2010)
@@ -547,8 +545,9 @@ def REDO_test_crosstab_with_manual_totals_with_suppression(data, acro):
     assert table["All"].iat[6] > 0
     assert output.status in {"review", "fail"}
 
-#don't think the below are needed as we no longer do manually recalculation of totals
-# TODO rewrite once we have the redcted adta set available 
+
+# don't think the below are needed as we no longer do manually recalculation of totals
+# TODO rewrite once we have the redcted adta set available
 def REDO_test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
     """Test crosstab when margins and suppression are true with hierarchical data.
 
@@ -567,7 +566,9 @@ def REDO_test_crosstab_with_manual_totals_with_suppression_hierarchical(data, ac
     assert output.output[0]["All"].iat[12] > 0
 
 
-def REDO_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, acro):
+def REDO_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(
+    data, acro
+):
     """Test mean crosstab with manual totals and suppression enabled."""
     _ = acro.crosstab(
         data.year,
@@ -642,8 +643,6 @@ def REDO_test_pivot_table_with_totals_with_suppression(data, acro):
     assert ("inc_grants", "All") in output.output[0].columns
     assert output.output[0][("inc_grants", "All")].iat[0] > 0
     assert output.output[0][("inc_grants", "All")].iat[6] > 0
-
-
 
 
 def REDO_test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
@@ -740,16 +739,6 @@ def test_crosstab_with_totals_raises_when_data_none():
     #     )
 
 
-
-
-
-
-
-
-
-
-
-
 def test_pivot_table_no_values_raises(data):
     """Pivot tables without values raise a helpful error."""
     acro_obj = ACRO(suppress=False)
@@ -820,22 +809,6 @@ def test_pivot_table_rounding(data):
     assert isinstance(result, pd.DataFrame)
     assert not result.empty
     # TODO check that the values are rounded to nearest 5
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def test_process_table_output_standalone_crosstab_via_refactoring():

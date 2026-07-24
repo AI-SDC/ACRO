@@ -28,7 +28,6 @@ def test_add_backticks():
     assert table_utils.add_backticks("foo bar baz") == "`foo bar baz`"
 
 
-
 def _make_table_for_collate_risk_assessments() -> pd.DataFrame:
     return pd.DataFrame({"A": [10, 20], "B": [30, 40]}, index=[1, 2])
 
@@ -88,7 +87,6 @@ def test_append_rounded_margins_median(data) -> None:
     rounded = round_table(table, 5)
     result = append_rounded_margins(rounded, "median", "All", 5)
     assert isinstance(result, pd.DataFrame)
-
 
 
 def test_collate_risk_assessments_negative_path(data):

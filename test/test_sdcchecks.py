@@ -189,6 +189,7 @@ _RISK_APPETITE = {
     "zeros_are_disclosive": True,
 }
 
+
 def test_check_model_dof_dataframe_dof_fail():
     """Dataframe dof values below threshold are flagged as failures."""
     sdc = SDCChecks(_RISK_APPETITE)
@@ -221,7 +222,6 @@ def test_manual_check_survival_model_type():
     status, summary, _ = sdc.manual_check("KaplanMeier", ev, model)
     assert status == "review"
     assert "manual" in summary.lower()
-
 
 
 _RA = {
@@ -405,6 +405,8 @@ def test_get_table_sdc_duplicate_check_skipped_branch() -> None:
     sdc = many.get_table_sdc()
     assert len(sdc["cells"]) == 1
     assert "MinimumThresholdCheck" in sdc["cells"]
+
+
 ####TODO fix the below- uses out of date functions and does not follow the
 # TODO new pattern of collect evidence-apply test
 

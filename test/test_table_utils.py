@@ -34,9 +34,6 @@ def _make_table_for_collate_risk_assessments() -> pd.DataFrame:
 
 def test_collate_risk_assessments_negative_branch() -> None:
     """Negative masks are surfaced as negative values in collated results."""
-    from acro.sdcchecks import ChecksResults
-    from acro.table_utils import collate_risk_assessments
-
     table = _make_table_for_collate_risk_assessments()
     neg_mask = pd.DataFrame({"A": [True, False], "B": [False, False]}, index=[1, 2])
     cr = ChecksResults(
@@ -52,9 +49,6 @@ def test_collate_risk_assessments_negative_branch() -> None:
 
 def test_collate_risk_assessments_missing_branch() -> None:
     """Missing masks are surfaced as missing values in collated results."""
-    from acro.sdcchecks import ChecksResults
-    from acro.table_utils import collate_risk_assessments
-
     table = _make_table_for_collate_risk_assessments()
     miss_mask = pd.DataFrame({"A": [False, True], "B": [False, False]}, index=[1, 2])
     cr = ChecksResults(

@@ -8,6 +8,24 @@ from acro.sdcchecks import SDCChecks, SDCEvidence
 from acro.tablemodeldetails import TableModelDetails
 
 
+def test_sdc_checks_unknown_analysis_returns_review() -> None:
+    """Unknown analyses return a review result from the SDC runner."""
+    sdc = SDCChecks(
+        {
+            "safe_threshold": 10,
+            "safe_dof_threshold": 10,
+            "safe_nk_n": 2,
+            "safe_nk_k": 0.9,
+            "safe_pratio_p": 0.1,
+            "check_missing_values": False,
+            "zeros_are_disclosive": True,
+        }
+    )
+    ev = SDCEvidence()
+    result = sdc.run_checks_for_analysis("NonExistentAnalysis", ev, None)
+    assert result.overall_status == "Review"
+
+
 def test_sdcevidence_populate_dof_else_branch():
     """Populate_dof falls back to -1 for unknown model type."""
     ev = SDCEvidence()
@@ -160,6 +178,232 @@ def test_check_presence_of_zero_disclosive(data):
     assert "PresenceOfZeroCheck" in output.sdc.get("cells", {})
 
 
+_RISK_APPETITE = {
+    "safe_threshold": 10,
+    "safe_dof_threshold": 10,
+    "safe_nk_n": 2,
+    "safe_nk_k": 0.9,
+    "safe_pratio_p": 0.1,
+    "check_missing_values": False,
+    "zeros_are_disclosive": True,
+}
+
+def test_check_model_dof_dataframe_dof_fail():
+    """Dataframe dof values below threshold are flagged as failures."""
+    sdc = SDCChecks(_RISK_APPETITE)
+    ev = SDCEvidence()
+    ev.dof = pd.DataFrame({"a": [5, 15], "b": [3, 20]})
+    status, summary, _ = sdc.check_model_dof("FrequencyTable", ev, None)
+    assert status == "fail"
+    assert "<" in summary
+
+
+def test_check_model_dof_dataframe_dof_pass():
+    """Dataframe dof values at or above threshold pass."""
+    sdc = SDCChecks(_RISK_APPETITE)
+    ev = SDCEvidence()
+    ev.dof = pd.DataFrame({"a": [15, 20], "b": [12, 30]})
+    status, _, _ = sdc.check_model_dof("FrequencyTable", ev, None)
+    assert status == "pass"
+
+
+def test_manual_check_survival_model_type():
+    """Survival model types trigger the manual review path."""
+    sdc = SDCChecks(_RISK_APPETITE)
+    ev = SDCEvidence()
+    model = TableModelDetails(
+        index=[pd.Series([1, 2, 3], name="t")],
+        risk_appetite=_RISK_APPETITE,
+        command="surv_func",
+    )
+    model.model_type = "survival"
+    status, summary, _ = sdc.manual_check("KaplanMeier", ev, model)
+    assert status == "review"
+    assert "manual" in summary.lower()
+
+
+
+_RA = {
+    "safe_threshold": 10,
+    "safe_dof_threshold": 10,
+    "safe_nk_n": 2,
+    "safe_nk_k": 0.9,
+    "safe_pratio_p": 0.1,
+    "check_missing_values": False,
+    "zeros_are_disclosive": True,
+}
+
+
+def test_check_all_same_all_identical() -> None:
+    """All-identical values trigger a fail result."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    ev.interim_tables["values_are_same"] = pd.DataFrame(
+        {"A": [True, False], "B": [False, True]},
+        index=[1, 2],
+    )
+    dummy_model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[],
+        values=pd.Series([10.0, 20.0], name="v"),
+    )
+    status, summary, _ = sdc.check_all_same("Mean", ev, dummy_model)
+    assert status == "fail"
+    assert "2 cells" in summary
+
+
+def test_check_all_same_no_identical() -> None:
+    """Non-identical values pass the all-same check."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    ev.interim_tables["values_are_same"] = pd.DataFrame(
+        {"A": [False, False], "B": [False, False]},
+        index=[1, 2],
+    )
+    dummy_model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[],
+        values=pd.Series([10.0, 20.0], name="v"),
+    )
+    status, _, _ = sdc.check_all_same("Mean", ev, dummy_model)
+    assert status == "pass"
+
+
+def test_check_missing_with_missings() -> None:
+    """Missing values trigger a fail result."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    ev.interim_tables["missing"] = pd.DataFrame({"A": [True, False]}, index=[1, 2])
+    dummy_model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[],
+        values=pd.Series([10.0, 20.0], name="v"),
+    )
+    status, _, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
+    assert status == "fail"
+
+
+def test_check_missing_no_missings() -> None:
+    """No missing values pass the check."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    ev.interim_tables["missing"] = pd.DataFrame({"A": [False, False]}, index=[1, 2])
+    dummy_model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[],
+        values=pd.Series([10.0, 20.0], name="v"),
+    )
+    status, _, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
+    assert status == "pass"
+
+
+def test_manual_check_unknown_model_type_returns_fail() -> None:
+    """Unknown model types return a fail result from manual checks."""
+    sdc = SDCChecks(_RA)
+    ev = SDCEvidence()
+    model = TableModelDetails(
+        index=[pd.Series([1, 2, 3], name="t")],
+        risk_appetite=_RA,
+        command="something",
+    )
+    model.model_type = "unknown_type"
+    status, _, _ = sdc.manual_check("TestAnalysis", ev, model)
+    assert status == "fail"
+
+
+_RA_NO_ZERO = {
+    "safe_threshold": 10,
+    "safe_dof_threshold": 10,
+    "safe_nk_n": 2,
+    "safe_nk_k": 0.9,
+    "safe_pratio_p": 0.1,
+    "check_missing_values": False,
+    "zeros_are_disclosive": False,
+}
+
+
+def test_check_required_zero_zeros_not_disclosive_qualifier() -> None:
+    """The non-disclosive zero branch uses the expected qualifier."""
+    sdc = SDCChecks(_RA_NO_ZERO)
+    ev = SDCEvidence()
+    model = TableModelDetails(
+        index=[pd.Series([10, 20], name="a")],
+        columns=[pd.Series([1, 2], name="b")],
+        values=pd.Series([100.0, 200.0], name="v"),
+        thekwargs={},
+        risk_appetite=_RA_NO_ZERO,
+        command="crosstab",
+    )
+    status, summary, _ = sdc.check_required_zero("FrequencyTable", ev, model)
+    assert status == "pass"
+    assert "not" in summary
+
+
+def test_check_presence_of_zero_not_disclosive() -> None:
+    """The non-disclosive zero branch uses an all-false mask."""
+    sdc = SDCChecks(_RA_NO_ZERO)
+    ev = SDCEvidence()
+    ev.interim_tables["count_table"] = pd.DataFrame(
+        {"A": [0, 5], "B": [10, 15]}, index=[1, 2]
+    )
+    model = TableModelDetails(
+        index=[pd.Series([1, 2], name="a")],
+        columns=[pd.Series([1, 2], name="b")],
+        values=pd.Series([0.0, 5.0], name="v"),
+        thekwargs={},
+        risk_appetite=_RA_NO_ZERO,
+        command="crosstab",
+    )
+    status, summary, _ = sdc.check_presence_of_zero("FrequencyTable", ev, model)
+    assert status == "pass"
+    assert "not disclosive" in summary
+
+
+def test_get_table_sdc_minimum_dof_check_as_int() -> None:
+    """Minimumdof checks stored as integers are summarized correctly."""
+    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+
+    cr_result = ChecksResults(
+        overall_status="pass",
+        summaries="dof=50 >= 10",
+        outcomes={"MinimumDoFCheck": 50},
+        fair_dict={},
+    )
+    many = ManyChecksResults()
+    many.allchecksresults["GeneralLinearModel"] = cr_result
+    sdc = many.get_table_sdc()
+    assert sdc["summary"]["MinimumDoFCheck"] == 0
+
+
+def test_get_table_sdc_minimum_dof_check_as_int_fail() -> None:
+    """Minimumdof checks that fail are summarized as one."""
+    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+
+    cr_result = ChecksResults(
+        overall_status="fail",
+        summaries="dof=0 < 10",
+        outcomes={"MinimumDoFCheck": 0},
+        fair_dict={},
+    )
+    many = ManyChecksResults()
+    many.allchecksresults["GeneralLinearModel"] = cr_result
+    sdc = many.get_table_sdc()
+    assert sdc["summary"]["MinimumDoFCheck"] == 1
+
+
+def test_get_table_sdc_duplicate_check_skipped_branch() -> None:
+    """Duplicate checks are only counted once in the table summary."""
+    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
+
+    mask = pd.DataFrame({"A": [False, False]}, index=[1, 2])
+    cr1 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})
+    cr2 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})
+    many = ManyChecksResults()
+    many.allchecksresults["FrequencyTable"] = cr1
+    many.allchecksresults["Mean"] = cr2
+    sdc = many.get_table_sdc()
+    assert len(sdc["cells"]) == 1
+    assert "MinimumThresholdCheck" in sdc["cells"]
 ####TODO fix the below- uses out of date functions and does not follow the
 # TODO new pattern of collect evidence-apply test
 

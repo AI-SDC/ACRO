@@ -20,6 +20,69 @@ def test_add_backticks():
     assert table_utils.add_backticks("foo bar baz") == "`foo bar baz`"
 
 
+
+def _make_table_for_collate_risk_assessments() -> pd.DataFrame:
+    return pd.DataFrame({"A": [10, 20], "B": [30, 40]}, index=[1, 2])
+
+
+def test_collate_risk_assessments_negative_branch() -> None:
+    """Negative masks are surfaced as negative values in collated results."""
+    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
+    from acro.table_utils import collate_risk_assessments  # noqa: PLC0415
+
+    table = _make_table_for_collate_risk_assessments()
+    neg_mask = pd.DataFrame({"A": [True, False], "B": [False, False]}, index=[1, 2])
+    cr = ChecksResults(
+        overall_status="review",
+        summaries="review",
+        outcomes={"negative": neg_mask},
+        fair_dict={},
+    )
+    outcome = collate_risk_assessments(table, {"Mean": cr})
+    flat = outcome.to_numpy().flatten().tolist()
+    assert any("negative" in str(v) for v in flat)
+
+
+def test_collate_risk_assessments_missing_branch() -> None:
+    """Missing masks are surfaced as missing values in collated results."""
+    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
+    from acro.table_utils import collate_risk_assessments  # noqa: PLC0415
+
+    table = _make_table_for_collate_risk_assessments()
+    miss_mask = pd.DataFrame({"A": [False, True], "B": [False, False]}, index=[1, 2])
+    cr = ChecksResults(
+        overall_status="fail",
+        summaries="fail",
+        outcomes={"missing": miss_mask},
+        fair_dict={},
+    )
+    outcome = collate_risk_assessments(table, {"Mean": cr})
+    flat = outcome.to_numpy().flatten().tolist()
+    assert any("missing" in str(v) for v in flat)
+
+
+def test_translate_args_to_newdf_series_branch(data) -> None:
+    """Translate_args_to_newdf() maps a pd.Series argument to the redacted DataFrame (line 401)."""
+    redacted = data[["year", "grant_type"]].copy()
+    args = (data["year"], data["grant_type"])
+    result = translate_args_to_newdf(args, redacted)
+    assert len(result) == 2
+    assert result[0].equals(redacted["year"])
+
+
+def test_append_rounded_margins_median(data) -> None:
+    """Append_rounded_margins() with aggfunc='median' uses the median path (line 647)."""
+    from acro.table_utils import append_rounded_margins, round_table  # noqa: PLC0415
+
+    table = pd.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc="median"
+    )
+    rounded = round_table(table, 5)
+    result = append_rounded_margins(rounded, "median", "All", 5)
+    assert isinstance(result, pd.DataFrame)
+
+
+
 def test_collate_risk_assessments_negative_path(data):
     """Collate_risk_assessments covers the 'negative' branch."""
     acro_obj = ACRO(suppress=False)

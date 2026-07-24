@@ -53,7 +53,7 @@ class SDCEvidence:
         if isinstance(model, statsmodels.base.model.Model):
             self.dof = get_statsmodel_dof(model)
         elif isinstance(model, TableModelDetails):
-            self.dof = model.get_count_table() - 1
+            self.dof = model.get_count_table().min(axis=None) - 1
         else:
             self.dof = -1
 

@@ -1,5 +1,6 @@
 """Unit tests."""
 
+from asyncio.log import logger
 import os
 import shutil
 
@@ -9,6 +10,7 @@ mpl.use("Agg")
 
 import numpy as np
 import pandas as pd
+import scipy.stats as stats
 import pytest
 
 from acro import (
@@ -108,13 +110,20 @@ def test_crosstab_without_suppression(data):
 def test_crosstab_with_aggfunc_mode(data):
     """Crosstab threshold without automatic suppression."""
     acro = ACRO(suppress=False)
-    _ = acro.crosstab(
+    acroversion= acro.crosstab(
         data.year, data.grant_type, values=data.inc_grants, aggfunc="mode"
     )
     output = acro.results.get_index(0)
-    # correct_summary: str = "fail; all-values-are-same: 1 cells may need suppressing; "
-    # ##TODO    assert output.summary == correct_summary
-    #  ##TODO run directly in pandas mode and compare all of the table values to the pandas mode output
+    correct_summary: str = ("ModeCalculation : \n"
+                            "PresenceOfLinkedTableCheck:"
+                            " A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
+    )
+    assert output.summary == correct_summary
+    pandas_version= pd.crosstab(data.year, data.grant_type, values=data.inc_grants, aggfunc=pd.Series.mode)
+    logger.info(f"output.output[0]is {output.output[0]}")
+    #assert output.output[0].equals(pandas_version)
+    assert acroversion.equals(pandas_version)
+    
     assert output.output[0]["R/G"].iat[0] == 913000
 
 
@@ -141,8 +150,9 @@ def test_crosstab_threshold(data, acro):
     acro.enable_suppression()
     _ = acro.crosstab(data.year, data.grant_type)
 
-    # TODO next three lines would make more sense if you moved them further down the method
-    output = acro.results.get_index(0)
+    output = acro.results.get_index(-1)
+
+    #six cells should be suppressed
     total_nan: int = output.output[0]["R/G"].isnull().sum()
     assert total_nan == 6, f"output is\n{output.output[0]}"
 
@@ -150,20 +160,20 @@ def test_crosstab_threshold(data, acro):
     for pos in positions:
         row, col = pos
         assert np.isnan(output.output[0].iloc[row, col])
-    acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise(PATH)
+    #results: Records = acro.finalise(PATH)
     correct_summary: str = (
         "FrequencyTable : \n"
         " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
-    output = results.get_index(0)
+    #output = results.get_index(0)
     assert output.summary == correct_summary, (
         f"expected:\n{correct_summary}\n---\ngot:\n{output.summary}\n----"
     )
-    # TODO check status is now review with
+    assert output.status =="review"
+
     # TODO check appropriate exception added saying suppression has been applied
-    shutil.rmtree(PATH)
+    #shutil.rmtree(PATH)
 
 
 def test_crosstab_multiple(data, acro):
@@ -187,7 +197,7 @@ def test_crosstab_multiple(data, acro):
     shutil.rmtree(PATH)
 
 
-def test_negatives(data, acro):
+def test_tables_negatives(data, acro):
     """Pivot table and Crosstab with negative values."""
     data.loc[0:10, "inc_grants"] = -10
     _ = acro.crosstab(
@@ -201,7 +211,9 @@ def test_negatives(data, acro):
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
-    # TODO check that the summary is correct for both outputs
+    correct_summary: str = "review; negative values found"
+    assert output_0.summary == correct_summary
+    assert output_1.summary == correct_summary
     # TODO compare the outputs to the equivalentpandas outputs
     assert output_0.status == "review"
     assert output_1.status == "review"
@@ -218,7 +230,7 @@ def test_pivot_table_without_suppression(data):
     # TODO compare the outputs to the equivalent pandas outputs
     # TODO check status and summary are what they should be
     assert output_0.output[0]["mean"]["inc_grants"].sum() == 36293992.0
-    assert output_0.status in ["pass", "fail", "review"]  ##TODO make less VAGUE
+    assert output_0.status =="pass"
 
 
 def test_pivot_table_pass(data, acro):
@@ -228,7 +240,7 @@ def test_pivot_table_pass(data, acro):
     )
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
-    assert output_0.status in ["pass", "review"]  # TODO why not just "pass"?
+    assert output_0.status =="pass"
     shutil.rmtree(PATH)
 
 
@@ -245,7 +257,13 @@ def test_pivot_table_cols(data, acro):
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
     # TODO compare the outputs to the equivalent pandas outputs
-    # TODO check status and summary are what they should be
+    correct_summary: str = (
+        "review; threshold: 14 cells suppressed; "
+        "p-ratio: 4 cells suppressed; nk-rule: 2 cells suppressed; "
+    )
+    output_0 = results.get_index(0)
+    assert output_0.summary == correct_summary
+    #TODO check exeption status 
     assert output_0.status == "review"
     shutil.rmtree(PATH)
 
@@ -274,12 +292,12 @@ def test_pivot_table_with_aggfunc_sum(data, acro):
     output_1 = results.get_index(1)
     # TODO compare the outputs to the equivalent pandas outputs
     # TODO check status and summary are what they should be
-    assert output_0.status in ("review", "fail", "pass")
-    assert output_1.status in ("review", "fail", "pass")
+    assert output_0.status =='fail'
+    assert output_1.status =='fail'
     shutil.rmtree(PATH)
 
 
-def test_missing(data, acro, monkeypatch):
+def test_tables_missing(data, acro, monkeypatch):
     """Pivot table and Crosstab with missing values."""
     acro.sdc_checks.risk_appetite["check_missing_values"] = True
     acro.suppress = False
@@ -293,11 +311,65 @@ def test_missing(data, acro, monkeypatch):
     exceptions = ["I want it", "Let me have it"]
     monkeypatch.setattr("builtins.input", lambda _: exceptions.pop(0))
     results: Records = acro.finalise(PATH, interactive=True)
+    correct_summary: str = "review; missing values found"
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
+    assert output_0.summary == correct_summary
+    assert output_1.summary == correct_summary
     assert output_0.exception == "I want it"
     assert output_1.exception == "Let me have it"
     shutil.rmtree(PATH)
+
+def test_crosstab_multiple_aggregate_function_no_suppression(data, acro):
+    """Crosstab with multiple agg funcs."""
+    acro = ACRO(suppress=False)
+    _ = acro.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc=["mean", "std"]
+    )
+    output = acro.results.get_index(0)
+    correct_summary: str = (
+        "fail; threshold: 14 cells may need suppressing;"
+        " p-ratio: 4 cells may need suppressing; "
+        "nk-rule: 2 cells may need suppressing; "
+    )
+    assert output.summary == correct_summary, (
+        f"\n{output.summary}\n should be \n{correct_summary}\n"
+    )
+    assert output.status == "fail"
+    correctval = 97383496.0
+    assert output.output[0]["mean"]["R/G"].sum() == correctval
+
+def test_crosstab_multi_aggfunc(data):
+    """Test acro crosstab with multi-aggfunc list e.g. ['mean', 'std']."""
+    acro = ACRO(suppress=False)
+    table = acro.crosstab(
+        data["survivor"],
+        data["grant_type"],
+        values=data["inc_grants"],
+        aggfunc=["mean", "std"],
+        margins=False,
+    )
+    pandastable = pd.crosstab(
+        data["survivor"],
+        data["grant_type"],
+        values=data["inc_grants"],
+        aggfunc=["mean", "std"],
+        margins=False,
+    )
+    assert isinstance(table, pd.DataFrame)
+    assert table.equals(pandastable)
+
+    acro2 = ACRO(suppress=True)
+    table2 = acro2.crosstab(
+        data["survivor"],
+        data["grant_type"],
+        values=data["inc_grants"],
+        aggfunc=["mean", "std"],
+        margins=True,
+    )
+    assert isinstance(table2, pd.DataFrame)
+    assert table2.columns.nlevels == 2
+
 
 
 @pytest.mark.skip(reason="Not yet implemented")
@@ -364,6 +436,11 @@ def test_zeros_are_not_disclosive(data, acro):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
+    correct_summary: str = (
+        "review; threshold: 14 cells suppressed; "
+        "p-ratio: 2 cells suppressed; nk-rule: 2 cells suppressed; "
+    )
+    assert output_0.summary == correct_summary
     # TODO shouldn't this be status pass?
     # TODO check summary - should say TRE risk appettie stattes zeros ok
     assert output_0.status == "review"
@@ -434,7 +511,7 @@ def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
     assert output.status in {"review", "fail"}
 
 
-def test_crosstab_with_totals_and_empty_data(data, acro):
+def test_crosstab_with_totals_and_empty_data(data, acro,caplog):
     """Test crosstab with margins on a fully disclosive subset."""
     data = data[
         (data.year == 2010)
@@ -449,10 +526,14 @@ def test_crosstab_with_totals_and_empty_data(data, acro):
         margins=True,
     )
     # TODO check status and summary
+    assert (
+        "All the cells in this data are disclosive. Thus suppression can not be applied"
+        in caplog.text
+    )
     assert acro.results.get_index(0).status in {"review", "fail"}
 
 
-def test_crosstab_with_manual_totals_with_suppression(data, acro):
+def REDO_test_crosstab_with_manual_totals_with_suppression(data, acro):
     """Test manual totals path when suppression is enabled."""
     _ = acro.crosstab(data.year, data.grant_type, margins=True, show_suppressed=True)
     output = acro.results.get_index(0)
@@ -466,8 +547,9 @@ def test_crosstab_with_manual_totals_with_suppression(data, acro):
     assert table["All"].iat[6] > 0
     assert output.status in {"review", "fail"}
 
-
-def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
+#don't think the below are needed as we no longer do manually recalculation of totals
+# TODO rewrite once we have the redcted adta set available 
+def REDO_test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
     """Test crosstab when margins and suppression are true with hierarchical data.
 
     Tests with multilevel indexes and columns while using the total manual function.
@@ -485,7 +567,7 @@ def test_crosstab_with_manual_totals_with_suppression_hierarchical(data, acro):
     assert output.output[0]["All"].iat[12] > 0
 
 
-def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, acro):
+def REDO_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, acro):
     """Test mean crosstab with manual totals and suppression enabled."""
     _ = acro.crosstab(
         data.year,
@@ -504,7 +586,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_mean(data, ac
     assert output.status in {"review", "fail"}
 
 
-def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
+def REDO_test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
     """Test crosstab.
 
     Test the crosstab with both margins and suppression are true, with aggfunc
@@ -527,7 +609,7 @@ def test_hierarchical_crosstab_with_manual_totals_with_mean(data, acro):
     assert output.output[0]["All"].iat[12] > 0
 
 
-def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data, acro):
+def REDO_test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data, acro):
     """Test std crosstab with suppression enabled."""
     _ = acro.crosstab(
         data.year,
@@ -545,7 +627,7 @@ def test_crosstab_with_manual_totals_with_suppression_with_aggfunc_std(data, acr
     assert table.shape[1] > 0
 
 
-def test_pivot_table_with_totals_with_suppression(data, acro):
+def REDO_test_pivot_table_with_totals_with_suppression(data, acro):
     """Test the pivot table with both margins and suppression are true."""
     _ = acro.pivot_table(
         data,
@@ -562,19 +644,9 @@ def test_pivot_table_with_totals_with_suppression(data, acro):
     assert output.output[0][("inc_grants", "All")].iat[6] > 0
 
 
-def test_crosstab_multiple_aggregate_function(data, acro):
-    """Crosstab with multiple agg funcs."""
-    acro = ACRO(suppress=False)
-    _ = acro.crosstab(
-        data.year, data.grant_type, values=data.inc_grants, aggfunc=["mean", "std"]
-    )
-    output = acro.results.get_index(0)
-    assert output.status == "fail"
-    correctval = 97383496.0
-    assert output.output[0]["mean"]["R/G"].sum() == correctval
 
 
-def test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
+def REDO_test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
     """Test crosstab.
 
     Test the crosstab with both margins and suppression are true and with a
@@ -612,7 +684,7 @@ def test_crosstab_with_totals_with_suppression_with_two_aggfuncs(data, acro):
     assert output_3.shape == output_4.shape
 
 
-def test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
+def REDO_test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
     data, acro
 ):
     """Test crosstab.
@@ -633,7 +705,7 @@ def test_crosstab_with_totals_with_suppression_with_two_aggfuncs_hierarchical(
     assert ("std", "G", "Alive in 2015") in output.output[0].columns
 
 
-def test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(data, acro):
+def REDO_test_crosstab_with_manual_totals_with_suppression_with_two_aggfunc(data, acro):
     """Test multi-aggfunc crosstab with suppression enabled."""
     _ = acro.crosstab(
         data.year,
@@ -668,115 +740,14 @@ def test_crosstab_with_totals_raises_when_data_none():
     #     )
 
 
-def test_crosstab_multi_aggfunc(data):
-    """Test acro crosstab with multi-aggfunc list e.g. ['mean', 'std']."""
-    acro = ACRO(suppress=False)
-    table = acro.crosstab(
-        data["survivor"],
-        data["grant_type"],
-        values=data["inc_grants"],
-        aggfunc=["mean", "std"],
-        margins=False,
-    )
-    pandastable = pd.crosstab(
-        data["survivor"],
-        data["grant_type"],
-        values=data["inc_grants"],
-        aggfunc=["mean", "std"],
-        margins=False,
-    )
-    assert isinstance(table, pd.DataFrame)
-    assert table.equals(pandastable)
-
-    acro2 = ACRO(suppress=True)
-    table2 = acro2.crosstab(
-        data["survivor"],
-        data["grant_type"],
-        values=data["inc_grants"],
-        aggfunc=["mean", "std"],
-        margins=True,
-    )
-    assert isinstance(table2, pd.DataFrame)
-    assert table2.columns.nlevels == 2
 
 
-_RISK_APPETITE = {
-    "safe_threshold": 10,
-    "safe_dof_threshold": 10,
-    "safe_nk_n": 2,
-    "safe_nk_k": 0.9,
-    "safe_pratio_p": 0.1,
-    "check_missing_values": False,
-    "zeros_are_disclosive": True,
-}
 
 
-def test_check_model_dof_dataframe_dof_fail():
-    """Dataframe dof values below threshold are flagged as failures."""
-    sdc = SDCChecks(_RISK_APPETITE)
-    ev = SDCEvidence()
-    ev.dof = pd.DataFrame({"a": [5, 15], "b": [3, 20]})
-    status, summary, _ = sdc.check_model_dof("FrequencyTable", ev, None)
-    assert status == "fail"
-    assert "<" in summary
 
 
-def test_check_model_dof_dataframe_dof_pass():
-    """Dataframe dof values at or above threshold pass."""
-    sdc = SDCChecks(_RISK_APPETITE)
-    ev = SDCEvidence()
-    ev.dof = pd.DataFrame({"a": [15, 20], "b": [12, 30]})
-    status, _, _ = sdc.check_model_dof("FrequencyTable", ev, None)
-    assert status == "pass"
 
 
-def test_manual_check_survival_model_type():
-    """Survival model types trigger the manual review path."""
-    sdc = SDCChecks(_RISK_APPETITE)
-    ev = SDCEvidence()
-    model = TableModelDetails(
-        index=[pd.Series([1, 2, 3], name="t")],
-        risk_appetite=_RISK_APPETITE,
-        command="surv_func",
-    )
-    model.model_type = "survival"
-    status, summary, _ = sdc.manual_check("KaplanMeier", ev, model)
-    assert status == "review"
-    assert "manual" in summary.lower()
-
-
-def test_enable_rounding_no_base():
-    """Enabling rounding without a base preserves the existing base."""
-    acro_obj = ACRO()
-    initial_base = acro_obj.round_base
-    acro_obj.enable_rounding()
-    assert acro_obj.mitigation == "round"
-    assert acro_obj.round_base == initial_base
-
-
-def test_enable_rounding_with_base():
-    """Enabling rounding with a base updates the rounding base."""
-    acro_obj = ACRO()
-    acro_obj.enable_rounding(base=10)
-    assert acro_obj.mitigation == "round"
-    assert acro_obj.round_base == 10
-
-
-def test_disable_rounding_when_round():
-    """Disabling rounding resets the mitigation to none."""
-    acro_obj = ACRO()
-    acro_obj.enable_rounding()
-    assert acro_obj.mitigation == "round"
-    acro_obj.disable_rounding()
-    assert acro_obj.mitigation == "none"
-
-
-def test_disable_rounding_when_not_round():
-    """Disabling rounding leaves non-round mitigation unchanged."""
-    acro_obj = ACRO()
-    acro_obj.mitigation = "none"
-    acro_obj.disable_rounding()
-    assert acro_obj.mitigation == "none"
 
 
 def test_pivot_table_no_values_raises(data):
@@ -851,303 +822,20 @@ def test_pivot_table_rounding(data):
     # TODO check that the values are rounded to nearest 5
 
 
-def test_sdc_checks_unknown_analysis_returns_review() -> None:
-    """Unknown analyses return a review result from the SDC runner."""
-    sdc = SDCChecks(
-        {
-            "safe_threshold": 10,
-            "safe_dof_threshold": 10,
-            "safe_nk_n": 2,
-            "safe_nk_k": 0.9,
-            "safe_pratio_p": 0.1,
-            "check_missing_values": False,
-            "zeros_are_disclosive": True,
-        }
-    )
-    ev = SDCEvidence()
-    result = sdc.run_checks_for_analysis("NonExistentAnalysis", ev, None)
-    assert result.overall_status == "Review"
 
 
-_RA = {
-    "safe_threshold": 10,
-    "safe_dof_threshold": 10,
-    "safe_nk_n": 2,
-    "safe_nk_k": 0.9,
-    "safe_pratio_p": 0.1,
-    "check_missing_values": False,
-    "zeros_are_disclosive": True,
-}
 
 
-def test_check_all_same_all_identical() -> None:
-    """All-identical values trigger a fail result."""
-    sdc = SDCChecks(_RA)
-    ev = SDCEvidence()
-    ev.interim_tables["values_are_same"] = pd.DataFrame(
-        {"A": [True, False], "B": [False, True]},
-        index=[1, 2],
-    )
-    dummy_model = TableModelDetails(
-        index=[pd.Series([1, 2], name="a")],
-        columns=[],
-        values=pd.Series([10.0, 20.0], name="v"),
-    )
-    status, summary, _ = sdc.check_all_same("Mean", ev, dummy_model)
-    assert status == "fail"
-    assert "2 cells" in summary
 
 
-def test_check_all_same_no_identical() -> None:
-    """Non-identical values pass the all-same check."""
-    sdc = SDCChecks(_RA)
-    ev = SDCEvidence()
-    ev.interim_tables["values_are_same"] = pd.DataFrame(
-        {"A": [False, False], "B": [False, False]},
-        index=[1, 2],
-    )
-    dummy_model = TableModelDetails(
-        index=[pd.Series([1, 2], name="a")],
-        columns=[],
-        values=pd.Series([10.0, 20.0], name="v"),
-    )
-    status, _, _ = sdc.check_all_same("Mean", ev, dummy_model)
-    assert status == "pass"
 
 
-def test_check_missing_with_missings() -> None:
-    """Missing values trigger a fail result."""
-    sdc = SDCChecks(_RA)
-    ev = SDCEvidence()
-    ev.interim_tables["missing"] = pd.DataFrame({"A": [True, False]}, index=[1, 2])
-    dummy_model = TableModelDetails(
-        index=[pd.Series([1, 2], name="a")],
-        columns=[],
-        values=pd.Series([10.0, 20.0], name="v"),
-    )
-    status, _, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
-    assert status == "fail"
 
 
-def test_check_missing_no_missings() -> None:
-    """No missing values pass the check."""
-    sdc = SDCChecks(_RA)
-    ev = SDCEvidence()
-    ev.interim_tables["missing"] = pd.DataFrame({"A": [False, False]}, index=[1, 2])
-    dummy_model = TableModelDetails(
-        index=[pd.Series([1, 2], name="a")],
-        columns=[],
-        values=pd.Series([10.0, 20.0], name="v"),
-    )
-    status, _, _ = sdc.check_missing("FrequencyTable", ev, dummy_model)
-    assert status == "pass"
 
 
-def test_manual_check_unknown_model_type_returns_fail() -> None:
-    """Unknown model types return a fail result from manual checks."""
-    sdc = SDCChecks(_RA)
-    ev = SDCEvidence()
-    model = TableModelDetails(
-        index=[pd.Series([1, 2, 3], name="t")],
-        risk_appetite=_RA,
-        command="something",
-    )
-    model.model_type = "unknown_type"
-    status, _, _ = sdc.manual_check("TestAnalysis", ev, model)
-    assert status == "fail"
 
 
-_RA_NO_ZERO = {
-    "safe_threshold": 10,
-    "safe_dof_threshold": 10,
-    "safe_nk_n": 2,
-    "safe_nk_k": 0.9,
-    "safe_pratio_p": 0.1,
-    "check_missing_values": False,
-    "zeros_are_disclosive": False,
-}
-
-
-def test_check_required_zero_zeros_not_disclosive_qualifier() -> None:
-    """The non-disclosive zero branch uses the expected qualifier."""
-    sdc = SDCChecks(_RA_NO_ZERO)
-    ev = SDCEvidence()
-    model = TableModelDetails(
-        index=[pd.Series([10, 20], name="a")],
-        columns=[pd.Series([1, 2], name="b")],
-        values=pd.Series([100.0, 200.0], name="v"),
-        thekwargs={},
-        risk_appetite=_RA_NO_ZERO,
-        command="crosstab",
-    )
-    status, summary, _ = sdc.check_required_zero("FrequencyTable", ev, model)
-    assert status == "pass"
-    assert "not" in summary
-
-
-def test_check_presence_of_zero_not_disclosive() -> None:
-    """The non-disclosive zero branch uses an all-false mask."""
-    sdc = SDCChecks(_RA_NO_ZERO)
-    ev = SDCEvidence()
-    ev.interim_tables["count_table"] = pd.DataFrame(
-        {"A": [0, 5], "B": [10, 15]}, index=[1, 2]
-    )
-    model = TableModelDetails(
-        index=[pd.Series([1, 2], name="a")],
-        columns=[pd.Series([1, 2], name="b")],
-        values=pd.Series([0.0, 5.0], name="v"),
-        thekwargs={},
-        risk_appetite=_RA_NO_ZERO,
-        command="crosstab",
-    )
-    status, summary, _ = sdc.check_presence_of_zero("FrequencyTable", ev, model)
-    assert status == "pass"
-    assert "not disclosive" in summary
-
-
-def test_get_table_sdc_minimum_dof_check_as_int() -> None:
-    """Minimumdof checks stored as integers are summarized correctly."""
-    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
-
-    cr_result = ChecksResults(
-        overall_status="pass",
-        summaries="dof=50 >= 10",
-        outcomes={"MinimumDoFCheck": 50},
-        fair_dict={},
-    )
-    many = ManyChecksResults()
-    many.allchecksresults["GeneralLinearModel"] = cr_result
-    sdc = many.get_table_sdc()
-    assert sdc["summary"]["MinimumDoFCheck"] == 0
-
-
-def test_get_table_sdc_minimum_dof_check_as_int_fail() -> None:
-    """Minimumdof checks that fail are summarized as one."""
-    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
-
-    cr_result = ChecksResults(
-        overall_status="fail",
-        summaries="dof=0 < 10",
-        outcomes={"MinimumDoFCheck": 0},
-        fair_dict={},
-    )
-    many = ManyChecksResults()
-    many.allchecksresults["GeneralLinearModel"] = cr_result
-    sdc = many.get_table_sdc()
-    assert sdc["summary"]["MinimumDoFCheck"] == 1
-
-
-def test_get_table_sdc_duplicate_check_skipped_branch() -> None:
-    """Duplicate checks are only counted once in the table summary."""
-    from acro.sdcchecks import ChecksResults, ManyChecksResults  # noqa: PLC0415
-
-    mask = pd.DataFrame({"A": [False, False]}, index=[1, 2])
-    cr1 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})
-    cr2 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})
-    many = ManyChecksResults()
-    many.allchecksresults["FrequencyTable"] = cr1
-    many.allchecksresults["Mean"] = cr2
-    sdc = many.get_table_sdc()
-    assert len(sdc["cells"]) == 1
-    assert "MinimumThresholdCheck" in sdc["cells"]
-
-
-def test_agg_values_are_same_empty_series() -> None:
-    """Agg_values_are_same returns True for an empty Series (line 78)."""
-    from acro.sdc_agg_funcs import agg_values_are_same  # noqa: PLC0415
-
-    result = agg_values_are_same(pd.Series([], dtype=float))
-    assert result is True
-
-
-def test_agg_top_2_sum_non_numeric() -> None:
-    """Agg_top_2_sum returns 0 for a non-numeric Series (lines 118-119)."""
-    from acro.sdc_agg_funcs import agg_top_2_sum  # noqa: PLC0415
-
-    result = agg_top_2_sum(pd.Series(["a", "b", "c"]))
-    assert result == 0
-
-
-def _make_table_for_collate_risk_assessments() -> pd.DataFrame:
-    return pd.DataFrame({"A": [10, 20], "B": [30, 40]}, index=[1, 2])
-
-
-def test_collate_risk_assessments_negative_branch() -> None:
-    """Negative masks are surfaced as negative values in collated results."""
-    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
-    from acro.table_utils import collate_risk_assessments  # noqa: PLC0415
-
-    table = _make_table_for_collate_risk_assessments()
-    neg_mask = pd.DataFrame({"A": [True, False], "B": [False, False]}, index=[1, 2])
-    cr = ChecksResults(
-        overall_status="review",
-        summaries="review",
-        outcomes={"negative": neg_mask},
-        fair_dict={},
-    )
-    outcome = collate_risk_assessments(table, {"Mean": cr})
-    flat = outcome.to_numpy().flatten().tolist()
-    assert any("negative" in str(v) for v in flat)
-
-
-def test_collate_risk_assessments_missing_branch() -> None:
-    """Missing masks are surfaced as missing values in collated results."""
-    from acro.sdcchecks import ChecksResults  # noqa: PLC0415
-    from acro.table_utils import collate_risk_assessments  # noqa: PLC0415
-
-    table = _make_table_for_collate_risk_assessments()
-    miss_mask = pd.DataFrame({"A": [False, True], "B": [False, False]}, index=[1, 2])
-    cr = ChecksResults(
-        overall_status="fail",
-        summaries="fail",
-        outcomes={"missing": miss_mask},
-        fair_dict={},
-    )
-    outcome = collate_risk_assessments(table, {"Mean": cr})
-    flat = outcome.to_numpy().flatten().tolist()
-    assert any("missing" in str(v) for v in flat)
-
-
-def test_translate_args_to_newdf_series_branch(data) -> None:
-    """Translate_args_to_newdf() maps a pd.Series argument to the redacted DataFrame (line 401)."""
-    redacted = data[["year", "grant_type"]].copy()
-    args = (data["year"], data["grant_type"])
-    result = translate_args_to_newdf(args, redacted)
-    assert len(result) == 2
-    assert result[0].equals(redacted["year"])
-
-
-def test_append_rounded_margins_median(data) -> None:
-    """Append_rounded_margins() with aggfunc='median' uses the median path (line 647)."""
-    from acro.table_utils import append_rounded_margins, round_table  # noqa: PLC0415
-
-    table = pd.crosstab(
-        data.year, data.grant_type, values=data.inc_grants, aggfunc="median"
-    )
-    rounded = round_table(table, 5)
-    result = append_rounded_margins(rounded, "median", "All", 5)
-    assert isinstance(result, pd.DataFrame)
-
-
-def test_add_custom_blocked_extension(tmp_path) -> None:
-    """Records.add_custom() returns False when the file extension is blocked (line 369)."""
-    # TODO remove line number from docstring as line numbers might change
-    records = Records(blocked_extensions=[".svg"])
-    # Create a real file so the existence check doesn't short-circuit
-    svg_file = tmp_path / "chart.svg"
-    svg_file.write_text("content")
-    result = records.add_custom(str(svg_file))
-    assert result is False
-    assert len(records.results) == 0
-
-
-def test_prettify_table_string_with_separator() -> None:
-    """Prettify_table_string() with separator uses split(separator) instead of split() (line 78)."""
-    df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["x", "y"])
-    result = utils.prettify_table_string(df, separator=",")
-    # TODO test the result is correct character by character
-    assert isinstance(result, str)
-    assert "|" in result
 
 
 def test_process_table_output_standalone_crosstab_via_refactoring():

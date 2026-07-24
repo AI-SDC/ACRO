@@ -61,6 +61,13 @@ def test_prettify_tablestring(data):
     )
     assert nospaces__str == correct3, f"got:\n{nospaces__str}\nexpected:\n{correct3}\n"
 
+def test_prettify_table_string_with_separator() -> None:
+    """Prettify_table_string() with separator uses split(separator) instead of split() (line 78)."""
+    df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["x", "y"])
+    result = utils.prettify_table_string(df, separator=",")
+    # TODO test the result is correct character by character
+    assert isinstance(result, str)
+    assert "|" in result
 
 def test_get_catdtype_string_series():
     """Get_catdtype on a string series produces unordered categorical dtype."""

@@ -205,6 +205,17 @@ def test_custom_output(acro):
     assert os.path.exists(os.path.normpath(f"{PATH}/XandY.jpeg"))
     shutil.rmtree(PATH)
 
+def test_add_custom_blocked_extension(tmp_path) -> None:
+    """Records.add_custom() returns False when the file extension is blocked (line 369)."""
+    # TODO remove line number from docstring as line numbers might change
+    records = Records(blocked_extensions=[".svg"])
+    # Create a real file so the existence check doesn't short-circuit
+    svg_file = tmp_path / "chart.svg"
+    svg_file.write_text("content")
+    result = records.add_custom(str(svg_file))
+    assert result is False
+    assert len(records.results) == 0
+
 
 def test_adding_exception(acro):
     """Adding an exception to an output that doesn't exist test."""
@@ -349,6 +360,38 @@ def test_mitigation_setter_unknown_string():
     acro_obj.mitigation = "unknown_mitigation"
     assert acro_obj.mitigation == "none"
 
+def test_enable_rounding_no_base():
+    """Enabling rounding without a base preserves the existing base."""
+    acro_obj = ACRO()
+    initial_base = acro_obj.round_base
+    acro_obj.enable_rounding()
+    assert acro_obj.mitigation == "round"
+    assert acro_obj.round_base == initial_base
+
+
+def test_enable_rounding_with_base():
+    """Enabling rounding with a base updates the rounding base."""
+    acro_obj = ACRO()
+    acro_obj.enable_rounding(base=10)
+    assert acro_obj.mitigation == "round"
+    assert acro_obj.round_base == 10
+
+
+def test_disable_rounding_when_round():
+    """Disabling rounding resets the mitigation to none."""
+    acro_obj = ACRO()
+    acro_obj.enable_rounding()
+    assert acro_obj.mitigation == "round"
+    acro_obj.disable_rounding()
+    assert acro_obj.mitigation == "none"
+
+
+def test_disable_rounding_when_not_round():
+    """Disabling rounding leaves non-round mitigation unchanged."""
+    acro_obj = ACRO()
+    acro_obj.mitigation = "none"
+    acro_obj.disable_rounding()
+    assert acro_obj.mitigation == "none"
 
 def test_round_base_setter_non_integer():
     """Setting round_base to a non-integer falls back to default."""

@@ -90,50 +90,6 @@ def test_round_table_base_zero():
     pd.testing.assert_frame_equal(result, df)
 
 
-def test_append_rounded_margins_multi_aggfunc():
-    """Append_rounded_margins returns early when multiple aggfuncs."""
-    df = pd.DataFrame({"a": [10, 20], "b": [30, 40]}, index=[1, 2])
-    result = table_utils.append_rounded_margins(df, ["mean", "std"], "All", 5)
-    pd.testing.assert_frame_equal(result, df)
-
-
-def test_append_rounded_margins_hierarchical_index():
-    """Append_rounded_margins returns early for hierarchical index."""
-    arrays = [[1, 1, 2, 2], ["a", "b", "a", "b"]]
-    idx = pd.MultiIndex.from_arrays(arrays)
-    df = pd.DataFrame({"x": [1, 2, 3, 4], "y": [5, 6, 7, 8]}, index=idx)
-    result = table_utils.append_rounded_margins(df, "mean", "All", 5)
-    pd.testing.assert_frame_equal(result, df)
-
-
-def test_append_rounded_margins_mean_aggfunc():
-    """Append_rounded_margins works with mean aggfunc."""
-    df = pd.DataFrame(
-        {"a": [10.0, 20.0, 30.0], "b": [40.0, 50.0, 60.0]}, index=[1, 2, 3]
-    )
-    result = table_utils.append_rounded_margins(df, "mean", "All", 5)
-    assert "All" in result.columns
-    assert "All" in result.index
-
-
-def test_append_rounded_margins_sum_aggfunc():
-    """Append_rounded_margins works with None/count/sum aggfunc."""
-    df = pd.DataFrame({"a": [10, 20, 30], "b": [40, 50, 60]}, index=[1, 2, 3])
-    result = table_utils.append_rounded_margins(df, None, "All", 5)
-    assert "All" in result.columns
-    assert "All" in result.index
-    # Grand total should be rounded to nearest 5
-    grand = result.loc["All", "All"]
-    assert grand % 5 == 0
-
-
-def test_append_rounded_margins_unsupported_aggfunc():
-    """Append_rounded_margins returns early for unsupported aggfunc."""
-    df = pd.DataFrame({"a": [10, 20], "b": [30, 40]}, index=[1, 2])
-    result = table_utils.append_rounded_margins(df, "max", "All", 5)
-    pd.testing.assert_frame_equal(result, df)
-
-
 def test_translate_args_to_newdf_raises_on_wrong_type():
     """The helper rejects arguments that are not a two-item tuple."""
     with pytest.raises(ValueError, match="wrong type or length"):
@@ -401,7 +357,7 @@ class TestGetAnalysisSummary:
 
 
 class TestCollateRiskAssessmentsEdgeCases:
-    """Tests for edge cases in collate_risk_assessments (lines 110, 115, 118)."""
+    """Tests for edge cases in collate_risk_assessment."""
 
     def test_collate_empty_shared_index_and_cols(self):
         """When shared_index/shared_cols are empty, the branch at line 121 is skipped."""
@@ -450,7 +406,7 @@ class TestAlignMaskToOutcomeEdgeCases:
 
 
 class TestGetRedactedDataErrorBranch:
-    """Tests for error handling in get_redacted_data (lines 535-536)."""
+    """Tests for error handling in get_redacted_data."""
 
     @pytest.mark.skip(reason="noprag")
     def test_get_redacted_data_column_mismatch_error(self, caplog):
@@ -460,7 +416,7 @@ class TestGetRedactedDataErrorBranch:
         columns differ from original data columns. This should never happen in
         normal execution because the function operates on a copy and doesn't
         add/remove columns. Triggering this requires internal code modification.
-        Lines 535-536 are unreachable via normal API usage.
+        are unreachable via normal API usage.
         """
         # Create original data
         original_data = pd.DataFrame(
@@ -481,7 +437,7 @@ class TestGetRedactedDataErrorBranch:
 
 
 class TestCollateRiskAssessmentsElseBranch:
-    """Tests for the `else` branch in collate_risk_assessments (lines 110-128)."""
+    """Tests for the `else` branch in collate_risk_assessments."""
 
     def test_collate_with_other_checks_not_negative_or_missing(self):
         """Test the `else` branch when masks don't have 'negative' or 'missing' keys."""

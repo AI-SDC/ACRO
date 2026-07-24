@@ -75,6 +75,8 @@ class Record:
         Dictionary containing structured output data.
     sdc : dict
         Dictionary containing SDC results.
+    fair : dict
+        Dictionary containing FAIR description of SDC process
     command : str
         String representation of the operation performed.
     summary : str
@@ -98,6 +100,7 @@ class Record:
         output_type: str,
         properties: dict,
         sdc: dict,
+        fair: dict,
         command: str,
         summary: str,
         outcome: DataFrame,
@@ -118,6 +121,8 @@ class Record:
             Dictionary containing structured output data.
         sdc : dict
             Dictionary containing SDC results.
+        fair : dict
+            Dictionary containing FAIR description of SDC process
         command : str
             String representation of the operation performed.
         summary : str
@@ -134,6 +139,7 @@ class Record:
         self.output_type: str = output_type
         self.properties: dict = properties
         self.sdc: dict = sdc
+        self.fair = fair
         self.command: str = command
         self.summary: str = summary
         self.outcome: DataFrame = outcome
@@ -198,6 +204,7 @@ class Record:
             f"type: {self.output_type}\n"
             f"properties: {self.properties}\n"
             f"sdc: {self.sdc}\n"
+            f"fair: {self.fair}\n"
             f"command: {self.command}\n"
             f"summary: {self.summary}\n"
             f"outcome: {self.outcome}\n"
@@ -221,14 +228,15 @@ class Records:
 
     def add(
         self,
-        status: str,
-        output_type: str,
-        properties: dict,
-        sdc: dict,
-        command: str,
-        summary: str,
-        outcome: DataFrame,
-        output: list[str] | list[DataFrame],
+        status: str = "",
+        output_type: str = "",
+        properties: dict | None = None,
+        sdc: dict | None = None,
+        fair: dict | None = None,
+        command: str = "",
+        summary: str = "",
+        outcome: DataFrame | None = None,
+        output: list[str] | list[DataFrame] | None = None,
         comments: list[str] | None = None,
     ) -> None:
         """Add an output to the results.
@@ -243,6 +251,8 @@ class Records:
             Dictionary containing structured output data.
         sdc : dict
             Dictionary containing SDC results.
+        fair : dict
+            Dictionary containing FAIR description of analysis
         command : str
             String representation of the operation performed.
         summary : str
@@ -254,12 +264,24 @@ class Records:
         comments : list[str] | None, default None
             List of strings entered by the user to add comments to the output.
         """
+        if outcome is None:
+            outcome = pd.DataFrame()
+        if output is None:
+            output = []
+        if properties is None:
+            properties = {}
+        if sdc is None:
+            sdc = {}
+        if fair is None:
+            fair = {}
+
         new = Record(
             uid=f"output_{self.output_id}",
             status=status,
             output_type=output_type,
             properties=properties,
             sdc=sdc,
+            fair=fair,
             command=command,
             summary=summary,
             outcome=outcome,
@@ -351,6 +373,7 @@ class Records:
                 output_type="custom",
                 properties={},
                 sdc={},
+                fair={},
                 command="custom",
                 summary="review",
                 outcome=DataFrame(),
@@ -427,7 +450,7 @@ class Records:
         outputs: str = ""
         for _, record in self.results.items():
             outputs += str(record) + "\n"
-        print(outputs)
+        print(outputs)  # noqa: T201
         return outputs
 
     def validate_outputs(self) -> None:
@@ -492,6 +515,7 @@ class Records:
                 "timestamp": val.timestamp,
                 "comments": val.comments,
                 "exception": val.exception,
+                "fair": val.fair,
             }
             files: list[str] = val.serialize_output(path)
             for file in files:
@@ -556,6 +580,66 @@ class Records:
                     start = 1 + writer.sheets[output_id].max_row
                     table.to_excel(writer, sheet_name=output_id, startrow=start)
 
+    def finalise_evidence(self, path: str, evidence_store: dict | None = None) -> dict:
+        """Serialise federated evidence to CSV files and return the manifest dict.
+
+        Each interim table (DataFrame) is saved as a separate CSV file in *path*.
+        The returned dictionary is suitable for writing to ``evidence.json``.
+
+        Parameters
+        ----------
+        path : str
+            Directory where CSV files and ``evidence.json`` will be written.
+        evidence_store : dict, optional
+            The evidence dictionary to serialise.  When ``None`` an empty dict
+            is used, producing an empty manifest.  Callers should pass
+            ``getattr(self_acro, "_federated_evidence", {})``.
+
+        Returns
+        -------
+        dict
+            Manifest describing every output's evidence and the CSV filenames.
+        """
+        os.makedirs(path, exist_ok=True)
+        outputs: dict[str, Any] = {}
+
+        if evidence_store is None:
+            evidence_store = {}
+
+        for uid, entry in evidence_store.items():
+            table_files: dict[str, str] = {}
+            for table_name, csv_text in entry.get("interim_tables", {}).items():
+                filename = f"{uid}_{table_name}.csv"
+                filepath = os.path.normpath(f"{path}/{filename}")
+                with open(filepath, "w", newline="", encoding="utf-8") as fh:
+                    fh.write(csv_text)
+                table_files[table_name] = filename
+
+            dof = entry.get("dof")
+            dof_file: str | None = None
+            if isinstance(dof, str) and "\n" in dof:
+                dof_file = f"{uid}_dof.csv"
+                with open(
+                    os.path.normpath(f"{path}/{dof_file}"),
+                    "w",
+                    newline="",
+                    encoding="utf-8",
+                ) as fh:
+                    fh.write(dof)
+                dof_val: Any = dof_file
+            else:
+                dof_val = dof
+
+            outputs[uid] = {
+                "command": entry.get("command", ""),
+                "analysis_names": entry.get("analysis_names", []),
+                "variable_types": entry.get("variable_types", {}),
+                "dof": dof_val,
+                "interim_tables": table_files,
+            }
+
+        return {"version": __version__, "outputs": outputs}
+
     def write_checksums(self, path: str) -> None:
         """Write checksums for each file to checksums folder.
 
@@ -614,6 +698,7 @@ def load_records(path: str) -> Records:
                 output_type=val["type"],
                 properties=val["properties"],
                 sdc=sdcs[0],
+                fair=val["fair"],
                 command=val["command"],
                 summary=val["summary"],
                 outcome=load_outcome(val["outcome"]),

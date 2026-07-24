@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-import warnings
 from inspect import stack
+from io import StringIO
 from typing import Any
 
 import pandas as pd
@@ -18,6 +18,7 @@ from statsmodels.regression.linear_model import RegressionResultsWrapper
 
 from . import utils
 from .record import Records
+from .sdcchecks import ChecksResults, SDCChecks, SDCEvidence
 
 logger = logging.getLogger("acro")
 
@@ -30,6 +31,75 @@ class Regression:
     ) -> None:  # _config: unused; ACRO sets self.config (Ruff ARG002)
         self.config: dict[str, Any] = {}
         self.results: Records = Records()
+        self.sdc_checks = SDCChecks({})
+        self.federated: bool = False
+        self._federated_evidence: dict = {}
+
+    # ------------------------------------------------------------------
+    # Private helpers shared by all regression commands
+    # ------------------------------------------------------------------
+
+    def _process_output(
+        self,
+        method: str,
+        command: str,
+        analysis_name: str,
+        evidence: SDCEvidence,
+        model: Any,
+        results: Any,
+    ) -> None:
+        """Process regression output in federated or standalone mode.
+
+        Consolidates the logic for both _add_federated_output and
+        _add_standalone_output to eliminate code duplication.
+
+        Parameters
+        ----------
+        method : str
+            Short method name stored in ``properties``, e.g. ``"ols"``.
+        command : str
+            The command string captured from the call stack.
+        analysis_name : str
+            The SDC analysis name, e.g. ``"GeneralLinearModel"``.
+        evidence : SDCEvidence
+            Evidence object returned by ``get_evidence_forall_analyses``.
+        model : Any
+            Fitted statsmodels model instance.
+        results : Any
+            Fitted results wrapper (used to extract summary tables and variable
+            type metadata).
+        """
+        if self.federated:
+            uid = f"output_{self.results.output_id}"
+            self._federated_evidence[uid] = {
+                "command": command,
+                "analysis_names": [analysis_name],
+                "variable_types": evidence.variable_type_dict,
+                "dof": evidence.dof,
+                "interim_tables": {},
+            }
+            self.results.output_id += 1
+        else:
+            checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
+                analysis_name, evidence, model
+            )
+            checkresults.fair_dict.update(get_variable_type_dict(results))
+
+            tables: list[SimpleTable] = results.summary().tables
+            self.results.add(
+                status=checkresults.overall_status,
+                output_type="regression",
+                properties={
+                    "method": method,
+                    "dof": checkresults.outcomes["MinimumDoFCheck"],
+                },
+                sdc={},
+                fair=checkresults.fair_dict,
+                command=command,
+                summary=checkresults.summaries,
+                outcome=DataFrame(),
+                output=get_summary_dataframes(tables),
+            )
 
     def ols(
         self,
@@ -71,18 +141,13 @@ class Regression:
         command: str = utils.get_command("ols()", stack())
         model = sm.OLS(endog, exog=exog, missing=missing, hasconst=hasconst, **kwargs)
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("ols", model)
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=status,
-            output_type="regression",
-            properties={"method": "ols", "dof": dof},
-            sdc={},
-            command=command,
-            summary=summary,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+
+        analysis_name = "GeneralLinearModel"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
         )
+
+        self._process_output("ols", command, analysis_name, evidence, model, results)
         return results
 
     def olsr(
@@ -138,22 +203,19 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
-            **kwargs,
         )
+        if args or kwargs:
+            # Note: args and kwargs are documented but not directly used
+            # as statsmodels OLS doesn't accept *args, **kwargs
+            pass
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("olsr", model)
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=status,
-            output_type="regression",
-            properties={"method": "olsr", "dof": dof},
-            sdc={},
-            command=command,
-            summary=summary,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+
+        analysis_name = "GeneralLinearModel"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
         )
+
+        self._process_output("olsr", command, analysis_name, evidence, model, results)
         return results
 
     def logit(
@@ -191,18 +253,13 @@ class Regression:
         command: str = utils.get_command("logit()", stack())
         model = sm.Logit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("logit", model)
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=status,
-            output_type="regression",
-            properties={"method": "logit", "dof": dof},
-            sdc={},
-            command=command,
-            summary=summary,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+
+        analysis_name = "Logit"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
         )
+
+        self._process_output("logit", command, analysis_name, evidence, model, results)
         return results
 
     def logitr(
@@ -258,22 +315,18 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
-            **kwargs,
         )
+        if args or kwargs:
+            # Note: args and kwargs are documented but not directly used
+            pass
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("logitr", model)
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=status,
-            output_type="regression",
-            properties={"method": "logitr", "dof": dof},
-            sdc={},
-            command=command,
-            summary=summary,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+
+        analysis_name = "Logit"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
         )
+
+        self._process_output("logitr", command, analysis_name, evidence, model, results)
         return results
 
     def probit(
@@ -311,18 +364,13 @@ class Regression:
         command: str = utils.get_command("probit()", stack())
         model = sm.Probit(endog, exog, missing=missing, check_rank=check_rank)
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("probit", model)
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=status,
-            output_type="regression",
-            properties={"method": "probit", "dof": dof},
-            sdc={},
-            command=command,
-            summary=summary,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+
+        analysis_name = "Probit"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
         )
+
+        self._process_output("probit", command, analysis_name, evidence, model, results)
         return results
 
     def probitr(
@@ -378,54 +426,21 @@ class Regression:
             data=data,
             subset=subset,
             drop_cols=drop_cols,
-            *args,
-            **kwargs,
         )
+        if args or kwargs:
+            # Note: args and kwargs are documented but not directly used
+            pass
         results = model.fit()
-        status, summary, dof = self.__check_model_dof("probitr", model)
-        tables: list[SimpleTable] = results.summary().tables
-        self.results.add(
-            status=status,
-            output_type="regression",
-            properties={"method": "probitr", "dof": dof},
-            sdc={},
-            command=command,
-            summary=summary,
-            outcome=DataFrame(),
-            output=get_summary_dataframes(tables),
+
+        analysis_name = "Probit"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
+        )
+
+        self._process_output(
+            "probitr", command, analysis_name, evidence, model, results
         )
         return results
-
-    def __check_model_dof(self, name: str, model: Any) -> tuple[str, str, float]:
-        """Check model DOF.
-
-        Parameters
-        ----------
-        name : str
-            The name of the model.
-        model
-            A statsmodels model.
-
-        Returns
-        -------
-        str
-            Status: {"review", "fail", "pass"}.
-        str
-            Summary of the check.
-        float
-            The degrees of freedom.
-        """
-        status = "fail"
-        dof: int = model.df_resid
-        threshold: int = self.config["safe_dof_threshold"]
-        if dof < threshold:
-            summary = f"fail; dof={dof} < {threshold}"
-            warnings.warn(f"Unsafe {name}: {summary}", stacklevel=8)
-        else:
-            status = "pass"
-            summary = f"pass; dof={dof} >= {threshold}"
-        logger.info("%s() outcome: %s", name, summary)
-        return status, summary, float(dof)
 
 
 def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
@@ -443,7 +458,8 @@ def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
     """
     tables: list[DataFrame] = []
     for table in results:
-        table_df = pd.read_html(table.as_html(), header=0, index_col=0)[0]
+        table_html = table.as_html()
+        table_df = pd.read_html(StringIO(table_html), header=0, index_col=0)[0]
         tables.append(table_df)
     return tables
 
@@ -476,3 +492,18 @@ def add_constant(data: Any, prepend: bool = True, has_constant: str = "skip") ->
     is 'const'.
     """
     return sm.add_constant(data, prepend=prepend, has_constant=has_constant)
+
+
+def get_variable_type_dict(results: RegressionResultsWrapper) -> dict[str, Any]:
+    """Get dict of independent and independent variable ids for regression models)."""
+    thedict: dict[str, Any] = {"dependent": "unknown", "independent": ["unknown"]}
+    deps = results.model.endog_names
+    if isinstance(deps, str):
+        thedict["dependent"] = deps
+    indeps = results.model.exog_names.copy()
+    if "const" in indeps:
+        indeps.remove("const")
+    if "Intercept" in indeps:
+        indeps.remove("Intercept")
+    thedict["independent"] = indeps
+    return thedict

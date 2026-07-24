@@ -7,8 +7,7 @@ import shutil
 import pandas as pd
 import pytest
 
-import acro.stata_config as stata_config
-from acro import ACRO
+from acro import ACRO, stata_config
 from acro.acro_stata_parser import find_brace_word, parse_and_run, parse_table_details
 from acro.acro_tables import AGGFUNC
 
@@ -952,18 +951,18 @@ def test_table_stata17_2(data):
     """Check that the table command works as expected, with more than one column."""
     correct = (
         "Total\n"
-        "--------------------------------------------|\n"
-        "status     |dead     |successful            |\n"
-        "grant_type |G    R   |G          N   R   R/G|\n"
-        "year       |         |                      |\n"
-        "--------------------------------------------|\n"
-        "2010       | 3    47 | 12         59  24  8 |\n"
-        "2011       | 3    47 | 12         59  24  8 |\n"
-        "2012       | 3    47 | 12         59  24  8 |\n"
-        "2013       | 3    47 | 12         59  24  8 |\n"
-        "2014       | 3    47 | 12         59  24  8 |\n"
-        "2015       | 3    47 | 12         59  24  8 |\n"
-        "--------------------------------------------|\n"
+        "---------------------------------------------------|\n"
+        "status     |dead            |successful            |\n"
+        "grant_type |G    N  R   R/G |G          N   R   R/G|\n"
+        "year       |                |                      |\n"
+        "---------------------------------------------------|\n"
+        "2010       | 3    0  47  0  | 12         59  24  8 |\n"
+        "2011       | 3    0  47  0  | 12         59  24  8 |\n"
+        "2012       | 3    0  47  0  | 12         59  24  8 |\n"
+        "2013       | 3    0  47  0  | 12         59  24  8 |\n"
+        "2014       | 3    0  47  0  | 12         59  24  8 |\n"
+        "2015       | 3    0  47  0  | 12         59  24  8 |\n"
+        "---------------------------------------------------|\n"
     )
 
     ret = dummy_acrohandler(
@@ -991,27 +990,27 @@ def test_table_stata17_2(data):
 
 
 def test_table_stata17_3(data):
-    """Check that the table command works as expected, with herichical tables."""
+    """Check that the table command works as expected, with hierarchical tables."""
     correct = (
         "Total\n"
-        "----------------------------------------------------|\n"
-        "status             |dead     |successful            |\n"
-        "grant_type         |G    R   |G          N   R   R/G|\n"
-        "year survivor      |         |                      |\n"
-        "----------------------------------------------------|\n"
-        "2010 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
-        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
-        "2011 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
-        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
-        "2012 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
-        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
-        "2013 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
-        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
-        "2014 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
-        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
-        "2015 Dead in 2015  | 3    47 |  0          0   0  0 |\n"
-        "     Alive in 2015 | 0     0 | 12         59  24  8 |\n"
-        "----------------------------------------------------|\n"
+        "-----------------------------------------------------------|\n"
+        "status             |dead            |successful            |\n"
+        "grant_type         |G    N  R   R/G |G          N   R   R/G|\n"
+        "year survivor      |                |                      |\n"
+        "-----------------------------------------------------------|\n"
+        "2010 Dead in 2015  | 3    0  47  0  |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0    0   0  0  | 12         59  24  8 |\n"
+        "2011 Dead in 2015  | 3    0  47  0  |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0    0   0  0  | 12         59  24  8 |\n"
+        "2012 Dead in 2015  | 3    0  47  0  |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0    0   0  0  | 12         59  24  8 |\n"
+        "2013 Dead in 2015  | 3    0  47  0  |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0    0   0  0  | 12         59  24  8 |\n"
+        "2014 Dead in 2015  | 3    0  47  0  |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0    0   0  0  | 12         59  24  8 |\n"
+        "2015 Dead in 2015  | 3    0  47  0  |  0          0   0  0 |\n"
+        "     Alive in 2015 | 0    0   0  0  | 12         59  24  8 |\n"
+        "-----------------------------------------------------------|\n"
     )
 
     ret = dummy_acrohandler(

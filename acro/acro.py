@@ -11,7 +11,7 @@ from typing import Any
 
 import yaml
 
-from . import acro_tables
+from . import acro_tables, sdcchecks
 from .acro_regression import Regression
 from .acro_tables import Tables
 from .record import Records
@@ -59,6 +59,7 @@ class ACRO(Tables, Regression):
         suppress: bool = False,
         mitigation: str | None = None,
         round_base: int | None = None,
+        federated: bool | None = None,
     ) -> None:
         """Construct a new ACRO object and reads parameters from config.
 
@@ -76,14 +77,44 @@ class ACRO(Tables, Regression):
         round_base : int, optional
             The base to round to when ``mitigation="round"``. Defaults to the
             ``safe_round_base`` value from the yaml config.
+        federated : bool, optional
+            Whether to run in federated mode. When ``True``, no SDC checks
+            are performed; instead, evidence is collected and written to
+            ``evidence.json`` for a trusted aggregator to review. When
+            ``None``, falls back to the yaml config value (default ``False``).
+            In standalone mode (``False``), outputs are checked and a
+            ``results.json`` file is created.
+
+        Notes
+        -----
+        **Federated vs Standalone Mode**:
+
+        - **Standalone (default)**: ACRO checks outputs locally and produces
+          ``results.json`` with pass/fail/review statuses.
+        - **Federated mode**: ACRO collects evidence in ``evidence.json``
+          without performing checks, for later review by a trusted aggregator.
+
+        Examples
+        --------
+        >>> import acro
+        >>> # Standalone mode with suppression
+        >>> acro_session = acro.ACRO(suppress=True)
+        >>>
+        >>> # Federated mode for TRE aggregator
+        >>> acro_fed = acro.ACRO(federated=True)
+        >>>
+        >>> # Custom configuration
+        >>> acro_custom = acro.ACRO(config="my_config", mitigation="round")
         """
         Tables.__init__(self, suppress=suppress, mitigation=mitigation)
         Regression.__init__(self, config)
+        self._federated_override = federated  # applied after yaml is loaded
         self.config: dict[str, Any] = {}
         path: pathlib.Path = pathlib.Path(__file__).with_name(config + ".yaml")
         logger.debug("path: %s", path)
         with open(path, encoding="utf-8") as handle:
             self.config = yaml.load(handle, Loader=yaml.loader.SafeLoader)
+
         # Tables and Regression each construct their own ``self.results`` so
         # they can be used standalone; in the combined ACRO object we want a
         # single shared Records instance regardless of init order, so make
@@ -91,21 +122,14 @@ class ACRO(Tables, Regression):
         self.results: Records = Records(
             blocked_extensions=self.config.get("blocked_extensions", [])
         )
+
         # Preserve the user-requested suppress value alongside the yaml config.
         # Tables.suppress is now a property derived from the live mitigation, so
         # it can drift over a session (enable_rounding flips mitigation away from
         # 'suppress'). Recording the original ask here keeps it available for
         # callers that need to re-enforce suppression for disclosive outputs.
         self.config["suppress"] = suppress
-        # set globals needed for aggregation functions
-        acro_tables.THRESHOLD = self.config["safe_threshold"]
-        acro_tables.SAFE_PRATIO_P = self.config["safe_pratio_p"]
-        acro_tables.SAFE_NK_N = self.config["safe_nk_n"]
-        acro_tables.SAFE_NK_K = self.config["safe_nk_k"]
-        acro_tables.CHECK_MISSING_VALUES = self.config["check_missing_values"]
-        acro_tables.ZEROS_ARE_DISCLOSIVE = self.config["zeros_are_disclosive"]
-        # set globals for survival analysis
-        acro_tables.SURVIVAL_THRESHOLD = self.config["survival_safe_threshold"]
+
         # set globals and instance state for the round mitigation strategy
         acro_tables.SAFE_ROUND_BASE = self.config.get(
             "safe_round_base", acro_tables.SAFE_ROUND_BASE
@@ -116,6 +140,16 @@ class ACRO(Tables, Regression):
         logger.info("version: %s", __version__)
         logger.info("config: %s", self.config)
         logger.info("mitigation: %s (round_base=%s)", self.mitigation, self.round_base)
+
+        # make object to handle all the ontology-driven checking
+        self.sdc_checks = sdcchecks.SDCChecks(self.config)
+
+        if self._federated_override is not None:
+            self.federated: bool = bool(self._federated_override)
+        else:
+            self.federated = bool(self.config.get("federated", False))
+        self.config["federated"] = self.federated
+        logger.info("federated: %s", self.federated)
 
     def finalise(
         self, path: str = "outputs", ext: str = "json", interactive: bool = False
@@ -140,11 +174,23 @@ class ACRO(Tables, Regression):
         if os.path.exists(path):
             logger.warning(
                 "Results file can not be created. "
-                "Directory %s already exists. Please choose a different directory name.",
+                "Directory %s already exists. "
+                "Please choose a different directory name.",
                 path,
             )
             return None
-        self.results.finalise(path, ext, interactive)
+
+        if self.federated:
+            os.makedirs(path, exist_ok=True)
+            merged_evidence: dict = dict(getattr(self, "_federated_evidence", {}))
+            evidence_data = self.results.finalise_evidence(path, merged_evidence)
+            evidence_filename: str = os.path.normpath(f"{path}/evidence.json")
+            with open(evidence_filename, "w", newline="", encoding="utf-8") as fh:
+                json.dump(evidence_data, fh, indent=4, sort_keys=False)
+            logger.info("federated evidence written to: %s", path)
+        else:
+            self.results.finalise(path, ext, interactive)
+
         config_filename: str = os.path.normpath(f"{path}/config.json")
         try:
             with open(config_filename, "w", newline="", encoding="utf-8") as file:
@@ -238,15 +284,47 @@ class ACRO(Tables, Regression):
         self.suppress = False
 
     def enable_rounding(self, base: int | None = None) -> None:
-        """Turn rounding on; overwrites any prior suppress=True (not restored on disable_rounding)."""
+        """Turn rounding on. Overwrites any prior suppress=True (not restored on disable_rounding)."""
         if base is not None:
             self.round_base = base
         self.mitigation = "round"
 
     def disable_rounding(self) -> None:
-        """Turn rounding off; always falls back to mitigation='none' (prior suppress not restored)."""
+        """Turn rounding off. Always falls back to mitigation='none' (prior suppress not restored)."""
         if self.mitigation == "round":
             self.mitigation = "none"
+
+    def show_fair_summaries(self) -> str:
+        """Print IDs and FAIR summaries for all outputs in session.
+
+        Returns a formatted string containing metadata about each output,
+        including dependent and independent variables tracked during analysis.
+
+        Returns
+        -------
+        str
+            Formatted summary of all outputs with their FAIR dictionaries.
+
+        Examples
+        --------
+        >>> import acro
+        >>> session = acro.ACRO()
+        >>> session.ols(y, X)  # doctest: +SKIP
+        >>> print(session.show_fair_summaries())  # doctest: +SKIP
+        output_0
+        dependent : income
+        independent : ['age', 'education']
+        """
+        thestr = ""
+        for uid, value in self.results.results.items():
+            thestr += uid + "\n"
+            for key, val in value.fair.items():
+                if isinstance(val, dict):
+                    for key2, val2 in val.items():
+                        thestr += f"{key2} : {val2}"
+                else:
+                    thestr += f"{key}:{val}"
+        return thestr + "\n"
 
 
 def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
@@ -260,11 +338,9 @@ def add_to_acro(src_path: str, dest_path: str = "sdc_results") -> None:
         Name of the folder to save outputs.
     """
     acro: ACRO = ACRO()
-    output_id: int = 0
     # add the files from the folder to an acro obj
-    for file in os.listdir(src_path):
+    for output_id, file in enumerate(os.listdir(src_path)):
         filename: str = os.path.join(src_path, file)
         acro.custom_output(filename)
         acro.rename_output(f"output_{output_id}", file)
-        output_id += 1
     acro.finalise(dest_path, "json")

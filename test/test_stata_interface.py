@@ -9,8 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import acro.stata_config as stata_config
-from acro import ACRO
+from acro import ACRO, stata_config
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,

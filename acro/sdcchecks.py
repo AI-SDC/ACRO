@@ -53,7 +53,7 @@ class SDCEvidence:
         if isinstance(model, statsmodels.base.model.Model):
             self.dof = get_statsmodel_dof(model)
         elif isinstance(model, TableModelDetails):
-            self.dof = model.get_count_table().min(axis=None) - 1
+            self.dof = model.get_count_table() - 1
         else:
             self.dof = -1
 
@@ -431,17 +431,26 @@ class SDCChecks:
 
         status = "pass"
         comparator = ">="
+        reporter = None
 
-        if isinstance(evidence.dof, int) and evidence.dof < threshold:
-            status = "fail"
-            comparator = "<"
-        if isinstance(evidence.dof, pd.DataFrame):
-            fail_table = evidence.dof < threshold
-            if fail_table.any().any():
+        if isinstance(evidence.dof, int):
+            reporter = evidence.dof
+            if reporter < threshold:
                 status = "fail"
                 comparator = "<"
+        if isinstance(evidence.dof, pd.DataFrame):
+            if evidence.dof.size == 0:
+                reporter = 0
+                status = "fail"
+                comparator = "<"
+            else:
+                reporter = evidence.dof.to_numpy().min()
+                fail_table = evidence.dof < threshold
+                if fail_table.any().any():
+                    status = "fail"
+                    comparator = "<"
 
-        summary = f"{status} dof={evidence.dof} {comparator} {threshold}"
+        summary = f"{status} dof={reporter} {comparator} {threshold}"
         return status, summary, evidence.dof
 
     def check_all_same(

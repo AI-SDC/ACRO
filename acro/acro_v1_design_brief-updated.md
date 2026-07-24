@@ -65,7 +65,7 @@ Code now reads domain knowledge on session initialization from the **statbarnsdc
 Since TRE airlock procedures prevent on-the-fly web access, we provide `ontology_handler.py` that pre-generates four JSON lookup tables:
 - **`analyses.json`**: Maps 20+ analysis types (OLS, GLM, Histogram, Crosstab, etc.) to their properties
 - **`checks.json`**: Defines 9 check types with evidence requirements and thresholds
-- **`statbarns.json`**: Risk categories and mitigation strategies per analysis type  
+- **`statbarns.json`**: Risk categories and mitigation strategies per analysis type
 - **`risks.json`**: Risk level definitions and severity mappings
 
 These JSON files are included in releases and accessible within the TRE. This design decouples knowledge representation from code—when SDC protocols evolve, only the ontology and JSON files change.
@@ -169,7 +169,7 @@ The architecture required creating several new classes and components to support
 
 **1. TableModelDetails** — Standardized Interface for Tables
 
-An abstract class that provides a unified interface for all table-based analyses (crosstab, pivot_table, histogram, pie, survival, etc.). 
+An abstract class that provides a unified interface for all table-based analyses (crosstab, pivot_table, histogram, pie, survival, etc.).
 
 - **Why needed**: Different table commands have different APIs but share similar SDC requirements. By standardizing the interface, we avoid repeated code and type checking.
 - **Core capabilities**:
@@ -251,7 +251,7 @@ When a researcher calls `crosstab()` or similar, here's what happens:
 
 **Step 4: Run Checks**
 - For each requested aggregation function (sum, mean, std, etc.):
-  - Calls `run_checks_for_analysis()` 
+  - Calls `run_checks_for_analysis()`
   - Loops through applicable checks
   - Each check reviews evidence and returns status/summary/masks
   - Results collated into `ChecksResults`
@@ -304,7 +304,7 @@ Manages the complete risk assessment pipeline:
   - Calculates regression degrees of freedom
   - Supports multiple aggregation functions
 
-- **Check Orchestration**: `run_checks_for_analysis()` method  
+- **Check Orchestration**: `run_checks_for_analysis()` method
   - Maps 9 check types to implementations
   - Returns `ChecksResults` (status, summary, suppression masks)
   - Batch support via `ManyChecksResults`
@@ -323,7 +323,7 @@ Unified interface for all table-based analyses:
 #### 4. Nine SDC Check Types (Implemented)
 
 **Dominance Checks**:
-- `PPercentCheck` (p-ratio): Flags extreme value concentration  
+- `PPercentCheck` (p-ratio): Flags extreme value concentration
 - `NKCheck` (N-rule): Tests top values don't exceed threshold (e.g., top 2 > 90% of total)
 
 **Minimum Threshold Checks**:
@@ -498,7 +498,7 @@ These tests validate the new ontology-driven approach using high-level ACRO API 
 
 #### P-ratio (PPercentCheck) Tests (5 tests)
 
-10. **test_check_ppercent_dominance_violation** 
+10. **test_check_ppercent_dominance_violation**
     - Replaces: `test_agg_p_percent_normal_violation()`
     - Tests: High p-ratio (10000:500:50 ratio) triggers violation
     - Validates: Status in ("review", "fail") and "p-ratio" in summary
@@ -684,7 +684,7 @@ These tests verify the complete end-to-end workflow: a researcher makes an ACRO 
 *What's being tested?* Does the p-ratio check correctly identify when one value dramatically dominates others?
 
 - **Scenario**: One researcher's grant is 10,000, another's is 500, and everyone else is around 50—this is a 20:1 dominance that should alarm us
-- **What happens**: 
+- **What happens**:
   - System modifies the dataset to create this extreme imbalance
   - Runs a year × grant_type crosstab with sum aggregation
   - Extracts the analysis result
@@ -735,7 +735,7 @@ These tests verify the complete end-to-end workflow: a researcher makes an ACRO 
 - **What happens**:
   - System runs crosstab with count aggregation on single row
   - Extracts result
-- **Expected outcome**: 
+- **Expected outcome**:
   - Status is valid (pass/review/fail), summary is a string
   - If status is "review", summary should mention "threshold"
 - **Why it matters**: Single-row data has very few contributors—we typically want to flag this as too risky

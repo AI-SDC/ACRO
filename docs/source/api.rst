@@ -19,9 +19,59 @@ Core Classes
 ACRO Class
 ----------
 
+The main entry point.  Inherits from ``Tables`` and ``Regression`` mixins which provide
+the analysis methods.
+
 .. autoclass:: acro.ACRO
    :members:
    :inherited-members:
+   :show-inheritance:
+   :no-index:
+
+Ontology-Driven Checking Classes
+=================================
+
+The classes below form ACRO's internal disclosure-checking pipeline.  Most users will
+never instantiate these directly  they are created and managed by the ``ACRO`` class.
+They are documented here for developers and TRE administrators.
+
+SDCChecks
+----------
+
+.. autoclass:: acro.sdcchecks.SDCChecks
+   :members:
+   :show-inheritance:
+   :no-index:
+
+SDCEvidence
+-----------
+
+.. autoclass:: acro.sdcchecks.SDCEvidence
+   :members:
+   :show-inheritance:
+   :no-index:
+
+ChecksResults
+--------------
+
+.. autoclass:: acro.sdcchecks.ChecksResults
+   :members:
+   :show-inheritance:
+   :no-index:
+
+ManyChecksResults
+-----------------
+
+.. autoclass:: acro.sdcchecks.ManyChecksResults
+   :members:
+   :show-inheritance:
+   :no-index:
+
+TableModelDetails
+-----------------
+
+.. autoclass:: acro.tablemodeldetails.TableModelDetails
+   :members:
    :show-inheritance:
    :no-index:
 
@@ -52,25 +102,38 @@ Helper Functions
    :show-inheritance:
    :no-index:
 
+Table Utilities
+---------------
+
+.. automodule:: acro.table_utils
+   :members:
+   :show-inheritance:
+   :no-index:
+
 Function Reference by Category
 ==============================
 
 Output Management
 -----------------
 
-* ``finalise()`` - Prepare outputs for review
-* ``remove_output()`` - Remove specific output
-* ``print_outputs()`` - Display current outputs
-* ``custom_output()`` - Add custom output
-* ``rename_output()`` - Rename an output
-* ``add_comments()`` - Add comments to output
-* ``add_exception()`` - Add exception request
+* ``finalise()``  Prepare outputs for review
+* ``remove_output()``  Remove specific output
+* ``print_outputs()``  Display current outputs
+* ``custom_output()``  Add custom output
+* ``rename_output()``  Rename an output
+* ``add_comments()``  Add comments to output
+* ``add_exception()``  Add exception request
 
-Method Parameters
-=================
+Mitigation Control
+------------------
+
+* ``enable_suppression()``  Switch to suppression mode
+* ``disable_suppression()``  Disable suppression
+* ``enable_rounding(base)``  Switch to rounding mode
+* ``disable_rounding()``  Disable rounding
 
 Common Parameters
------------------
+=================
 
 Many ACRO methods share common parameters:
 
@@ -83,72 +146,65 @@ Many ACRO methods share common parameters:
      - Description
    * - ``suppress``
      - bool
-     - Whether to suppress potentially disclosive outputs
+     - Whether to suppress potentially disclosive outputs automatically.
+   * - ``federated``
+     - bool
+     - Whether to run in federated mode (evidence sent to a trusted aggregator).
    * - ``show_suppressed``
      - bool
-     - Whether to display suppressed values in output
+     - Whether to display suppressed values in the output table.
    * - ``safe_threshold``
      - int
-     - Minimum cell count threshold for safety
+     - Minimum cell count threshold (TRE-controlled; set in YAML config).
    * - ``safe_dof_threshold``
      - int
-     - Minimum degrees of freedom for statistical models
+     - Minimum degrees of freedom for statistical models.
    * - ``safe_nk_n``
      - int
-     - Minimum number of observations for nk-dominance rule
+     - *n* in the NK dominance rule.
    * - ``safe_nk_k``
      - float
-     - Threshold for nk-dominance rule (0-1)
-   * - ``safe_p_threshold``
+     - *k* (proportion) in the NK dominance rule.
+   * - ``safe_pratio_p``
      - float
-     - P-value threshold for statistical significance
+     - P-ratio threshold for dominance checking.
 
-Return Types
-============
+Configuration
+=============
 
-Output Objects
---------------
-
-Most ACRO functions return specialized output objects that contain:
-
-* **Original Result**: The unmodified analysis result
-* **Safe Result**: The disclosure-controlled version
-* **Disclosure Checks**: Details of applied safety checks
-* **Metadata**: Information about the analysis and safety measures
+ACRO uses YAML configuration files to set safety parameters:
 
 .. code-block:: python
 
-   # Example return object structure
-   result = acro.crosstab(df.col1, df.col2)
+   # Initialise with default config
+   session = acro.ACRO()
 
-   # Access components
-   print(result.output)          # Safe output for display
-   print(result.disclosure_checks)  # Applied safety checks
-   print(result.metadata)        # Analysis metadata
-
-Return Types
-============
-
-Output Objects
---------------
-
-ACRO functions return results that are automatically checked for disclosure risks:
-
-.. code-block:: python
-
-   import acro
-
-   # Initialize ACRO
+   # Initialise with suppress mode on
    session = acro.ACRO(suppress=True)
 
-   # Results are automatically checked
-   result = session.crosstab(df.col1, df.col2)
+   # Initialise with a custom config file
+   session = acro.ACRO(config="custom.yaml")
 
-   # View outputs
-   session.print_outputs()
+Custom Configuration
+--------------------
 
-   # Finalize for review
-   session.finalise("outputs/")
+Create a custom YAML file for your TRE:
+
+.. code-block:: yaml
+
+   # custom.yaml
+   safe_threshold: 10
+   safe_dof_threshold: 10
+   safe_nk_n: 2
+   safe_nk_k: 0.9
+   safe_pratio_p: 0.1
+   check_missing_values: false
+   zeros_are_disclosive: true
+   safe_round_base: 5
+   federated: false
+   blocked_extensions:
+     - .svg
+     - .gph
 
 Version Information
 ===================
@@ -159,70 +215,10 @@ Version Information
    from acro.version import __version__
    print(__version__)
 
-Compatibility
-=============
-
-Python Version Support
-----------------------
-
-ACRO supports Python 3.9 and later versions.
-
-Dependency Requirements
------------------------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 20 50
-
-   * - Package
-     - Minimum Version
-     - Purpose
-   * - pandas
-     - 1.5.0
-     - Data manipulation and analysis
-   * - numpy
-     - 1.21.0
-     - Numerical computing
-   * - statsmodels
-     - 0.13.0
-     - Statistical modeling
-   * - openpyxl
-     - 3.0.0
-     - Excel file support
-   * - pyyaml
-     - 5.4.0
-     - Configuration file handling
-
-Configuration
-=============
-
-ACRO uses YAML configuration files to set safety parameters:
-
-.. code-block:: python
-
-   # Initialize with default config
-   session = acro.ACRO(config="default", suppress=True)
-
-   # Configuration is loaded from default.yaml
-   print(session.config)
-
-Custom Configuration
---------------------
-
-Create custom YAML files for different environments:
-
-.. code-block:: yaml
-
-   # custom.yaml
-   safe_threshold: 10
-   safe_nk_n: 2
-   safe_nk_k: 0.9
-   check_missing_values: true
-   zeros_are_disclosive: false
-
 See Also
 ========
 
-* :doc:`examples` - Usage examples and tutorials
-* :doc:`installation` - Installation instructions
-* :doc:`introduction` - Getting started guide
+* :doc:`user_guide/architecture`  Detailed technical architecture reference
+* :doc:`examples`  Usage examples and tutorials
+* :doc:`installation`  Installation instructions
+* :doc:`introduction`  Getting started guide

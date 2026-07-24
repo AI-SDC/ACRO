@@ -91,7 +91,10 @@ ACRO: Statistical Disclosure Control
 ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. SACRO is a framework that applies best-practice principles-based statistical disclosure control (SDC) techniques on-the-fly as researchers conduct their analysis. SACRO is designed to assist human checkers rather than seeking to replace them as with current automated rules-based approaches.
 
 .. note::
-   **New in v0.4.8:** Enhanced support for complex statistical models and improved R integration.
+   **New in v0.4.12  Ontology-Driven Architecture:** ACRO's checking rules are now
+   driven by the `StatbarnsSDC ontology <https://w3id.org/statbarnsdc>`_, compiled into
+   JSON lookup tables bundled with the package.  For a beginner-friendly explanation see
+   :doc:`introduction`, or :doc:`user_guide/architecture` for the full technical reference.
 
 What is ACRO?
 =============
@@ -99,9 +102,9 @@ What is ACRO?
 ACRO implements a principles-based statistical disclosure control (SDC) methodology that:
 
 * Automatically identifies potentially disclosive outputs
-* Applies optional disclosure mitigation strategies
-* Reports reasons for applying SDC
-* Produces summary documents for output checkers
+* Applies optional disclosure mitigation strategies (suppression or rounding)
+* Reports *why* each check was applied, grounded in a formal ontology
+* Produces auditable summary documents for output checkers
 
 
 Core Features
@@ -111,8 +114,9 @@ Semi-Automated Disclosure Checking
 ----------------------------------
 
 * **Drop-in replacements** for common Python analysis commands (pandas, statsmodels, etc.) with configurable disclosure checks
-* **Automated sensitivity tests**: frequency thresholds, dominance (p%, NK rules, etc.), residual degrees-of-freedom checks
-* **Optional mitigations**: suppression, rounding, and more to come
+* **Automated sensitivity tests**: frequency thresholds, dominance (p%, NK rules), residual degrees-of-freedom checks, missing-value checks
+* **Ontology-driven rule engine**: the checks that apply to each analysis type are read from ``analyses.json``, ``statbarns.json``, ``risks.json``, and ``checks.json``  no hard-coded logic
+* **Optional mitigations**: suppression (records redacted, table rerun) or rounding (to nearest configurable multiple)
 * **Session management**: track, rename, comment, remove, add exceptions, and finalise reports
 * **Configurable risk parameters** via YAML files
 * **Generates auditable reports** in JSON or Excel
@@ -122,11 +126,11 @@ Design Principles
 
 * **Free and open source** under MIT (ACRO) / GPLv3 (SACRO Viewer)
 * **Easy to install** via PyPI, CRAN, or GitHub; cross-platform (Linux, macOS, Windows)
-* **Familiar APIs** - same function signatures as native commands: acro.crosstab mirrors pandas.crosstab, etc.
-* **Comprehensive coverage** - tables, regressions, histograms, survival plots, etc.
-* **Transparent & auditable** - clear reports, stored queries, designed for human-checkers
-* **Configurable & extensible** - organisation-defined disclosure rules, multi-language support
-* **Scalable** - lightweight, session-based, local execution
+* **Familiar APIs**  same function signatures as native commands: ``acro.crosstab`` mirrors ``pandas.crosstab``
+* **Comprehensive coverage**  tables, regressions, histograms, survival plots
+* **Transparent & auditable**  clear FAIR reports, stored queries, designed for human checkers
+* **Configurable & extensible**  organisation-defined disclosure rules, multi-language support
+* **Offline-ready**  all SDC knowledge is bundled as JSON; no internet access required inside a TRE
 
 Getting Started
 ===============
@@ -157,10 +161,10 @@ Getting Started
 Key Methods
 -----------
 
-* **Making tables** - e.g. :py:meth:`~acro.ACRO.crosstab`
-* **Regression analysis** - e.g. :py:meth:`~acro.ACRO.ols`
-* **Making plots** - e.g. :py:meth:`~acro.ACRO.hist`
-* **Managing a research session** - e.g. :py:meth:`~acro.ACRO.finalise`
+* **Making tables**  e.g. :py:meth:`~acro.ACRO.crosstab`
+* **Regression analysis**  e.g. :py:meth:`~acro.ACRO.ols`
+* **Making plots**  e.g. :py:meth:`~acro.ACRO.hist`
+* **Managing a research session**  e.g. :py:meth:`~acro.ACRO.finalise`
 
 Community and Support
 =====================

@@ -73,8 +73,7 @@ def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
 def collate_risk_assessments(
     table: DataFrame, allcheckresults: dict[str, ChecksResults]
 ) -> DataFrame:
-    """
-    Collate the Risk Assessment for a table.
+    """Collate the Risk Assessment for a table.
 
     Parameters
     ----------
@@ -174,51 +173,50 @@ def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame 
     return mask
 
 
-# def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
-#     """
-#     Return the status and summary of the suppression masks.
+def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
+    """Return the status and summary of the suppression masks.
 
-#     Parameters
-#     ----------
-#     sdc : dict
-#         Properties of the SDC checks for an analysis.
+    Parameters
+    ----------
+    sdc : dict
+        Properties of the SDC checks for an analysis.
 
-#     Returns
-#     -------
-#     str
-#         Status: {"review", "fail", "pass"}.
-#     str
-#         Summary of the suppression masks.
-#     """
-#     status: str = "pass"
-#     summary: str = ""
-#     sdc_summary = sdc["summary"]
-#     sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
-#     if sdc_summary["negative"] > 0:
-#         summary += "negative values found"
-#         status = "review"
-#     elif sdc_summary["missing"] > 0:
-#         summary += "missing values found"
-#         status = "review"
-#     else:
-#         if sdc_summary["threshold"] > 0:
-#             summary += f"threshold: {sdc_summary['threshold']} cells {sup}; "
-#             status = "review" if sdc_summary["suppressed"] else "fail"
-#         if sdc_summary["p-ratio"] > 0:
-#             summary += f"p-ratio: {sdc_summary['p-ratio']} cells {sup}; "
-#             status = "review" if sdc_summary["suppressed"] else "fail"
-#         if sdc_summary["nk-rule"] > 0:
-#             summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
-#             status = "review" if sdc_summary["suppressed"] else "fail"
-#         if sdc_summary["all-values-are-same"] > 0:
-#             summary += (
-#                 f"all-values-are-same: {sdc_summary['all-values-are-same']} "
-#                 f"cells {sup}; "
-#             )
-#             status = "review" if sdc_summary["suppressed"] else "fail"
-#     summary = f"{status}; {summary}" if summary else status
-#     logger.info("get_summary(): %s", summary)
-#     return status, summary
+    Returns
+    -------
+    str
+        Status: {"review", "fail", "pass"}.
+    str
+        Summary of the suppression masks.
+    """
+    status: str = "pass"
+    summary: str = ""
+    sdc_summary = sdc["summary"]
+    sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
+    if sdc_summary["negative"] > 0:
+        summary += "negative values found"
+        status = "review"
+    elif sdc_summary["missing"] > 0:
+        summary += "missing values found"
+        status = "review"
+    else:
+        if sdc_summary["threshold"] > 0:
+            summary += f"threshold: {sdc_summary['threshold']} cells {sup}; "
+            status = "review" if sdc_summary["suppressed"] else "fail"
+        if sdc_summary["p-ratio"] > 0:
+            summary += f"p-ratio: {sdc_summary['p-ratio']} cells {sup}; "
+            status = "review" if sdc_summary["suppressed"] else "fail"
+        if sdc_summary["nk-rule"] > 0:
+            summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
+            status = "review" if sdc_summary["suppressed"] else "fail"
+        if sdc_summary["all-values-are-same"] > 0:
+            summary += (
+                f"all-values-are-same: {sdc_summary['all-values-are-same']} "
+                f"cells {sup}; "
+            )
+            status = "review" if sdc_summary["suppressed"] else "fail"
+    summary = f"{status}; {summary}" if summary else status
+    logger.info("get_summary(): %s", summary)
+    return status, summary
 
 
 def get_redacted_table(
@@ -294,8 +292,7 @@ def get_redacted_pivottable(
 
 
 def add_backticks(name: str) -> str:
-    """
-    Add backticks to a name if it contains spaces and doesn't have them.
+    """Add backticks to a name if it contains spaces and doesn't have them.
 
     Parameters
     ----------
@@ -313,8 +310,7 @@ def add_backticks(name: str) -> str:
 
 
 def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
-    """
-    Format a label into a list of condition strings.
+    """Format a label into a list of condition strings.
 
     Parameters
     ----------
@@ -373,8 +369,7 @@ def get_relevant_dataframe(model: TableModelDetails) -> DataFrame:
 
 
 def translate_args_to_newdf(arguments: tuple, redacted_data: DataFrame) -> list:
-    """
-    Translate arguments or keys from one data frame to another.
+    """Translate arguments or keys from one data frame to another.
 
     Parameters
     ----------
@@ -413,8 +408,7 @@ def _get_cell_query(
     index_level_names: list[Any],
     column_level_names: list[Any],
 ) -> str | None:
-    """
-    Generate a query string for a cell if it's marked as true in the mask.
+    """Generate a query string for a cell if it's marked as true in the mask.
 
     Parameters
     ----------
@@ -450,8 +444,7 @@ def _get_cell_query(
 def get_queries_from_collated_risk(
     collated_risk: DataFrame, aggfunc: str | None
 ) -> list[str]:
-    """
-    Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
+    """Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
 
     Parameters
     ----------
@@ -489,8 +482,7 @@ def get_queries_from_collated_risk(
 def get_redacted_data(
     data: DataFrame, queries: list[str], dimensions: list[str]
 ) -> DataFrame:
-    """
-    Apply set of queries to remove sensitive data from DataFrame.
+    """Apply set of queries to remove sensitive data from DataFrame.
 
     Parameters
     ----------

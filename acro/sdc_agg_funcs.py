@@ -29,8 +29,7 @@ def agg_mode(values: pd.Series) -> float:
 
 
 def agg_num_negative(vals: pd.Series) -> int:
-    """
-    Return whether any values are negative.
+    """Return whether any values are negative.
 
     Parameters
     ----------
@@ -63,8 +62,7 @@ def agg_missing(vals: pd.Series) -> bool:
 
 
 def agg_values_are_same(vals: pd.Series) -> bool:
-    """
-    Return whether all observations having the same value.
+    """Return whether all observations having the same value.
 
     Parameters
     ----------
@@ -81,8 +79,7 @@ def agg_values_are_same(vals: pd.Series) -> bool:
 
 
 def agg_top_n_sum(vals: pd.Series) -> float:
-    """
-    Return the sum of the top n values in a pandas Series.
+    """Return the sum of the top n values in a pandas Series.
 
     Parameters
     ----------
@@ -103,8 +100,7 @@ def agg_top_n_sum(vals: pd.Series) -> float:
 
 
 def agg_top_2_sum(vals: pd.Series) -> float:
-    """
-    Return the sum of the top 2 values in a pandas Series.
+    """Return the sum of the top 2 values in a pandas Series.
 
     Parameters
     ----------
@@ -124,8 +120,7 @@ def agg_top_2_sum(vals: pd.Series) -> float:
 
 
 def get_statsmodel_dof(model: Any) -> int:
-    """
-    Get model DOF.
+    """Get model DOF.
 
     Parameters
     ----------

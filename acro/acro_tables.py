@@ -225,8 +225,7 @@ class Tables:
         margins_name: str,
         get_redacted_func,
     ) -> DataFrame:
-        """
-        Process table output in federated or standalone mode.
+        """Process table output in federated or standalone mode.
 
         Consolidates common logic for crosstab and pivot_table to eliminate
         code duplication. Handles SDC checks, mitigation, and output recording.
@@ -315,8 +314,7 @@ class Tables:
         analysis_names: list[str],
         model_details: TableModelDetails,
     ) -> tuple[bool, ManyChecksResults]:
-        """
-        Process analysis output in federated or standalone mode.
+        """Process analysis output in federated or standalone mode.
 
         Consolidates common logic for hist() and pie() to eliminate code
         duplication. Gets evidence and either stores it (federated) or

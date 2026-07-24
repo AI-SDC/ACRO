@@ -59,8 +59,7 @@ def get_command(default: str, stack_list: list[FrameInfo]) -> str:
 
 
 def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> str:
-    """
-    Add delimiters to table.to_string() to improve readability for onscreen display.
+    """Add delimiters to table.to_string() to improve readability for onscreen display.
 
     Splits fields on whitespace unless an optional separator is provided e.g. ',' for csv.
     """

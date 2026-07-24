@@ -36,8 +36,7 @@ def print_nested_dict(s: dict) -> None:
 
 
 def populate_useful_dicts(g: rdflib.Graph) -> tuple:
-    """
-    Create useful dicts to save time.
+    """Create useful dicts to save time.
 
     Parameters
     ----------
@@ -80,8 +79,7 @@ def populate_useful_dicts(g: rdflib.Graph) -> tuple:
 def make_save_statbarns(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, othersuperclasses: dict
 ) -> dict:
-    """
-    Create statbarn dicts/json from ontology.
+    """Create statbarn dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of statbarns
@@ -127,8 +125,7 @@ def make_save_statbarns(
 def make_save_analyses(
     g: rdflib.Graph, definitions: dict, pref_labels: dict, statbarns: dict
 ) -> dict:
-    """
-    Create analysis dicts/json from ontology.
+    """Create analysis dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of analyses
@@ -177,8 +174,7 @@ def make_save_analyses(
 
 
 def make_ismitigatedby(g: rdflib.Graph, risks: list) -> dict:
-    """
-    Create lookup of mitigations for risks dicts/json from ontology.
+    """Create lookup of mitigations for risks dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of mitigations for each risk
@@ -229,8 +225,7 @@ def make_ismitigatedby(g: rdflib.Graph, risks: list) -> dict:
 
 
 def make_ischeckedby(g: rdflib.Graph, risks: list) -> dict:
-    """
-    Create lookup of checks for risks dicts/json from ontology.
+    """Create lookup of checks for risks dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of checks for each risk
@@ -284,8 +279,7 @@ def make_save_risks(
     ischeckedby: dict,
     ismitigatedby: dict,
 ) -> dict:
-    """
-    Create risks dicts/json from ontology.
+    """Create risks dicts/json from ontology.
 
     parse the rdf graph from the ontology
     create lookup dict of risks

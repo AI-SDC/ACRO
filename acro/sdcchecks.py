@@ -190,8 +190,7 @@ def mask_to_boolmask(mask: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
-    """
-    Get status and summary from mask.
+    """Get status and summary from mask.
 
     Parameters
     ----------
@@ -212,8 +211,7 @@ def get_status_summary_from_mask(mask: pd.DataFrame) -> tuple[str, str]:
 
 
 class SDCChecks:
-    """
-    Implements range of SDC checks.
+    """Implements range of SDC checks.
 
     All the information is read from json files
     that are separately generated from the online ontology .ttl file
@@ -338,8 +336,7 @@ class SDCChecks:
     def run_checks_for_analysis(
         self, analysis_name: str, evidence: SDCEvidence, model: Any
     ) -> ChecksResults:
-        """
-        Given a set of evidence, run all the checks needed for a given type of analysis and report outcomes.
+        """Given a set of evidence, run all the checks needed for a given type of analysis and report outcomes.
 
         Parameters
         ----------
@@ -409,8 +406,7 @@ class SDCChecks:
     def check_model_dof(
         self, name: str, evidence: SDCEvidence, model: Any
     ) -> tuple[str, str, int]:
-        """
-        Check model DOF.
+        """Check model DOF.
 
         Parameters
         ----------
@@ -451,8 +447,7 @@ class SDCChecks:
     def check_all_same(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """
-        Check whether all values in cells are the same.
+        """Check whether all values in cells are the same.
 
         Parameters
         ----------
@@ -480,7 +475,7 @@ class SDCChecks:
     def check_missing(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """Check whether any cells have missing values.  # noqa: D212,D213,D413,D417.
+        """Check whether any cells have missing values.
 
         Parameters
         ----------
@@ -564,8 +559,7 @@ class SDCChecks:
     def manual_check(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """
-        Report that a manual check is needed.
+        """Report that a manual check is needed.
 
         Parameters
         ----------
@@ -610,8 +604,7 @@ class SDCChecks:
     def check_nk_dominance(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """
-        Check for NK dominance within each cell.
+        """Check for NK dominance within each cell.
 
         Parameters
         ----------
@@ -650,8 +643,7 @@ class SDCChecks:
     def check_ppercent_dominance(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """
-        Check for PQ dominance within each cell.
+        """Check for PQ dominance within each cell.
 
         Parameters
         ----------
@@ -698,8 +690,7 @@ class SDCChecks:
     def check_linked_table(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """
-        Check for presence of linked tables.
+        """Check for presence of linked tables.
 
         Parameters
         ----------
@@ -731,8 +722,7 @@ class SDCChecks:
     def check_required_zero(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """
-        Check for required-zero cells (zeros that should always be present).
+        """Check for required-zero cells (zeros that should always be present).
 
         Parameters
         ----------
@@ -764,8 +754,7 @@ class SDCChecks:
     def check_presence_of_zero(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """
-        Check for presence of cells with values zero.
+        """Check for presence of cells with values zero.
 
         Parameters
         ----------

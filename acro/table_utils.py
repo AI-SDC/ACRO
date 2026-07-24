@@ -73,8 +73,7 @@ def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
 def collate_risk_assessments(
     table: DataFrame, allcheckresults: dict[str, ChecksResults]
 ) -> DataFrame:
-    """
-    Collate the Risk Assessment for a table.
+    """Collate the Risk Assessment for a table.
 
     Parameters
     ----------
@@ -93,7 +92,6 @@ def collate_risk_assessments(
         outcome_df = drop_duplicate_columns(outcome_df)
     outcome_df = outcome_df.fillna("")
 
-    checks_seen: list[str] = []
     for _, checkresults in allcheckresults.items():
         masks = checkresults.outcomes
         # report if negatives are present
@@ -107,20 +105,23 @@ def collate_risk_assessments(
         # collate at-risk cells from individual risk masks
         else:
             for name, mask in masks.items():
-                if name in checks_seen:
-                    continue
-                checks_seen.append(name)
-                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
-                tmp_df = tmp_df.fillna("")
+                # Skip non-DataFrame masks (e.g., numpy arrays)
                 if not isinstance(mask, DataFrame):
                     continue
+
+                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
+                tmp_df = tmp_df.fillna("")
+
+                # Align mask to outcome_df structure
                 mask_aligned = _align_mask_to_outcome(mask, outcome_df)
-                if mask_aligned is None:
-                    continue
+
+                # Check for non-empty intersections
                 shared_index = outcome_df.index.intersection(mask_aligned.index)
                 shared_cols = outcome_df.columns.intersection(mask_aligned.columns)
                 if shared_index.empty or shared_cols.empty:
                     continue
+
+                # Apply mask to tmp_df
                 mask_trimmed = mask_aligned.reindex(
                     index=shared_index, columns=shared_cols
                 )
@@ -135,7 +136,7 @@ def collate_risk_assessments(
     return outcome_df
 
 
-def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame | None:
+def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame:
     """Align a suppression mask to the column structure of the outcome DataFrame.
 
     Parameters
@@ -147,21 +148,22 @@ def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame 
 
     Returns
     -------
-    DataFrame or None
-        Aligned mask, or None if alignment is not possible.
+    DataFrame
+        Aligned mask with columns matching outcome_df structure.
     """
     n_diff = outcome_df.columns.nlevels - mask.columns.nlevels
     if n_diff > 0:
+        # Outcome has more column levels than mask - extract relevant level(s) from outcome columns
         mask_cols_aligned = []
         for c in outcome_df.columns:
             if isinstance(c, tuple):
                 sub_c = c[n_diff:]
-                if len(sub_c) == 1:
-                    mask_cols_aligned.append(sub_c[0])
-                else:
-                    mask_cols_aligned.append(sub_c)
+                # Append single column name or tuple of remaining levels
+                mask_cols_aligned.append(sub_c[0] if len(sub_c) == 1 else sub_c)
             else:
                 mask_cols_aligned.append(c)
+
+        # Create aligned mask with outcome's column structure
         mask_aligned = DataFrame(index=mask.index, columns=outcome_df.columns)
         for col_out, col_mask in zip(
             outcome_df.columns, mask_cols_aligned, strict=False
@@ -169,56 +171,57 @@ def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame 
             if col_mask in mask.columns:
                 mask_aligned[col_out] = mask[col_mask]
         return mask_aligned
+
+    # Outcome has fewer or equal column levels than mask
     if n_diff < 0:
         return mask.droplevel(list(range(-n_diff)), axis=1)
     return mask
 
 
-# def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
-#     """
-#     Return the status and summary of the suppression masks.
+def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
+    """Return the status and summary of the suppression masks.
 
-#     Parameters
-#     ----------
-#     sdc : dict
-#         Properties of the SDC checks for an analysis.
+    Parameters
+    ----------
+    sdc : dict
+        Properties of the SDC checks for an analysis.
 
-#     Returns
-#     -------
-#     str
-#         Status: {"review", "fail", "pass"}.
-#     str
-#         Summary of the suppression masks.
-#     """
-#     status: str = "pass"
-#     summary: str = ""
-#     sdc_summary = sdc["summary"]
-#     sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
-#     if sdc_summary["negative"] > 0:
-#         summary += "negative values found"
-#         status = "review"
-#     elif sdc_summary["missing"] > 0:
-#         summary += "missing values found"
-#         status = "review"
-#     else:
-#         if sdc_summary["threshold"] > 0:
-#             summary += f"threshold: {sdc_summary['threshold']} cells {sup}; "
-#             status = "review" if sdc_summary["suppressed"] else "fail"
-#         if sdc_summary["p-ratio"] > 0:
-#             summary += f"p-ratio: {sdc_summary['p-ratio']} cells {sup}; "
-#             status = "review" if sdc_summary["suppressed"] else "fail"
-#         if sdc_summary["nk-rule"] > 0:
-#             summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
-#             status = "review" if sdc_summary["suppressed"] else "fail"
-#         if sdc_summary["all-values-are-same"] > 0:
-#             summary += (
-#                 f"all-values-are-same: {sdc_summary['all-values-are-same']} "
-#                 f"cells {sup}; "
-#             )
-#             status = "review" if sdc_summary["suppressed"] else "fail"
-#     summary = f"{status}; {summary}" if summary else status
-#     logger.info("get_summary(): %s", summary)
-#     return status, summary
+    Returns
+    -------
+    str
+        Status: {"review", "fail", "pass"}.
+    str
+        Summary of the suppression masks.
+    """
+    status: str = "pass"
+    summary: str = ""
+    sdc_summary = sdc["summary"]
+    sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
+    if sdc_summary["negative"] > 0:
+        summary += "negative values found"
+        status = "review"
+    elif sdc_summary["missing"] > 0:
+        summary += "missing values found"
+        status = "review"
+    else:
+        if sdc_summary["threshold"] > 0:
+            summary += f"threshold: {sdc_summary['threshold']} cells {sup}; "
+            status = "review" if sdc_summary["suppressed"] else "fail"
+        if sdc_summary["p-ratio"] > 0:
+            summary += f"p-ratio: {sdc_summary['p-ratio']} cells {sup}; "
+            status = "review" if sdc_summary["suppressed"] else "fail"
+        if sdc_summary["nk-rule"] > 0:
+            summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
+            status = "review" if sdc_summary["suppressed"] else "fail"
+        if sdc_summary["all-values-are-same"] > 0:
+            summary += (
+                f"all-values-are-same: {sdc_summary['all-values-are-same']} "
+                f"cells {sup}; "
+            )
+            status = "review" if sdc_summary["suppressed"] else "fail"
+    summary = f"{status}; {summary}" if summary else status
+    logger.info("get_summary(): %s", summary)
+    return status, summary
 
 
 def get_redacted_table(
@@ -294,8 +297,7 @@ def get_redacted_pivottable(
 
 
 def add_backticks(name: str) -> str:
-    """
-    Add backticks to a name if it contains spaces and doesn't have them.
+    """Add backticks to a name if it contains spaces and doesn't have them.
 
     Parameters
     ----------
@@ -313,8 +315,7 @@ def add_backticks(name: str) -> str:
 
 
 def _format_label_condition(level_names: list[Any], label: Any) -> list[str]:
-    """
-    Format a label into a list of condition strings.
+    """Format a label into a list of condition strings.
 
     Parameters
     ----------
@@ -373,8 +374,7 @@ def get_relevant_dataframe(model: TableModelDetails) -> DataFrame:
 
 
 def translate_args_to_newdf(arguments: tuple, redacted_data: DataFrame) -> list:
-    """
-    Translate arguments or keys from one data frame to another.
+    """Translate arguments or keys from one data frame to another.
 
     Parameters
     ----------
@@ -413,8 +413,7 @@ def _get_cell_query(
     index_level_names: list[Any],
     column_level_names: list[Any],
 ) -> str | None:
-    """
-    Generate a query string for a cell if it's marked as true in the mask.
+    """Generate a query string for a cell if it's marked as true in the mask.
 
     Parameters
     ----------
@@ -450,8 +449,7 @@ def _get_cell_query(
 def get_queries_from_collated_risk(
     collated_risk: DataFrame, aggfunc: str | None
 ) -> list[str]:
-    """
-    Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
+    """Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.
 
     Parameters
     ----------
@@ -489,8 +487,7 @@ def get_queries_from_collated_risk(
 def get_redacted_data(
     data: DataFrame, queries: list[str], dimensions: list[str]
 ) -> DataFrame:
-    """
-    Apply set of queries to remove sensitive data from DataFrame.
+    """Apply set of queries to remove sensitive data from DataFrame.
 
     Parameters
     ----------
@@ -532,16 +529,13 @@ def get_redacted_data(
     # for col in redacted_data:
     #     logger.info(f'{col}: {redacted_data[col].unique()}')
 
-    # reconvert
+    # reconvert dimensions to original data types
     for dimension in dimensions:
         if dimension in list(redacted_data):
             redacted_data[dimension] = redacted_data[dimension].astype(
                 oldtypes[dimension]
             )
 
-    if set(data.columns) != set(redacted_data.columns):
-        logger.warning("Error created redacted data - unable to apply suppression")
-        return data
     return redacted_data
 
 

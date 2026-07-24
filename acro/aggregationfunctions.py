@@ -1,23 +1,23 @@
 """ACRO: Aggregation functions."""
-# DEPRECATED: This file is deprecated and will be removed in a future release. Aggregation functions have been moved to the sdcchecks module.
+
 # pylint: disable=too-many-lines
-# from __future__ import annotations
+from __future__ import annotations
 
-# import logging
+import logging
 
-# from pandas import Series
+from pandas import Series
 
-# logger = logging.getLogger("acro")
-# # aggregation function parameters
-# THRESHOLD: int = 10
-# SAFE_PRATIO_P: float = 0.1
-# SAFE_NK_N: int = 2
-# SAFE_NK_K: float = 0.9
-# CHECK_MISSING_VALUES: bool = False
-# ZEROS_ARE_DISCLOSIVE: bool = True
+logger = logging.getLogger("acro")
+# aggregation function parameters
+THRESHOLD: int = 10
+SAFE_PRATIO_P: float = 0.1
+SAFE_NK_N: int = 2
+SAFE_NK_K: float = 0.9
+CHECK_MISSING_VALUES: bool = False
+ZEROS_ARE_DISCLOSIVE: bool = True
 
-# # survival analysis parameters
-# SURVIVAL_THRESHOLD: int = 10
+# survival analysis parameters
+SURVIVAL_THRESHOLD: int = 10
 
 # def agg_mode(values: Series) -> Series:
 #     """Calculate the mode or randomly selects one of the modes from a pandas Series.
@@ -67,72 +67,71 @@
 #     return vals.isna().sum() != 0
 
 
-# def agg_p_percent(vals: Series) -> bool:
-#     """Return whether the p percent rule is violated.  # noqa: D212,D213,D413.
+def agg_p_percent(vals: Series) -> bool:
+    """Return whether the p percent rule is violated.  # noqa: D212,D213,D413.
 
-#     That is, the uncertainty (as a fraction) of the estimate that the second
-#     highest respondent can make of the highest value. Assuming there are n
-#     items in the series, they are first sorted in descending order and then we
-#     calculate the value p = (sum - N-2 highest values)/highest value. If all
-#     values are 0, returns 1.
+    That is, the uncertainty (as a fraction) of the estimate that the second
+    highest respondent can make of the highest value. Assuming there are n
+    items in the series, they are first sorted in descending order and then we
+    calculate the value p = (sum - N-2 highest values)/highest value. If all
+    values are 0, returns 1.
 
-#     Parameters
-#     ----------
-#     vals : Series
-#         Series to calculate the p percent value.
+    Parameters
+    ----------
+    vals : Series
+        Series to calculate the p percent value.
 
-#     Returns
-#     -------
-#     bool
-#         whether the p percent rule is violated.
-#     """
-#     assert isinstance(vals, Series), "vals is not a pandas series"
-#     sorted_vals = vals.sort_values(ascending=False)
-#     total: float = sorted_vals.sum()
-#     if total <= 0.0 or vals.size <= 1:
-#         logger.debug("not calculating ppercent due to small size")
-#         return bool(ZEROS_ARE_DISCLOSIVE)
-#     sub_total = total - sorted_vals.iloc[0] - sorted_vals.iloc[1]
-#     p_val: float = sub_total / sorted_vals.iloc[0] if total > 0 else 1
-#     return p_val < SAFE_PRATIO_P
-
-
-# def agg_nk(vals: Series) -> bool:
-#     """
-#     Return whether the top n items account for more than k percent of the total.
-
-#     Parameters
-#     ----------
-#     vals : Series
-#         Series to calculate the nk value.
-
-#     Returns
-#     -------
-#     bool
-#         Whether the nk rule is violated.
-#     """
-#     total: float = vals.sum()
-#     if total > 0:
-#         sorted_vals = vals.sort_values(ascending=False)
-#         n_total = sorted_vals.iloc[0:SAFE_NK_N].sum()
-#         return (n_total / total) > SAFE_NK_K
-#     return False
+    Returns
+    -------
+    bool
+        whether the p percent rule is violated.
+    """
+    assert isinstance(vals, Series), "vals is not a pandas series"
+    sorted_vals = vals.sort_values(ascending=False)
+    total: float = sorted_vals.sum()
+    if total <= 0.0 or vals.size <= 1:
+        logger.debug("not calculating ppercent due to small size")
+        return bool(ZEROS_ARE_DISCLOSIVE)
+    sub_total = total - sorted_vals.iloc[0] - sorted_vals.iloc[1]
+    p_val: float = sub_total / sorted_vals.iloc[0] if total > 0 else 1
+    return p_val < SAFE_PRATIO_P
 
 
-# def agg_threshold(vals: Series) -> bool:
-#     """Return whether the number of contributors is below a threshold.
+def agg_nk(vals: Series) -> bool:
+    """Return whether the top n items account for more than k percent of the total.
 
-#     Parameters
-#     ----------
-#     vals : Series
-#         Series to calculate the p percent value.
+    Parameters
+    ----------
+    vals : Series
+        Series to calculate the nk value.
 
-#     Returns
-#     -------
-#     bool
-#         Whether the threshold rule is violated.
-#     """
-#     return vals.count() < THRESHOLD
+    Returns
+    -------
+    bool
+        Whether the nk rule is violated.
+    """
+    total: float = vals.sum()
+    if total > 0:
+        sorted_vals = vals.sort_values(ascending=False)
+        n_total = sorted_vals.iloc[0:SAFE_NK_N].sum()
+        return (n_total / total) > SAFE_NK_K
+    return False
+
+
+def agg_threshold(vals: Series) -> bool:
+    """Return whether the number of contributors is below a threshold.
+
+    Parameters
+    ----------
+    vals : Series
+        Series to calculate the p percent value.
+
+    Returns
+    -------
+    bool
+        Whether the threshold rule is violated.
+    """
+    return vals.count() < THRESHOLD
 
 
 # def agg_values_are_same(vals: Series) -> bool:

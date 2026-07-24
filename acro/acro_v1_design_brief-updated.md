@@ -860,3 +860,5 @@ These tests verify the complete end-to-end workflow: a researcher makes an ACRO 
 | **Zero Values Handling** | 9, 12, 17 | Detection, edge cases, graceful degradation |
 | **Error Messages** | 6 | "insufficient" for unknown model types |
 | **ACRO API Integration** | 10-19 | End-to-end workflows, crosstab() pipeline |
+
+Note: this was generated using AI to review missing test

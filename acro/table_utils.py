@@ -174,51 +174,51 @@ def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame 
     return mask
 
 
-def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
-    """
-    Return the status and summary of the suppression masks.
+# def get_analysis_summary(sdc: dict[str, Any]) -> tuple[str, str]:
+#     """
+#     Return the status and summary of the suppression masks.
 
-    Parameters
-    ----------
-    sdc : dict
-        Properties of the SDC checks for an analysis.
+#     Parameters
+#     ----------
+#     sdc : dict
+#         Properties of the SDC checks for an analysis.
 
-    Returns
-    -------
-    str
-        Status: {"review", "fail", "pass"}.
-    str
-        Summary of the suppression masks.
-    """
-    status: str = "pass"
-    summary: str = ""
-    sdc_summary = sdc["summary"]
-    sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
-    if sdc_summary["negative"] > 0:
-        summary += "negative values found"
-        status = "review"
-    elif sdc_summary["missing"] > 0:
-        summary += "missing values found"
-        status = "review"
-    else:
-        if sdc_summary["threshold"] > 0:
-            summary += f"threshold: {sdc_summary['threshold']} cells {sup}; "
-            status = "review" if sdc_summary["suppressed"] else "fail"
-        if sdc_summary["p-ratio"] > 0:
-            summary += f"p-ratio: {sdc_summary['p-ratio']} cells {sup}; "
-            status = "review" if sdc_summary["suppressed"] else "fail"
-        if sdc_summary["nk-rule"] > 0:
-            summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
-            status = "review" if sdc_summary["suppressed"] else "fail"
-        if sdc_summary["all-values-are-same"] > 0:
-            summary += (
-                f"all-values-are-same: {sdc_summary['all-values-are-same']} "
-                f"cells {sup}; "
-            )
-            status = "review" if sdc_summary["suppressed"] else "fail"
-    summary = f"{status}; {summary}" if summary else status
-    logger.info("get_summary(): %s", summary)
-    return status, summary
+#     Returns
+#     -------
+#     str
+#         Status: {"review", "fail", "pass"}.
+#     str
+#         Summary of the suppression masks.
+#     """
+#     status: str = "pass"
+#     summary: str = ""
+#     sdc_summary = sdc["summary"]
+#     sup: str = "suppressed" if sdc_summary["suppressed"] else "may need suppressing"
+#     if sdc_summary["negative"] > 0:
+#         summary += "negative values found"
+#         status = "review"
+#     elif sdc_summary["missing"] > 0:
+#         summary += "missing values found"
+#         status = "review"
+#     else:
+#         if sdc_summary["threshold"] > 0:
+#             summary += f"threshold: {sdc_summary['threshold']} cells {sup}; "
+#             status = "review" if sdc_summary["suppressed"] else "fail"
+#         if sdc_summary["p-ratio"] > 0:
+#             summary += f"p-ratio: {sdc_summary['p-ratio']} cells {sup}; "
+#             status = "review" if sdc_summary["suppressed"] else "fail"
+#         if sdc_summary["nk-rule"] > 0:
+#             summary += f"nk-rule: {sdc_summary['nk-rule']} cells {sup}; "
+#             status = "review" if sdc_summary["suppressed"] else "fail"
+#         if sdc_summary["all-values-are-same"] > 0:
+#             summary += (
+#                 f"all-values-are-same: {sdc_summary['all-values-are-same']} "
+#                 f"cells {sup}; "
+#             )
+#             status = "review" if sdc_summary["suppressed"] else "fail"
+#     summary = f"{status}; {summary}" if summary else status
+#     logger.info("get_summary(): %s", summary)
+#     return status, summary
 
 
 def get_redacted_table(

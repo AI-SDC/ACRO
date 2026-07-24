@@ -7,6 +7,8 @@ import shutil
 import matplotlib as mpl
 
 mpl.use("Agg")
+import logging
+import tempfile
 from unittest.mock import patch
 
 import pandas as pd
@@ -341,6 +343,40 @@ def test_toggle_suppression():
     assert not acro.suppress
 
 
+def test_mitigation_setter_unknown_string():
+    """Setting mitigation to unknown string falls back to 'none'."""
+    acro_obj = ACRO(suppress=False)
+    acro_obj.mitigation = "unknown_mitigation"
+    assert acro_obj.mitigation == "none"
+
+
+def test_round_base_setter_non_integer():
+    """Setting round_base to a non-integer falls back to default."""
+    acro_obj = ACRO()
+    default = acro_obj.round_base
+    acro_obj.round_base = "five"  # type: ignore[assignment]
+    assert acro_obj.round_base == default
+
+
+def test_round_base_setter_zero():
+    """Setting round_base to 0 falls back to default."""
+    acro_obj = ACRO()
+    default = acro_obj.round_base
+    acro_obj.round_base = 0
+    assert acro_obj.round_base == default
+
+
+def test_suppress_setter_false_when_round(caplog):
+    """Suppress=False when mitigation is 'round' logs a warning."""
+    acro_obj = ACRO()
+    acro_obj.mitigation = "round"
+    assert acro_obj.mitigation == "round"
+    with caplog.at_level(logging.INFO, logger="acro"):
+        acro_obj.suppress = False
+    assert acro_obj.mitigation == "round"
+    assert "no effect" in caplog.text
+
+
 def test_add_to_acro_function(data, monkeypatch):
     """Add_to_acro() exercises by scanning a directory and creating results."""
     src_path = "test_add_to_acro"
@@ -381,3 +417,26 @@ def test_records_add_with_none_defaults():
     assert rec.fair == {}
     assert isinstance(rec.outcome, pd.DataFrame)
     assert rec.output == []
+
+
+def test_finalise_evidence_dof_as_csv_string():
+    """Finalise_evidence() writes a CSV file when dof is a multiline string."""
+    records = Records()
+    dof_csv = "idx,val\n0,10\n1,20\n"  # multiline CSV string
+    evidence_store = {
+        "output_0": {
+            "command": "test",
+            "analysis_names": ["FrequencyTable"],
+            "variable_types": {},
+            "dof": dof_csv,
+            "interim_tables": {},
+        }
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        manifest = records.finalise_evidence(tmp, evidence_store)
+        # dof_file should have been written
+        entry = manifest["outputs"]["output_0"]
+        dof_file = entry["dof"]
+        assert dof_file is not None
+        assert dof_file.endswith(".csv")
+        assert os.path.exists(os.path.join(tmp, dof_file))

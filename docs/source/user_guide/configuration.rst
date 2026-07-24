@@ -150,16 +150,16 @@ Researcher-Controlled Settings
      - Pass ``True`` to have unsafe cells suppressed (replaced with NaN)
        automatically.
    * - ``enable_rounding(base)``
-     - 
+     -
      - Switch to rounding mode.  ``base`` must be a positive integer.
    * - ``enable_suppression()``
-     - 
+     -
      - Switch to suppression mode.
    * - ``disable_suppression()``
-     - 
+     -
      - Remove suppression without enabling rounding.
    * - ``disable_rounding()``
-     - 
+     -
      - Remove rounding without enabling suppression.
 
 How the Ontology Knowledge Base Is Generated

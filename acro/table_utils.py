@@ -92,7 +92,6 @@ def collate_risk_assessments(
         outcome_df = drop_duplicate_columns(outcome_df)
     outcome_df = outcome_df.fillna("")
 
-    checks_seen: list[str] = []
     for _, checkresults in allcheckresults.items():
         masks = checkresults.outcomes
         # report if negatives are present
@@ -106,20 +105,23 @@ def collate_risk_assessments(
         # collate at-risk cells from individual risk masks
         else:
             for name, mask in masks.items():
-                if name in checks_seen:
-                    continue
-                checks_seen.append(name)
-                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
-                tmp_df = tmp_df.fillna("")
+                # Skip non-DataFrame masks (e.g., numpy arrays)
                 if not isinstance(mask, DataFrame):
                     continue
+
+                tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
+                tmp_df = tmp_df.fillna("")
+
+                # Align mask to outcome_df structure
                 mask_aligned = _align_mask_to_outcome(mask, outcome_df)
-                if mask_aligned is None:
-                    continue
+
+                # Check for non-empty intersections
                 shared_index = outcome_df.index.intersection(mask_aligned.index)
                 shared_cols = outcome_df.columns.intersection(mask_aligned.columns)
                 if shared_index.empty or shared_cols.empty:
                     continue
+
+                # Apply mask to tmp_df
                 mask_trimmed = mask_aligned.reindex(
                     index=shared_index, columns=shared_cols
                 )
@@ -134,7 +136,7 @@ def collate_risk_assessments(
     return outcome_df
 
 
-def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame | None:
+def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame:
     """Align a suppression mask to the column structure of the outcome DataFrame.
 
     Parameters
@@ -146,21 +148,22 @@ def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame 
 
     Returns
     -------
-    DataFrame or None
-        Aligned mask, or None if alignment is not possible.
+    DataFrame
+        Aligned mask with columns matching outcome_df structure.
     """
     n_diff = outcome_df.columns.nlevels - mask.columns.nlevels
     if n_diff > 0:
+        # Outcome has more column levels than mask - extract relevant level(s) from outcome columns
         mask_cols_aligned = []
         for c in outcome_df.columns:
             if isinstance(c, tuple):
                 sub_c = c[n_diff:]
-                if len(sub_c) == 1:
-                    mask_cols_aligned.append(sub_c[0])
-                else:
-                    mask_cols_aligned.append(sub_c)
+                # Append single column name or tuple of remaining levels
+                mask_cols_aligned.append(sub_c[0] if len(sub_c) == 1 else sub_c)
             else:
                 mask_cols_aligned.append(c)
+
+        # Create aligned mask with outcome's column structure
         mask_aligned = DataFrame(index=mask.index, columns=outcome_df.columns)
         for col_out, col_mask in zip(
             outcome_df.columns, mask_cols_aligned, strict=False
@@ -168,6 +171,8 @@ def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame 
             if col_mask in mask.columns:
                 mask_aligned[col_out] = mask[col_mask]
         return mask_aligned
+
+    # Outcome has fewer or equal column levels than mask
     if n_diff < 0:
         return mask.droplevel(list(range(-n_diff)), axis=1)
     return mask
@@ -524,16 +529,13 @@ def get_redacted_data(
     # for col in redacted_data:
     #     logger.info(f'{col}: {redacted_data[col].unique()}')
 
-    # reconvert
+    # reconvert dimensions to original data types
     for dimension in dimensions:
         if dimension in list(redacted_data):
             redacted_data[dimension] = redacted_data[dimension].astype(
                 oldtypes[dimension]
             )
 
-    if set(data.columns) != set(redacted_data.columns):
-        logger.warning("Error created redacted data - unable to apply suppression")
-        return data
     return redacted_data
 
 

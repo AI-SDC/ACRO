@@ -395,7 +395,7 @@ class TestCollateRiskAssessmentsEdgeCases:
     """Tests for edge cases in collate_risk_assessment."""
 
     def test_collate_empty_shared_index_and_cols(self):
-        """When shared_index/shared_cols are empty, the branch at line 121 is skipped."""
+        """Test collate_risk_assessments when shared_index and shared_cols are empty."""
         # Create a table with specific index/columns
         table = pd.DataFrame(
             {"A": [1, 2], "B": [3, 4]}, index=pd.Index([10, 20], name="idx")
@@ -440,16 +440,15 @@ class TestAlignMaskToOutcomeEdgeCases:
         assert result.shape[1] == 3  # Should have 3 columns like outcome_df
 
 
-class TestCollateRiskAssessmentsElseBranch:
-    """Tests for the `else` branch in collate_risk_assessments."""
+class TestCollateRiskAssessmentsOtherChecks:
+    """Tests for collate_risk_assessments with other check types."""
 
     def test_collate_with_other_checks_not_negative_or_missing(self):
-        """Test the `else` branch when masks don't have 'negative' or 'missing' keys."""
+        """Test when masks do not have 'negative' or 'missing' keys."""
         # Create a table
         table = pd.DataFrame({"A": [10, 20], "B": [30, 40]}, index=pd.Index([1, 2]))
 
         # Create a mask with a DIFFERENT key (not 'negative' or 'missing')
-        # This will trigger the `else` branch at line 108
         threshold_mask = pd.DataFrame(
             {"A": [True, False], "B": [False, True]}, index=pd.Index([1, 2])
         )

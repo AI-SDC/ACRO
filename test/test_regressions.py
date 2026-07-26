@@ -267,7 +267,7 @@ def test_process_output_federated_logit_probit_via_refactoring(data, method_name
     ["olsr", "logitr", "probitr"],
 )
 def test_formula_methods_accept_extra_args_kwargs(data, method_name):
-    """Olsr/logitr/probitr silently ignore extra *args/**kwargs (branch coverage)."""
+    """Olsr/logitr/probitr silently ignore extra *args/**kwargs."""
     acro_obj = ACRO(suppress=False)
     new_df = data[
         ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
@@ -286,7 +286,7 @@ def test_formula_methods_accept_extra_args_kwargs(data, method_name):
 
 
 def test_stata_details_to_list_accepts_list():
-    """Stata_details_to_list returns a list when given a list input (coverage)."""
+    """Stata_details_to_list returns a list when given a list input."""
     input_list = ["var1", "var2", "var3"]
     result = stata_details_to_list(input_list)
     assert result == input_list

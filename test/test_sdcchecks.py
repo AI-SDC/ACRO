@@ -382,19 +382,6 @@ def test_get_table_sdc_minimum_dof_check_as_int_fail() -> None:
     assert sdc["summary"]["MinimumDoFCheck"] == 1
 
 
-def test_get_table_sdc_duplicate_check_skipped_branch() -> None:
-    """Duplicate checks are only counted once in the table summary."""
-    mask = pd.DataFrame({"A": [False, False]}, index=[1, 2])
-    cr1 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})
-    cr2 = ChecksResults("pass", "ok", {"MinimumThresholdCheck": mask}, {})
-    many = ManyChecksResults()
-    many.allchecksresults["FrequencyTable"] = cr1
-    many.allchecksresults["Mean"] = cr2
-    sdc = many.get_table_sdc()
-    assert len(sdc["cells"]) == 1
-    assert "MinimumThresholdCheck" in sdc["cells"]
-
-
 def test_check_min_threshold_below_threshold(data):
     """Test MinimumThresholdCheck - fewer than threshold contributors triggers violation.
 

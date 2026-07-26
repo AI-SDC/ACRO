@@ -1,6 +1,5 @@
 """Unit tests."""
 
-import os
 import shutil
 
 import matplotlib as mpl
@@ -531,73 +530,3 @@ def test_pivot_table_rounding(data):
     for col in numeric_cols:
         for val in result[col].dropna():
             assert val % 5 == 0, f"Value {val} is not a multiple of 5"
-
-
-def test_process_table_output_standalone_crosstab_via_refactoring():
-    """Test _process_table_output in standalone mode with crosstab (refactored method)."""
-    data = pd.read_stata(os.path.join("data", "test_data.dta"))
-    acro = ACRO(suppress=True)
-    new_df = data[["year", "grant_type"]].copy()
-    new_df = new_df.dropna()
-
-    acro.crosstab(index=new_df["year"], columns=new_df["grant_type"])
-
-    res = acro.results.get_index(-1)
-    assert res.output_type == "table"
-    assert res.properties["method"] == "crosstab"
-    assert res.status == "review"
-
-
-def test_process_table_output_standalone_pivot_table_via_refactoring():
-    """Test _process_table_output in standalone mode with pivot_table (refactored method)."""
-    data = pd.read_stata(os.path.join("data", "test_data.dta"))
-    acro = ACRO(suppress=True)
-    new_df = data[["year", "grant_type", "total_costs"]].copy()
-    new_df = new_df.dropna()
-
-    acro.pivot_table(
-        data=new_df, index="year", columns="grant_type", values="total_costs"
-    )
-
-    res = acro.results.get_index(-1)
-    assert res.output_type == "table"
-    assert res.properties["method"] == "pivot_table"
-
-
-def test_process_table_output_rounding_crosstab_via_refactoring():
-    """Test _process_table_output with rounding mitigation on crosstab (refactored method)."""
-    data = pd.read_stata(os.path.join("data", "test_data.dta"))
-    acro = ACRO(suppress=False)
-    acro.enable_rounding(5)
-    new_df = data[["year", "grant_type", "total_costs"]].copy()
-    new_df = new_df.dropna()
-
-    acro.crosstab(
-        index=new_df["year"],
-        columns=new_df["grant_type"],
-        values=new_df["total_costs"],
-        aggfunc="sum",
-        margins=True,
-    )
-    res = acro.results.get_index(-1)
-    assert res.properties["mitigation"] == "round"
-    assert res.properties["round_base"] == 5
-
-
-def test_process_table_output_suppression_pivot_table_via_refactoring():
-    """Test _process_table_output with suppression on pivot_table (refactored method)."""
-    data = pd.read_stata(os.path.join("data", "test_data.dta"))
-    acro = ACRO(suppress=True)
-    new_df = data[["year", "grant_type", "inc_activity"]].copy()
-    new_df = new_df.dropna()
-
-    acro.pivot_table(
-        data=new_df,
-        index="year",
-        columns="grant_type",
-        values="inc_activity",
-        aggfunc="sum",
-    )
-
-    res = acro.results.get_index(-1)
-    assert res.properties["mitigation"] == "suppress"

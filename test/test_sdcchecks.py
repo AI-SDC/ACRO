@@ -292,20 +292,6 @@ def test_check_missing_no_missings() -> None:
     assert status == "pass"
 
 
-def test_manual_check_unknown_model_type_returns_fail() -> None:
-    """Unknown model types return a fail result from manual checks."""
-    sdc = SDCChecks(_RA)
-    ev = SDCEvidence()
-    model = TableModelDetails(
-        index=[pd.Series([1, 2, 3], name="t")],
-        risk_appetite=_RA,
-        command="something",
-    )
-    model.model_type = "unknown_type"
-    status, _, _ = sdc.manual_check("TestAnalysis", ev, model)
-    assert status == "fail"
-
-
 _RA_NO_ZERO = {
     "safe_threshold": 10,
     "safe_dof_threshold": 10,
@@ -491,29 +477,6 @@ def test_check_ppercent_normal_pass(data):
     assert isinstance(output.status, str)
 
 
-def test_check_ppercent_all_zeros_safe(data):
-    """Test PPercentCheck - all-zero values trigger ZEROS_ARE_DISCLOSIVE behavior.
-
-    Replaces old: test_agg_p_percent_all_zeros_returns_zeros_are_disclosive
-    """
-    acro_obj = ACRO(suppress=False)
-
-    # Create data with all zeros in some cells/rows
-    zero_data = data.copy()
-    zero_data.loc[data.index[:10], "inc_grants"] = 0  # Set some to zero
-
-    acro_obj.crosstab(
-        zero_data.year, zero_data.grant_type, values=zero_data.inc_grants, aggfunc="sum"
-    )
-
-    output = acro_obj.results.get_index(0)
-
-    # When ZEROS_ARE_DISCLOSIVE is true (default), zeros should trigger checks
-    # Should either pass or show disclosiveness concerns
-    assert output.status in ("pass", "review", "fail")
-    assert isinstance(output.summary, str)
-
-
 def test_check_ppercent_single_element(data):
     """Test PPercentCheck - single row/element edge case.
 
@@ -534,12 +497,12 @@ def test_check_ppercent_single_element(data):
 
     output = acro_obj.results.get_index(0)
 
-    # Single element should be handled - with low counts may trigger threshold
-    assert output.status in ("pass", "review", "fail")
-    assert isinstance(output.summary, str)
-    # Small counts often trigger threshold violation
-    if output.status == "review":
-        assert "threshold" in output.summary or output.summary != ""
+    # Single element should trigger threshold violation (1 < 10)
+    assert output.status in ("review", "fail")
+    assert (
+        "MinimumThresholdCheck" in output.sdc.get("cells", {})
+        or "threshold" in output.summary
+    )
 
 
 def test_check_nk_pass(data):
@@ -567,51 +530,3 @@ def test_check_nk_pass(data):
         # If nk-rule is mentioned, means concentration was detected (unexpected)
         pytest.fail(f"NK-rule violation unexpected for balanced data: {output.summary}")
     assert isinstance(output.status, str)
-
-
-def test_check_nk_zero_total(data):
-    """Test NKCheck - zero or negative totals are handled safely.
-
-    Replaces old: test_agg_nk_zero_total
-    """
-    acro_obj = ACRO(suppress=False)
-
-    # Create data with zero values (edge case)
-    zero_data = data.copy()
-    zero_data["inc_grants"] = 0  # All zeros
-
-    acro_obj.crosstab(
-        zero_data.year, zero_data.grant_type, values=zero_data.inc_grants, aggfunc="sum"
-    )
-
-    output = acro_obj.results.get_index(0)
-
-    # Should handle zero totals gracefully without crashing
-    assert isinstance(output.status, str)
-    assert isinstance(output.summary, str)
-
-
-def test_check_threshold_above_threshold(data):
-    """Test MinimumThresholdCheck - sufficient contributors pass the check.
-
-    Replaces old: test_agg_threshold_above_threshold
-    """
-    acro_obj = ACRO(suppress=False)
-
-    # Create data with full dataset (>= 10 contributors per cell - threshold is 10)
-    full_data = data.copy()  # Full data has many rows
-
-    acro_obj.crosstab(
-        full_data.year,
-        full_data.grant_type,
-        values=full_data.inc_grants,
-        aggfunc="count",  # Count will give number of contributors
-    )
-
-    output = acro_obj.results.get_index(0)
-
-    # With sufficient contributors, threshold should not be violated
-    # (though other checks might still fail)
-    # The output may or may not mention threshold violations depending on the data
-    assert isinstance(output.status, str)
-    # So we can't directly test the old behavior

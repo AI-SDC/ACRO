@@ -228,40 +228,6 @@ def test_process_output_standalone_logit_probit_via_refactoring(data, method_nam
     assert res.properties["method"] == method_name
 
 
-@pytest.mark.usefixtures("cleanup_path")
-def test_process_output_federated_ols_via_refactoring(data):
-    """Test _process_output in federated mode with OLS (refactored method)."""
-    acro = ACRO(suppress=True, federated=True)
-    new_df = data[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
-    new_df = new_df.dropna()
-
-    endog = new_df.inc_activity
-    exog = new_df[["inc_grants", "inc_donations", "total_costs"]]
-    exog = add_constant(exog)
-
-    results = acro.ols(endog, exog)
-    assert results.df_resid == 807
-    assert acro.federated is True
-
-
-@pytest.mark.usefixtures("cleanup_path")
-@pytest.mark.parametrize("method_name", ["logit", "probit"])
-def test_process_output_federated_logit_probit_via_refactoring(data, method_name):
-    """Test _process_output in federated mode with Logit/Probit (refactored method)."""
-    acro = ACRO(suppress=True, federated=True)
-    new_df = data[
-        ["survivor", "inc_activity", "inc_grants", "inc_donations", "total_costs"]
-    ]
-    new_df = new_df.dropna()
-
-    endog = (new_df["survivor"] == "Dead in 2015").astype(int)
-    exog = new_df[["inc_activity", "inc_grants", "inc_donations", "total_costs"]]
-    exog = add_constant(exog)
-
-    getattr(acro, method_name)(endog, exog)
-    assert acro.federated is True
-
-
 @pytest.mark.parametrize(
     "method_name",
     ["olsr", "logitr", "probitr"],

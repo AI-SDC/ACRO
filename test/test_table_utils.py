@@ -229,7 +229,8 @@ class TestDropDuplicateColumns:
         """Handle DataFrame with no duplicate columns."""
         df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
         result = drop_duplicate_columns(df)
-        assert isinstance(result, pd.DataFrame)
+        assert list(result.columns) == ["A", "B"]
+        pd.testing.assert_frame_equal(result, df)
 
 
 class TestAddBackticksFull:
@@ -306,8 +307,9 @@ class TestRoundTableFull:
         """Round table to base 5."""
         df = pd.DataFrame({"A": [12, 13, 14, 15], "B": [20, 21, 22, 23]})
         result = table_utils.round_table(df, base=5)
-        assert isinstance(result, pd.DataFrame)
-        assert len(result) == len(df)
+        for col in result.columns:
+            for val in result[col].dropna():
+                assert val % 5 == 0, f"Value {val} is not a multiple of 5"
 
     def test_round_table_with_nan(self):
         """Handle NaN values in table rounding."""
@@ -323,8 +325,9 @@ class TestRoundTableFull:
         """Round table to base 100."""
         df = pd.DataFrame({"A": [150, 250, 350], "B": [450, 550, 650]})
         result = table_utils.round_table(df, base=100)
-        assert isinstance(result, pd.DataFrame)
-        assert len(result) == len(df)
+        for col in result.columns:
+            for val in result[col].dropna():
+                assert val % 100 == 0, f"Value {val} is not a multiple of 100"
 
 
 class TestAlignMaskToOutcome:
@@ -355,8 +358,10 @@ class TestAlignMaskToOutcome:
         mask = pd.DataFrame([[True, False]], columns=mask_cols)
 
         result = _align_mask_to_outcome(mask, outcome_df)
-        # Should handle level mismatch gracefully
-        assert result is None or isinstance(result, pd.DataFrame)
+        # Level mismatch should handle gracefully and return a DataFrame or None
+        if result is not None:
+            assert isinstance(result, pd.DataFrame)
+            assert result.shape == outcome_df.shape
 
     def test_align_mask_to_outcome_empty_dataframe(self):
         """Test alignment with empty DataFrames."""

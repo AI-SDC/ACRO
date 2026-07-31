@@ -596,17 +596,6 @@ class Tables:
             command="pivot_table",
         )
 
-        # from previous version- if needed i suggesgt we move this code to
-        # the function append_rounded_margins()?
-        # Separate variable so param (str|list[str]) isn't reassigned
-        # to callable type (mypy)
-        # resolved_aggfunc: (
-        #     str | Callable[..., Any] | list[str | Callable[..., Any]] | None
-        # ) = get_aggfuncs(aggfunc)
-        # n_agg: int = (
-        #     1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
-        # )
-
         # Step 1: make the requested output
         table: DataFrame = pd.pivot_table(data, **thiskwargs)
 
@@ -706,7 +695,7 @@ class Tables:
                 unique_filename = utils.get_unique_artefact_filename(filename)
                 if unique_filename is None:
                     return None
-                survival_func.plot()  # pragma: no cover
+                survival_func.plot()
                 plt.savefig(unique_filename)
                 return (None, unique_filename)
             return None

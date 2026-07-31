@@ -40,7 +40,7 @@ class TableModelDetails:
         thekwargs: dict | None = None,
         risk_appetite: dict | None = None,
     ) -> None:
-        """Construct the TableModelDescriptor for a table/ array type analysis.  # noqa: D212,D213,D413.
+        """Construct the TableModelDescriptor for a table/ array type analysis.
 
         Parameters
         ----------

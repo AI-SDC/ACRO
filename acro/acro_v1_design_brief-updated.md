@@ -337,14 +337,11 @@ Unified interface for all table-based analyses:
 
 **Manual/Informational Checks**:
 - `LinkedTableCheck`: Always returns "review" (requires manual inspection)
-- `RequiredZeroCheck`: Always returns "pass" (informational only)
-**Manual/Informational Checks**:
-- `LinkedTableCheck`: Always returns "review" (requires manual inspection)
-- `RequiredZeroCheck`: Always returns "pass" (informational only)
+- `RequiredZeroCheck`: Specifies whether a check for zeros is required (allows TRE to specify if class disclosure is relevant for the dataset)
 
 #### 5. Redaction & Suppression Engine
 
-- Removes records in disclosive cells
+- Removes records in disclosive cells (note: suppression/redaction removes records/cells, whereas rounding modifies output values to a base without redacting the underlying data)
 - Recalculates tables with remaining records
 - Leverages pandas native computation for accurate aggregation
 - Redaction, rounding (to base), or review flags
@@ -373,6 +370,8 @@ Unified interface for all table-based analyses:
 ---
 
 ### Test Coverage Table
+
+> **Note**: A corresponding unit test file exists for each source file in the codebase. The table below highlights key infrastructure and integration tests; unit tests exist per source file while regression and table test suites effectively act as integration tests for end-to-end workflows.
 
 | # | Test Name | Category | What It Tests | What It Covers | Lines | Status |
 |---|-----------|----------|---------------|----------------|-------|--------|

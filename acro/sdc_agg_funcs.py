@@ -12,7 +12,7 @@ logger = logging.getLogger("acro")
 
 
 def agg_mode(values: pd.Series) -> float:
-    """Calculate the mode or randomly selects one of the modes from a pandas Series.  # noqa: D212,D213,D413.
+    """Calculate the mode or randomly selects one of the modes from a pandas Series.
 
     Parameters
     ----------
@@ -29,7 +29,7 @@ def agg_mode(values: pd.Series) -> float:
 
 
 def agg_num_negative(vals: pd.Series) -> int:
-    """Return whether any values are negative.
+    """Return the number of negative values.
 
     Parameters
     ----------
@@ -38,8 +38,8 @@ def agg_num_negative(vals: pd.Series) -> int:
 
     Returns
     -------
-    bool
-        Whether a negative value was found.
+    int
+        Number of negative values found.
     """
     return sum(vals < 0)
 

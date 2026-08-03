@@ -445,3 +445,29 @@ def test_finalise_evidence_dof_as_csv_string():
         assert dof_file is not None
         assert dof_file.endswith(".csv")
         assert os.path.exists(os.path.join(tmp, dof_file))
+
+
+def test_show_fair_summaries_regression(data):
+    """Show_fair_summaries() works when fair dict has nested dict values."""
+    acro_obj = ACRO(suppress=False)
+    new_df = data[
+        ["inc_activity", "inc_grants", "inc_donations", "total_costs"]
+    ].dropna()
+    _=acro_obj.crosstab(data['grant_type'],data['year'])
+    result = acro_obj.show_fair_summaries()
+    correct_str=(
+        "output_0\n"
+         "context:https://w3id.org/statbarnsdc#\n"
+         "statbarn:Frequencies\n"
+         "risks:['ClassDisclosure', 'Differencing', 'LowCount']\n"
+         "checks_needed:['RequiredZeroCheck', 'PresenceOfZeroCheck', 'PresenceOfLinkedTableCheck', 'MinimumThresholdCheck']\n"
+         "common_mitigations:['Noise', 'Suppression', 'Noise', 'Suppression', 'Noise', 'Rounding', 'Suppression']\n"
+         "RequiredZeroCheck : pass\n"
+         "PresenceOfZeroCheck : pass\n"
+         "PresenceOfLinkedTableCheck : review\n"
+         "MinimumThresholdCheck : fail\n"
+         "dependent:unknown\n"
+         "independent:['grant_type', 'year']\n\n"
+    )
+    assert result==correct_str,f'expected\nx{correct_str}x\ngot\nx{result}x\n'
+    

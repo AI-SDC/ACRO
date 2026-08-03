@@ -205,6 +205,7 @@ class Tables:
                 just_added, "Suppression automatically applied where needed"
             )
             self.results.results[just_added].status = "review"
+            logger.info("Status changed to review after applying suppression")
 
         elif self._mitigation == "round":
             just_added = f"output_{self.results.output_id - 1}"
@@ -213,6 +214,7 @@ class Tables:
                 f"Rounding automatically applied to nearest {self._round_base}",
             )
             self.results.results[just_added].status = "review"
+            logger.info("Status changed to review after applying rounding")
 
     def _process_table_output(
         self,
@@ -703,11 +705,12 @@ class Tables:
                     filename, self.results.blocked_extensions
                 ):
                     return None
-                unique_filename = utils.get_unique_artefact_filename(filename)
-                if unique_filename is None:
-                    return None
-                survival_func.plot()  # pragma: no cover
-                plt.savefig(unique_filename)
+                unique_filename = ""
+                unique_filenameA = utils.get_unique_artefact_filename(filename)
+                if unique_filenameA is not None:
+                    unique_filename = unique_filenameA
+                    survival_func.plot()  # pragma: no cover
+                    plt.savefig(unique_filename)
                 return (None, unique_filename)
             return None
 
@@ -753,10 +756,12 @@ class Tables:
             else:  # pragma: no cover
                 plot = survival_func.plot()
 
-            unique_filename = utils.get_unique_artefact_filename(filename)
-            if unique_filename is None:
-                return None
-            plt.savefig(unique_filename)
+            unique_filename =""
+            outcome= []
+            unique_filenameA = utils.get_unique_artefact_filename(filename)
+            if unique_filenameA is not None:
+                unique_filename = unique_filenameA
+                plt.savefig(unique_filename)
 
             self.results.add(
                 status=collatedres.get_overall_status(),
@@ -868,7 +873,7 @@ class Tables:
             return None
         command: str = utils.get_command("hist()", stack())
 
-        if isinstance(data, list):  # pragma: no cover
+        if isinstance(column, list):  
             logger.info(
                 "Calculating histogram for more than one columns is "
                 "not currently supported. Please do each column separately."
@@ -876,7 +881,7 @@ class Tables:
             return None
 
         col_series = data[column].dropna()
-        if col_series.empty:  # pragma: no cover
+        if col_series.empty:  
             logger.warning("Column %s is empty after dropping NaN.", column)
             self.results.add(
                 status="fail",
@@ -911,6 +916,8 @@ class Tables:
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
         summary = collatedres.get_overall_summary()
+        unique_filename = ""
+        output = []
 
         if status == "fail" and self.suppress:
             logger.warning(
@@ -918,9 +925,8 @@ class Tables:
                 column,
             )
             summary = summary + "Disclosive Histogram Redacted."
-            unique_filename = ""
-            output = []
-        else:  # pragma: no cover
+            
+        else:  
             summary += "Please also check bin ends and empty bins are not disclosive."
             data.hist(
                 column=column,
@@ -940,24 +946,24 @@ class Tables:
                 legend=legend,
                 **kwargs,
             )
-            unique_filename = utils.get_unique_artefact_filename(filename)
-            if unique_filename is None:
-                return None
-            plt.savefig(unique_filename)
-            output = [os.path.normpath(unique_filename)]
+            unique_filenameA = utils.get_unique_artefact_filename(filename)
+            if unique_filenameA is not None:
+                unique_filename = unique_filenameA
+                plt.savefig(unique_filename)
+                output = [os.path.normpath(unique_filename)]
 
         # record output
         self.results.add(
-            status=status,
-            output_type="histogram",
-            properties={"method": "histogram"},
-            sdc=sdc_details,
-            fair=fair_dict,
-            command=command,
-            summary=summary,
-            outcome=pd.DataFrame(),
-            output=output,
-        )
+                status=status,
+                output_type="histogram",
+                properties={"method": "histogram"},
+                sdc=sdc_details,
+                fair=fair_dict,
+                command=command,
+                summary=summary,
+                outcome=pd.DataFrame(),
+                output=output,
+            )
         return unique_filename
 
     def pie(
@@ -1020,14 +1026,15 @@ class Tables:
         fair_dict.update(model_details.get_variable_type_dict())
         summary = collatedres.get_overall_summary()
 
+        output = []
+        unique_filename = ""
         if self.suppress and overall_status == "fail":
             logger.warning(
                 "Pie chart will not be shown as the %s column is disclosive.",
                 column,
             )
             summary = summary + " Pie Chart Redacted."
-            output = []
-            unique_filename = ""
+        
 
         else:
             summary += "Please also for missing categories."
@@ -1036,12 +1043,11 @@ class Tables:
             _, ax = plt.subplots()
             ax.pie(counts.values, labels=counts.index, **kwargs)
 
-            unique_filename = utils.get_unique_artefact_filename(filename)
-            if unique_filename is None:
-                return None
-
-            plt.savefig(unique_filename)
-            output = [os.path.normpath(unique_filename)]
+            unique_filenameA = utils.get_unique_artefact_filename(filename)
+            if unique_filenameA is not None:
+                unique_filename = unique_filenameA
+                plt.savefig(unique_filename)
+                output = [os.path.normpath(unique_filename)]
 
         self.results.add(
             status=overall_status,

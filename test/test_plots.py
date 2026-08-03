@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
-from acro import ACRO
+from acro import ACRO, acro
 from acro.acro_tables import _rounded_survival_table
 from acro.record import Records
 
@@ -328,3 +328,29 @@ def test_surv_func_suppress_true_table_records_exception():
     output = acro_obj.results.get_index(0)
     assert output.status == "review"
     assert "Events Reported" in output.exception
+
+
+def test_hist_two_series(caplog):
+    """Hist() with two columns returns None"""
+    acro_obj = ACRO(suppress=False)
+    twocol_data = pd.DataFrame({"valueA": [1, 2, 3], "valueB": [4, 5, 6]})
+    result = acro_obj.hist(twocol_data, ["valueA", "valueB"])
+    assert (
+                    "Calculating histogram for more than one columns is not currently supported"
+                    in caplog.text
+                )
+    assert result is None
+    assert len(acro_obj.results.results) == 0
+
+
+
+def test_hist_empty_data(caplog):
+    """Hist() with empty column returns None"""
+    acro_obj2 = ACRO(suppress=False)
+    empty_data = pd.DataFrame({"valueA": [None, None, None]})
+    result = acro_obj2.hist(empty_data, "valueA")
+    assert (
+                    "is empty after dropping NaN."
+                    in caplog.text
+                )
+    assert result is None

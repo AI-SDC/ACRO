@@ -63,13 +63,12 @@ class SDCEvidence:
             self.populate_dof(model)
         if isinstance(model, statsmodels.base.model.Model):
             deps = model.endog_names
+            logger.debug("dependent variable is %s", deps)
             if isinstance(deps, str):
                 self.variable_type_dict["dependent"] = deps
-            indeps = model.exog_names.copy()
-            if "const" in indeps:
-                indeps.remove("const")
-            if "Intercept" in indeps:
-                indeps.remove("Intercept")
+            all_exog = model.exog_names.copy()
+            unwanted = ["const", "Intercept"]
+            indeps = [ x for x in all_exog if x not in unwanted ]
             self.variable_type_dict["independent"] = indeps
 
         if isinstance(model, TableModelDetails):
@@ -401,6 +400,7 @@ class SDCChecks:
             if operator.contains(summ, "review") or operator.contains(summ, "fail"):
                 shortsummary += summ
         logger.debug("%s : %s", overall_status, shortsummary)
+        logger.info("Status: %s",overall_status)
         return ChecksResults(overall_status, summary, outcomes, sdc_dict)
 
     def check_model_dof(
@@ -553,9 +553,11 @@ class SDCChecks:
             possibles = list(range(1, len(bin_edges)))
             cat_type = pd.CategoricalDtype(categories=possibles)
             the_array = pd.Series(binids, dtype=cat_type)
+            #logger.debug(f"bin edges: {bin_edges}, bin ids: {binids}, the_array: {the_array}")
         else:
             the_array = data
         count_series = the_array.value_counts()
+        logger.debug(f"count series: {count_series}")
         mask_series = count_series < self.risk_appetite["safe_threshold"]
         mask = mask_to_boolmask(pd.DataFrame(mask_series))
         status, summary = get_status_summary_from_mask(mask)
@@ -722,11 +724,11 @@ class SDCChecks:
         _, _ = name, evidence
 
         summary = (
-            "A manual review is needed."
+            "A manual review against other outputs for differencing is recommended."
             f" Variables defining table are:  {model.get_dimension_names()}.\n"
         )
 
-        return "review", summary, model.get_allfalse_table()
+        return "pass", summary, model.get_allfalse_table()
 
     def check_required_zero(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails

@@ -6,6 +6,7 @@ import pytest
 
 from acro import ACRO, table_utils
 from acro.sdcchecks import ChecksResults
+from acro.tablemodeldetails import TableModelDetails
 from acro.table_utils import (
     _align_mask_to_outcome,
     append_rounded_margins,
@@ -14,6 +15,9 @@ from acro.table_utils import (
     drop_duplicate_columns,
     get_analysis_summary,
     get_debugging_table_analysis,
+    get_queries_from_collated_risk,
+    get_redacted_table,
+    get_redacted_pivottable,
     get_redacted_data,
     round_table,
     translate_args_to_newdf,
@@ -588,3 +592,86 @@ class TestCollateRiskAssessmentsOtherChecks:
         status, summary = get_analysis_summary(sdc)
         assert status == "fail"
         assert any(term in summary for term in ["threshold", "p-ratio", "nk-rule"])
+
+class TestGetRedactedData:
+    """Tests for getting redacted data, and then suppressed tables"""
+    def__init__(self):
+        self.RA_NO_ZERO = {
+        "safe_threshold": 10,
+        "safe_dof_threshold": 10,
+        "safe_nk_n": 2,
+        "safe_nk_k": 0.9,
+        "safe_pratio_p": 0.1,
+        "check_missing_values": False,
+        "zeros_are_disclosive": True,
+        }
+        #simple data set of ages and genders
+        self.correct_queries=set(['(over30 == "True") & (Handed == "right")', '(over30 == "True") & (Handed == "left")'])
+        self.mydata:pd.DataFrame= pd.DataFrame({'Age':np.arange(1,33,1), "Handed":['left','right']*16 })
+        self.mydata['over30'] = mydata['Age'] >30
+        self.counts = pd.crosstab(self.mydata['over30'],self.mydata['Handed'])
+    
+    def test_get_queries_from_collated_risk(self):
+        """check queries correctly generated"""
+        mask= counts<10
+        cr = ChecksResults(
+                overall_status="fail",
+                summaries="fail",
+                outcomes={"count": mask},
+                fair_dict={},
+            )
+        outcome = collate_risk_assessments(counts, {"count": cr})
+        queries: list[str] = get_queries_from_collated_risk(outcome,"count")
+        assert set(queries)==correct_queries,f'expected\n{correct_queries}\ngot\n{queries}'
+
+
+    def test_get_redacted_data(self):
+        """tests redacted data doesn't include disclosive records"""
+        mask= counts<10
+        cr = ChecksResults(
+                overall_status="fail",
+                summaries="fail",
+                outcomes={"count": mask},
+                fair_dict={},
+            )
+        outcome = collate_risk_assessments(counts, {"count": cr})
+        queries: list[str] = get_queries_from_collated_risk(outcome,"count")
+        dim_names = ['over30','Handed'] 
+        #assert False,   f'relevant data is\n{relevant_data}'
+
+        redacted_data: DataFrame = get_redacted_data(mydata, queries, dim_names) 
+        assert redacted_data['Age'].max()==30, f'redacted_data is\n{redacted_data}'
+        assert False,f"crosstab on redacted data is\n{pd.crosstab(
+            redacted_data['over30'],redacted_data['Handed'])}"
+
+    def test_get_redacted_table(self):
+        """check get redacted table works as expected"""
+        mydata:pd.DataFrame= pd.DataFrame({'Age':np.arange(1,33,1), "Handed":['left','right']*16 })
+        mydata['over30'] = mydata['Age'] >30
+
+        counts = pd.crosstab(mydata['over30'],mydata['Handed'])
+        mask= counts<10
+        cr = ChecksResults(
+                overall_status="fail",
+                summaries="fail",
+                outcomes={"count": mask},
+                fair_dict={},
+            )
+        outcome = collate_risk_assessments(counts, {"count": cr})
+        queries: list[str] = get_queries_from_collated_risk(outcome,"count")
+        dim_names = ['over30','Handed'] 
+        #assert False,   f'relevant data is\n{relevant_data}'
+
+        redacted_data: DataFrame = get_redacted_data(mydata, queries, dim_names) 
+        pandas_redacted_crosstab=pd.crosstab(redacted_data['over30'],redacted_data['Handed'])
+        model = TableModelDetails(
+            index=[mydata["over30"]],
+            columns=[mydata["Handed"]],
+            values=None,
+            command="crosstab",
+            risk_appetite=self._RA_NO_ZERO,
+            thekwargs={'aggfunc':None}
+        )
+        redacted_table=get_redacted_table(model,outcome)
+        assert pandas_redacted_crosstab.equals(redacted_table),f'got\n{redacted_table}\nexpected\n{pandas_redacted_crosstab}'
+

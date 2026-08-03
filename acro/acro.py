@@ -321,9 +321,9 @@ class ACRO(Tables, Regression):
             for key, val in value.fair.items():
                 if isinstance(val, dict):
                     for key2, val2 in val.items():
-                        thestr += f"{key2} : {val2}"
+                        thestr += f"{key2} : {val2}\n"
                 else:
-                    thestr += f"{key}:{val}"
+                    thestr += f"{key}:{val}\n"
         return thestr + "\n"
 
 

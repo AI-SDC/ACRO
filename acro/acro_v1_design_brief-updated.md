@@ -408,3 +408,22 @@ Unified interface for all table-based analyses:
 | **Zero Values Handling** | 9, 12, 17 | Detection, edge cases, graceful degradation |
 | **Error Messages** | 6 | "insufficient" for unknown model types |
 | **ACRO API Integration** | 10-19 | End-to-end workflows, crosstab() pipeline |
+
+
+### Unit test coverage:
+
+test/test_plots.py: covers every line of code in the hist(), survival_plot and pie() methods of acro_tables
+test/test_sdc_agg_funcs.py covers every line of code in sdc_agg_funcs.py
+test/test_sdcchecks.py covers every line of code in sdcchecks.py
+test/test_session_management.py and test/test_federated.py together  cover every line of acro.py
+test/test_ontology_handling covers every line of ontology_handler.py
+
+test/test_table_model_details.py covers every line of tablemodeldetails.py
+test/test_table_utils.py covers 
+test/test_stata_intferface.py and test/test_stata17_interface.py together cover every line of acro_stata_parser.py
+
+test/test_regressions.py provides integration testing and orchestration
+
+test/test_tables.py provides integration testing and orchestration
+
+

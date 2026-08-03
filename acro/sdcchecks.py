@@ -69,7 +69,7 @@ class SDCEvidence:
                 self.variable_type_dict["dependent"] = deps
             all_exog = model.exog_names.copy()
             unwanted = ["const", "Intercept"]
-            indeps = [ x for x in all_exog if x not in unwanted ]
+            indeps = [x for x in all_exog if x not in unwanted]
             self.variable_type_dict["independent"] = indeps
 
         if isinstance(model, TableModelDetails):
@@ -407,7 +407,7 @@ class SDCChecks:
             if operator.contains(summ, "review") or operator.contains(summ, "fail"):
                 shortsummary += summ
         logger.debug("%s : %s", overall_status, shortsummary)
-        logger.info("Status: %s",overall_status)
+        logger.info("Status: %s", overall_status)
         return ChecksResults(overall_status, summary, outcomes, sdc_dict)
 
     def check_model_dof(
@@ -560,7 +560,7 @@ class SDCChecks:
             possibles = list(range(1, len(bin_edges)))
             cat_type = pd.CategoricalDtype(categories=possibles)
             the_array = pd.Series(binids, dtype=cat_type)
-            #logger.debug(f"bin edges: {bin_edges}, bin ids: {binids}, the_array: {the_array}")
+            # logger.debug(f"bin edges: {bin_edges}, bin ids: {binids}, the_array: {the_array}")
         else:
             the_array = data
         count_series = the_array.value_counts()

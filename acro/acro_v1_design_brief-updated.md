@@ -418,11 +418,9 @@ test/test_session_management.py and test/test_federated.py together  cover every
 test/test_ontology_handling covers every line of ontology_handler.py
 
 test/test_table_model_details.py covers every line of tablemodeldetails.py
-test/test_table_utils.py covers 
+test/test_table_utils.py covers
 test/test_stata_intferface.py and test/test_stata17_interface.py together cover every line of acro_stata_parser.py
 
 test/test_regressions.py provides integration testing and orchestration
 
 test/test_tables.py provides integration testing and orchestration
-
-

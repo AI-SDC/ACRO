@@ -86,15 +86,17 @@ def test_parse_table_details(data):
     assert not details["totals"], "totals should be False"
     assert details["suppress"], "suppress should be True"
 
-    varlist2= [("survivor","grant_type"),("year","grant_type")]
+    varlist2 = [("survivor", "grant_type"), ("year", "grant_type")]
     varnames = data.columns
     options = "statistic(mean inc_activity) suppress  nototals"
     details = parse_table_details(varlist2, varnames, options, stata_version=17)
 
     errstring = f" rows {details['rowvars']} should be ['survivor', 'grant_type']"
-    assert details["rowvars"] == ["survivor","grant_type"], errstring
+    assert details["rowvars"] == ["survivor", "grant_type"], errstring
     errstring = f" cols {details['colvars']} should be ['year', 'grant_type']"
-    assert details["colvars"] == ["year","grant_type"], errstring
+    assert details["colvars"] == ["year", "grant_type"], errstring
+
+
 # -----acro management----------------------------------------------------
 
 

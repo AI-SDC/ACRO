@@ -1,8 +1,7 @@
 """Unit tests for sdcchecks.py."""
 
-import pandas as pd
 import numpy as np
-import pytest
+import pandas as pd
 
 from acro.acro import ACRO
 from acro.acro_regression import add_constant
@@ -28,9 +27,6 @@ def test_sdc_checks_unknown_analysis_returns_review() -> None:
     assert result.overall_status == "Review"
 
 
-
-
-
 def test_get_table_sdc_duplicate_check_skipped(data):
     """Get_table_sdc skips checks already seen across multiple analyses.
 
@@ -52,11 +48,13 @@ def test_get_table_sdc_duplicate_check_skipped(data):
         assert isinstance(sdc["cells"][check_name], list)
     assert isinstance(sdc["summary"], dict)
 
+
 def test_sdcevidence_populate_dof_else_branch():
     """Populate_dof falls back to -1 for unknown model type."""
     ev = SDCEvidence()
     ev.populate_dof("not_a_model")
     assert ev.dof == -1
+
 
 def test_get_table_sdc_minimumdofcheck_pass(data):
     """Get_table_sdc branch for MinimumDoFCheck with int mask: 0 when DoF passes."""
@@ -120,53 +118,52 @@ def test_check_min_threshold_array_non_hist(data):
     status, _, _ = sdc.check_min_threshold("PieChart", ev2, model)
     assert status == "pass"
 
+
 def test_check_min_threshold_array_hist_pass(data):
     """Check_min_threshold for array type with hist command exercises."""
     acro_obj = ACRO(suppress=False)
 
-    datacol= np.ones(200)
-    for i in range(200):  # Create an array with 200 elements 
-        datacol[i] = i%10  #give them values between 0 and 9 evenly distributed
+    datacol = np.ones(200)
+    for i in range(200):  # Create an array with 200 elements
+        datacol[i] = i % 10  # give them values between 0 and 9 evenly distributed
     model = TableModelDetails(
         index=[pd.Series(datacol)],
-        thekwargs={"bins": 5}, #put them into 5 bins =~40 in each to exceed thjreshold
+        thekwargs={"bins": 5},  # put them into 5 bins =~40 in each to exceed thjreshold
         risk_appetite=acro_obj.sdc_checks.risk_appetite,
         command="hist",
     )
     model.model_type = "array"
-    analysis=["Histogram"]
+    analysis = ["Histogram"]
     sdc = SDCChecks(acro_obj.sdc_checks.risk_appetite)
 
-    evidence: SDCEvidence = sdc.get_evidence_forall_analyses( 
-            analysis, model 
-        ) 
-  
+    evidence: SDCEvidence = sdc.get_evidence_forall_analyses(analysis, model)
+
     status, _, _ = sdc.check_min_threshold("Histogram", evidence, model)
     assert status == "pass"
+
 
 def test_check_min_threshold_array_hist_fail(data):
     """Check_min_threshold for array type with hist command exercises."""
     """Check_min_threshold for array type with hist command exercises."""
     acro_obj = ACRO(suppress=False)
- 
-    datacol= np.ones(200)
-    for i in range(200):  # Create an array with 200 elements 
-        datacol[i] = i%10 # #give them values between 0 and 9 evenly distributed
+
+    datacol = np.ones(200)
+    for i in range(200):  # Create an array with 200 elements
+        datacol[i] = i % 10  # #give them values between 0 and 9 evenly distributed
     model = TableModelDetails(
-         index=[pd.Series(datacol)],
-         thekwargs={"bins": 10},#put them into 10 bins to fail threshold
-         risk_appetite=acro_obj.sdc_checks.risk_appetite,
-         command="hist",
-     )
+        index=[pd.Series(datacol)],
+        thekwargs={"bins": 10},  # put them into 10 bins to fail threshold
+        risk_appetite=acro_obj.sdc_checks.risk_appetite,
+        command="hist",
+    )
     model.model_type = "array"
-    analysis=["Histogram"]
+    analysis = ["Histogram"]
     sdc = SDCChecks(acro_obj.sdc_checks.risk_appetite)
-    evidence: SDCEvidence = sdc.get_evidence_forall_analyses( 
-             analysis, model 
-         ) 
-   
+    evidence: SDCEvidence = sdc.get_evidence_forall_analyses(analysis, model)
+
     status, _, _ = sdc.check_min_threshold("Histogram", evidence, model)
     assert status == "fail"
+
 
 def test_manual_check_unknown_model_type():
     """Manual_check returns fail when model_type not in recognised list."""
@@ -186,7 +183,9 @@ def test_manual_check_unknown_model_type():
 def test_check_nk_dominance_with_negatives(data):
     """Check_nk_dominance returns review when negative values present."""
     acro_obj = ACRO(suppress=False)
-    acro_obj.sdc_checks.risk_appetite["safe_threshold"] = 5 #only 8 items in R/G column cells
+    acro_obj.sdc_checks.risk_appetite["safe_threshold"] = (
+        5  # only 8 items in R/G column cells
+    )
     # Build a table with negative inc_grants in some cells
     data2 = data.copy()
     data2.loc[data2.index[:20], "inc_grants"] = -500
@@ -194,14 +193,18 @@ def test_check_nk_dominance_with_negatives(data):
         data2.year, data2.grant_type, values=data2.inc_grants, aggfunc="sum"
     )
     output = acro_obj.results.get_index(0)
-    assert output.status =="review", f'status is {output.status}\nsummary is {output.summary}'
+    assert output.status == "review", (
+        f"status is {output.status}\nsummary is {output.summary}"
+    )
     assert "negative" in output.summary.lower()
 
 
 def test_check_ppercent_with_negatives(data):
     """Check_ppercent_dominance returns review when negative values present."""
     acro_obj = ACRO(suppress=False)
-    acro_obj.sdc_checks.risk_appetite["safe_threshold"] = 5 #only 8 items in R/G column cells
+    acro_obj.sdc_checks.risk_appetite["safe_threshold"] = (
+        5  # only 8 items in R/G column cells
+    )
 
     data2 = data.copy()
     data2.loc[data2.index[:50], "inc_grants"] = -100
@@ -209,7 +212,9 @@ def test_check_ppercent_with_negatives(data):
         data2.year, data2.grant_type, values=data2.inc_grants, aggfunc="mean"
     )
     output = acro_obj.results.get_index(0)
-    assert output.status == "review", f'status is {output.status}\nsummary is {output.summary}'
+    assert output.status == "review", (
+        f"status is {output.status}\nsummary is {output.summary}"
+    )
     assert "negative" in output.summary.lower()
 
 
@@ -247,6 +252,7 @@ def test_check_model_dof_dataframe_dof_fail():
     assert status == "fail"
     assert "<" in summary
 
+
 def test_check_model_dof_empty_dataframe_dof_fail():
     """Empty Dataframe dof values  are flagged as failures."""
     sdc = SDCChecks(_RISK_APPETITE)
@@ -265,6 +271,7 @@ def test_check_model_dof_dataframe_dof_pass():
     status, _, _ = sdc.check_model_dof("FrequencyTable", ev, None)
     assert status == "pass"
 
+
 def test_check_model_dof_int_dof_fail():
     """Integer dof values below threshold are flagged as failures."""
     sdc = SDCChecks(_RISK_APPETITE)
@@ -274,6 +281,7 @@ def test_check_model_dof_int_dof_fail():
     assert status == "fail"
     assert "<" in summary
 
+
 def test_check_model_dof_int_dof_pass():
     """Integer dof values at or above threshold pass."""
     sdc = SDCChecks(_RISK_APPETITE)
@@ -282,6 +290,7 @@ def test_check_model_dof_int_dof_pass():
     status, summary, _ = sdc.check_model_dof("GeneralLinearModel", ev, None)
     assert status == "pass"
     assert ">=" in summary
+
 
 def test_manual_check_survival_model_type():
     """Survival model types trigger the manual review path."""
@@ -296,6 +305,7 @@ def test_manual_check_survival_model_type():
     status, summary, _ = sdc.manual_check("KaplanMeier", ev, model)
     assert status == "review"
     assert "manual" in summary.lower()
+
 
 def test_manual_check_table_model_type():
     """Some Table model types trigger the manual review path."""
@@ -485,7 +495,7 @@ def test_check_min_threshold_below_threshold(data):
     # The check should have detected threshold violations in cells with < 10 counts
     # Check that status indicates a review/fail (threshold violation detected)
     assert output.status == "fail"
-    assert "MinimumThresholdCheck" in output.summary 
+    assert "MinimumThresholdCheck" in output.summary
 
 
 def test_check_nk_dominance_violation(data):
@@ -498,7 +508,7 @@ def test_check_nk_dominance_violation(data):
     # Create data with strong dominance (first row dominates)
     dominated_data = data.copy()
     dominated_data.loc[data.index[0], "inc_grants"] = 1000000  # Make first cell huge
-    dominated_data.loc[data.index[1:], "inc_grants"] = 1000 #second cell big
+    dominated_data.loc[data.index[1:], "inc_grants"] = 1000  # second cell big
     dominated_data.loc[data.index[2:], "inc_grants"]  # Other cells tiny
 
     acro_obj.crosstab(
@@ -541,7 +551,7 @@ def test_check_ppercent_dominance_violation(data):
     # High p-ratio should trigger violation
     assert output.status == "fail"
     # Check that p-ratio is mentioned in summary if violated
-    assert "PPercentCheck: fail - 1 cells may need suppressing." in output.summary 
+    assert "PPercentCheck: fail - 1 cells may need suppressing." in output.summary
 
 
 def test_check_ppercent_normal_pass(data):
@@ -567,8 +577,9 @@ def test_check_ppercent_normal_pass(data):
 
     # Balanced data should not show p-ratio in summary (no dominance detected)
     # Status may be fail/review due to other checks, but p-ratio shouldn't be mentioned
-    assert "PPercentCheck: fail"  not in output.summary, f'all equals records  but summary is {output.summary}'
-
+    assert "PPercentCheck: fail" not in output.summary, (
+        f"all equals records  but summary is {output.summary}"
+    )
 
 
 def test_check_ppercent_single_element(data):
@@ -594,8 +605,9 @@ def test_check_ppercent_single_element(data):
     # Single element should trigger threshold violation (1 < 10)
     assert output.status in ("review", "fail")
     assert "MinimumThresholdCheck" in output.summary
-    assert "PPercentCheck: fail"  not in output.summary, f'single record  test but summary is {output.summary}'
-
+    assert "PPercentCheck: fail" not in output.summary, (
+        f"single record  test but summary is {output.summary}"
+    )
 
 
 def test_check_nk_pass(data):
@@ -619,7 +631,9 @@ def test_check_nk_pass(data):
     output = acro_obj.results.get_index(0)
 
     # Balanced data should not trigger nk-rule violation
-    assert "NKCheck: fail"  not in output.summary, f'all equals records  but summary is {output.summary}'
+    assert "NKCheck: fail" not in output.summary, (
+        f"all equals records  but summary is {output.summary}"
+    )
 
 
 def test_populate_from_list_with_statsmodel():
@@ -627,16 +641,14 @@ def test_populate_from_list_with_statsmodel():
     import statsmodels.api as sm
 
     # Create a simple linear regression model
-    df = pd.DataFrame({
-        'y': [1, 2, 3, 4, 5],
-        'x1': [5, 4, 3, 2, 1],
-        'x2': [2, 3, 4, 5, 6]
-    })
-    X = df[['x1', 'x2']]
+    df = pd.DataFrame(
+        {"y": [1, 2, 3, 4, 5], "x1": [5, 4, 3, 2, 1], "x2": [2, 3, 4, 5, 6]}
+    )
+    X = df[["x1", "x2"]]
     X = sm.add_constant(X)
-    y = df['y']
+    y = df["y"]
     model = sm.OLS(y, X)
-    results=model.fit()
+    results = model.fit()
 
     ev = SDCEvidence()
     ev.populate_from_list(["DoF"], model)

@@ -201,9 +201,7 @@ class Tables:
         )
         if self._mitigation == "suppress":
             just_added = f"output_{self.results.output_id - 1}"
-            self.results.add_exception(
-                just_added, "s"
-            )
+            self.results.add_exception(just_added, "s")
             self.results.results[just_added].status = "review"
             logger.info("Status changed to review after applying suppression")
 
@@ -745,8 +743,8 @@ class Tables:
             else:  # pragma: no cover
                 plot = survival_func.plot()
 
-            unique_filename =""
-            outcome= []
+            unique_filename = ""
+            outcome = []
             unique_filenameA = utils.get_unique_artefact_filename(filename)
             if unique_filenameA is not None:
                 unique_filename = unique_filenameA
@@ -862,7 +860,7 @@ class Tables:
             return None
         command: str = utils.get_command("hist()", stack())
 
-        if isinstance(column, list):  
+        if isinstance(column, list):
             logger.info(
                 "Calculating histogram for more than one columns is "
                 "not currently supported. Please do each column separately."
@@ -870,7 +868,7 @@ class Tables:
             return None
 
         col_series = data[column].dropna()
-        if col_series.empty:  
+        if col_series.empty:
             logger.warning("Column %s is empty after dropping NaN.", column)
             self.results.add(
                 status="fail",
@@ -914,8 +912,8 @@ class Tables:
                 column,
             )
             summary = summary + "Disclosive Histogram Redacted."
-            
-        else:  
+
+        else:
             summary += "Please also check bin ends and empty bins are not disclosive."
             data.hist(
                 column=column,
@@ -943,16 +941,16 @@ class Tables:
 
         # record output
         self.results.add(
-                status=status,
-                output_type="histogram",
-                properties={"method": "histogram"},
-                sdc=sdc_details,
-                fair=fair_dict,
-                command=command,
-                summary=summary,
-                outcome=pd.DataFrame(),
-                output=output,
-            )
+            status=status,
+            output_type="histogram",
+            properties={"method": "histogram"},
+            sdc=sdc_details,
+            fair=fair_dict,
+            command=command,
+            summary=summary,
+            outcome=pd.DataFrame(),
+            output=output,
+        )
         return unique_filename
 
     def pie(
@@ -1023,7 +1021,6 @@ class Tables:
                 column,
             )
             summary = summary + " Pie Chart Redacted."
-        
 
         else:
             summary += "Please also for missing categories."

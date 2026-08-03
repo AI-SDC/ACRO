@@ -33,7 +33,7 @@ AGGFUNC_TO_TYPE: dict[str, str] = {
 
 
 def axis_to_list(axis: Series | list[Series]) -> list[Series]:
-    """Translate axis into standard format.  # noqa: D212,D213,D413.
+    """Translate axis into standard format.
 
     Convert variables describing an axis (row/column) into a list
     to simplify code. Wraps input inside a list if it is a single series
@@ -137,7 +137,7 @@ def collate_risk_assessments(
 
 
 def _align_mask_to_outcome(mask: DataFrame, outcome_df: DataFrame) -> DataFrame:
-    """Align a suppression mask to the column structure of the outcome DataFrame.
+    """Align a check outcome mask to the column structure of the outcome DataFrame.
 
     Parameters
     ----------
@@ -606,7 +606,7 @@ def append_rounded_margins(
     margins_name: str,
     base: int,
 ) -> DataFrame:
-    """Append row/column/grand-total margins to a pre-rounded table.  # noqa: D212,D213,D413.
+    """Append row/column/grand-total margins to a pre-rounded table.
 
     Once cells have been rounded,
     margins are computed by aggregating the rounded cells (so rounded inner

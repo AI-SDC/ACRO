@@ -7,6 +7,7 @@ import logging
 import operator
 import pathlib
 import warnings
+from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -41,7 +42,7 @@ DETAIL_TO_AGG: dict[str, Callable] = {
 
 @dataclass
 class SDCEvidence:
-    """Class for evidence needed to run risk assesSment checks for an analysis."""
+    """Class for evidence needed to run risk assessment checks for an analysis."""
 
     dof: Any = None
     interim_tables: dict[str, pd.DataFrame] = field(default_factory=dict)
@@ -75,12 +76,12 @@ class SDCEvidence:
             sdc_agg_funcs.NK_N = model.risk_appetite["safe_nk_n"]
             if "count_table" in evidence_needed:
                 self.interim_tables["count_table"] = model.get_count_table()
-                logger.debug(f"count table:\n{self.interim_tables['count_table']}\n")
+                logger.debug("count table:\n%s\n", self.interim_tables["count_table"])
             for detail, value in DETAIL_TO_AGG.items():
                 if detail in evidence_needed:
                     aggfunc = value
                     self.interim_tables[detail] = model.get_table_newagg(aggfunc)
-                    logger.debug(f"{detail} table:\n{self.interim_tables[detail]}\n")
+                    logger.debug("%s table:\n%s\n", detail, self.interim_tables[detail])
             self.variable_type_dict = model.get_variable_type_dict()
 
 
@@ -113,7 +114,7 @@ class ManyChecksResults:
     allchecksresults: dict[str, ChecksResults] = field(default_factory=dict)
 
     def get_overall_summary(self) -> str:
-        """Get overall summary from multiple statistics.  # noqa: D212,D213,D413.
+        """Get overall summary from multiple statistics.
 
         Returns
         -------
@@ -305,12 +306,12 @@ class SDCChecks:
             mitigations = self.risks[risk]["mitigations"]
             sdc_dict["common_mitigations"].extend(mitigations)
 
-        # TODOcommon mitigations - remove ones where count != len risks
-        if False:
-            print(  # noqa: T201
-                "todo on mitigations ",
-                np.unique(np.array(sdc_dict["common_mitigations"]), return_counts=True),
-            )
+        # common mitigations - keep only mitigations present for all risks
+        if sdc_dict["risks"]:
+            counts = Counter(sdc_dict["common_mitigations"])
+            sdc_dict["common_mitigations"] = [
+                m for m, count in counts.items() if count == len(sdc_dict["risks"])
+            ]
 
         return sdc_dict
 
@@ -326,7 +327,10 @@ class SDCChecks:
             for check in checks_needed:
                 evidence_needed.update(self.checks[check]["evidence"])
         logger.debug(
-            f"model has type {type(model)}, evidence needed for analyses {analyses} is {evidence_needed}"
+            "model has type %s, evidence needed for analyses %s is %s",
+            type(model),
+            analyses,
+            evidence_needed,
         )
         thevidence = SDCEvidence()
         thevidence.populate_from_list(evidence_needed, model)
@@ -385,7 +389,10 @@ class SDCChecks:
             outcomes[check] = outcome
             sdc_dict["check_status"][check] = status
         logger.debug(
-            f"statuses : {statuses}\nsummary: {summaries}\noutcomes: {outcomes}\n"
+            "statuses : %s\nsummary: %s\noutcomes: %s\n",
+            statuses,
+            summaries,
+            outcomes,
         )
 
         if "fail" in statuses:
@@ -646,7 +653,7 @@ class SDCChecks:
         proportionmask = (
             evidence.interim_tables["top_n_sum"] / evidence.interim_tables["sum"]
         )
-        logger.debug(f"NK proportionmask:\n{proportionmask}\n")
+        logger.debug("NK proportionmask:\n%s\n", proportionmask)
         mask = proportionmask >= self.risk_appetite["safe_nk_k"]
         status, summary = get_status_summary_from_mask(mask)
         return status, summary, mask
@@ -733,7 +740,7 @@ class SDCChecks:
     def check_required_zero(
         self, name: str, evidence: SDCEvidence, model: TableModelDetails
     ) -> tuple[str, str, pd.DataFrame]:
-        """Check for required-zero cells (zeros that should always be present).
+        """Test whether a check for zeros is required (i.e., whether class disclosure is relevant for this dataset).
 
         Parameters
         ----------

@@ -202,7 +202,7 @@ class Tables:
         if self._mitigation == "suppress":
             just_added = f"output_{self.results.output_id - 1}"
             self.results.add_exception(
-                just_added, "Suppression automatically applied where needed"
+                just_added, "s"
             )
             self.results.results[just_added].status = "review"
             logger.info("Status changed to review after applying suppression")
@@ -597,17 +597,6 @@ class Tables:
             risk_appetite=self.sdc_checks.risk_appetite,
             command="pivot_table",
         )
-
-        # from previous version- if needed i suggesgt we move this code to
-        # the function append_rounded_margins()?
-        # Separate variable so param (str|list[str]) isn't reassigned
-        # to callable type (mypy)
-        # resolved_aggfunc: (
-        #     str | Callable[..., Any] | list[str | Callable[..., Any]] | None
-        # ) = get_aggfuncs(aggfunc)
-        # n_agg: int = (
-        #     1 if not isinstance(resolved_aggfunc, list) else len(resolved_aggfunc)
-        # )
 
         # Step 1: make the requested output
         table: DataFrame = pd.pivot_table(data, **thiskwargs)

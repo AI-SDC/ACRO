@@ -1,10 +1,9 @@
 """Unit tests for session management commands."""
 
 import json
+import logging
 import os
 import shutil
-
-import logging
 import tempfile
 from unittest.mock import patch
 

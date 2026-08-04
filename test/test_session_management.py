@@ -4,9 +4,6 @@ import json
 import os
 import shutil
 
-import matplotlib as mpl
-
-mpl.use("Agg")
 import logging
 import tempfile
 from unittest.mock import patch

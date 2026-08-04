@@ -1,6 +1,7 @@
 """Unit tests for sdcchecks.py."""
 
 import numpy as np
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
@@ -50,11 +51,13 @@ def test_get_table_sdc_duplicate_check_skipped(data):
     assert isinstance(sdc["summary"], dict)
 
 
+
 def test_sdcevidence_populate_dof_else_branch():
     """Populate_dof falls back to -1 for unknown model type."""
     ev = SDCEvidence()
     ev.populate_dof("not_a_model")
     assert ev.dof == -1
+
 
 
 def test_get_table_sdc_minimumdofcheck_pass(data):
@@ -120,6 +123,7 @@ def test_check_min_threshold_array_non_hist(data):
     assert status == "pass"
 
 
+
 def test_check_min_threshold_array_hist_pass(data):
     """Check_min_threshold for array type with hist command exercises."""
     acro_obj = ACRO(suppress=False)
@@ -127,8 +131,12 @@ def test_check_min_threshold_array_hist_pass(data):
     datacol = np.ones(200)
     for i in range(200):  # Create an array with 200 elements
         datacol[i] = i % 10  # give them values between 0 and 9 evenly distributed
+    datacol = np.ones(200)
+    for i in range(200):  # Create an array with 200 elements
+        datacol[i] = i % 10  # give them values between 0 and 9 evenly distributed
     model = TableModelDetails(
         index=[pd.Series(datacol)],
+        thekwargs={"bins": 5},  # put them into 5 bins =~40 in each to exceed thjreshold
         thekwargs={"bins": 5},  # put them into 5 bins =~40 in each to exceed thjreshold
         risk_appetite=acro_obj.sdc_checks.risk_appetite,
         command="hist",
@@ -642,6 +650,10 @@ def test_check_nk_pass(data):
 def test_populate_from_list_with_statsmodel():
     """Populate_from_list correctly extracts dependent and independent variables from a statsmodels model."""
     # Create a simple linear regression model
+    df = pd.DataFrame(
+        {"y": [1, 2, 3, 4, 5], "x1": [5, 4, 3, 2, 1], "x2": [2, 3, 4, 5, 6]}
+    )
+    X = df[["x1", "x2"]]
     df = pd.DataFrame(
         {"y": [1, 2, 3, 4, 5], "x1": [5, 4, 3, 2, 1], "x2": [2, 3, 4, 5, 6]}
     )

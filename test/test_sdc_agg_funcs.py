@@ -12,6 +12,7 @@ from acro.sdc_agg_funcs import (
     agg_top_n_sum,
     agg_values_are_same,
     get_statsmodel_dof,
+    get_statsmodel_dof,
 )
 
 

@@ -3,10 +3,10 @@
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.api.types import CategoricalDtype
 
 from acro import ACRO, table_utils
 from acro.sdcchecks import ChecksResults
-from acro.tablemodeldetails import TableModelDetails
 from acro.table_utils import (
     _align_mask_to_outcome,
     append_rounded_margins,
@@ -16,12 +16,13 @@ from acro.table_utils import (
     get_analysis_summary,
     get_debugging_table_analysis,
     get_queries_from_collated_risk,
-    get_redacted_table,
-    get_redacted_pivottable,
     get_redacted_data,
+    get_redacted_pivottable,
+    get_redacted_table,
     round_table,
     translate_args_to_newdf,
 )
+from acro.tablemodeldetails import TableModelDetails
 
 
 def _make_table_for_collate_risk_assessments() -> pd.DataFrame:
@@ -67,14 +68,66 @@ def test_translate_args_to_newdf_series_branch(data) -> None:
     assert result[0].equals(redacted["year"])
 
 
-def test_append_rounded_margins_median(data) -> None:
-    """Append_rounded_margins() with aggfunc='median' uses the median path."""
+def test_append_rounded_margins_hierarchy(data, caplog) -> None:
+    """Append_rounded_margins() with ahierarchical table fails."""
     table = pd.crosstab(
-        data.year, data.grant_type, values=data.inc_grants, aggfunc="median"
+        [data.year, data.grant_type],
+        data.grant_type,
+        values=data.inc_grants,
+        aggfunc="median",
     )
     rounded = round_table(table, 5)
     result = append_rounded_margins(rounded, "median", "All", 5)
-    assert isinstance(result, pd.DataFrame)
+    # should just return the original rounded table without margins added,
+    #  as hierarchical tables are not supported
+    assert (
+        "Margin recomputation for hierarchical row/column indexes is not" in caplog.text
+    )
+    assert result.equals(rounded)
+
+
+def test_append_rounded_margins_multiple_aggfuncs(data, caplog) -> None:
+    """Append_rounded_margins() with multiple aggfuncs uses the appropriate paths."""
+    table = pd.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc=["median", "mean"]
+    )
+    rounded = round_table(table, 5)
+    result = append_rounded_margins(rounded, ["median", "mean"], "All", 5)
+    # should just return the original rounded table without margins added,
+    #  as multiple agg fncs tables are not supported
+    assert (
+        "Cannot add margins to a rounded table when multiple aggregation" in caplog.text
+    ), f"got: {caplog.text}"
+    assert result.equals(rounded), f"result\n{result}\nrounded\n{rounded}"
+
+
+def test_append_rounded_margins_invalid_aggfuncs(data, caplog) -> None:
+    """Append_rounded_margins() with invalid aggfuncs uses the appropriate paths."""
+    table = pd.crosstab(
+        data.year, data.grant_type, values=data.inc_grants, aggfunc="std"
+    )
+    rounded = round_table(table, 5)
+    result = append_rounded_margins(rounded, "std", "All", 5)
+    # should just return the original rounded table without margins added,
+    #  as multiple agg fncs tables are not supported
+    assert (
+        "Margin recomputation for aggfunc 'StandardDeviation' is not supported"
+        in caplog.text
+    ), f"got: {caplog.text}"
+    assert result.equals(rounded), f"result\n{result}\nrounded\n{rounded}"
+
+
+def test_append_rounded_margins_simplestats(data) -> None:
+    """Append_rounded_margins() with simple aggfuncs uses the correct path."""
+    for agg in ["mean", "sum", "median"]:
+        table = pd.crosstab(
+            data.year, data.grant_type, values=data.inc_grants, aggfunc=agg
+        )
+        rounded = round_table(table, 5)
+        result = append_rounded_margins(rounded, agg, "All", 5)
+        assert isinstance(result, pd.DataFrame), (
+            f"result is not a DataFrame for {agg}, got {type(result)}"
+        )
 
 
 def test_collate_risk_assessments_negative_path(data):
@@ -291,6 +344,13 @@ class TestAggfuncToStringsFull:
         result = table_utils.aggfunc_to_strings("unknown_func")
         assert isinstance(result, list)
         assert "missing" in result
+
+    def test_aggfunc_to_strings_list_of_funcs(self):
+        """List of aggfuncs converts each to string."""
+        result = table_utils.aggfunc_to_strings(["mean", "sum"])
+        assert isinstance(result, list)
+        assert "Mean" in result
+        assert "Sum" in result
 
 
 class TestRoundTableFull:
@@ -593,10 +653,11 @@ class TestCollateRiskAssessmentsOtherChecks:
         assert status == "fail"
         assert any(term in summary for term in ["threshold", "p-ratio", "nk-rule"])
 
-class TestGetRedactedData:
-    """Tests for getting redacted data, and then suppressed tables"""
-    def__init__(self):
-        self.RA_NO_ZERO = {
+
+@pytest.fixture
+def risk_appetite() -> dict:
+    """Return a test risk appetite dictionary for use in tests."""
+    return {
         "safe_threshold": 10,
         "safe_dof_threshold": 10,
         "safe_nk_n": 2,
@@ -604,74 +665,201 @@ class TestGetRedactedData:
         "safe_pratio_p": 0.1,
         "check_missing_values": False,
         "zeros_are_disclosive": True,
+    }
+
+
+@pytest.fixture
+def correctqueries() -> set:
+    """Get queries to pull out cells with <10 entries."""
+    return {
+        '(over30 == "True") & (Handed == "right")',
+        '(over30 == "True") & (Handed == "left")',
+    }
+
+
+@pytest.fixture
+def unsafedata() -> pd.DataFrame:
+    """Return dataframe with some records in low count groups."""
+    unsafedata = pd.DataFrame(
+        {"Age": np.arange(1, 33, 1), "Handed": ["left", "right"] * 16}
+    )
+    unsafedata["over30"] = unsafedata["Age"] > 30
+    return unsafedata
+
+
+@pytest.fixture
+def safedata(unsafedata) -> pd.DataFrame:
+    """Get a data frame with unsafe records removed."""
+    safedata = unsafedata[unsafedata["Age"] <= 30].copy()
+    return safedata
+
+
+@pytest.fixture
+def counts(unsafedata) -> pd.DataFrame:
+    """Return a simple counts table."""
+    return pd.crosstab(unsafedata["over30"], unsafedata["Handed"])
+
+
+class TestGetRedactedData:
+    """Tests for getting redacted data, and then suppressed tables."""
+
+    def test_get_queries_from_collated_risk(self, counts):
+        """Check queries correctly generated."""
+        mask = counts < 10
+        cr = ChecksResults(
+            overall_status="fail",
+            summaries="fail",
+            outcomes={"count": mask},
+            fair_dict={},
+        )
+        correctqueries: set = {
+            '(over30 == "True") & (Handed == "right")',
+            '(over30 == "True") & (Handed == "left")',
         }
-        #simple data set of ages and genders
-        self.correct_queries=set(['(over30 == "True") & (Handed == "right")', '(over30 == "True") & (Handed == "left")'])
-        self.mydata:pd.DataFrame= pd.DataFrame({'Age':np.arange(1,33,1), "Handed":['left','right']*16 })
-        self.mydata['over30'] = mydata['Age'] >30
-        self.counts = pd.crosstab(self.mydata['over30'],self.mydata['Handed'])
-    
-    def test_get_queries_from_collated_risk(self):
-        """check queries correctly generated"""
-        mask= counts<10
-        cr = ChecksResults(
-                overall_status="fail",
-                summaries="fail",
-                outcomes={"count": mask},
-                fair_dict={},
-            )
         outcome = collate_risk_assessments(counts, {"count": cr})
-        queries: list[str] = get_queries_from_collated_risk(outcome,"count")
-        assert set(queries)==correct_queries,f'expected\n{correct_queries}\ngot\n{queries}'
+        queries: list[str] = get_queries_from_collated_risk(outcome, "count")
+        assert set(queries) == correctqueries, (
+            f"expected\n{correctqueries}\ngot\n{queries}"
+        )
 
-
-    def test_get_redacted_data(self):
-        """tests redacted data doesn't include disclosive records"""
-        mask= counts<10
+    def test_get_redacted_data(self, unsafedata, counts, safedata, correctqueries):
+        """Tests redacted data doesn't include disclosive records."""
+        mask = counts < 10
         cr = ChecksResults(
-                overall_status="fail",
-                summaries="fail",
-                outcomes={"count": mask},
-                fair_dict={},
-            )
+            overall_status="fail",
+            summaries="fail",
+            outcomes={"count": mask},
+            fair_dict={},
+        )
         outcome = collate_risk_assessments(counts, {"count": cr})
-        queries: list[str] = get_queries_from_collated_risk(outcome,"count")
-        dim_names = ['over30','Handed'] 
-        #assert False,   f'relevant data is\n{relevant_data}'
+        queries: list[str] = get_queries_from_collated_risk(outcome, "count")
+        assert set(queries) == correctqueries, (
+            f"expected\n{correctqueries}\ngot\n{queries}"
+        )
+        dim_names = ["Age", "Handed", "over30"]
+        redacted_data: pd.DataFrame = get_redacted_data(unsafedata, queries, dim_names)
+        assert redacted_data["Age"].max() == 30, f"redacted_data is\n{redacted_data}"
+        assert safedata.equals(redacted_data), (
+            f"safedata=\n{safedata}\nredacted_data is\n{redacted_data}"
+        )
 
-        redacted_data: DataFrame = get_redacted_data(mydata, queries, dim_names) 
-        assert redacted_data['Age'].max()==30, f'redacted_data is\n{redacted_data}'
-        assert False,f"crosstab on redacted data is\n{pd.crosstab(
-            redacted_data['over30'],redacted_data['Handed'])}"
-
-    def test_get_redacted_table(self):
-        """check get redacted table works as expected"""
-        mydata:pd.DataFrame= pd.DataFrame({'Age':np.arange(1,33,1), "Handed":['left','right']*16 })
-        mydata['over30'] = mydata['Age'] >30
-
-        counts = pd.crosstab(mydata['over30'],mydata['Handed'])
-        mask= counts<10
+    def test_get_redacted_table_novalues(
+        self, counts, unsafedata, safedata, risk_appetite
+    ):
+        """Check get redacted table works as expected."""
+        mask = counts < 10
         cr = ChecksResults(
-                overall_status="fail",
-                summaries="fail",
-                outcomes={"count": mask},
-                fair_dict={},
-            )
+            overall_status="fail",
+            summaries="fail",
+            outcomes={"count": mask},
+            fair_dict={},
+        )
         outcome = collate_risk_assessments(counts, {"count": cr})
-        queries: list[str] = get_queries_from_collated_risk(outcome,"count")
-        dim_names = ['over30','Handed'] 
-        #assert False,   f'relevant data is\n{relevant_data}'
+        # replicate the work the underlying func does to preserve categories
+        cat_type = CategoricalDtype(categories=[False, True])
+        safedata["over30"] = safedata["over30"].astype(cat_type)
 
-        redacted_data: DataFrame = get_redacted_data(mydata, queries, dim_names) 
-        pandas_redacted_crosstab=pd.crosstab(redacted_data['over30'],redacted_data['Handed'])
+        pandas_redacted_crosstab = pd.crosstab(
+            safedata["over30"], safedata["Handed"], dropna=False
+        )
+        pandas_redacted_crosstab = pandas_redacted_crosstab.replace({0: np.nan})
         model = TableModelDetails(
-            index=[mydata["over30"]],
-            columns=[mydata["Handed"]],
+            index=[unsafedata["over30"]],
+            columns=[unsafedata["Handed"]],
             values=None,
             command="crosstab",
-            risk_appetite=self._RA_NO_ZERO,
-            thekwargs={'aggfunc':None}
+            thekwargs={"aggfunc": None},
+            risk_appetite=risk_appetite,
         )
-        redacted_table=get_redacted_table(model,outcome)
-        assert pandas_redacted_crosstab.equals(redacted_table),f'got\n{redacted_table}\nexpected\n{pandas_redacted_crosstab}'
+        redacted_table = get_redacted_table(model, outcome)
+        assert np.array_equal(
+            pandas_redacted_crosstab.values, redacted_table.values, equal_nan=True
+        ), (
+            f"\ngot\n{redacted_table.values}\nexpected\n{pandas_redacted_crosstab.values}"
+            f"types of columns are\n{unsafedata['over30'].dtype}\n{safedata['over30'].dtype}"
+        )
 
+    def test_get_redacted_table_mean(self, counts, unsafedata, safedata, risk_appetite):
+        """Check get redacted table works as expected with aggfunc."""
+        mask = counts < 10
+        cr = ChecksResults(
+            overall_status="fail",
+            summaries="fail",
+            outcomes={"mean": mask},
+            fair_dict={},
+        )
+        outcome = collate_risk_assessments(counts, {"mean": cr})
+        # replicate the work the underlying func does to preserve categories
+        cat_type = CategoricalDtype(categories=[False, True])
+        safedata["over30"] = safedata["over30"].astype(cat_type)
+
+        pandas_redacted_crosstab = pd.crosstab(
+            safedata["over30"],
+            safedata["Handed"],
+            values=safedata["Age"],
+            aggfunc="mean",
+            dropna=False,
+        )
+        pandas_redacted_crosstab = pandas_redacted_crosstab.replace({0: np.nan})
+        model = TableModelDetails(
+            index=[unsafedata["over30"]],
+            columns=[unsafedata["Handed"]],
+            values=unsafedata["Age"],
+            command="crosstab",
+            thekwargs={"aggfunc": "mean"},
+            risk_appetite=risk_appetite,
+        )
+        redacted_table = get_redacted_table(model, outcome)
+        assert np.array_equal(
+            pandas_redacted_crosstab.values, redacted_table.values, equal_nan=True
+        ), (
+            f"\ngot\n{redacted_table.values}\nexpected\n{pandas_redacted_crosstab.values}"
+            f"types of columns are\n{unsafedata['over30'].dtype}\n{safedata['over30'].dtype}"
+        )
+
+    def test_get_redacted_pivottable(self, counts, unsafedata, safedata, risk_appetite):
+        """Check get redacted table works as expected."""
+        mask = counts < 10
+        cr = ChecksResults(
+            overall_status="fail",
+            summaries="fail",
+            outcomes={"count": mask},
+            fair_dict={},
+        )
+        outcome = collate_risk_assessments(counts, {"count": cr})
+        # replicate the work the underlying func does to preserve categories
+        cat_type = CategoricalDtype(categories=[False, True])
+        safedata["over30"] = safedata["over30"].astype(cat_type)
+
+        pandas_redacted_pivot = pd.pivot_table(
+            safedata,
+            index="over30",
+            columns="Handed",
+            values="Age",
+            aggfunc=["mean", "sum"],
+            fill_value=np.nan,
+            dropna=False,
+            observed=False,
+        )
+
+        pandas_redacted_pivot = pandas_redacted_pivot.replace({0: np.nan})
+
+        model = TableModelDetails(
+            index=[unsafedata["over30"]],
+            columns=[unsafedata["Handed"]],
+            values=unsafedata["Age"],
+            command="pivot_table",
+            thekwargs={"aggfunc": ["mean", "sum"]},
+            risk_appetite=risk_appetite,
+        )
+        redacted_table = get_redacted_pivottable(model, outcome)
+        assert np.array_equal(
+            pandas_redacted_pivot.values, redacted_table.values, equal_nan=True
+        ), (
+            f"\ngot\n{redacted_table.values}\nexpected\n{pandas_redacted_pivot.values}"
+            f"types of columns are\n{unsafedata['over30'].dtype}\n{safedata['over30'].dtype}"
+        )
+        # assert False, (
+        #     f"\ngot\n{redacted_table.values}\nexpected\n{pandas_redacted_pivot.values}"
+        #     f"types of columns are\n{unsafedata['over30'].dtype}\n{safedata['over30'].dtype}"
+        # )

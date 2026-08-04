@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
-from acro import ACRO, acro
+from acro import ACRO
 from acro.acro_tables import _rounded_survival_table
 from acro.record import Records
 
@@ -74,7 +74,7 @@ def test_surv_func(acro, cleanup_path):
     results: Records = acro.finalise(path=PATH)
     output_1 = results.get_index(1)
     assert output_1.output == [filename]
-    shutil.rmtree(PATH)
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
 def test_rounded_survival_table():
@@ -94,7 +94,7 @@ def test_rounded_survival_table():
     )
 
 
-def test_histogram_disclosive(acro, caplog, cleanup_path):
+def test_histogram_disclosive(acro, caplog):
     """Test a disclosive histogram under the new suppression workflow."""
     small_data = pd.DataFrame({"value": [1, 2, 3]})
     result = acro.hist(small_data, "value")
@@ -109,10 +109,10 @@ def test_histogram_disclosive(acro, caplog, cleanup_path):
     )
     assert output_0.status == "fail"
     assert output_0.output == []
-    shutil.rmtree(PATH)
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
-def test_histogram_non_disclosive(acro, cleanup_path):
+def test_histogram_non_disclosive(acro):
     """Test a non-disclosive histogram with a larger synthetic dataset."""
     rng = np.random.default_rng(42)
     data = pd.DataFrame({"value": rng.normal(size=2000)})
@@ -125,11 +125,11 @@ def test_histogram_non_disclosive(acro, cleanup_path):
     results: Records = acro.finalise(path=PATH)
     output_0 = results.get_index(0)
     assert output_0.output == [os.path.normpath(result)]
-    assert output_0.status == "review"
-    shutil.rmtree(PATH)
+    assert output_0.status == "pass"
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
-def test_pie_disclosive(acro, caplog, cleanup_path):
+def test_pie_disclosive(acro, caplog):
     """Test a disclosive pie chart."""
     df = pd.DataFrame(
         {"grant_type": (["A"] * 20) + (["B"] * 15) + (["C"] * 12) + (["D"] * 5)}
@@ -144,10 +144,10 @@ def test_pie_disclosive(acro, caplog, cleanup_path):
         in caplog.text
     )
     assert output_0.status == "fail"
-    shutil.rmtree(PATH)
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
-def test_pie_non_disclosive(data, acro, cleanup_path):
+def test_pie_non_disclosive(data, acro):
     """Test a non-disclosive pie chart."""
     filename = os.path.normpath("acro_artifacts/pie_0.png")
     result = acro.pie(data, "grant_type", filename="pie.png")
@@ -157,8 +157,8 @@ def test_pie_non_disclosive(data, acro, cleanup_path):
     results: Records = acro.finalise(path=PATH)
     output_0 = results.get_index(0)
     assert output_0.output == [filename]
-    assert output_0.status == "review"
-    shutil.rmtree(PATH)
+    assert output_0.status == "pass"
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
 def test_store_federated_evidence_with_dataframe_dof():
@@ -331,26 +331,22 @@ def test_surv_func_suppress_true_table_records_exception():
 
 
 def test_hist_two_series(caplog):
-    """Hist() with two columns returns None"""
+    """Hist() with two columns returns None."""
     acro_obj = ACRO(suppress=False)
     twocol_data = pd.DataFrame({"valueA": [1, 2, 3], "valueB": [4, 5, 6]})
-    result = acro_obj.hist(twocol_data, ["valueA", "valueB"])
+    result = acro_obj.hist(twocol_data, ["valueA", "valueB"])  # type: ignore[arg-type]
     assert (
-                    "Calculating histogram for more than one columns is not currently supported"
-                    in caplog.text
-                )
+        "Calculating histogram for more than one columns is not currently supported"
+        in caplog.text
+    )
     assert result is None
     assert len(acro_obj.results.results) == 0
 
 
-
 def test_hist_empty_data(caplog):
-    """Hist() with empty column returns None"""
+    """Hist() with empty column returns None."""
     acro_obj2 = ACRO(suppress=False)
     empty_data = pd.DataFrame({"valueA": [None, None, None]})
     result = acro_obj2.hist(empty_data, "valueA")
-    assert (
-                    "is empty after dropping NaN."
-                    in caplog.text
-                )
+    assert "is empty after dropping NaN." in caplog.text
     assert result is None

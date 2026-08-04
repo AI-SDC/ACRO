@@ -107,62 +107,99 @@ def test_get_zeros_table_basic():
     assert isinstance(zt, pd.DataFrame)
     assert (zt.values == 0).all()
 
+
 def test_get_dimension_names():
-    """get_dimension names gets independent variables"""
-    df= pd.DataFrame({'A':[True,False,True,False],'B':[False,True,False,True],'C':[True,True,True,True],'vals':[1,2,3,4]})
+    """Get_dimension names gets independent variables."""
+    df = pd.DataFrame(
+        {
+            "A": [True, False, True, False],
+            "B": [False, True, False, True],
+            "C": [True, True, True, True],
+            "vals": [1, 2, 3, 4],
+        }
+    )
     model = TableModelDetails(
-            index=[df['A']],
-            columns=[df['B']],
-            values=df['vals'],
-        )
-    assert model.get_dimension_names()==['A','B'], f'model is {model}'
+        index=[df["A"]],
+        columns=[df["B"]],
+        values=df["vals"],
+    )
+    assert model.get_dimension_names() == ["A", "B"], f"model is {model}"
+
 
 def test_get_variable_type_dict():
-    """ gets independent variables"""
-    df= pd.DataFrame({'A':[True,False,True,False],'B':[False,True,False,True],'vals':[1,2,3,4]})
+    """Gets independent variables."""
+    df = pd.DataFrame(
+        {
+            "A": [True, False, True, False],
+            "B": [False, True, False, True],
+            "vals": [1, 2, 3, 4],
+        }
+    )
     model = TableModelDetails(
-            index=[df['A']],
-            columns=[df['B']],
-            values=df['vals'],
-        )
-    foo= model.get_variable_type_dict()
-    assert isinstance(foo,dict)
-    assert foo['independent']==['A','B'], f'dict is {foo}'
-    assert foo['dependent']=='vals', f'dict is {foo}'
+        index=[df["A"]],
+        columns=[df["B"]],
+        values=df["vals"],
+    )
+    foo = model.get_variable_type_dict()
+    assert isinstance(foo, dict)
+    assert foo["independent"] == ["A", "B"], f"dict is {foo}"
+    assert foo["dependent"] == "vals", f"dict is {foo}"
+
 
 def test_get_count_table():
-    """get count table"""
-    df= pd.DataFrame({'A':[True,False,True,False],'B':[False,True,False,True],'C':[True,True,True,True],'vals':[1,2,3,4]})
+    """Get count table."""
+    df = pd.DataFrame(
+        {
+            "A": [True, False, True, False],
+            "B": [False, True, False, True],
+            "C": [True, True, True, True],
+            "vals": [1, 2, 3, 4],
+        }
+    )
     model = TableModelDetails(
-            index=[df['A']],
-            columns=[df['B']],
-            values=df['vals'],
-        )
-    table= model.get_count_table()
-    assert (table.to_numpy() == [ [0,2],[2,0]]).all(),f'countable is {table}'
-
+        index=[df["A"]],
+        columns=[df["B"]],
+        values=df["vals"],
+    )
+    table = model.get_count_table()
+    assert (table.to_numpy() == [[0, 2], [2, 0]]).all(), f"countable is {table}"
 
 
 def test_get_table_newagg():
-    """get count table"""
-    df= pd.DataFrame({'A':[True,False,True,False],'B':[False,True,False,True],'C':[True,True,True,True],'vals':[1,2,3,4]})
+    """Get count table."""
+    df = pd.DataFrame(
+        {
+            "A": [True, False, True, False],
+            "B": [False, True, False, True],
+            "C": [True, True, True, True],
+            "vals": [1, 2, 3, 4],
+        }
+    )
     model = TableModelDetails(
-            index=[df['A']],
-            columns=[df['B']],
-            values=df['vals'],
-            thekwargs={'aggfunc':'mean'}
-        )
-    correcttable=pd.crosstab(df['A'],df['B'],values=df['vals'],aggfunc='sum')
-    table= model.get_table_newagg('sum')
-    assert table.equals(correcttable),f'sum table is {table}'
+        index=[df["A"]],
+        columns=[df["B"]],
+        values=df["vals"],
+        thekwargs={"aggfunc": "mean"},
+    )
+    correcttable = pd.crosstab(df["A"], df["B"], values=df["vals"], aggfunc="sum")
+    table = model.get_table_newagg(np.sum)
+    assert table.equals(correcttable), f"sum table is {table}"
+
 
 def test_get_allfalse_table():
-    """get count table"""
-    df= pd.DataFrame({'A':[True,False,True,False],'B':[False,False,True,True],'C':[True,True,True,True],'vals':[1,2,3,4]})
+    """Get count table."""
+    df = pd.DataFrame(
+        {
+            "A": [True, False, True, False],
+            "B": [False, False, True, True],
+            "C": [True, True, True, True],
+            "vals": [1, 2, 3, 4],
+        }
+    )
     model = TableModelDetails(
-            index=[df['A']],
-            columns=[df['B']],
-            values=df['vals'],
-        )
-    table= model.get_allfalse_table()
-    assert (table.to_numpy() == [ [0,0],[0,0]]).all(),f'allfalse table is {table}'
+        index=[df["A"]],
+        columns=[df["B"]],
+        values=df["vals"],
+    )
+    table = model.get_allfalse_table()
+    assert (table.to_numpy() == [[0, 0], [0, 0]]).all(), f"allfalse table is {table}"

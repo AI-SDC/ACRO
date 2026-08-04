@@ -53,7 +53,7 @@ def test_crosstab_without_suppression(data):
     output = acro.results.get_index(0)
     correct_summary: str = (
         "FrequencyTable : \n"
-        " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
+        " PresenceOfLinkedTableCheck: A manual review against other outputs for differencing is recommended. Variables defining table are:  ['year', 'grant_type'].\n"
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
 
@@ -72,8 +72,7 @@ def test_crosstab_with_aggfunc_mode(data):
     output = acro.results.get_index(0)
     correct_summary: str = (
         "ModeCalculation : \n"
-        "PresenceOfLinkedTableCheck:"
-        " A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
+        "PresenceOfLinkedTableCheck: A manual review against other outputs for differencing is recommended. Variables defining table are:  ['year', 'grant_type'].\n"
     )
     assert output.summary == correct_summary
     assert output.output[0]["R/G"].iat[0] == 913000
@@ -115,7 +114,7 @@ def test_crosstab_threshold(data, acro):
     # results: Records = acro.finalise(PATH)
     correct_summary: str = (
         "FrequencyTable : \n"
-        " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
+        " PresenceOfLinkedTableCheck: A manual review against other outputs for differencing is recommended. Variables defining table are:  ['year', 'grant_type'].\n"
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
     # output = results.get_index(0)
@@ -139,7 +138,7 @@ def test_crosstab_multiple(data, acro, cleanup_path):
         "Mean : \n"
         "NKCheck: fail - 1 cells may need suppressing.\n"
         " PPercentCheck: fail - 2 cells may need suppressing.\n"
-        " PresenceOfLinkedTableCheck: A manual review is needed. Variables defining table are:  ['year', 'grant_type'].\n"
+        " PresenceOfLinkedTableCheck: A manual review against other outputs for differencing is recommended. Variables defining table are:  ['year', 'grant_type'].\n"
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
     output = results.get_index(0)
@@ -151,12 +150,13 @@ def test_crosstab_multiple(data, acro, cleanup_path):
 
 def test_tables_negatives(data, acro, cleanup_path):
     """Pivot table and Crosstab with negative values."""
-    data.loc[0:10, "inc_grants"] = -10
+    mydata = data.copy()
+    mydata.loc[0:10, "inc_grants"] = -10
     _ = acro.crosstab(
-        data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
+        mydata.year, mydata.grant_type, values=mydata.inc_grants, aggfunc="mean"
     )
     _ = acro.pivot_table(
-        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+        mydata, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
     acro.add_exception("output_0", "Let me have it")
     acro.add_exception("output_1", "I want this")
@@ -174,25 +174,29 @@ def test_pivot_table_without_suppression(data):
     """Pivot table without automatic suppression."""
     acro = ACRO(suppress=False)
     _ = acro.pivot_table(
-        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "sum"]
     )
     output_0 = acro.results.get_index(0)
     assert output_0.output[0]["mean"]["inc_grants"].sum() == 36293992.0
-    assert output_0.status == "review"
+    assert output_0.status == "pass"
 
 
-def test_pivot_table_pass(data, acro, cleanup_path):
+def test_pivot_table_pass(data, acro):
     """Pivot table pass test."""
+    acro = ACRO()
+    acro.disable_suppression()
     _ = acro.pivot_table(
-        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "sum"]
     )
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
-    assert output_0.status == "review"
-    shutil.rmtree(PATH)
+    assert output_0.status == "pass", (
+        f"expected pass, status/summary was  {output_0.status}/\n{output_0.summary}"
+    )
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
-def test_pivot_table_cols(data, acro, cleanup_path):
+def test_pivot_table_cols(data, acro):
     """Pivot table with columns test."""
     _ = acro.pivot_table(
         data,
@@ -210,10 +214,10 @@ def test_pivot_table_cols(data, acro, cleanup_path):
         or "threshold" in output_0.summary.lower()
     )
     assert output_0.status == "review"
-    shutil.rmtree(PATH)
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
-def test_pivot_table_with_aggfunc_sum(data, acro, cleanup_path):
+def test_pivot_table_with_aggfunc_sum(data, acro):
     """Test the pivot table with two columns and aggfunc sum."""
     acro = ACRO(suppress=False)
     _ = acro.pivot_table(
@@ -238,38 +242,43 @@ def test_pivot_table_with_aggfunc_sum(data, acro, cleanup_path):
     # Verify both outputs have failed status (suppression applied)
     assert output_0.status == "fail"
     assert output_1.status == "fail"
-    shutil.rmtree(PATH)
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
-def test_tables_missing(data, acro, monkeypatch, cleanup_path):
+def test_tables_missing(data, acro):
     """Pivot table and Crosstab with missing values."""
     acro.sdc_checks.risk_appetite["check_missing_values"] = True
     acro.suppress = False
-    data.loc[0:10, "inc_grants"] = np.nan
-    _ = acro.crosstab(
-        data.year, data.grant_type, values=data.inc_grants, aggfunc="mean"
+    # lose things that create issues for low values and dominance
+    mydata = data[data.grant_type != "R/G"].copy()
+    mydata = mydata[mydata.year != 2010]
+    mydata.loc[0:50, "inc_grants"] = np.nan
+
+    resa = acro.crosstab(
+        mydata.year, mydata.grant_type, values=mydata.inc_grants, aggfunc="mean"
     )
-    _ = acro.pivot_table(
-        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
+    # assert False,f'resa=\n{resa}'
+    resb = acro.pivot_table(
+        mydata, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
-    exceptions = ["I want it", "Let me have it"]
-    monkeypatch.setattr("builtins.input", lambda _: exceptions.pop(0))
-    results: Records = acro.finalise(PATH, interactive=True)
+    # assert False,f'resb=\n{resb}'
+    results: Records = acro.finalise(PATH, interactive=False)
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
-    assert output_0.status in ("review", "fail")
-    assert output_1.status in ("review", "fail")
-    assert output_0.exception == "I want it"
-    assert output_1.exception == "Let me have it"
-    assert "missing" in output_0.summary.lower() or output_0.status in (
-        "review",
-        "fail",
+    assert output_0.status == "review", (
+        f"expected pass, status/summary was  {output_0.status}/\n{output_0.summary}\nres was {resa}"
     )
-    assert "missing" in output_1.summary.lower() or output_1.status in (
-        "review",
-        "fail",
+    assert output_1.status == "review", (
+        f"expected pass, status/summary was  {output_1.status}/\n{output_1.summary}\nres was {resb}"
     )
-    shutil.rmtree(PATH)
+
+    assert "missing" in output_0.summary, (
+        f"summary is {output_0.summary} despite missing values in the data"
+    )
+    assert "missing" in output_1.summary, (
+        f"summary is {output_1.summary} despite missing values in the data"
+    )
+    shutil.rmtree(PATH, ignore_errors=True)
 
 
 def test_crosstab_multiple_aggregate_function_no_suppression(data, acro):

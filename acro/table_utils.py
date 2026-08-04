@@ -288,7 +288,28 @@ def get_redacted_pivottable(
 
     newkwargs: dict[str, Any] = copy.deepcopy(model.kwargs)
     newkwargs["dropna"] = False
-
+    # logger.info(f'newkwargs are {newkwargs}')
+    # added for testing
+    if newkwargs.get("index") is None:
+        index_names = []
+        for series in model.index:
+            index_names.append(series.name)
+        newkwargs["index"] = index_names
+    if newkwargs.get("columns") is None:
+        column_names = []
+        if len(model.columns) > 0:
+            for series in model.columns:
+                column_names.append(series.name)
+        newkwargs["columns"] = column_names
+    # line below assumes only one values series which may get expanded later
+    if newkwargs.get("values") is None:
+        values_names = []
+        values_names = (
+            model.values[0].name
+            if isinstance(model.values, list)
+            else model.values.name
+        )
+        newkwargs["values"] = values_names
     table = pd.pivot_table(redacted_data, **newkwargs)
     if model.risk_appetite["zeros_are_disclosive"]:
         table = table.replace({0: np.nan})
@@ -510,7 +531,9 @@ def get_redacted_data(
     for dimension in dimensions:
         if dimension in list(redacted_data):
             oldtypes[dimension] = redacted_data[dimension].dtype
-            # logger.info(f'converting {dimension} from {redacted_data[dimension].dtype} to str')
+            # logger.info(
+            #    f"converting {dimension} from {redacted_data[dimension].dtype} to str"
+            # )
             redacted_data[dimension] = redacted_data[dimension].astype(str)
 
     # logger.info(f'now columns are {list(redacted_data)}')
@@ -527,15 +550,22 @@ def get_redacted_data(
 
     # logger.info(f'after querying, columns are {list(redacted_data)}')
     # for col in redacted_data:
-    #     logger.info(f'{col}: {redacted_data[col].unique()}')
-
+    #    logger.info(f'{col}: {redacted_data[col].dtype} ;  uniques {redacted_data[col].unique()}')
     # reconvert dimensions to original data types
     for dimension in dimensions:
         if dimension in list(redacted_data):
+            ## be mindful of where str 'False' gets converted to bool True
+            if oldtypes[dimension] == bool:  # noqa:E721
+                # logger.info('mapping true false  from string to bool')
+                redacted_data[dimension] = redacted_data[dimension].map(
+                    {"True": True, "False": False}
+                )
             redacted_data[dimension] = redacted_data[dimension].astype(
                 oldtypes[dimension]
             )
-
+    # logger.info(f'after astype() operation , columns are {list(redacted_data)}')
+    # for col in redacted_data:
+    #    logger.info(f'{col}: {redacted_data[col].dtype} ; {redacted_data[col].unique()}')
     return redacted_data
 
 

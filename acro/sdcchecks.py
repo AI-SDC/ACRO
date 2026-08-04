@@ -69,10 +69,11 @@ class SDCEvidence:
                 self.variable_type_dict["dependent"] = deps
             all_exog = model.exog_names.copy()
             unwanted = ["const", "Intercept"]
-            indeps = [ x for x in all_exog if x not in unwanted ]
+            indeps = [x for x in all_exog if x not in unwanted]
             self.variable_type_dict["independent"] = indeps
 
         if isinstance(model, TableModelDetails):
+            logger.debug(f"evidence needed = {evidence_needed}")
             sdc_agg_funcs.NK_N = model.risk_appetite["safe_nk_n"]
             if "count_table" in evidence_needed:
                 self.interim_tables["count_table"] = model.get_count_table()
@@ -83,6 +84,7 @@ class SDCEvidence:
                     self.interim_tables[detail] = model.get_table_newagg(aggfunc)
                     logger.debug("%s table:\n%s\n", detail, self.interim_tables[detail])
             self.variable_type_dict = model.get_variable_type_dict()
+            logger.debug(f"interim tables are {list(self.interim_tables.keys())}")
 
 
 @dataclass
@@ -320,6 +322,8 @@ class SDCChecks:
     ) -> SDCEvidence:
         """Collate the evidence needed to do SDC for all the analyses requested by a query."""
         evidence_needed: set = set()
+        if self.risk_appetite["check_missing_values"]:
+            evidence_needed.add("missing")
         for analysis_name in analyses:
             checks_needed = self.get_sdctokens_for_analysis(analysis_name)[
                 "checks_needed"
@@ -380,6 +384,9 @@ class SDCChecks:
         outcomes: dict[str, Any] = {}
         sdc_dict["check_status"] = {}
 
+        if self.risk_appetite["check_missing_values"]:
+            sdc_dict["checks_needed"].append("MissingCheck")
+
         for check in sdc_dict["checks_needed"]:
             checkfunc = self.check_to_method[check]
             status, summary, outcome = checkfunc(analysis_name, evidence, model)
@@ -407,7 +414,7 @@ class SDCChecks:
             if operator.contains(summ, "review") or operator.contains(summ, "fail"):
                 shortsummary += summ
         logger.debug("%s : %s", overall_status, shortsummary)
-        logger.info("Status: %s",overall_status)
+        logger.info("Status: %s", overall_status)
         return ChecksResults(overall_status, summary, outcomes, sdc_dict)
 
     def check_model_dof(
@@ -514,6 +521,10 @@ class SDCChecks:
         _, _ = name, model
         mask = evidence.interim_tables["missing"]
         status, summary = get_status_summary_from_mask(mask)
+        if status == "fail":
+            status = "review"
+            summary += " Review Notes: missing values have been ignored when calculating mean/std etc. Please check this is the expected behaviour."
+        logger.info("Missing values check: %s", summary)
         return status, summary, mask
 
     def check_min_threshold(
@@ -560,7 +571,7 @@ class SDCChecks:
             possibles = list(range(1, len(bin_edges)))
             cat_type = pd.CategoricalDtype(categories=possibles)
             the_array = pd.Series(binids, dtype=cat_type)
-            #logger.debug(f"bin edges: {bin_edges}, bin ids: {binids}, the_array: {the_array}")
+            # logger.debug(f"bin edges: {bin_edges}, bin ids: {binids}, the_array: {the_array}")
         else:
             the_array = data
         count_series = the_array.value_counts()

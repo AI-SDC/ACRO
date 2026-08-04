@@ -3,6 +3,7 @@
 import pandas as pd
 import pytest
 
+import acro.sdc_agg_funcs
 from acro.sdc_agg_funcs import (
     agg_missing,
     agg_mode,
@@ -10,10 +11,9 @@ from acro.sdc_agg_funcs import (
     agg_top_2_sum,
     agg_top_n_sum,
     agg_values_are_same,
-    get_statsmodel_dof
+    get_statsmodel_dof,
 )
 
-import acro.sdc_agg_funcs
 
 def test_agg_mode_single_mode():
     """Agg_mode returns the single mode."""
@@ -73,14 +73,16 @@ def test_agg_values_are_same_empty_series() -> None:
     result = agg_values_are_same(pd.Series([], dtype=float))
     assert result is True
 
+
 def test_agg_top_n_sum_numeric():
     """Agg_top_n_sum returns correct value for numeric dtype."""
-    s = pd.Series([1.0, 2.0, 3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0])
-    #11 vals so should drop the first  and sum 2--11
-    theNK_N= acro.sdc_agg_funcs.NK_N
-    shorter=s.to_numpy()[-theNK_N:]
-    assert len(shorter)==theNK_N,f'shorter is {shorter}'
+    s = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0])
+    # 11 vals so should drop the first  and sum 2--11
+    the_nk_n = acro.sdc_agg_funcs.NK_N
+    shorter = s.to_numpy()[-the_nk_n:]
+    assert len(shorter) == the_nk_n, f"shorter is {shorter}"
     assert agg_top_n_sum(s) == shorter.sum()
+
 
 def test_agg_top_2_sum_non_numeric() -> None:
     """Agg_top_2_sum returns 0 for a non-numeric Series."""
@@ -88,11 +90,10 @@ def test_agg_top_2_sum_non_numeric() -> None:
     assert result == 0
 
 
-
 def test_agg_top_2_sum_numeric():
     """Agg_top_2_sum returns correct value for numeric dtype."""
-    s = pd.Series([1.0, 2.0, 3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0])
-    #11 vals so should drop the first  9
+    s = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0])
+    # 11 vals so should drop the first  9
     assert agg_top_2_sum(s) == 21.0
 
 
@@ -100,7 +101,7 @@ def test_get_statsmodel_dof_with_attribute():
     """Get_statsmodel_dof returns the df_resid attribute when it exists."""
 
     class FakeModel:
-        def __init__(self):
+        def __init__(self) -> None:
             self.df_resid = 5
 
     assert get_statsmodel_dof(FakeModel()) == 5

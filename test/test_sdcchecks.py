@@ -148,7 +148,6 @@ def test_check_min_threshold_array_hist_pass(data):
 
 def test_check_min_threshold_array_hist_fail(data):
     """Check_min_threshold for array type with hist command exercises."""
-    """Check_min_threshold for array type with hist command exercises."""
     acro_obj = ACRO(suppress=False)
 
     datacol = np.ones(200)
@@ -515,7 +514,7 @@ def test_check_nk_dominance_violation(data):
     dominated_data = data.copy()
     dominated_data.loc[data.index[0], "inc_grants"] = 1000000  # Make first cell huge
     dominated_data.loc[data.index[1:], "inc_grants"] = 1000  # second cell big
-    dominated_data.loc[data.index[2:], "inc_grants"]  # Other cells tiny
+    dominated_data.loc[data.index[2:], "inc_grants"] = 1  # Other cells tiny
 
     acro_obj.crosstab(
         dominated_data.year,
@@ -529,7 +528,7 @@ def test_check_nk_dominance_violation(data):
     # With high dominance, should trigger NKCheck violation
     assert output.status == "fail"
     # Check that NKCheck is mentioned in summary if violated
-    assert "NKCheck: fail - 1 cells may need suppressing." in output.summary
+    assert "NKCheck: fail - 2 cells may need suppressing." in output.summary
 
 
 def test_check_ppercent_dominance_violation(data):

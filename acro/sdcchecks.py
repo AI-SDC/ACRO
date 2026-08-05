@@ -73,7 +73,7 @@ class SDCEvidence:
             self.variable_type_dict["independent"] = indeps
 
         if isinstance(model, TableModelDetails):
-            logger.debug(f"evidence needed = {evidence_needed}")
+            logger.debug(f"in populate_from_list:evidence needed = {evidence_needed}")
             sdc_agg_funcs.NK_N = model.risk_appetite["safe_nk_n"]
             if "count_table" in evidence_needed:
                 self.interim_tables["count_table"] = model.get_count_table()
@@ -82,7 +82,9 @@ class SDCEvidence:
                 if detail in evidence_needed:
                     aggfunc = value
                     self.interim_tables[detail] = model.get_table_newagg(aggfunc)
-                    logger.debug("%s table:\n%s\n", detail, self.interim_tables[detail])
+                    logger.info(
+                        "%s interim_table:\n%s\n", detail, self.interim_tables[detail]
+                    )
             self.variable_type_dict = model.get_variable_type_dict()
             logger.debug(f"interim tables are {list(self.interim_tables.keys())}")
 
@@ -321,6 +323,7 @@ class SDCChecks:
         self, analyses: list[str], model: Any
     ) -> SDCEvidence:
         """Collate the evidence needed to do SDC for all the analyses requested by a query."""
+        logger.debug("collecting evidence")
         evidence_needed: set = set()
         if self.risk_appetite["check_missing_values"]:
             evidence_needed.add("missing")
@@ -338,6 +341,7 @@ class SDCChecks:
         )
         thevidence = SDCEvidence()
         thevidence.populate_from_list(evidence_needed, model)
+        logger.debug(f"collected:\n{thevidence}")
         return thevidence
 
     def run_checks_for_analysis(

@@ -88,9 +88,29 @@ def collate_risk_assessments(
         Table with collated outcomes of suppression checks.
     """
     outcome_df = DataFrame(index=table.index, columns=table.columns)
-    if isinstance(list(outcome_df)[0], tuple):
-        outcome_df = drop_duplicate_columns(outcome_df)
-    outcome_df = outcome_df.fillna("")
+    old = True
+    if old:
+        if isinstance(list(outcome_df)[0], tuple):
+            outcome_df = drop_duplicate_columns(outcome_df)
+        outcome_df = outcome_df.fillna("")
+
+    elif isinstance(table.columns, pd.CategoricalIndex):
+        logger.info("categorical index, not dropping columns")
+    elif isinstance(table.columns, pd.MultiIndex):
+        # logger.info(f'start of collate_risk_assessments, outcome is\n{outcome_df}\nwhich is a {type(outcome_df)}')
+        levels = outcome_df.columns.levels
+        logger.info(f"got a multiindex: {levels}")
+
+        # numcols = len(table.columns) if isinstance(table.columns, list) else 1
+        # numlevels = len(levels)
+        # logger.info(f'columns={table.columns}, numcols={numcols}, numlevels={numlevels}, levels[0]={levels[0]}')
+        if isinstance(list(outcome_df)[0], tuple):
+            outcome_df = drop_duplicate_columns(outcome_df)
+        outcome_df = outcome_df.fillna("")
+    else:
+        logger.info(f"unknown type {type(table.columns)}")
+
+    # logger.info(f'after dropping duplicate columns, outcome is\n{outcome_df}')
 
     for _, checkresults in allcheckresults.items():
         masks = checkresults.outcomes
@@ -105,6 +125,7 @@ def collate_risk_assessments(
         # collate at-risk cells from individual risk masks
         else:
             for name, mask in masks.items():
+                logger.debug(f"checks: {name}:\n{mask}")
                 # Skip non-DataFrame masks (e.g., numpy arrays)
                 if not isinstance(mask, DataFrame):
                     continue
@@ -114,11 +135,22 @@ def collate_risk_assessments(
 
                 # Align mask to outcome_df structure
                 mask_aligned = _align_mask_to_outcome(mask, outcome_df)
+                logger.debug(f"aligned mask:\n{mask_aligned}")
 
                 # Check for non-empty intersections
                 shared_index = outcome_df.index.intersection(mask_aligned.index)
                 shared_cols = outcome_df.columns.intersection(mask_aligned.columns)
                 if shared_index.empty or shared_cols.empty:
+                    logger.debug(
+                        "no intersections shared_index=%s shared_cols=%s",
+                        shared_index,
+                        shared_cols,
+                    )
+                    logger.debug(
+                        "outcome_df cols= %s mask_aligned cols = %s",
+                        outcome_df.columns,
+                        mask_aligned.columns,
+                    )
                     continue
 
                 # Apply mask to tmp_df
@@ -130,6 +162,7 @@ def collate_risk_assessments(
                     shared_index, shared_cols
                 ].where(~mask_trimmed, other=name + "; ")
                 outcome_df += tmp_df
+                logger.debug(f"outcome with mask for {name} added:\n{outcome_df}")
 
         outcome_df = outcome_df.replace({"": "ok"})
     logger.info("outcome_df:\n%s", utils.prettify_table_string(outcome_df))
@@ -235,7 +268,7 @@ def get_redacted_table(
         collated_assessment, kwargs["aggfunc"]
     )
     dim_names = model.get_dimension_names()
-    # logger.info(f'queries are {queries}')
+    logger.info(f"queries are {queries}")
     relevant_data: DataFrame = get_relevant_dataframe(model)
 
     redacted_data: DataFrame = get_redacted_data(relevant_data, queries, dim_names)
@@ -460,11 +493,22 @@ def _get_cell_query(
     parts = []
     row_label = mask.index[row_index]
     col_label = mask.columns[col_index]
+    logger.debug(
+        "type column_level_names =%s,len=%s type content=%s",
+        type(column_level_names),
+        len(column_level_names),
+        type(column_level_names[0]),
+    )
 
     parts.extend(_format_label_condition(index_level_names, row_label))
+    if len(column_level_names) == 1 and column_level_names[0] is None:
+        joined = "".join(parts)
+        logger.debug("joined is %s", joined)
+        return joined
     parts.extend(_format_label_condition(column_level_names, col_label))
-
-    return " & ".join(parts)
+    joined = " & ".join(parts)
+    logger.debug("parts is %s", joined)
+    return joined
 
 
 def get_queries_from_collated_risk(
@@ -500,7 +544,10 @@ def get_queries_from_collated_risk(
                 themask, row_index, col_index, index_level_names, column_level_names
             )
             if query is not None:
+                logger.debug("new query %s", query)
                 true_cell_queries.append(query)
+            else:
+                logger.debug("got None query")
     true_cell_queries = list(set(true_cell_queries))
     return true_cell_queries
 
@@ -531,7 +578,7 @@ def get_redacted_data(
     for dimension in dimensions:
         if dimension in list(redacted_data):
             oldtypes[dimension] = redacted_data[dimension].dtype
-            # logger.info(
+            # logger.debug(
             #    f"converting {dimension} from {redacted_data[dimension].dtype} to str"
             # )
             redacted_data[dimension] = redacted_data[dimension].astype(str)
@@ -540,13 +587,13 @@ def get_redacted_data(
     # for col in redacted_data:
     #     logger.info(f'{col}: {redacted_data[col].unique()}')
 
-    # logger.info(f'queries are:\n{queries}')
-    # logger.info(f'initially redacted  data has shape {redacted_data.shape}')
+    logger.debug(f"in get_redacted_data: queries are:\n{queries}")
+    logger.debug(f"initially redacted  data has shape {redacted_data.shape}")
 
     for query in queries:
-        # logger.info(f'applying query{query}')
+        logger.debug(f"applying query{query}")
         redacted_data = redacted_data.query(f"not ({query})")
-        # logger.info(f'now redacted data has shape {redacted_data.shape}')
+        logger.debug(f"now redacted data has shape {redacted_data.shape}")
 
     # logger.info(f'after querying, columns are {list(redacted_data)}')
     # for col in redacted_data:

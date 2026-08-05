@@ -7,7 +7,6 @@ from collections.abc import Callable
 from copy import deepcopy
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from . import utils
@@ -64,6 +63,13 @@ class TableModelDetails:
         self.index: list = [] if index is None else index
         self.columns: list = [] if columns is None else columns
         self.values: pd.Series = pd.Series() if values is None else values
+        # create dummy column if needed
+        # if len(self.columns) == 0:
+        #     numrows = len(self.index[0])
+        #     columns = pd.Series(np.ones(numrows, dtype=np.int_))
+        #     columns.name = "dummy"
+        #     self.columns.append(columns)
+
         # Histograms are array-type analyses, not table-type
         if self.command == "hist":
             self.model_type = "array"
@@ -92,18 +98,41 @@ class TableModelDetails:
                         f"but is a  {type(item)}."
                     )
 
+    def get_pivot_data(self) -> pd.DataFrame:
+        """Extract data relevant to pivot_table into new DataFrame.
+
+        Assumes preprocessing has happened, so index and columns in model
+        should both have been converted into lists of Series.
+
+        Returns
+        -------
+        DataFrame
+            DataFrame containing copies of pandas series needed to calculate the pivot_table.
+        """
+        if isinstance(self.values, pd.Series) and len(self.values) > 0:
+            relevant_data = pd.DataFrame(self.values)
+        else:
+            relevant_data = pd.DataFrame()
+        for series in self.index:
+            relevant_data[series.name] = series
+        for series in self.columns:
+            relevant_data[series.name] = series
+        return relevant_data
+
     def get_crosstab_args(self) -> tuple:
         """Get arguments for a call to crosstab.
 
         create dummy column if needed
         """
-        if len(self.columns) == 0:
-            numrows = len(self.index[0])
-            columns = pd.Series(np.ones(numrows, dtype=np.int_))
-            columns.name = "dummy"
-        else:
-            columns = self.columns
-        return (self.index, columns)
+        # if len(self.columns) == 0:
+        # numrows = len(self.index[0])
+        # columns = pd.Series(np.ones(numrows, dtype=np.int_))
+        # columns.name = "dummy"
+        # self.columns.append(columns)
+        #    pass
+        # else:
+        #    columns = self.columns
+        return (self.index, self.columns)
 
     def get_crosstab_kwargs(self) -> dict[str, Any]:
         """Get kwargs in format for a crosstab call."""
@@ -211,26 +240,62 @@ class TableModelDetails:
     def get_count_table(self) -> pd.DataFrame:
         """Make count table as specified by model."""
         args = self.get_crosstab_args()
-        thiskwargs = self.get_crosstab_kwargs()
-        thiskwargs["values"] = None
-        thiskwargs["aggfunc"] = None
-        return pd.crosstab(*args, **thiskwargs)
+        if len(args[1]) == 0:
+            data = self.get_pivot_data()
+            index_names = [x.name for x in args[0]]
+            counts = pd.pivot_table(
+                data,
+                index=index_names,
+                columns=[],
+                values=index_names[0],
+                aggfunc="count",
+            )
+        else:
+            thiskwargs = self.get_crosstab_kwargs()
+            thiskwargs["values"] = None
+            thiskwargs["aggfunc"] = None
+            counts = pd.crosstab(*args, **thiskwargs)
+        logger.debug(f"in get_count_table, counts=\n{counts}")
+        return counts
 
     def get_table_newagg(self, newaggfunc: Callable) -> pd.DataFrame:
         """Make  table as specified by model but with new agg func."""
         args = self.get_crosstab_args()
-        thiskwargs = self.get_crosstab_kwargs()
-        if len(thiskwargs["values"]) != len(self.index[0]):
-            raise AttributeError("column used for values has incompatibe length")
-        thiskwargs["aggfunc"] = newaggfunc
-        return pd.crosstab(*args, **thiskwargs)
+        if len(args[1]) == 0:
+            data = self.get_pivot_data()
+            index_names = [x.name for x in args[0]]
+            newtable = pd.pivot_table(
+                data,
+                index=index_names,
+                columns=[],
+                values=self.values.name,
+                aggfunc=newaggfunc,
+            )
+        else:
+            thiskwargs = self.get_crosstab_kwargs()
+            if len(thiskwargs["values"]) != len(self.index[0]):
+                raise AttributeError("column used for values has incompatible length")
+            thiskwargs["aggfunc"] = newaggfunc
+            newtable = pd.crosstab(*args, **thiskwargs)
+        return newtable
 
     def get_zeros_table(self) -> pd.DataFrame:
         """Create a data frame filled with zeros of same size as underlying table."""
         args: tuple = self.get_crosstab_args()
-        kwargs: dict = self.get_crosstab_kwargs()
-        kwargs["aggfunc"] = kwargs["values"] = None
-        zeros_table = pd.crosstab(*args, **kwargs)
+        if len(args[1]) == 0:
+            data = self.get_pivot_data()
+            index_names = [x.name for x in args[0]]
+            zeros_table = pd.pivot_table(
+                data,
+                index=index_names,
+                columns=[],
+                values=index_names[0],
+                aggfunc="count",
+            )
+        else:
+            kwargs: dict = self.get_crosstab_kwargs()
+            kwargs["aggfunc"] = kwargs["values"] = None
+            zeros_table = pd.crosstab(*args, **kwargs)
         zeros_table[:] = 0
         return zeros_table
 
@@ -238,9 +303,20 @@ class TableModelDetails:
         """Create a data frame filled with false of same size as underlying table."""
         if self.model_type == "table":
             args = self.get_crosstab_args()
-            thiskwargs = self.get_crosstab_kwargs()
-            thiskwargs["aggfunc"] = thiskwargs["values"] = None
-            mask = pd.crosstab(*args, **thiskwargs).astype(bool)
+            if len(args[1]) == 0:
+                data = self.get_pivot_data()
+                index_names = [x.name for x in args[0]]
+                mask = pd.pivot_table(
+                    data,
+                    index=index_names,
+                    columns=[],
+                    values=index_names[0],
+                    aggfunc="count",
+                ).astype(bool)
+            else:
+                thiskwargs = self.get_crosstab_kwargs()
+                thiskwargs["aggfunc"] = thiskwargs["values"] = None
+                mask = pd.crosstab(*args, **thiskwargs).astype(bool)
             mask[:] = False
             # logger.info(f'get_allfalse_mask for table, mask=:\n{mask}')
 

@@ -8,6 +8,7 @@ from inspect import FrameInfo, getframeinfo
 
 import numpy as np
 import pandas as pd
+from tabulate import tabulate
 
 from .constants import ARTIFACTS_DIR
 
@@ -63,11 +64,27 @@ def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> 
 
     Splits fields on whitespace unless an optional separator is provided e.g. ',' for csv.
     """
+    use_tabulate = True
+    if use_tabulate:
+        mytable = table.copy()
+        mytable.columns = [
+            "\n".join(col) if isinstance(col, tuple) else col for col in mytable.columns
+        ]
+        # other way
+        # table.columns= [' '.join(col).strip()for col in table.columns.values]
+        mytable.reset_index(inplace=True)
+        return tabulate(
+            mytable, headers="keys", showindex=False, tablefmt="rounded_outline"
+        )
     hdelim: str = "-"
     vdelim: str = "|"
 
+    # logger.info(f'in utils table as table before prettifying:\n{table}')
+
     table.rename(columns=lambda x: str(x).replace(" ", "_"), inplace=True)
     output: str = table.to_string(justify="left")
+    # logger.info(f'in utils table after removing spaces in column names and converting to string :\n{output}')
+
     as_strings: list[str] = output.split("\n")
     nheaders = len(as_strings) - table.shape[0]
     rowlen = len(as_strings[0])

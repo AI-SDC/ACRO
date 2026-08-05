@@ -43,6 +43,7 @@ dependencies = [
     "PyYAML",
     "statsmodels",
     "rdflib",
+    "tabulate"
 ]
 
 [tool.setuptools.dynamic]

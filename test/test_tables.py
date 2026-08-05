@@ -21,6 +21,80 @@ from acro.record import Records
 PATH: str = "RES_PYTEST"
 
 
+class SyntheticData:
+    """Class for making and manipulating small synthetic data set."""
+
+    def __init__(self) -> None:
+        """Make (and save) synthetic data.
+
+        Create a dataset with 4 independent variables and 1 dependent variable.
+        The independent variables are categorical with 3 levels each.
+        The distribution of these is such that it is easy to identify which subsets will have fewest records
+        """
+        alldata = []
+        labels: list = ["A", "B", "C"]
+        numrepeats: int
+        for indvar1 in labels:
+            for indvar2 in labels:
+                for indvar3 in labels:
+                    for indvar4 in labels:
+                        numrepeats = 5 if (indvar1 == indvar3 == indvar4 == "C") else 10
+                        for repeat in range(numrepeats):
+                            alldata.append([indvar1, indvar2, indvar3, indvar4, repeat])
+
+        self.alldata = pd.DataFrame(
+            alldata, columns=["indvar1", "indvar2", "indvar3", "indvar4", "depvar"]
+        )
+        cat_type = pd.api.types.CategoricalDtype(categories=labels, ordered=True)
+        for col in ["indvar1", "indvar2", "indvar3", "indvar4"]:
+            self.alldata[col] = self.alldata[col].astype(cat_type)
+
+    def get_all_data(self) -> pd.DataFrame:
+        """Return the full dataset."""
+        return self.alldata
+
+    def get_unsafe_1d(self) -> pd.DataFrame:
+        """Return a subset of the data that is unsafe for 1D pivot tables."""
+        dropivar4 = self.alldata[self.alldata["indvar4"] == "C"]
+        dropivar34 = dropivar4[dropivar4["indvar3"] == "C"]
+        dropivar234 = dropivar34[dropivar34["indvar2"] == "C"]
+        return dropivar234
+
+    def get_safe_1d(self) -> pd.DataFrame:
+        """Return a subset of the data that is safe for 1D pivot tables."""
+        unsafe = self.get_unsafe_1d()
+        return unsafe[unsafe["indvar1"] != "C"]
+
+    def get_unsafe_2d(self) -> pd.DataFrame:
+        """Return a subset of the data that is unsafe for 2D pivot tables."""
+        dropivar4 = self.alldata[self.alldata["indvar4"] == "C"]
+        dropivar34 = dropivar4[dropivar4["indvar3"] == "C"]
+        return dropivar34
+
+    def get_safe_2d(self) -> pd.DataFrame:
+        """Return a subset of the data that is safe for 2D pivot tables."""
+        unsafe = self.get_unsafe_2d()
+        return unsafe[unsafe["indvar1"] != "C"]
+
+    def get_unsafe_3d(self) -> pd.DataFrame:
+        """Return a subset of the data that is unsafe for 3D pivot tables."""
+        dropivar4 = self.alldata[self.alldata["indvar4"] == "C"]
+        return dropivar4
+
+    def get_safe_3d(self) -> pd.DataFrame:
+        """Return a subset of the data that is safe for 3D pivot tables."""
+        unsafe = self.get_unsafe_3d()
+        return unsafe[unsafe["indvar1"] != "C"]
+
+    def get_unsafe_4d(self) -> pd.DataFrame:
+        """Return a subset of the data that is unsafe for 4D pivot tables."""
+        return self.alldata
+
+    def get_safe_4d(self) -> pd.DataFrame:
+        """Return a subset of the data that is safe for 4D pivot tables."""
+        return self.alldata[self.alldata["indvar1"] != "C"]
+
+
 def test_crosstab_with_spaces_in_variable_names(data, acro):
     """Test crosstab with spaces in column names (Issue #305)."""
     test_data = data.copy()

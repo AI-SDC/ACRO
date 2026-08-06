@@ -12,5 +12,3 @@ echo "All" >>coverage_results.txt
 coverage erase
 coverage run -m pytest test >>coverage_results.txt
 coverage report >>coverage_results.txt
-
-

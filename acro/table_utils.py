@@ -95,22 +95,22 @@ def collate_risk_assessments(
         outcome_df = outcome_df.fillna("")
 
     elif isinstance(table.columns, pd.CategoricalIndex):
-        logger.info("categorical index, not dropping columns")
+        logger.debug("categorical index, not dropping columns")
     elif isinstance(table.columns, pd.MultiIndex):
-        # logger.info(f'start of collate_risk_assessments, outcome is\n{outcome_df}\nwhich is a {type(outcome_df)}')
+        # logger.debug(f'start of collate_risk_assessments, outcome is\n{outcome_df}\nwhich is a {type(outcome_df)}')
         levels = outcome_df.columns.levels
-        logger.info(f"got a multiindex: {levels}")
+        logger.debug(f"got a multiindex: {levels}")
 
         # numcols = len(table.columns) if isinstance(table.columns, list) else 1
         # numlevels = len(levels)
-        # logger.info(f'columns={table.columns}, numcols={numcols}, numlevels={numlevels}, levels[0]={levels[0]}')
+        # logger.debug(f'columns={table.columns}, numcols={numcols}, numlevels={numlevels}, levels[0]={levels[0]}')
         if isinstance(list(outcome_df)[0], tuple):
             outcome_df = drop_duplicate_columns(outcome_df)
         outcome_df = outcome_df.fillna("")
     else:
-        logger.info(f"unknown type {type(table.columns)}")
+        logger.debug(f"unknown type for table.columns{type(table.columns)}")
 
-    # logger.info(f'after dropping duplicate columns, outcome is\n{outcome_df}')
+    # logger.debug(f'after dropping duplicate columns, outcome is\n{outcome_df}')
 
     for _, checkresults in allcheckresults.items():
         masks = checkresults.outcomes
@@ -268,7 +268,7 @@ def get_redacted_table(
         collated_assessment, kwargs["aggfunc"]
     )
     dim_names = model.get_dimension_names()
-    logger.info(f"queries are {queries}")
+    logger.debug(f"queries are {queries}")
     relevant_data: DataFrame = get_relevant_dataframe(model)
 
     redacted_data: DataFrame = get_redacted_data(relevant_data, queries, dim_names)
@@ -321,7 +321,7 @@ def get_redacted_pivottable(
 
     newkwargs: dict[str, Any] = copy.deepcopy(model.kwargs)
     newkwargs["dropna"] = False
-    # logger.info(f'newkwargs are {newkwargs}')
+    # logger.debug(f'newkwargs are {newkwargs}')
     # added for testing
     if newkwargs.get("index") is None:
         index_names = []
@@ -583,9 +583,9 @@ def get_redacted_data(
             # )
             redacted_data[dimension] = redacted_data[dimension].astype(str)
 
-    # logger.info(f'now columns are {list(redacted_data)}')
+    # logger.debug(f'now columns are {list(redacted_data)}')
     # for col in redacted_data:
-    #     logger.info(f'{col}: {redacted_data[col].unique()}')
+    #     logger.debug(f'{col}: {redacted_data[col].unique()}')
 
     logger.debug(f"in get_redacted_data: queries are:\n{queries}")
     logger.debug(f"initially redacted  data has shape {redacted_data.shape}")
@@ -595,24 +595,24 @@ def get_redacted_data(
         redacted_data = redacted_data.query(f"not ({query})")
         logger.debug(f"now redacted data has shape {redacted_data.shape}")
 
-    # logger.info(f'after querying, columns are {list(redacted_data)}')
+    # logger.debug(f'after querying, columns are {list(redacted_data)}')
     # for col in redacted_data:
-    #    logger.info(f'{col}: {redacted_data[col].dtype} ;  uniques {redacted_data[col].unique()}')
+    #    logger.debug(f'{col}: {redacted_data[col].dtype} ;  uniques {redacted_data[col].unique()}')
     # reconvert dimensions to original data types
     for dimension in dimensions:
         if dimension in list(redacted_data):
             ## be mindful of where str 'False' gets converted to bool True
             if oldtypes[dimension] == bool:  # noqa:E721
-                # logger.info('mapping true false  from string to bool')
+                # logger.debug('mapping true false  from string to bool')
                 redacted_data[dimension] = redacted_data[dimension].map(
                     {"True": True, "False": False}
                 )
             redacted_data[dimension] = redacted_data[dimension].astype(
                 oldtypes[dimension]
             )
-    # logger.info(f'after astype() operation , columns are {list(redacted_data)}')
+    # logger.debug(f'after astype() operation , columns are {list(redacted_data)}')
     # for col in redacted_data:
-    #    logger.info(f'{col}: {redacted_data[col].dtype} ; {redacted_data[col].unique()}')
+    #    logger.debug(f'{col}: {redacted_data[col].dtype} ; {redacted_data[col].unique()}')
     return redacted_data
 
 

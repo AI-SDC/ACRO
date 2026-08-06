@@ -7,6 +7,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from . import utils
@@ -104,6 +105,8 @@ class TableModelDetails:
         Assumes preprocessing has happened, so index and columns in model
         should both have been converted into lists of Series.
 
+        Creates dummy column if there is only one column
+
         Returns
         -------
         DataFrame
@@ -117,6 +120,9 @@ class TableModelDetails:
             relevant_data[series.name] = series
         for series in self.columns:
             relevant_data[series.name] = series
+        shape = relevant_data.shape
+        if shape[1] == 1:
+            relevant_data["dummy"] = np.ones(shape[0])
         return relevant_data
 
     def get_crosstab_args(self) -> tuple:
@@ -243,6 +249,9 @@ class TableModelDetails:
         if len(args[1]) == 0:
             data = self.get_pivot_data()
             index_names = [x.name for x in args[0]]
+            logger.info(
+                f"making pivot counts table data={data}\nindex_names={index_names},values={index_names[0]}"
+            )
             counts = pd.pivot_table(
                 data,
                 index=index_names,
@@ -255,7 +264,7 @@ class TableModelDetails:
             thiskwargs["values"] = None
             thiskwargs["aggfunc"] = None
             counts = pd.crosstab(*args, **thiskwargs)
-        logger.debug(f"in get_count_table, counts=\n{counts}")
+        logger.info(f"in get_count_table, counts=\n{counts}")
         return counts
 
     def get_table_newagg(self, newaggfunc: Callable) -> pd.DataFrame:
@@ -264,6 +273,9 @@ class TableModelDetails:
         if len(args[1]) == 0:
             data = self.get_pivot_data()
             index_names = [x.name for x in args[0]]
+            if len(self.values) != len(args[0][0]):
+                raise AttributeError("column used for values has incompatible length")
+
             newtable = pd.pivot_table(
                 data,
                 index=index_names,

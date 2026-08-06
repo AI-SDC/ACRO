@@ -996,6 +996,7 @@ class Tables:
         analysis = "PieChart"
         model_details = TableModelDetails(
             index=[data[column]],
+            columns=[],
             thekwargs=dict(kwargs),
             risk_appetite=self.sdc_checks.risk_appetite,
             command="pie",
@@ -1013,15 +1014,18 @@ class Tables:
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
         summary = collatedres.get_overall_summary()
+        logger.warning("collaredres=%s", collatedres)
 
-        output = []
+        output: list = []
         unique_filename = ""
-        if self.suppress and overall_status == "fail":
+        if self.suppress and "MinimumThresholdCheck" in summary:
             logger.warning(
                 "Pie chart will not be shown as the %s column is disclosive.",
                 column,
             )
+            overall_status = "fail"
             summary = summary + " Pie Chart Redacted."
+            output = []
 
         else:
             summary += "Please also for missing categories."

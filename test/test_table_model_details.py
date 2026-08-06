@@ -75,7 +75,7 @@ def test_get_table_newagg_incompatible_length():
     )
     # Replace values with longer series to trigger the incompatible-length check
     model.values = pd.Series(list(range(100)), name="val")
-    with pytest.raises(AttributeError, match="incompatibe length"):
+    with pytest.raises(AttributeError, match="incompatible length"):
         model.get_table_newagg(np.sum)
 
 

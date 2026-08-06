@@ -131,12 +131,13 @@ def test_check_min_threshold_array_hist_pass(data):
     for i in range(200):  # Create an array with 200 elements
         datacol[i] = i % 10  # give them values between 0 and 9 evenly distributed
     model = TableModelDetails(
-        index=[pd.Series(datacol)],
+        index=[pd.Series(datacol, name="datacol")],
+        columns=[],
         thekwargs={"bins": 5},  # put them into 5 bins =~40 in each to exceed threshold
         risk_appetite=acro_obj.sdc_checks.risk_appetite,
         command="hist",
     )
-    model.model_type = "array"
+    # model.model_type = "array"
     analysis = ["Histogram"]
     sdc = SDCChecks(acro_obj.sdc_checks.risk_appetite)
 
@@ -154,12 +155,12 @@ def test_check_min_threshold_array_hist_fail(data):
     for i in range(200):  # Create an array with 200 elements
         datacol[i] = i % 10  # #give them values between 0 and 9 evenly distributed
     model = TableModelDetails(
-        index=[pd.Series(datacol)],
+        index=[pd.Series(datacol, name="datacol")],
         thekwargs={"bins": 10},  # put them into 10 bins to fail threshold
         risk_appetite=acro_obj.sdc_checks.risk_appetite,
         command="hist",
     )
-    model.model_type = "array"
+    # model.model_type = "array"
     analysis = ["Histogram"]
     sdc = SDCChecks(acro_obj.sdc_checks.risk_appetite)
     evidence: SDCEvidence = sdc.get_evidence_forall_analyses(analysis, model)

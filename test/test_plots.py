@@ -5,10 +5,6 @@ from __future__ import annotations
 import os
 import shutil
 
-import matplotlib as mpl
-
-mpl.use("Agg")
-
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -131,24 +127,31 @@ def test_histogram_non_disclosive(acro):
 
 def test_pie_disclosive(acro, caplog):
     """Test a disclosive pie chart."""
-    df = pd.DataFrame(
-        {"grant_type": (["A"] * 20) + (["B"] * 15) + (["C"] * 12) + (["D"] * 5)}
-    )
-    _ = acro.pie(df, "grant_type", filename="pie.png")
-    acro.add_exception("output_0", "Let me have it")
-    results: Records = acro.finalise(path=PATH)
-    output_0 = results.get_index(0)
+    mylist = (["A"] * 20) + (["B"] * 15) + (["C"] * 12) + (["D"] * 5)
+    df = pd.DataFrame()
+    df["grant_type"] = mylist
+    df["dummy"] = np.ones(52)
 
+    acro = ACRO()
+    acro.enable_suppression()
+    _ = acro.pie(df, "grant_type", filename="pie.png")
+    # acro.add_exception("output_0", "Let me have it")
+    results = acro.results  # results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(-1)
+    summary = output_0.summary
+    assert "Pie Chart Redacted" in summary, f"acro results is is {output_0}"
     assert (
         "Pie chart will not be shown as the grant_type column is disclosive."
         in caplog.text
     )
     assert output_0.status == "fail"
     shutil.rmtree(PATH, ignore_errors=True)
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
 
 
 def test_pie_non_disclosive(data, acro):
     """Test a non-disclosive pie chart."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
     filename = os.path.normpath("acro_artifacts/pie_0.png")
     result = acro.pie(data, "grant_type", filename="pie.png")
     assert os.path.normpath(result) == filename

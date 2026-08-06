@@ -64,57 +64,57 @@ def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> 
 
     Splits fields on whitespace unless an optional separator is provided e.g. ',' for csv.
     """
-    use_tabulate = True
-    if use_tabulate:
-        mytable = table.copy()
-        mytable.columns = [
-            "\n".join(col) if isinstance(col, tuple) else col for col in mytable.columns
-        ]
-        # other way
-        # table.columns= [' '.join(col).strip()for col in table.columns.values]
-        mytable.reset_index(inplace=True)
-        return tabulate(
-            mytable, headers="keys", showindex=False, tablefmt="rounded_outline"
-        )
-    hdelim: str = "-"
-    vdelim: str = "|"
+    mytable = table.copy()
+    # be mindful that everything in thr join has to be a string
+    mytable.columns = [
+        "\n".join(map(str, col)) if isinstance(col, tuple) else col
+        for col in mytable.columns
+    ]
+    # other way
+    # table.columns= [' '.join(col).strip()for col in table.columns.values]
+    mytable.reset_index(inplace=True)
+    return tabulate(
+        mytable, headers="keys", showindex=False, tablefmt="rounded_outline"
+    )
+    # hdelim: str = "-"
+    # vdelim: str = "|"
 
-    # logger.info(f'in utils table as table before prettifying:\n{table}')
+    # # logger.info(f'in utils table as table before prettifying:\n{table}')
 
-    table.rename(columns=lambda x: str(x).replace(" ", "_"), inplace=True)
-    output: str = table.to_string(justify="left")
-    # logger.info(f'in utils table after removing spaces in column names and converting to string :\n{output}')
+    # table.rename(columns=lambda x: str(x).replace(" ", "_"), inplace=True)
+    # output: str = table.to_string(justify="left")
+    # # logger.info(f'in utils table after removing spaces in column names and converting to string :\n{output}')
 
-    as_strings: list[str] = output.split("\n")
-    nheaders = len(as_strings) - table.shape[0]
-    rowlen = len(as_strings[0])
+    # as_strings: list[str] = output.split("\n")
+    # nheaders = len(as_strings) - table.shape[0]
+    # rowlen = len(as_strings[0])
 
-    # get top level column labels and their positions
-    if separator is not None:
-        rowone_strings: list[str] = as_strings[0].split(separator)
-    else:
-        rowone_strings = as_strings[0].split()
+    # # get top level column labels and their positions
+    # if separator is not None:
+    #     rowone_strings: list[str] = as_strings[0].split(separator)
+    # else:
+    #     rowone_strings = as_strings[0].split()
 
-    vals: list[str] = rowone_strings[1:]
-    positions: list[int] = []
-    for val in vals:
-        positions.append(as_strings[0].find(val))
+    # vals: list[str] = rowone_strings[1:]
+    # positions: list[int] = []
+    # for val in vals:
+    #     positions.append(as_strings[0].find(val))
 
-    for row, _ in enumerate(as_strings):
-        for pos in positions[::-1]:
-            as_strings[row] = as_strings[row][0:pos] + vdelim + as_strings[row][pos:]
+    # for row, _ in enumerate(as_strings):
+    #     for pos in positions[::-1]:
+    #         as_strings[row] = as_strings[row][0:pos] + vdelim + as_strings[row][pos:]
 
-    rowlen += len(positions)  # add on space for v delimiters
+    # rowlen += len(positions)  # add on space for v delimiters
 
-    outstr: str = ""
-    outstr += hdelim * rowlen + vdelim + "\n"
-    for row in range(nheaders):
-        outstr += as_strings[row] + vdelim + "\n"
-    outstr += hdelim * rowlen + vdelim + "\n"
-    for row in range(nheaders, len(as_strings)):
-        outstr += as_strings[row] + vdelim + "\n"
-    outstr += hdelim * rowlen + vdelim + "\n"
-    return outstr
+    # outstr: str = ""
+    # outstr += hdelim * rowlen + vdelim + "\n"
+    # for row in range(nheaders):
+    #     outstr += as_strings[row] + vdelim + "\n"
+    # outstr += hdelim * rowlen + vdelim + "\n"
+    # for row in range(nheaders, len(as_strings)):
+    #     outstr += as_strings[row] + vdelim + "\n"
+    # outstr += hdelim * rowlen + vdelim + "\n"
+    # return outstr
 
 
 def get_unique_artefact_filename(filename: str) -> str:

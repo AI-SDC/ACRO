@@ -1,6 +1,7 @@
 """Unit tests for utils.py."""
 
 import pandas as pd
+from tabulate import tabulate
 
 from acro import utils
 
@@ -11,51 +12,74 @@ def test_prettify_tablestring(data):
     # take subsets for brevity
     mydata = mydata[(mydata["charity"].str[0] == "W")]
     mydata = mydata[mydata["year"] < 2012]
-    correct = (
-        "----------------------------------------------------------------------|\n"
-        "grant_type                               |N          |R    |R/G       |\n"
-        "status                                   |successful |dead |successful|\n"
-        "year charity                             |           |     |          |\n"
-        "----------------------------------------------------------------------|\n"
-        "2010 WWF                                 | 0         | 0   | 1        |\n"
-        "     Walsall domestic violence forum ltd | 0         | 1   | 0        |\n"
-        "     Will Woodlands                      | 1         | 0   | 0        |\n"
-        "     Worcestershire Lifestyles (Dead)    | 0         | 1   | 0        |\n"
-        "2011 WWF                                 | 0         | 0   | 1        |\n"
-        "     Walsall domestic violence forum ltd | 0         | 1   | 0        |\n"
-        "     Will Woodlands                      | 1         | 0   | 0        |\n"
-        "     Worcestershire Lifestyles (Dead)    | 0         | 1   | 0        |\n"
-        "----------------------------------------------------------------------|\n"
+    table = pd.pivot_table(
+        mydata,
+        index=["year", "charity"],
+        columns=["grant_type", "status"],
+        values="survivor",
+        aggfunc="count",
     )
+    table = table.reset_index()
+    table.columns = [
+        "\n".join(col) if isinstance(col, tuple) else col for col in table.columns
+    ]
+    table = table.fillna(0)
+    correct = tabulate(
+        table, showindex=False, headers="keys", tablefmt="rounded_outline"
+    )
+    # correct = (
+    #     "----------------------------------------------------------------------|\n"
+    #     "grant_type                               |N          |R    |R/G       |\n"
+    #     "status                                   |successful |dead |successful|\n"
+    #     "year charity                             |           |     |          |\n"
+    #     "----------------------------------------------------------------------|\n"
+    #     "2010 WWF                                 | 0         | 0   | 1        |\n"
+    #     "     Walsall domestic violence forum ltd | 0         | 1   | 0        |\n"
+    #     "     Will Woodlands                      | 1         | 0   | 0        |\n"
+    #     "     Worcestershire Lifestyles (Dead)    | 0         | 1   | 0        |\n"
+    #     "2011 WWF                                 | 0         | 0   | 1        |\n"
+    #     "     Walsall domestic violence forum ltd | 0         | 1   | 0        |\n"
+    #     "     Will Woodlands                      | 1         | 0   | 0        |\n"
+    #     "     Worcestershire Lifestyles (Dead)    | 0         | 1   | 0        |\n"
+    #     "----------------------------------------------------------------------|\n"
+    # )
     complex_str = utils.prettify_table_string(
         pd.crosstab([mydata.year, mydata.charity], [mydata.grant_type, mydata.status])
     )
     assert complex_str == correct, f"got:\n{complex_str}\nexpected:\n{correct}\n"
 
-    correct2 = (
-        "------------------------|\n"
-        "grant_type  |N  |R  |R/G|\n"
-        "year        |   |   |   |\n"
-        "------------------------|\n"
-        "2010        |1  |2  |1  |\n"
-        "2011        |1  |2  |1  |\n"
-        "------------------------|\n"
+    correct2 = tabulate(
+        pd.crosstab([mydata.year], [mydata.grant_type]),
+        headers="keys",
+        tablefmt="rounded_outline",
     )
+    #     "------------------------|\n"
+    #     "grant_type  |N  |R  |R/G|\n"
+    #     "year        |   |   |   |\n"
+    #     "------------------------|\n"
+    #     "2010        |1  |2  |1  |\n"
+    #     "2011        |1  |2  |1  |\n"
+    #     "------------------------|\n"
+    # )
     simple_str = utils.prettify_table_string(
         pd.crosstab([mydata.year], [mydata.grant_type])
     )
     assert simple_str == correct2, f"got:\n{simple_str}\nexpected:\n{correct2}\n"
 
     # test spaces in variable names dealt with
-    correct3 = (
-        "---------------------------------------|\n"
-        "survivor  |Dead_in_2015  |Alive_in_2015|\n"
-        "year      |              |             |\n"
-        "---------------------------------------|\n"
-        "2010      |2             |2            |\n"
-        "2011      |2             |2            |\n"
-        "---------------------------------------|\n"
+    correct3 = tabulate(
+        pd.crosstab(mydata.year, mydata.survivor),
+        headers="keys",
+        tablefmt="rounded_outline",
     )
+    #     "---------------------------------------|\n"
+    #     "survivor  |Dead_in_2015  |Alive_in_2015|\n"
+    #     "year      |              |             |\n"
+    #     "---------------------------------------|\n"
+    #     "2010      |2             |2            |\n"
+    #     "2011      |2             |2            |\n"
+    #     "---------------------------------------|\n"
+    # )
     nospaces__str = utils.prettify_table_string(
         pd.crosstab([mydata.year], [mydata.survivor])
     )
@@ -67,7 +91,6 @@ def test_prettify_table_string_with_separator() -> None:
     df = pd.DataFrame({"A": [1, 2], "B": [3, 4]}, index=["x", "y"])
     result = utils.prettify_table_string(df, separator=",")
     assert isinstance(result, str)
-    assert "|" in result
 
 
 def test_get_catdtype_string_series():

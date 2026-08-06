@@ -149,3 +149,5 @@ playing/
 # test datasets that can't be shared
 UKDA-7401-stata12/
 notebooks/old/test.ipynb
+ACRO.code-workspace
+.vscode/settings.json

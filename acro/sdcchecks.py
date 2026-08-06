@@ -82,7 +82,7 @@ class SDCEvidence:
                 if detail in evidence_needed:
                     aggfunc = value
                     self.interim_tables[detail] = model.get_table_newagg(aggfunc)
-                    logger.info(
+                    logger.debug(
                         "%s interim_table:\n%s\n", detail, self.interim_tables[detail]
                     )
             self.variable_type_dict = model.get_variable_type_dict()
@@ -528,7 +528,7 @@ class SDCChecks:
         if status == "fail":
             status = "review"
             summary += " Review Notes: missing values have been ignored when calculating mean/std etc. Please check this is the expected behaviour."
-        logger.info("Missing values check: %s", summary)
+        logger.debug("Missing values check: %s", summary)
         return status, summary, mask
 
     def check_min_threshold(

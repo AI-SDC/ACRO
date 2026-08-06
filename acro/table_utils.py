@@ -91,24 +91,30 @@ def collate_risk_assessments(
     old = True
     if old:
         if isinstance(list(outcome_df)[0], tuple):
-            outcome_df = drop_duplicate_columns(outcome_df)
+            # outcome_df = drop_duplicate_columns(outcome_df)
+            pass
         outcome_df = outcome_df.fillna("")
 
-    elif isinstance(table.columns, pd.CategoricalIndex):
-        logger.debug("categorical index, not dropping columns")
-    elif isinstance(table.columns, pd.MultiIndex):
-        # logger.debug(f'start of collate_risk_assessments, outcome is\n{outcome_df}\nwhich is a {type(outcome_df)}')
-        levels = outcome_df.columns.levels
-        logger.debug(f"got a multiindex: {levels}")
-
-        # numcols = len(table.columns) if isinstance(table.columns, list) else 1
-        # numlevels = len(levels)
-        # logger.debug(f'columns={table.columns}, numcols={numcols}, numlevels={numlevels}, levels[0]={levels[0]}')
-        if isinstance(list(outcome_df)[0], tuple):
-            outcome_df = drop_duplicate_columns(outcome_df)
-        outcome_df = outcome_df.fillna("")
     else:
-        logger.debug(f"unknown type for table.columns{type(table.columns)}")
+        outcome_df = outcome_df.fillna("")
+
+        # if isinstance(table.columns, pd.CategoricalIndex):
+        #     logger.debug("categorical index, not dropping columns")
+        #     pass
+        # elif isinstance(table.columns, pd.MultiIndex):
+        #     # logger.debug(f'start of collate_risk_assessments, outcome is\n{outcome_df}\nwhich is a {type(outcome_df)}')
+        #     levels = outcome_df.columns.levels
+        #     logger.debug(f"got a multiindex: {levels}")
+
+        #     # numcols = len(table.columns) if isinstance(table.columns, list) else 1
+        #     # numlevels = len(levels)
+        #     # logger.debug(f'columns={table.columns}, numcols={numcols}, numlevels={numlevels}, levels[0]={levels[0]}')
+        #     if isinstance(list(outcome_df)[0], tuple):
+        #         #outcome_df = drop_duplicate_columns(outcome_df)
+        #         pass
+        #     outcome_df = outcome_df.fillna("")
+        # else:
+        #     logger.debug(f"unknown type for table.columns{type(table.columns)}")
 
     # logger.debug(f'after dropping duplicate columns, outcome is\n{outcome_df}')
 
@@ -130,6 +136,17 @@ def collate_risk_assessments(
                 if not isinstance(mask, DataFrame):
                     continue
 
+                def string_in_frame(testname: str, df: pd.DataFrame) -> bool:
+                    return (
+                        df.astype(str)
+                        .apply(lambda x: x.str.contains(testname))
+                        .any()
+                        .any()
+                    )
+
+                if string_in_frame(name, outcome_df):
+                    logger.debug("found %s already so not repeating it", name)
+                    continue
                 tmp_df = DataFrame(index=outcome_df.index, columns=outcome_df.columns)
                 tmp_df = tmp_df.fillna("")
 

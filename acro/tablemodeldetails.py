@@ -249,7 +249,7 @@ class TableModelDetails:
         if len(args[1]) == 0:
             data = self.get_pivot_data()
             index_names = [x.name for x in args[0]]
-            logger.info(
+            logger.debug(
                 f"making pivot counts table data={data}\nindex_names={index_names},values={index_names[0]}"
             )
             counts = pd.pivot_table(
@@ -264,7 +264,7 @@ class TableModelDetails:
             thiskwargs["values"] = None
             thiskwargs["aggfunc"] = None
             counts = pd.crosstab(*args, **thiskwargs)
-        logger.info(f"in get_count_table, counts=\n{counts}")
+        logger.debug(f"in get_count_table, counts=\n{counts}")
         return counts
 
     def get_table_newagg(self, newaggfunc: Callable) -> pd.DataFrame:

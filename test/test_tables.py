@@ -279,7 +279,6 @@ def test_pivot_table_cols(data, acro):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
-    output_0 = results.get_index(0)
     assert (
         "MinimumThresholdCheck" in output_0.summary
         or "threshold" in output_0.summary.lower()

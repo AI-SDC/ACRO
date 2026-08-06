@@ -551,8 +551,19 @@ def get_queries_from_collated_risk(
     themask = collated_risk.copy()
     themask = themask.replace({"ok": False})
     themask = themask.mask(themask != False, other=True)  # noqa: E712
+    # get rid of top level of multIndexer for columns IF its just the agg func
     if aggfunc is not None and themask.columns.nlevels > 1:
-        themask = themask.droplevel(0, axis=1)
+        # delete the top level if it is just agg funcs
+        level0names = set(themask.columns.get_level_values(0).copy())
+        # logger.debug(f'l0names is a {type(level0names)} = {level0names}')
+        level0names.discard("All")
+        # logger.debug(f'l0names is a {type(level0names)} = {level0names}')
+        # logger.debug(f'affunc is a {type(aggfunc)}={aggfunc}')
+        if isinstance(aggfunc, str) and aggfunc in level0names:
+            themask = themask.droplevel(0, axis=1)
+        if isinstance(aggfunc, list) and set(aggfunc) == level0names:
+            themask = themask.droplevel(0, axis=1)
+
     index_level_names = themask.index.names
     column_level_names = themask.columns.names
     for col_index, _ in enumerate(themask.columns):
@@ -581,7 +592,7 @@ def get_redacted_data(
     queries : list[str]
         a set of queries that define the data in cells marked as being disclosive
     dimensions : list[str]
-        the names of the dimensional varaibels - these  are the categorical entities in the queries
+        the names of the dimensional variablss - these  are the categorical entities in the queries
 
     Returns
     -------

@@ -561,7 +561,9 @@ def test_crosstab_multi_aggfunc(data):
     assert "mean" in table2.columns.get_level_values(0)
     assert "std" in table2.columns.get_level_values(0)
     assert "All" in table2.index
-    assert table2.isna().any().any(), "Expected disclosive cells to be suppressed with NaN"
+    assert table2.isna().any().any(), (
+        "Expected disclosive cells to be suppressed with NaN"
+    )
 
 
 def test_hierachical_aggregation(data, acro):
@@ -1120,7 +1122,9 @@ def test_dominance_problem_synthetic_crosstab(synthetic_2d_unsafe_dominance):
     ), f"Expected dominance check in summary, got: {output.summary}"
 
 
-def test_dominance_problem_synthetic_crosstab_with_suppression(synthetic_2d_unsafe_dominance):
+def test_dominance_problem_synthetic_crosstab_with_suppression(
+    synthetic_2d_unsafe_dominance,
+):
     """Dominance-flagged cells should be suppressed when suppression is enabled."""
     df = synthetic_2d_unsafe_dominance
     acro = ACRO(suppress=True)
@@ -1128,7 +1132,9 @@ def test_dominance_problem_synthetic_crosstab_with_suppression(synthetic_2d_unsa
     _assert_suppressed_output(result, acro.results.get_index(0))
 
 
-def test_dominance_problem_synthetic_pivot_no_suppression(synthetic_2d_unsafe_dominance):
+def test_dominance_problem_synthetic_pivot_no_suppression(
+    synthetic_2d_unsafe_dominance,
+):
     """Pivot table should detect dominance problem without suppression."""
     df = synthetic_2d_unsafe_dominance
     acro = ACRO(suppress=False)
@@ -1141,7 +1147,9 @@ def test_dominance_problem_synthetic_pivot_no_suppression(synthetic_2d_unsafe_do
     )
 
 
-def test_dominance_problem_synthetic_pivot_with_suppression(synthetic_2d_unsafe_dominance):
+def test_dominance_problem_synthetic_pivot_with_suppression(
+    synthetic_2d_unsafe_dominance,
+):
     """Pivot table should suppress dominance-flagged cells when suppression enabled."""
     df = synthetic_2d_unsafe_dominance
     acro = ACRO(suppress=True)

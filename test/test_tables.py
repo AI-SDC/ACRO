@@ -5,11 +5,9 @@ import shutil
 import numpy as np
 import pandas as pd
 import pytest
-from tabulate import tabulate
 
 from acro import (
     ACRO,
-    utils,
 )
 from acro.record import Records
 
@@ -90,6 +88,83 @@ class SyntheticData:
     def get_safe_4d(self) -> pd.DataFrame:
         """Return a subset of the data that is safe for 4D pivot tables."""
         return self.alldata[self.alldata["indvar1"] != "C"]
+
+    def get_unsafe_holes_2d(self) -> pd.DataFrame:
+        """Return 2D data with a zero-count cell (hole) for testing zero handling."""
+        # Start with safe 2D data
+        data = self.get_safe_2d()
+        # Drop records where indvar1=='C' and indvar3=='C' to create a hole
+        # This creates a cell that will have count=0 in crosstabs
+        mask = (data["indvar1"] == "C") & (data["indvar3"] == "C")
+        data = data[~mask]
+        return data
+
+    def get_unsafe_dominance_2d(self) -> pd.DataFrame:
+        """Return 2D data with one cell having extreme dominance problem.
+
+        The last record where indvar1==C, indvar2==C, indvar3==C, indvar4==C
+        has depvar=1000 instead of its normal value, creating a dominance issue.
+        """
+        data = self.get_all_data().copy()
+
+        # Find and modify the last record matching the pattern
+        mask = (
+            (data["indvar1"] == "C")
+            & (data["indvar2"] == "C")
+            & (data["indvar3"] == "C")
+            & (data["indvar4"] == "C")
+        )
+
+        matching_indices = data[mask].index
+        if len(matching_indices) > 0:
+            # Set the last matching record's depvar to 1000 (extreme dominance)
+            last_idx = matching_indices[-1]
+            data.loc[last_idx, "depvar"] = 1000
+
+        return data
+
+
+def _assert_safe_output(result: pd.DataFrame, output) -> None:
+    """Assert a safe ACRO output: pass status, no suppressed cells."""
+    assert isinstance(result, pd.DataFrame)
+    assert output.status == "pass", (
+        f"Expected pass, got {output.status}\n{output.summary}"
+    )
+    assert not result.isna().any().any(), "Expected no suppressed cells in safe output"
+
+
+def _assert_suppressed_output(result: pd.DataFrame, output) -> None:
+    """Assert an unsafe ACRO output: cells suppressed, metadata recorded and consistent."""
+    suppressed_cells = {
+        (r, c)
+        for r in range(result.shape[0])
+        for c in range(result.shape[1])
+        if pd.isna(result.iloc[r, c])
+    }
+    assert suppressed_cells, "Expected at least one suppressed cell"
+    assert output.status == "review", (
+        f"Expected review, got {output.status}\n{output.summary}"
+    )
+    assert "cells" in output.sdc, (
+        "Expected suppression metadata under output.sdc['cells']"
+    )
+    cell_metadata = output.sdc["cells"]
+    assert isinstance(cell_metadata, dict), (
+        f"Expected output.sdc['cells'] to be a dict, got {type(cell_metadata)}"
+    )
+    assert cell_metadata, "Expected output.sdc['cells'] to be a non-empty dict"
+    metadata_cells = set()
+    for check_name, positions in cell_metadata.items():
+        assert isinstance(positions, list), (
+            f"Expected list for {check_name}, got {type(positions)}"
+        )
+        for pos in positions:
+            assert isinstance(pos, tuple), f"Expected (row, col) tuple, got {pos}"
+            assert len(pos) == 2, f"Expected (row, col) tuple, got {pos}"
+            metadata_cells.add(pos)
+    assert suppressed_cells <= metadata_cells, (
+        "Suppressed cells in output not fully reflected in sdc metadata"
+    )
 
 
 def test_crosstab_with_spaces_in_variable_names(data, acro):
@@ -182,20 +257,15 @@ def test_crosstab_threshold(data, acro):
     for pos in positions:
         row, col = pos
         assert np.isnan(output.output[0].iloc[row, col])
-    # results: Records = acro.finalise(PATH)
     correct_summary: str = (
         "FrequencyTable : \n"
         " PresenceOfLinkedTableCheck: A manual review against other outputs for differencing is recommended. Variables defining table are:  ['year', 'grant_type'].\n"
         " MinimumThresholdCheck: fail - 6 cells may need suppressing.\n"
     )
-    # output = results.get_index(0)
     assert output.summary == correct_summary, (
         f"expected:\n{correct_summary}\n---\ngot:\n{output.summary}\n----"
     )
     assert output.status == "review"
-
-    # Exception for suppression has been applied (verified via status)
-    # shutil.rmtree(PATH)
 
 
 def test_crosstab_multiple(data, acro, cleanup_path):
@@ -242,7 +312,7 @@ def test_tables_negatives(data, acro, cleanup_path):
 
 
 def test_pivot_table_without_suppression(data):
-    """Pivot table without automatic suppression."""
+    """Pivot table pass: correct aggregated values and no suppression."""
     acro = ACRO(suppress=False)
     _ = acro.pivot_table(
         data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "sum"]
@@ -252,24 +322,9 @@ def test_pivot_table_without_suppression(data):
     assert output_0.status == "pass"
 
 
-def test_pivot_table_pass(data, acro):
-    """Pivot table pass test."""
-    acro = ACRO()
-    acro.disable_suppression()
-    _ = acro.pivot_table(
-        data, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "sum"]
-    )
-    results: Records = acro.finalise(PATH)
-    output_0 = results.get_index(0)
-    assert output_0.status == "pass", (
-        f"expected pass, status/summary was  {output_0.status}/\n{output_0.summary}"
-    )
-    shutil.rmtree(PATH, ignore_errors=True)
-
-
 def test_pivot_table_cols(data, acro):
-    """Pivot table with columns test."""
-    _ = acro.pivot_table(
+    """Pivot table with columns test - verify actual suppression."""
+    acro.pivot_table(
         data,
         index=["grant_type"],
         columns=["year"],
@@ -279,10 +334,17 @@ def test_pivot_table_cols(data, acro):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
-    assert (
-        "MinimumThresholdCheck" in output_0.summary
-        or "threshold" in output_0.summary.lower()
+    table = output_0.output[0]
+
+    # Verify actual cells were suppressed (NaN values in result)
+    suppressed_count = table.isna().sum().sum()
+    assert suppressed_count > 0, (
+        f"Expected cells to be suppressed, but got {suppressed_count} NaNs"
     )
+
+    # Verify suppression reasons are documented
+    assert len(output_0.sdc["cells"]) > 0, "Expected suppression reasons in SDC report"
+
     assert output_0.status == "review"
     shutil.rmtree(PATH, ignore_errors=True)
 
@@ -327,11 +389,9 @@ def test_tables_missing(data, acro):
     resa = acro.crosstab(
         mydata.year, mydata.grant_type, values=mydata.inc_grants, aggfunc="mean"
     )
-    # assert False,f'resa=\n{resa}'
     resb = acro.pivot_table(
         mydata, index=["grant_type"], values=["inc_grants"], aggfunc=["mean", "std"]
     )
-    # assert False,f'resb=\n{resb}'
     results: Records = acro.finalise(PATH, interactive=False)
     output_0 = results.get_index(0)
     output_1 = results.get_index(1)
@@ -402,14 +462,17 @@ def test_hierachical_aggregation(data, acro):
     """Should work with hierarchies in rows/columns."""
     acro.suppress = False
     the_data = data[data.grant_type != "G"]
+
+    # ACRO result
     result = acro.crosstab(
         [the_data.year, the_data.survivor],
         [the_data.grant_type],
         values=the_data.inc_activity,
         aggfunc="sum",
     )
-    res = utils.prettify_table_string(result)
-    table = pd.pivot_table(
+
+    # Pandas baseline
+    expected = pd.pivot_table(
         the_data,
         index=["year", "survivor"],
         columns="grant_type",
@@ -417,35 +480,13 @@ def test_hierachical_aggregation(data, acro):
         aggfunc="sum",
         dropna=False,
     )
-    table = table.reset_index()
-    table.columns = [
-        "\n".join(col) if isinstance(col, tuple) else col for col in table.columns
-    ]
-    # table=table.fillna(0)
-    correct = tabulate(
-        table, showindex=False, headers="keys", tablefmt="rounded_outline"
-    )
 
-    # correct = (
-    #     "------------------------------------------------------------|\n"
-    #     "grant_type          |N           |R             |R/G        |\n"
-    #     "year survivor       |            |              |           |\n"
-    #     "------------------------------------------------------------|\n"
-    #     "2010 Dead in 2015   |       0.0  |1.723599e+07  |        0.0|\n"
-    #     "     Alive in 2015  |52865600.0  |6.791129e+08  | 24592000.0|\n"
-    #     "2011 Dead in 2015   |       0.0  |1.890400e+07  |        0.0|\n"
-    #     "     Alive in 2015  |66714452.0  |1.002141e+09  | 86171000.0|\n"
-    #     "2012 Dead in 2015   |       0.0  |2.616444e+07  |        0.0|\n"
-    #     "     Alive in 2015  |64777124.0  |1.013167e+09  |107716000.0|\n"
-    #     "2013 Dead in 2015   |       0.0  |2.913558e+07  |        0.0|\n"
-    #     "     Alive in 2015  |86806336.0  |1.048305e+09  |104197000.0|\n"
-    #     "2014 Dead in 2015   |       0.0  |3.074519e+07  |        0.0|\n"
-    #     "     Alive in 2015  |74486664.0  |1.035069e+09  |106287000.0|\n"
-    #     "2015 Dead in 2015   |       0.0  |1.488808e+07  |        0.0|\n"
-    #     "     Alive in 2015  |56155352.0  |9.932494e+08  |105224000.0|\n"
-    #     "------------------------------------------------------------|\n"
-    # )
-    assert res.split() == correct.split(), f"got\n{res}\nexpected\n{correct}\n"
+    # Compare actual DataFrame values instead of string formatting
+    pd.testing.assert_frame_equal(
+        result,
+        expected,
+        check_dtype=False,
+    )
 
 
 def test_single_values_column(data, acro):
@@ -464,7 +505,7 @@ def test_single_values_column(data, acro):
 def test_zeros_are_not_disclosive(data, acro, cleanup_path):
     """Test that zeros are handled as not disclosive when `zeros_are_disclosive=False`."""
     acro.sdc_checks.risk_appetite["zeros_are_disclosive"] = False
-    _ = acro.pivot_table(
+    acro.pivot_table(
         data,
         index=["grant_type"],
         columns=["year"],
@@ -474,11 +515,15 @@ def test_zeros_are_not_disclosive(data, acro, cleanup_path):
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(PATH)
     output_0 = results.get_index(0)
-    assert (
-        "MinimumThresholdCheck" in output_0.summary
-        or "threshold" in output_0.summary.lower()
+    table = output_0.output[0]
+
+    # Verify zeros were NOT suppressed (should remain as 0, not become NaN)
+    zero_count = (table == 0).sum().sum()
+    assert zero_count > 0, (
+        "Expected zero values to remain in output when zeros_are_disclosive=False"
     )
-    assert output_0.status in ("review", "fail")
+
+    assert output_0.status == "review"
     shutil.rmtree(PATH)
 
 
@@ -501,10 +546,17 @@ def test_crosstab_with_totals_with_suppression(data, acro):
     table = output.output[0]
 
     assert "All" in table.columns
-    assert table["All"].iat[6] > 0
-    assert table.shape[0] >= 7
-    # Verify suppression has been applied and table is ready for review
-    assert output.status in {"review", "fail"}
+    assert output.status == "review"
+
+    for idx in table.index[:-1]:  # Exclude 'All' row
+        unsuppressed = table.loc[idx, table.columns[:-1]].dropna()
+        if len(unsuppressed) > 0:
+            unsup_sum = unsuppressed.sum()
+            row_total = table.loc[idx, "All"]
+            if not pd.isna(row_total):
+                assert row_total >= unsup_sum, (
+                    f"Row {idx}: total {row_total} < unsuppressed sum {unsup_sum}"
+                )
 
 
 def test_crosstab_with_totals_with_suppression_hierarchical(data, acro):
@@ -514,10 +566,18 @@ def test_crosstab_with_totals_with_suppression_hierarchical(data, acro):
     )
     output = acro.results.get_index(0)
     table = output.output[0]
-    # Verify suppression has been applied to hierarchical table
     assert "All" in table.columns
-    assert table["All"].iat[12] > 0
-    assert output.status in {"review", "fail"}
+    assert output.status == "review"
+
+    for idx in table.index[:-1]:
+        unsuppressed = table.loc[idx, table.columns[:-1]].dropna()
+        if len(unsuppressed) > 0:
+            unsup_sum = unsuppressed.sum()
+            row_total = table.loc[idx, "All"]
+            if not pd.isna(row_total):
+                assert row_total >= unsup_sum, (
+                    f"Hierarchical row {idx}: total {row_total} < unsuppressed sum {unsup_sum}"
+                )
 
 
 def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
@@ -536,7 +596,7 @@ def test_crosstab_with_totals_with_suppression_with_mean(data, acro):
     assert "All" in table.columns
     assert table["All"].iat[0] > 0
     assert table["All"].iat[6] > 0
-    assert output.status in {"review", "fail"}
+    assert output.status == "review"
 
 
 def test_crosstab_with_totals_and_empty_data(data, acro):
@@ -553,8 +613,7 @@ def test_crosstab_with_totals_and_empty_data(data, acro):
         aggfunc="mean",
         margins=True,
     )
-    # Verify crosstab with empty data subset returns valid status
-    assert acro.results.get_index(0).status in {"review", "fail"}
+    assert acro.results.get_index(0).status == "review"
 
 
 def test_pivot_table_no_values_raises(data):
@@ -589,11 +648,6 @@ def test_pivot_table_aggfunc_mode(data):
     assert not result.empty
 
 
-# ---------------------------------------------------------------------------
-# acro_tables.py — crosstab rounding with margins
-# ---------------------------------------------------------------------------
-
-
 def test_crosstab_rounding_with_margins(data):
     """Crosstab with round mitigation and margins recomputes rounded margins."""
     acro_obj = ACRO()
@@ -603,10 +657,11 @@ def test_crosstab_rounding_with_margins(data):
     # The 'All' margin column/row should be present
     assert "All" in result.columns or "All" in result.index
 
-
-# ---------------------------------------------------------------------------
-# acro_tables.py — pivot_table rounding path
-# ---------------------------------------------------------------------------
+    # Verify all numeric values are rounded to base 5
+    numeric_data = result.select_dtypes(include=[np.number])
+    for col in numeric_data.columns:
+        for val in numeric_data[col].dropna():
+            assert val % 5 == 0, f"Value {val} not rounded to base 5"
 
 
 def test_pivot_table_rounding(data):
@@ -626,3 +681,380 @@ def test_pivot_table_rounding(data):
     for col in numeric_cols:
         for val in result[col].dropna():
             assert val % 5 == 0, f"Value {val} is not a multiple of 5"
+
+
+def test_1d_crosstab_safe_no_suppression():
+    """Should handle 1D crosstab with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_1d()
+    acro = ACRO(suppress=False)
+    result = acro.crosstab(df.indvar1, df.depvar)
+    _assert_safe_output(result, acro.results.get_index(0))
+    assert result.ndim == 2
+
+
+def test_1d_crosstab_unsafe_with_suppression():
+    """Should suppress unsafe cells in 1D crosstab."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_1d()
+    acro = ACRO(suppress=True)
+    result = acro.crosstab(df.indvar1, df.depvar)
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_1d_pivot_table_safe_no_suppression():
+    """Should handle 1D pivot table with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_1d()
+    acro = ACRO(suppress=False)
+    result = acro.pivot_table(df, index=["indvar1"], values=["depvar"], aggfunc="mean")
+    _assert_safe_output(result, acro.results.get_index(0))
+
+
+def test_1d_pivot_table_unsafe_with_suppression():
+    """Should suppress unsafe cells in 1D pivot table."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_1d()
+    acro = ACRO(suppress=True)
+    result = acro.pivot_table(df, index=["indvar1"], values=["depvar"], aggfunc="mean")
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_2d_crosstab_safe_no_suppression():
+    """Should handle 2D crosstab with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_2d()
+    acro = ACRO(suppress=False)
+    result = acro.crosstab(df.indvar1, df.indvar2, values=df.depvar, aggfunc="sum")
+    _assert_safe_output(result, acro.results.get_index(0))
+    assert result.shape[0] > 1, f"Expected more than one row, got {result.shape[0]}"
+    assert result.shape[1] > 1, f"Expected more than one column, got {result.shape[1]}"
+
+
+def test_2d_crosstab_unsafe_with_suppression():
+    """Should suppress unsafe cells in 2D crosstab."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_2d()
+    acro = ACRO(suppress=True)
+    result = acro.crosstab(df.indvar1, df.indvar2, values=df.depvar, aggfunc="sum")
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_2d_crosstab_with_margins_safe():
+    """Should compute margins correctly on 2D crosstab with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_2d()
+    acro = ACRO(suppress=False)
+    result = acro.crosstab(df.indvar1, df.indvar2, margins=True)
+    output = acro.results.get_index(0)
+    assert "All" in result.columns or "All" in result.index
+    assert output.status == "pass"
+    for idx in result.index[:-1]:
+        row_sum = result.loc[idx, result.columns[:-1]].sum()
+        row_total = result.loc[idx, "All"]
+        assert abs(row_sum - row_total) < 1, (
+            f"Row {idx}: sum {row_sum} != total {row_total}"
+        )
+
+
+def test_2d_crosstab_with_margins_unsafe():
+    """Should apply suppression and maintain correct margins on 2D crosstab."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_2d()
+    acro = ACRO(suppress=True)
+    result = acro.crosstab(df.indvar1, df.indvar2, margins=True)
+    output = acro.results.get_index(0)
+    assert "All" in result.columns
+    assert output.status == "review"
+    for idx in result.index[:-1]:
+        unsuppressed = result.loc[idx, result.columns[:-1]].dropna()
+        if len(unsuppressed) > 0:
+            row_total = result.loc[idx, "All"]
+            if not pd.isna(row_total):
+                assert row_total >= unsuppressed.sum(), (
+                    f"Row {idx}: total {row_total} < unsuppressed sum {unsuppressed.sum()}"
+                )
+
+
+def test_2d_pivot_table_safe_no_suppression():
+    """Should handle 2D pivot table with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_2d()
+    acro = ACRO(suppress=False)
+    result = acro.pivot_table(
+        df, index=["indvar1"], columns=["indvar2"], values=["depvar"], aggfunc="mean"
+    )
+    _assert_safe_output(result, acro.results.get_index(0))
+    assert result.shape[0] > 1, f"Expected more than one row, got {result.shape[0]}"
+    assert result.shape[1] > 1, f"Expected more than one column, got {result.shape[1]}"
+
+
+def test_2d_pivot_table_unsafe_with_suppression():
+    """Should suppress unsafe cells in 2D pivot table."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_2d()
+    acro = ACRO(suppress=True)
+    result = acro.pivot_table(
+        df, index=["indvar1"], columns=["indvar2"], values=["depvar"], aggfunc="mean"
+    )
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_3d_crosstab_safe_no_suppression():
+    """Should handle 3D crosstab with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_3d()
+    acro = ACRO(suppress=False)
+    result = acro.crosstab(
+        [df.indvar1, df.indvar2], df.indvar3, values=df.depvar, aggfunc="sum"
+    )
+    _assert_safe_output(result, acro.results.get_index(0))
+    assert isinstance(result.index, pd.MultiIndex)
+
+
+def test_3d_crosstab_unsafe_with_suppression():
+    """Should suppress unsafe cells in 3D crosstab."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_3d()
+    acro = ACRO(suppress=True)
+    result = acro.crosstab(
+        [df.indvar1, df.indvar2], df.indvar3, values=df.depvar, aggfunc="sum"
+    )
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_3d_pivot_table_safe_no_suppression():
+    """Should handle 3D pivot table with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_3d()
+    acro = ACRO(suppress=False)
+    result = acro.pivot_table(
+        df,
+        index=["indvar1", "indvar2"],
+        columns=["indvar3"],
+        values=["depvar"],
+        aggfunc="mean",
+    )
+    _assert_safe_output(result, acro.results.get_index(0))
+    assert isinstance(result.index, pd.MultiIndex)
+
+
+def test_3d_pivot_table_unsafe_with_suppression():
+    """Should suppress unsafe cells in 3D pivot table."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_3d()
+    acro = ACRO(suppress=True)
+    result = acro.pivot_table(
+        df,
+        index=["indvar1", "indvar2"],
+        columns=["indvar3"],
+        values=["depvar"],
+        aggfunc="mean",
+    )
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_4d_crosstab_safe_no_suppression():
+    """Should handle 4D crosstab with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_4d()
+    acro = ACRO(suppress=False)
+    result = acro.crosstab(
+        [df.indvar1, df.indvar2],
+        [df.indvar3, df.indvar4],
+        values=df.depvar,
+        aggfunc="sum",
+    )
+    _assert_safe_output(result, acro.results.get_index(0))
+    assert isinstance(result.index, pd.MultiIndex)
+    assert isinstance(result.columns, pd.MultiIndex)
+
+
+def test_4d_crosstab_unsafe_with_suppression():
+    """Should suppress the expected cells in 4D crosstab and record matching metadata."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_4d()
+    acro = ACRO(suppress=True)
+    result = acro.crosstab(
+        [df.indvar1, df.indvar2],
+        [df.indvar3, df.indvar4],
+        values=df.depvar,
+        aggfunc="sum",
+    )
+    _assert_suppressed_output(result, acro.results.get_index(0))
+    assert isinstance(result.index, pd.MultiIndex)
+    assert isinstance(result.columns, pd.MultiIndex)
+
+
+def test_4d_pivot_table_safe_no_suppression():
+    """Should handle 4D pivot table with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_4d()
+    acro = ACRO(suppress=False)
+    result = acro.pivot_table(
+        df,
+        index=["indvar1", "indvar2"],
+        columns=["indvar3", "indvar4"],
+        values=["depvar"],
+        aggfunc="mean",
+    )
+    _assert_safe_output(result, acro.results.get_index(0))
+    assert isinstance(result.index, pd.MultiIndex)
+    assert isinstance(result.columns, pd.MultiIndex)
+
+
+def test_4d_pivot_table_unsafe_with_suppression():
+    """Should suppress unsafe cells in 4D pivot table."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_4d()
+    acro = ACRO(suppress=True)
+    result = acro.pivot_table(
+        df,
+        index=["indvar1", "indvar2"],
+        columns=["indvar3", "indvar4"],
+        values=["depvar"],
+        aggfunc="mean",
+    )
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_crosstab_multiindex_columns_with_tuples():
+    """Should handle MultiIndex columns created by multi-aggfunc."""
+    syn = SyntheticData()
+    df = syn.get_safe_2d()
+    acro = ACRO(suppress=False)
+    result = acro.crosstab(
+        df.indvar1, df.indvar2, values=df.depvar, aggfunc=["sum", "mean"]
+    )
+    output = acro.results.get_index(0)
+    assert isinstance(result.columns, pd.MultiIndex)
+    assert all(isinstance(col, tuple) for col in result.columns)
+    assert len(result.columns) == len(set(result.columns))
+    assert output.status == "pass"
+
+
+def test_pivot_table_categorical_index():
+    """Should handle CategoricalIndex in pivot table results."""
+    syn = SyntheticData()
+    df = syn.get_safe_2d()
+    acro = ACRO(suppress=False)
+    result = acro.pivot_table(
+        df, index=["indvar1"], columns=["indvar2"], values=["depvar"], aggfunc="mean"
+    )
+    output = acro.results.get_index(0)
+    assert isinstance(result, pd.DataFrame)
+    assert result.shape[0] > 0
+    assert output.status == "pass"
+
+
+def test_pivot_table_multiindex_fillna():
+    """Should handle MultiIndex columns fillna correctly."""
+    syn = SyntheticData()
+    df = syn.get_safe_2d()
+    acro = ACRO(suppress=False)
+    result = acro.pivot_table(
+        df,
+        index=["indvar1", "indvar2"],
+        columns=["indvar2"],
+        values=["depvar"],
+        aggfunc=["mean", "sum"],
+    )
+    output = acro.results.get_index(0)
+    assert isinstance(result.columns, pd.MultiIndex)
+    assert isinstance(result, pd.DataFrame)
+    assert output.status == "pass"
+
+
+def test_zeros_not_disclosive_synthetic_holes():
+    """Test zeros handling with synthetic data containing zero-count cells."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_holes_2d()
+    acro = ACRO(suppress=False)
+    acro.sdc_checks.risk_appetite["zeros_are_disclosive"] = False
+    result = acro.crosstab(df.indvar1, df.indvar2, values=df.depvar, aggfunc="count")
+    output = acro.results.get_index(0)
+    assert (result == 0).sum().sum() > 0, "Expected zero-count cells in result"
+    assert output.status == "pass", (
+        "Zeros should not trigger suppression when zeros_are_disclosive=False"
+    )
+
+
+@pytest.mark.parametrize("aggfunc", ["mean", "sum", "count", "std", "mode"])
+def test_2d_crosstab_all_aggfuncs_safe(aggfunc):
+    """Should handle all aggfuncs on 2D crosstab with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_2d()
+    acro = ACRO(suppress=False)
+    result = acro.crosstab(df.indvar1, df.indvar2, values=df.depvar, aggfunc=aggfunc)
+    _assert_safe_output(result, acro.results.get_index(0))
+
+
+@pytest.mark.parametrize("aggfunc", ["mean", "sum", "count", "std", "mode"])
+def test_2d_pivot_table_all_aggfuncs_safe(aggfunc):
+    """Should handle all aggfuncs on 2D pivot table with safe data."""
+    syn = SyntheticData()
+    df = syn.get_safe_2d()
+    acro = ACRO(suppress=False)
+    result = acro.pivot_table(
+        df, index=["indvar1"], columns=["indvar2"], values=["depvar"], aggfunc=aggfunc
+    )
+    _assert_safe_output(result, acro.results.get_index(0))
+
+
+@pytest.mark.parametrize("aggfunc", ["mean", "sum", "count", "std"])
+def test_2d_crosstab_all_aggfuncs_unsafe_with_suppression(aggfunc):
+    """Should suppress unsafe 2D crosstab with all aggfuncs."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_2d()
+    acro = ACRO(suppress=True)
+    result = acro.crosstab(df.indvar1, df.indvar2, values=df.depvar, aggfunc=aggfunc)
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_dominance_problem_synthetic_crosstab():
+    """Dominance check should detect extreme values in crosstab."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_dominance_2d()
+    acro = ACRO(suppress=False)
+    acro.crosstab(df.indvar1, df.indvar2, values=df.depvar, aggfunc="sum")
+    output = acro.results.get_index(0)
+    assert output.status == "fail", f"Expected fail for dominance, got {output.status}"
+    assert (
+        "dominance" in output.summary.lower()
+        or "concentration" in output.summary.lower()
+        or "percent" in output.summary.lower()
+    ), f"Expected dominance check in summary, got: {output.summary}"
+
+
+def test_dominance_problem_synthetic_crosstab_with_suppression():
+    """Dominance-flagged cells should be suppressed when suppression is enabled."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_dominance_2d()
+    acro = ACRO(suppress=True)
+    result = acro.crosstab(df.indvar1, df.indvar2, values=df.depvar, aggfunc="sum")
+    _assert_suppressed_output(result, acro.results.get_index(0))
+
+
+def test_dominance_problem_synthetic_pivot_no_suppression():
+    """Pivot table should detect dominance problem without suppression."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_dominance_2d()
+    acro = ACRO(suppress=False)
+    acro.pivot_table(
+        df, index=["indvar1"], columns=["indvar2"], values=["depvar"], aggfunc="sum"
+    )
+    output = acro.results.get_index(0)
+    assert output.status == "fail", (
+        f"Pivot table should fail on dominance, got {output.status}"
+    )
+
+
+def test_dominance_problem_synthetic_pivot_with_suppression():
+    """Pivot table should suppress dominance-flagged cells when suppression enabled."""
+    syn = SyntheticData()
+    df = syn.get_unsafe_dominance_2d()
+    acro = ACRO(suppress=True)
+    result = acro.pivot_table(
+        df, index=["indvar1"], columns=["indvar2"], values=["depvar"], aggfunc="sum"
+    )
+    _assert_suppressed_output(result, acro.results.get_index(0))

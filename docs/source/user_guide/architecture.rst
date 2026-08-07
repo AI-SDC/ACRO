@@ -249,7 +249,7 @@ Category Preservation
 ----------------------
 
 When records are removed, any dimension (categorical) column may lose some of its
-category values.  ACRO re-casts each dimension to its original ``CategoricalDtype``
+category values, which might cause an implicit risk of *class disclosure*.  ACRO creates a new ``CategoricalDtype`` for each dimension, including all of the values present. During the redaction process it  re-casts each dimension to its original ``CategoricalDtype``, so all of the possible values are reported in tables, even if they  are no longer present. 
 after redaction, so the rerun table always has the same rows and columns as the
 original.  This is handled by the ``variable_metadata`` stored in ``TableModelDetails``.
 

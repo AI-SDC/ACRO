@@ -183,7 +183,7 @@ ACRO uses YAML configuration files to set safety parameters:
    session = acro.ACRO(suppress=True)
 
    # Initialise with a custom config file
-   session = acro.ACRO(config="custom.yaml")
+   acro = acro.ACRO(config="custom.yaml")
 
 Custom Configuration
 --------------------

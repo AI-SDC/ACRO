@@ -88,33 +88,34 @@ def collate_risk_assessments(
         Table with collated outcomes of suppression checks.
     """
     outcome_df = DataFrame(index=table.index, columns=table.columns)
-    old = True
-    if old:
-        if isinstance(list(outcome_df)[0], tuple):
-            # outcome_df = drop_duplicate_columns(outcome_df)
-            pass
-        outcome_df = outcome_df.fillna("")
+    outcome_df = outcome_df.fillna("")
+    # old = True
+    # if old:
+    #     if isinstance(list(outcome_df)[0], tuple):
+    #         # outcome_df = drop_duplicate_columns(outcome_df)
+    #         pass
+    #     outcome_df = outcome_df.fillna("")
 
-    else:
-        outcome_df = outcome_df.fillna("")
+    # else:
+    #     outcome_df = outcome_df.fillna("")
 
-        # if isinstance(table.columns, pd.CategoricalIndex):
-        #     logger.debug("categorical index, not dropping columns")
-        #     pass
-        # elif isinstance(table.columns, pd.MultiIndex):
-        #     # logger.debug(f'start of collate_risk_assessments, outcome is\n{outcome_df}\nwhich is a {type(outcome_df)}')
-        #     levels = outcome_df.columns.levels
-        #     logger.debug(f"got a multiindex: {levels}")
+    # if isinstance(table.columns, pd.CategoricalIndex):
+    #     logger.debug("categorical index, not dropping columns")
+    #     pass
+    # elif isinstance(table.columns, pd.MultiIndex):
+    #     # logger.debug(f'start of collate_risk_assessments, outcome is\n{outcome_df}\nwhich is a {type(outcome_df)}')
+    #     levels = outcome_df.columns.levels
+    #     logger.debug(f"got a multiindex: {levels}")
 
-        #     # numcols = len(table.columns) if isinstance(table.columns, list) else 1
-        #     # numlevels = len(levels)
-        #     # logger.debug(f'columns={table.columns}, numcols={numcols}, numlevels={numlevels}, levels[0]={levels[0]}')
-        #     if isinstance(list(outcome_df)[0], tuple):
-        #         #outcome_df = drop_duplicate_columns(outcome_df)
-        #         pass
-        #     outcome_df = outcome_df.fillna("")
-        # else:
-        #     logger.debug(f"unknown type for table.columns{type(table.columns)}")
+    #     # numcols = len(table.columns) if isinstance(table.columns, list) else 1
+    #     # numlevels = len(levels)
+    #     # logger.debug(f'columns={table.columns}, numcols={numcols}, numlevels={numlevels}, levels[0]={levels[0]}')
+    #     if isinstance(list(outcome_df)[0], tuple):
+    #         #outcome_df = drop_duplicate_columns(outcome_df)
+    #         pass
+    #     outcome_df = outcome_df.fillna("")
+    # else:
+    #     logger.debug(f"unknown type for table.columns{type(table.columns)}")
 
     # logger.debug(f'after dropping duplicate columns, outcome is\n{outcome_df}')
 

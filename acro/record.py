@@ -603,8 +603,7 @@ class Records:
         os.makedirs(path, exist_ok=True)
         outputs: dict[str, Any] = {}
 
-        if evidence_store is None:
-            evidence_store = {}
+        evidence_store = evidence_store if evidence_store is not None else {}
 
         for uid, entry in evidence_store.items():
             table_files: dict[str, str] = {}

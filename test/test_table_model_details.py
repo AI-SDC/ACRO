@@ -108,6 +108,20 @@ def test_get_zeros_table_basic():
     assert (zt.values == 0).all()
 
 
+def test_get_zeros_table_no_cols():
+    """Get_zeros_table returns a DataFrame of zeros."""
+    idx = pd.Series([1, 2, 3, 1, 2, 3], name="idx")
+    vals = pd.Series([10, 20, 30, 40, 50, 60], name="val")
+    model = TableModelDetails(
+        index=[idx],
+        columns=[],
+        values=vals,
+    )
+    zt = model.get_zeros_table()
+    assert isinstance(zt, pd.DataFrame)
+    assert (zt.values == 0).all()
+
+
 def test_get_dimension_names():
     """Get_dimension names gets independent variables."""
     df = pd.DataFrame(

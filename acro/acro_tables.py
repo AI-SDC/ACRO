@@ -870,7 +870,7 @@ class Tables:
 
         col_series = data[column].dropna()
         if col_series.empty:
-            logger.warning("Column %s is empty after dropping NaN.", column)
+            logger.warning("Column %s is empty after dropping NaN. \nEmpty Histogram not produced.", column)
             self.results.add(
                 status="fail",
                 output_type="histogram",
@@ -1014,7 +1014,7 @@ class Tables:
         fair_dict = collatedres.get_overall_fair()
         fair_dict.update(model_details.get_variable_type_dict())
         summary = collatedres.get_overall_summary()
-        logger.warning("collaredres=%s", collatedres)
+        #logger.debug("collaredres=%s", collatedres)
 
         output: list = []
         unique_filename = ""

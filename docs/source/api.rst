@@ -180,7 +180,7 @@ ACRO uses YAML configuration files to set safety parameters:
    session = acro.ACRO()
 
    # Initialise with suppress mode on
-   session = acro.ACRO(suppress=True)
+   acro = acro.ACRO(suppress=True)
 
    # Initialise with a custom config file
    acro = acro.ACRO(config="custom.yaml")

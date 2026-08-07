@@ -177,7 +177,7 @@ ACRO uses YAML configuration files to set safety parameters:
 .. code-block:: python
 
    # Initialise with default config
-   session = acro.ACRO()
+   acro = acro.ACRO()
 
    # Initialise with suppress mode on
    acro = acro.ACRO(suppress=True)

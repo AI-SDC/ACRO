@@ -295,7 +295,7 @@ The ontology-driven architecture makes it straightforward to support new analysi
 The steps are:
 
 1. **Define the analysis** in the StatbarnsSDC ontology (or extend a local copy).
-2. **Regenerate** the JSON files using ``ontology_handler.py``. 
+2. **Regenerate** the JSON files using ``ontology_handler.py``.
     **Note** w3id.org/statbarnsdc (and hence the json files) already contain over 100 types of analysis - **so you probably don't need to do steps 1 and 2.**
 3. **Add a method** to the ``ACRO`` class (or ``Tables`` / ``Regression`` mixin) that:
 

@@ -86,7 +86,7 @@ include-package-data = true
 packages = {find = {exclude = ["data*", "docs*", "notebooks*", "test*"]}}
 
 [tool.setuptools.package-data]
-"acro" = ["default.yaml"]
+"acro" = ["default.yaml","*.json"]
 
 [tool.ruff]
 line-length = 88

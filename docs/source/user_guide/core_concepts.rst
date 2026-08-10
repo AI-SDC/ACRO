@@ -30,7 +30,7 @@ Human-in-the-Loop
 * **Researcher guidance** rather than blanket blocking  you see *why* an output is flagged.
 * **Transparent reasoning**  the audit record lists each check, its status, and a summary.
 * **Exception mechanism**  researchers can add a justification for any flagged output using
-  ``session.add_exception(output_id, "reason")``.
+  ``acro.add_exception(output_id, "reason")``.
 
 Audit and Accountability
 ------------------------
@@ -64,8 +64,7 @@ TableModelDetails
 -----------------
 
 Every table-type analysis (``crosstab``, ``pivot_table``, ``hist``, ``pie``, ``surv_func``)
-creates a ``TableModelDetails`` instance.  This object acts as a *portable description* of
-the requested table.  It stores:
+creates a ``TableModelDetails`` instance.  This object acts as a *portable description* of the requested table, which generalises across the many different types of pandas commands that explicitly or implicitly create tables. It stores:
 
 * The **index**, **column**, and **values** series.
 * The **aggregation function(s)** requested.
@@ -133,10 +132,10 @@ data rather than leaking the removed values.
 
 .. code-block:: python
 
-   session = acro.ACRO(suppress=True)
-   table = session.crosstab(df.region, df.income)  # unsafe cells replaced with NaN
-   table_with_margins = session.crosstab(
-       df.region, df.income, margins=True, show_suppressed=True
+   acro = acro.ACRO(suppress=True)
+   table = acro.crosstab(df.region, df.income)  # unsafe cells replaced with NaN
+   table_with_margins = acro.crosstab(
+     df.region, df.income, margins=True, show_suppressed=True
    )
 
 Rounding
@@ -148,9 +147,9 @@ is displayed.
 
 .. code-block:: python
 
-   session = acro.ACRO()
-   session.enable_rounding(base=5)    # round to nearest 5
-   session.enable_rounding(base=10)   # round to nearest 10
+  acro = acro.ACRO()
+  acro.enable_rounding(base=5)    # round to nearest 5
+  acro.enable_rounding(base=10)   # round to nearest 10
 
 Rounding and suppression are mutually exclusive  calling ``enable_rounding()`` disables
 suppression and vice versa.
@@ -162,12 +161,12 @@ In a *federated* deployment several TREs share evidence with a trusted aggregato
 
 .. code-block:: python
 
-   # Inside the TRE
-   session = acro.ACRO(federated=True)
-   result = session.crosstab(df.region, df.income)
+  # Inside the TRE
+  acro = acro.ACRO(federated=True)
+  result = acro.crosstab(df.region, df.income)
 
-   # Evidence is stored locally  no checks run yet
-   session.finalise("evidence_outputs")  # writes evidence.json + CSV files
+  # Evidence is stored locally  no checks run yet
+  acro.finalise("evidence_outputs")  # writes evidence.json + CSV files
 
 In federated mode:
 
@@ -231,7 +230,7 @@ Workflow Design
 ---------------
 
 * Plan your analysis before starting an ACRO session.
-* Use meaningful output names with ``session.rename_output()`` for easier review.
+* Use meaningful output names with ``acro.rename_output()`` for easier review.
 * Add comments and exceptions promptly  they are included in the finalised report.
 
 Quality Control

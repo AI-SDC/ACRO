@@ -64,18 +64,18 @@ A typical ACRO session follows four steps:
    # Step 1: Initialise an ACRO session
    # suppress=True means unsafe cells are removed automatically.
    # Use suppress=False to see warnings without removing cells.
-   session = acro.ACRO(suppress=True)
+   acro = acro.ACRO(suppress=True)
 
    # Step 2: Load your data and run analysis as normal
    df = pd.read_csv("my_data.csv")
-   result = session.crosstab(df.region, df.income)
+   result = acro.crosstab(df.region, df.income)
 
    # Step 3: Review the output and add any exceptions if needed
-   session.print_outputs()
-   session.add_exception("output_0", "I need this output because...")
+   acro.print_outputs()
+   acro.add_exception("output_0", "I need this output because...")
 
    # Step 4: Finalise  writes an audit report for the output checker
-   session.finalise("safe_outputs")
+   acro.finalise("safe_outputs")
 
 The ``suppress=True`` option tells ACRO to apply suppression automatically.
 If you prefer to see all results and decide yourself, use ``suppress=False``.
@@ -93,7 +93,7 @@ recomputed *after* suppression so they do not leak the suppressed values.
 
 .. code-block:: python
 
-   session = acro.ACRO(suppress=True)
+   acro = acro.ACRO(suppress=True)
 
 Rounding
 --------
@@ -103,8 +103,8 @@ All cell values are rounded to the nearest multiple of a configurable *base*
 
 .. code-block:: python
 
-   session = acro.ACRO()
-   session.enable_rounding(base=5)
+   acro = acro.ACRO()
+   acro.enable_rounding(base=5)
 
 .. _ontology-architecture:
 
@@ -155,7 +155,7 @@ What Happens at Runtime
    loads the four JSON files and the TRE's risk appetite from the YAML
    config.
 
-2. **Analysis call**  When you call, say, ``session.crosstab(...)``, ACRO:
+2. **Analysis call**  When you call, say, ``acro.crosstab(...)``, ACRO:
 
    a. Creates a ``TableModelDetails`` object holding all the parameters
       needed to reproduce the table.
@@ -181,7 +181,7 @@ ACRO also supports a *federated* mode for use with a trusted aggregator:
 
 .. code-block:: python
 
-   session = acro.ACRO(federated=True)
+   acro = acro.ACRO(federated=True)
 
 In federated mode the **evidence collection** (step 2 above) still runs
 locally inside the TRE, but the checks (step 3) are performed by a
@@ -196,7 +196,7 @@ Installation Requirements
 =========================
 
 * Python 3.10 or higher
-* pandas, statsmodels, PyYAML (installed automatically with ``pip install acro``)
+* pandas, statsmodels, tabulate, PyYAML (installed automatically with ``pip install acro``)
 
 Next Steps
 ==========

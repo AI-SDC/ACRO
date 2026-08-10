@@ -150,9 +150,9 @@ Many ACRO methods share common parameters:
    * - ``federated``
      - bool
      - Whether to run in federated mode (evidence sent to a trusted aggregator).
-   * - ``show_suppressed``
-     - bool
-     - Whether to display suppressed values in the output table.
+    * - ``show_suppressed``
+       - bool
+       - Deprecated: retained for backward compatibility; it has no effect.
    * - ``safe_threshold``
      - int
      - Minimum cell count threshold (TRE-controlled; set in YAML config).
@@ -172,7 +172,9 @@ Many ACRO methods share common parameters:
 Configuration
 =============
 
-ACRO uses YAML configuration files to set safety parameters:
+ACRO uses YAML configuration files to set safety parameters.
+
+Safety parameters are read from the YAML config at initialisation; pass a different file with the ``config`` argument to override defaults for a TRE or dataset (for example ``acro = acro.ACRO(config="myriskappetite.yml")``).
 
 .. code-block:: python
 

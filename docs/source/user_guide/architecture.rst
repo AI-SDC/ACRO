@@ -85,7 +85,7 @@ Example entry::
 How They Chain Together
 ------------------------
 
-When a researcher calls ``session.crosstab(..., aggfunc="mean")``, ACRO follows this chain:
+When a researcher calls ``acro.crosstab(..., aggfunc="mean")``, ACRO follows this chain:
 
 ::
 

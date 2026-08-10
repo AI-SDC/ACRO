@@ -6,7 +6,11 @@ import logging
 import os
 from inspect import FrameInfo, getframeinfo
 
+import numpy as np
 import pandas as pd
+from tabulate import tabulate
+
+from .constants import ARTIFACTS_DIR
 
 logger = logging.getLogger("acro")
 
@@ -56,43 +60,91 @@ def get_command(default: str, stack_list: list[FrameInfo]) -> str:
 
 
 def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> str:
-    """
-    Add delimiters to table.to_string() to improve readability for onscreen display.
+    """Add delimiters to table.to_string() to improve readability for onscreen display.
 
     Splits fields on whitespace unless an optional separator is provided e.g. ',' for csv.
     """
-    hdelim: str = "-"
-    vdelim: str = "|"
+    mytable = table.copy()
+    # be mindful that everything in thr join has to be a string
+    mytable.columns = [
+        "\n".join(map(str, col)) if isinstance(col, tuple) else col
+        for col in mytable.columns
+    ]
+    # other way
+    # table.columns= [' '.join(col).strip()for col in table.columns.values]
+    mytable.reset_index(inplace=True)
+    return tabulate(
+        mytable, headers="keys", showindex=False, tablefmt="rounded_outline"
+    )
+    # hdelim: str = "-"
+    # vdelim: str = "|"
 
-    table.rename(columns=lambda x: str(x).replace(" ", "_"), inplace=True)
-    output: str = table.to_string(justify="left")
-    as_strings: list[str] = output.split("\n")
-    nheaders = len(as_strings) - table.shape[0]
-    rowlen = len(as_strings[0])
+    # # logger.info(f'in utils table as table before prettifying:\n{table}')
 
-    # get top level column labels and their positions
-    if separator is not None:
-        rowone_strings: list[str] = as_strings[0].split(separator)
-    else:
-        rowone_strings = as_strings[0].split()
+    # table.rename(columns=lambda x: str(x).replace(" ", "_"), inplace=True)
+    # output: str = table.to_string(justify="left")
+    # # logger.info(f'in utils table after removing spaces in column names and converting to string :\n{output}')
 
-    vals: list[str] = rowone_strings[1:]
-    positions: list[int] = []
-    for val in vals:
-        positions.append(as_strings[0].find(val))
+    # as_strings: list[str] = output.split("\n")
+    # nheaders = len(as_strings) - table.shape[0]
+    # rowlen = len(as_strings[0])
 
-    for row, _ in enumerate(as_strings):
-        for pos in positions[::-1]:
-            as_strings[row] = as_strings[row][0:pos] + vdelim + as_strings[row][pos:]
+    # # get top level column labels and their positions
+    # if separator is not None:
+    #     rowone_strings: list[str] = as_strings[0].split(separator)
+    # else:
+    #     rowone_strings = as_strings[0].split()
 
-    rowlen += len(positions)  # add on space for v delimiters
+    # vals: list[str] = rowone_strings[1:]
+    # positions: list[int] = []
+    # for val in vals:
+    #     positions.append(as_strings[0].find(val))
 
-    outstr: str = ""
-    outstr += hdelim * rowlen + vdelim + "\n"
-    for row in range(nheaders):
-        outstr += as_strings[row] + vdelim + "\n"
-    outstr += hdelim * rowlen + vdelim + "\n"
-    for row in range(nheaders, len(as_strings)):
-        outstr += as_strings[row] + vdelim + "\n"
-    outstr += hdelim * rowlen + vdelim + "\n"
-    return outstr
+    # for row, _ in enumerate(as_strings):
+    #     for pos in positions[::-1]:
+    #         as_strings[row] = as_strings[row][0:pos] + vdelim + as_strings[row][pos:]
+
+    # rowlen += len(positions)  # add on space for v delimiters
+
+    # outstr: str = ""
+    # outstr += hdelim * rowlen + vdelim + "\n"
+    # for row in range(nheaders):
+    #     outstr += as_strings[row] + vdelim + "\n"
+    # outstr += hdelim * rowlen + vdelim + "\n"
+    # for row in range(nheaders, len(as_strings)):
+    #     outstr += as_strings[row] + vdelim + "\n"
+    # outstr += hdelim * rowlen + vdelim + "\n"
+    # return outstr
+
+
+def get_unique_artefact_filename(filename: str) -> str:
+    """Return a unique filename from a proposed string."""
+    # CREATE artifacts DIRECTORY to save plot in
+    try:
+        os.makedirs(ARTIFACTS_DIR)
+        logger.debug("Directory %s created successfully", ARTIFACTS_DIR)
+    except FileExistsError:  # pragma: no cover
+        logger.debug("Directory %s already exists", ARTIFACTS_DIR)
+
+    # CREATE UNIQUE FILENAME to avoid overwrite
+
+    filename, extension = os.path.splitext(filename)
+    if not extension:  # pragma: no cover
+        logger.info("Please provide a valid file extension")
+        return "None"
+    increment_number = 0
+
+    while os.path.exists(
+        f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
+    ):  # pragma: no cover
+        increment_number += 1
+    unique_filename = f"{ARTIFACTS_DIR}/{filename}_{increment_number}{extension}"
+    return unique_filename
+
+
+def get_catdtype(series: pd.Series) -> pd.CategoricalDtype:
+    """Get info for pandas datatype to convert series to CategoricalDtype."""
+    ordered = True if series.astype(int, errors="ignore").dtype == "int64" else False
+    categories = np.sort(series.dropna().unique())
+    cat_type = pd.CategoricalDtype(categories, ordered)
+    return cat_type

@@ -8,9 +8,9 @@ import shutil
 import numpy as np
 import pandas as pd
 import pytest
+from tabulate import tabulate
 
-import acro.stata_config as stata_config
-from acro import ACRO
+from acro import ACRO, stata_config
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,
@@ -337,16 +337,16 @@ def test_simple_table(data):
     To make sure table specification is parsed correctly
     acro SDC analysis is tested elsewhere.
     """
-    correct = (
-        "Total\n"
-        "------------------------------------|\n"
-        "grant_type     |G   |N    |R    |R/G|\n"
-        "survivor       |    |     |     |   |\n"
-        "------------------------------------|\n"
-        "Dead in 2015   |18  |  0  |282  | 0 |\n"
-        "Alive in 2015  |72  |354  |144  |48 |\n"
-        "------------------------------------|\n"
-    )
+    table = pd.crosstab(data["survivor"], data["grant_type"])
+    correct = "Total\n" + tabulate(table, headers="keys", tablefmt="rounded_outline")
+    #     "Total\n"
+    #     "╭───────────────────────────────────-╮\n"
+    #     "│survivor       |G   |N    |R    |R/G|\n"
+    #     "│────────────────────────────────────|\n"
+    #     "│Dead in 2015   |18  |  0  |282  | 0 |\n"
+    #     "│Alive in 2015  |72  |354  |144  |48 |\n"
+    #     "╰────────────────────────────────────╯\n"
+    # )
     ret = dummy_acrohandler(
         data,
         "table",
@@ -596,16 +596,12 @@ def test_stata_custom_output():
 def test_stata_exclusion_in_context(data):
     """Test that the subsetting code gets called properly from table handler."""
     # if condition
-    correct1 = (
-        "Total\n"
-        "------------------|\n"
-        "grant_type     |G |\n"
-        "survivor       |  |\n"
-        "------------------|\n"
-        "Dead in 2015   |18|\n"
-        "Alive in 2015  |72|\n"
-        "------------------|\n"
+    subdata = data[data["grant_type"] == "G"]
+    table = pd.pivot_table(
+        subdata, index="survivor", columns="grant_type", aggfunc="count", values="year"
     )
+    correct1 = "Total\n" + tabulate(table, headers="keys", tablefmt="rounded_outline")
+
     ret = dummy_acrohandler(
         data,
         "table",
@@ -621,16 +617,22 @@ def test_stata_exclusion_in_context(data):
     assert ret.split() == correct1.split(), f"got\n{ret}\n expected\n{correct1}"
 
     # in expression
-    correct2 = (
-        "Total\n"
-        "------------------------------------|\n"
-        "grant_type     |G   |N    |R    |R/G|\n"
-        "survivor       |    |     |     |   |\n"
-        "------------------------------------|\n"
-        "Dead in 2015   |12  |  0  |158  | 0 |\n"
-        "Alive in 2015  |30  |222  | 48  |30 |\n"
-        "------------------------------------|\n"
+    subdata2 = data.iloc[:500, :]
+    table2 = pd.pivot_table(
+        subdata2, index="survivor", columns="grant_type", aggfunc="count", values="year"
     )
+    correct2 = "Total\n" + tabulate(table2, headers="keys", tablefmt="rounded_outline")
+
+    # correct2 = (
+    #     "Total\n"
+    #     "------------------------------------|\n"
+    #     "grant_type     |G   |N    |R    |R/G|\n"
+    #     "survivor       |    |     |     |   |\n"
+    #     "------------------------------------|\n"
+    #     "Dead in 2015   |12  |  0  |158  | 0 |\n"
+    #     "Alive in 2015  |30  |222  | 48  |30 |\n"
+    #     "------------------------------------|\n"
+    # )
     ret2 = dummy_acrohandler(
         data,
         "table",
@@ -646,6 +648,13 @@ def test_stata_exclusion_in_context(data):
     assert ret2.split() == correct2.split(), f"got\n{ret2}\n expected\n{correct2}"
 
     # both
+    subdata3 = data.iloc[:500, :]
+    subdata3 = subdata3[subdata3["grant_type"] == "G"]
+    table3 = pd.pivot_table(
+        subdata3, index="survivor", columns="grant_type", aggfunc="count", values="year"
+    )
+    correct3 = "Total\n" + tabulate(table3, headers="keys", tablefmt="rounded_outline")
+
     rets3 = dummy_acrohandler(
         data,
         "table",
@@ -656,16 +665,16 @@ def test_stata_exclusion_in_context(data):
         options="nototals",
         stata_version="16",
     )
-    correct3 = (
-        "Total\n"
-        "------------------|\n"
-        "grant_type     |G |\n"
-        "survivor       |  |\n"
-        "------------------|\n"
-        "Dead in 2015   |12|\n"
-        "Alive in 2015  |30|\n"
-        "------------------|\n"
-    )
+    # correct3 = (
+    #     "Total\n"
+    #     "------------------|\n"
+    #     "grant_type     |G |\n"
+    #     "survivor       |  |\n"
+    #     "------------------|\n"
+    #     "Dead in 2015   |12|\n"
+    #     "Alive in 2015  |30|\n"
+    #     "------------------|\n"
+    # )
     rets3 = rets3.replace("NaN", "0")
     rets3 = rets3.replace(".0", "")
     assert rets3.split() == correct3.split(), f"got\n{rets3}\n expected\n{correct3}"
@@ -690,17 +699,29 @@ def test_table_weights(data):
 
 def test_table_aggcfn(data):
     """Test behaviour with aggregation function."""
-    # ok
-    correct = (
-        "Total\n"
-        "-----------------------------------------------------------------------------|\n"
-        "year           |2010        |2011        |2012         |2013       |2014     |\n"
-        "survivor       |            |            |             |           |         |\n"
-        "-----------------------------------------------------------------------------|\n"
-        "Dead in 2015   | 2056816.0  |1264158.00  |1625441.625  |1868730.5  |2182281.5|\n"
-        "Alive in 2015  |10050917.0  |3468009.75  |2934010.750  |4579002.0  |3612917.5|\n"
-        "-----------------------------------------------------------------------------|\n"
+    # two dimensions
+    mydata = data.iloc[:100, :]
+    mydata = mydata[mydata["year"] < 2015]
+    table = pd.pivot_table(
+        mydata,
+        index="survivor",
+        columns="year",
+        values="inc_activity",
+        aggfunc="mean",
+        margins=False,
     )
+    correct = "Total\n" + tabulate(table, headers="keys", tablefmt="rounded_outline")
+
+    # correct = (
+    #     "Total\n"
+    #     "-----------------------------------------------------------------------------|\n"
+    #     "year           |2010        |2011        |2012         |2013       |2014     |\n"
+    #     "survivor       |            |            |             |           |         |\n"
+    #     "-----------------------------------------------------------------------------|\n"
+    #     "Dead in 2015   | 2056816.0  |1264158.00  |1625441.625  |1868730.5  |2182281.5|\n"
+    #     "Alive in 2015  |10050917.0  |3468009.75  |2934010.750  |4579002.0  |3612917.5|\n"
+    #     "-----------------------------------------------------------------------------|\n"
+    # )
     ret = dummy_acrohandler(
         data,
         "table",
@@ -714,26 +735,39 @@ def test_table_aggcfn(data):
     assert ret.split() == correct.split(), f"got:\n{ret}\naa\nexpected\n{correct}\nbb\n"
 
     # lists for index or columns
-    correct = (
-        "Total\n"
-        "------------------------------------------------------------|\n"
-        "grant_type          |N           |R             |R/G        |\n"
-        "year survivor       |            |              |           |\n"
-        "------------------------------------------------------------|\n"
-        "2010 Dead in 2015   |       0.0  |1.723599e+07  |        0.0|\n"
-        "     Alive in 2015  |52865600.0  |6.791129e+08  | 24592000.0|\n"
-        "2011 Dead in 2015   |       0.0  |1.890400e+07  |        0.0|\n"
-        "     Alive in 2015  |66714452.0  |1.002141e+09  | 86171000.0|\n"
-        "2012 Dead in 2015   |       0.0  |2.616444e+07  |        0.0|\n"
-        "     Alive in 2015  |64777124.0  |1.013167e+09  |107716000.0|\n"
-        "2013 Dead in 2015   |       0.0  |2.913558e+07  |        0.0|\n"
-        "     Alive in 2015  |86806336.0  |1.048305e+09  |104197000.0|\n"
-        "2014 Dead in 2015   |       0.0  |3.074519e+07  |        0.0|\n"
-        "     Alive in 2015  |74486664.0  |1.035069e+09  |106287000.0|\n"
-        "2015 Dead in 2015   |       0.0  |1.488808e+07  |        0.0|\n"
-        "     Alive in 2015  |56155352.0  |9.932494e+08  |105224000.0|\n"
-        "------------------------------------------------------------|\n\n"
+    mydata1 = data[data["grant_type"] != "G"]
+    table1 = pd.pivot_table(
+        mydata1,
+        index=["year", "survivor"],
+        columns="grant_type",
+        values="inc_activity",
+        aggfunc="sum",
+        margins=False,
+    ).reset_index()
+    correct1 = "Total\n" + tabulate(
+        table1, headers="keys", showindex=False, tablefmt="rounded_outline"
     )
+
+    # correct = (
+    #     "Total\n"
+    #     "------------------------------------------------------------|\n"
+    #     "grant_type          |N           |R             |R/G        |\n"
+    #     "year survivor       |            |              |           |\n"
+    #     "------------------------------------------------------------|\n"
+    #     "2010 Dead in 2015   |       0.0  |1.723599e+07  |        0.0|\n"
+    #     "     Alive in 2015  |52865600.0  |6.791129e+08  | 24592000.0|\n"
+    #     "2011 Dead in 2015   |       0.0  |1.890400e+07  |        0.0|\n"
+    #     "     Alive in 2015  |66714452.0  |1.002141e+09  | 86171000.0|\n"
+    #     "2012 Dead in 2015   |       0.0  |2.616444e+07  |        0.0|\n"
+    #     "     Alive in 2015  |64777124.0  |1.013167e+09  |107716000.0|\n"
+    #     "2013 Dead in 2015   |       0.0  |2.913558e+07  |        0.0|\n"
+    #     "     Alive in 2015  |86806336.0  |1.048305e+09  |104197000.0|\n"
+    #     "2014 Dead in 2015   |       0.0  |3.074519e+07  |        0.0|\n"
+    #     "     Alive in 2015  |74486664.0  |1.035069e+09  |106287000.0|\n"
+    #     "2015 Dead in 2015   |       0.0  |1.488808e+07  |        0.0|\n"
+    #     "     Alive in 2015  |56155352.0  |9.932494e+08  |105224000.0|\n"
+    #     "------------------------------------------------------------|\n\n"
+    # )
     ret = dummy_acrohandler(
         data,
         "table",
@@ -745,7 +779,7 @@ def test_table_aggcfn(data):
         stata_version="16",
     )
     #    assert ret.split() == correct.split(), f"got\n{ret}\n expected\n{correct}"
-    assert ret == correct, f"got\n{ret}\n expected\n{correct}"
+    assert ret.split() == correct1.split(), f"got\n{ret}\n expected\n{correct1}"
 
     # pandas does not allows multiple arrays for values
     correct = (
@@ -812,12 +846,14 @@ def test_stata_probit(data):
     )
     tokens = ret.split()
     idx = tokens.index("Residuals:")
-    val = tokens[idx + 1]
+    # skip to next cell
+    val = tokens[idx + 2]
     if val[-1] == "|":
         val = val[0:-1]
+    # assert False,f'tokens is {tokens}\nval is {val}\nret=\n{ret}'
     assert float(val) == pytest.approx(806.0, 0.01), f"{val} should be 806"
     idx = tokens.index("R-squ.:")
-    val = tokens[idx + 1]
+    val = tokens[idx + 2]
     if val[-1] == "|":
         val = val[0:-1]
     val = float(val)
@@ -838,10 +874,10 @@ def test_stata_linregress(data):
     )
     tokens = ret.split()
     idx = tokens.index("Residuals:")
-    val = int(tokens[idx + 1])
+    val = int(tokens[idx + 2])
     assert val == 807, f"{val} should be 807"
     idx = tokens.index("R-squared:")
-    newval = float(tokens[idx + 1])
+    newval = float(tokens[idx + 2])
     assert newval == pytest.approx(0.894, 0.001)
 
 
@@ -860,12 +896,12 @@ def test_stata_logit(data):
 
     tokens = ret.split()
     idx = tokens.index("Residuals:")
-    val = tokens[idx + 1]
+    val = tokens[idx + 2]
     if val[-1] == "|":
         val = val[0:-1]
     assert float(val) == pytest.approx(806.0, 0.01), f"{val} should be 806"
     idx = tokens.index("R-squ.:")
-    val = tokens[idx + 1]
+    val = tokens[idx + 2]
     if val[-1] == "|":
         val = val[0:-1]
     val = float(val)
@@ -875,16 +911,18 @@ def test_stata_logit(data):
 def test_unsupported_formatting_options(data):
     """Check that user gets warning if they try to format table."""
     format_string = "acro does not currently support table formatting commands."
-    correct = (
-        "Total\n"
-        "------------------------------------|\n"
-        "grant_type     |G   |N    |R    |R/G|\n"
-        "survivor       |    |     |     |   |\n"
-        "------------------------------------|\n"
-        "Dead in 2015   |18  |  0  |282  | 0 |\n"
-        "Alive in 2015  |72  |354  |144  |48 |\n"
-        "------------------------------------|\n"
+    table = pd.pivot_table(
+        data, index="survivor", columns="grant_type", values="year", aggfunc="count"
     )
+    correct = "Total\n" + tabulate(table, tablefmt="rounded_outline", headers="keys")
+    # "------------------------------------|\n"
+    # "grant_type     |G   |N    |R    |R/G|\n"
+    # "survivor       |    |     |     |   |\n"
+    # "------------------------------------|\n"
+    # "Dead in 2015   |18  |  0  |282  | 0 |\n"
+    # "Alive in 2015  |72  |354  |144  |48 |\n"
+    # "------------------------------------|\n"
+    # )
     for bad_option in [
         "cellwidth",
         "csepwidth",
@@ -1102,7 +1140,3 @@ def test_cleanup():
     names = ["test_outputs", "test_add_to_acro", "sdc_results", "RES_PYTEST"]
     for name in names:
         clean_up(name)
-    # next piece of code is there to achieve 100% code coverage of tests
-    with open("foo.txt", "w") as file:
-        file.write("Your text goes here")
-    clean_up("foo.txt")

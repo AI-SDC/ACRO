@@ -1,0 +1,51 @@
+{
+   "MinimumDoFCheck":{
+      "definition":"Minimum degrees of freedom check is a method used to ensure that there are sufficient residual degrees of freedom to stop the model being effectively a lookup table",
+      "prefix_label":"MinimumDoFCheck",
+      "uri":"https://www.w3id.org/statbarnsdc#MinimumDoFCheck",
+      "evidence": ["DoF"]
+   },
+    "MinimumThresholdCheck": {
+        "evidence": ["count_table"],
+        "prefix_label": "MinimumThresholdCheck",
+        "uri": "https://www.w3id.org/statbarnsdc#MinimumThresholdCheck",
+        "definition": "Minimum threshold check is a method used to ensure that the number of record in each group is above the threshold set by the TRE."
+    },
+    "NKCheck":{
+        "definition": "NK is a checks for dominance that measures whether the top N biggest records in a group account for more than k% of the group total",
+        "evidence": ["top_n_sum", "sum","num_negative"],
+        "prefix_label": "NKCheck",
+        "uri": "https://www.w3id.org/statbarnsdc#NKCheck"
+    },
+    "PPercentCheck":{
+        "definition": "P% is a checks for dominance that measures whether the biggest record in a group accounts for more than p% of the group total",
+        "prefix_label": "PPercentCheck",
+        "uri": "https://www.w3id.org/statbarnsdc#PPercentCheck",
+        "evidence": ["max", "top_2_sum", "sum","num_negative"]
+    },
+    "PresenceOfLinkedTableCheck": {
+        "evidence": ["dimension_list","depvars"],
+        "prefix_label": "PresenceOfLinkedTableCheck",
+        "uri": "https://www.w3id.org/statbarnsdc#PresenceOfLinkedTableCheck",
+        "definition": "Presence of linked table check is a method used to check for the presence of linked tables, which can be used to identify individuals when combined with other data."
+    },
+    "RequiredZeroCheck": {
+        "evidence": ["zeros_are_disclosive"],
+        "prefix_label": "RequiredZeroCheck",
+        "uri": "https://www.w3id.org/statbarnsdc#RequiredZeroCheck",
+        "definition":"Required Zero checks says whether the TRE requires checking for zeros - i.e. wheyther class idsclsoure is a potnetial risk or not"
+    },
+    "PresenceOfZeroCheck": {
+        "evidence": ["count_table"],
+        "prefix_label": "PresenceOfZeroCheck",
+        "uri": "https://www.w3id.org/statbarnsdc#PresenceOfZeroCheck",
+        "definition": "Presence of zero check is a method used to check for the presence of zeros in the data."
+    },
+    "StatbarnDataCheck" : {
+        "definition": "Statbarn data check is a method used to check for the presence of statbarn data, which can be used to identify individuals when combined with other data.",
+        "evidence": ["dimension_list"],
+        "prefix_label": "StatbarnDataCheck",
+        "uri": "https://www.w3id.org/statbarnsdc#StatbarnDataCheck"
+    }
+
+}

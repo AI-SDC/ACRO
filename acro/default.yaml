@@ -33,6 +33,10 @@ zeros_are_disclosive: True
 # default rounding base for the 'round' mitigation strategy on tables
 safe_round_base: 5
 
+# federated mode: if true, skip checks and output evidence.json for the
+# trusted aggregator instead of running checks locally
+federated: false
+
 ################################################################################
 # Blocked file extensions                                                      #
 ################################################################################

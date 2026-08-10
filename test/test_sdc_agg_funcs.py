@@ -1,0 +1,107 @@
+"""Unit tests for sdc aggregation functions."""
+
+import pandas as pd
+import pytest
+
+import acro.sdc_agg_funcs
+from acro.sdc_agg_funcs import (
+    agg_missing,
+    agg_mode,
+    agg_num_negative,
+    agg_top_2_sum,
+    agg_top_n_sum,
+    agg_values_are_same,
+    get_statsmodel_dof,
+)
+
+
+def test_agg_mode_single_mode():
+    """Agg_mode returns the single mode."""
+    s = pd.Series([1, 2, 2, 3])
+    assert agg_mode(s) == 2
+
+
+def test_agg_mode_multiple_modes():
+    """Agg_mode handles multiple modes by picking one randomly."""
+    s = pd.Series([1, 1, 2, 2])
+    result = agg_mode(s)
+    assert result in (1, 2)
+
+
+def test_agg_num_negative_with_negatives():
+    """Agg_num_negative returns count of negatives."""
+    s = pd.Series([-1, 2, -3, 4])
+    assert agg_num_negative(s) == 2
+
+
+def test_agg_num_negative_no_negatives():
+    """Agg_num_negative returns 0 when no negatives."""
+    s = pd.Series([1, 2, 3])
+    assert agg_num_negative(s) == 0
+
+
+def test_agg_missing_with_nan():
+    """Agg_missing returns True when NaN present."""
+    s = pd.Series([1.0, float("nan"), 3.0])
+    assert bool(agg_missing(s)) is True
+
+
+def test_agg_missing_no_nan():
+    """Agg_missing returns False when no NaN."""
+    s = pd.Series([1.0, 2.0, 3.0])
+    assert bool(agg_missing(s)) is False
+
+
+def test_agg_top_n_sum_non_numeric():
+    """Agg_top_n_sum returns 0 for non-numeric dtype."""
+    s = pd.Series(["a", "b", "c"])
+    assert agg_top_n_sum(s) == 0
+
+
+def test_get_statsmodel_dof_no_attribute():
+    """Get_statsmodel_dof raises AttributeError when model lacks df_resid."""
+
+    class FakeModel:
+        pass
+
+    with pytest.raises(AttributeError, match="model does not have df_resid attribute"):
+        get_statsmodel_dof(FakeModel())
+
+
+def test_agg_values_are_same_empty_series() -> None:
+    """Agg_values_are_same returns True for an empty Series."""
+    result = agg_values_are_same(pd.Series([], dtype=float))
+    assert result is True
+
+
+def test_agg_top_n_sum_numeric():
+    """Agg_top_n_sum returns correct value for numeric dtype."""
+    s = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0])
+    # 11 vals so should drop the first  and sum 2--11
+    the_nk_n = acro.sdc_agg_funcs.NK_N
+    shorter = s.to_numpy()[-the_nk_n:]
+    assert len(shorter) == the_nk_n, f"shorter is {shorter}"
+    assert agg_top_n_sum(s) == shorter.sum()
+
+
+def test_agg_top_2_sum_non_numeric() -> None:
+    """Agg_top_2_sum returns 0 for a non-numeric Series."""
+    result = agg_top_2_sum(pd.Series(["a", "b", "c"]))
+    assert result == 0
+
+
+def test_agg_top_2_sum_numeric():
+    """Agg_top_2_sum returns correct value for numeric dtype."""
+    s = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0])
+    # 11 vals so should drop the first  9
+    assert agg_top_2_sum(s) == 21.0
+
+
+def test_get_statsmodel_dof_with_attribute():
+    """Get_statsmodel_dof returns the df_resid attribute when it exists."""
+
+    class FakeModel:
+        def __init__(self) -> None:
+            self.df_resid = 5
+
+    assert get_statsmodel_dof(FakeModel()) == 5

@@ -171,19 +171,20 @@ What Happens at Runtime
    a plain-English summary.  The results are combined and the chosen
    mitigation is applied.
 
-Implementing support for a new type of analysis that is already represented in the
-StatbarnsSDC ontology means:
+Implementing support for a new type of analysis means:
 
-* identifying the analysis type from the ontology
+* identifying the type of analysis from the StatbarnsSDC ontology
 * creating a new ACRO function (typically as a method in
   ``acro_regression.py`` for statsmodels-based models or
   ``acro_tables.py`` for pandas-based models)
-* calling the package that creates the model inside the new function
-* adding three lines to the function to specify the analysis type,
-  collect the evidence needed for disclosure risk assessment, and
-  process that evidence
-* seeing, for example, the regression functions in
-  ``acro/acro_regression.py``
+* calling the package that creates the model inside your new function
+* adding three lines to:
+
+  * specifying the name of the type of analysis
+  * collect the evidence needed for disclosure risk assessment
+  * process the evidence
+
+* see e.g. the regression functions in ``acro_regression.py``
 
 Federated Mode
 ==============

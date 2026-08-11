@@ -1,0 +1,1295 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>acro.table_utils &#8212; ACRO 1.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=17306193" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../_static/documentation_options.js?v=292eb321"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/acro/table_utils';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ACRO 1.0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../news.html">
+    News
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../news.html">
+    News
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">acro.table_utils</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for acro.table_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;ACRO Table-Specific Utility Functions.&quot;&quot;&quot;</span>
+
+<span class="c1"># pylint: disable=too-many-lines</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">Series</span>
+<span class="kn">from</span> <span class="nn">pandas.api.types</span> <span class="kn">import</span> <span class="n">CategoricalDtype</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.constants</span> <span class="kn">import</span> <span class="n">DIMENSION_URI</span>
+<span class="kn">from</span> <span class="nn">.sdcchecks</span> <span class="kn">import</span> <span class="n">ChecksResults</span>
+<span class="kn">from</span> <span class="nn">.tablemodeldetails</span> <span class="kn">import</span> <span class="n">TableModelDetails</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;acro&quot;</span><span class="p">)</span>
+
+<span class="n">AGGFUNC_TO_TYPE</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="s2">&quot;FrequencyTable&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;Mode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="s2">&quot;Median&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="s2">&quot;Mean&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="s2">&quot;StandardDeviation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sum&quot;</span><span class="p">:</span> <span class="s2">&quot;Sum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="s2">&quot;Minimum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;agg_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;ModeCalculation&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="axis_to_list">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.axis_to_list">[docs]</a>
+<span class="k">def</span> <span class="nf">axis_to_list</span><span class="p">(</span><span class="n">axis</span><span class="p">:</span> <span class="n">Series</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Series</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Series</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Translate axis into standard format.</span>
+
+<span class="sd">    Convert variables describing an axis (row/column) into a list</span>
+<span class="sd">    to simplify code. Wraps input inside a list if it is a single series</span>
+<span class="sd">    or leaves it unchanged if it is already a list of series.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    axis : Series or list of Series</span>
+<span class="sd">        Pandas series or list of series describing an axis.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        List of Series objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="n">axis</span></div>
+
+
+
+<div class="viewcode-block" id="drop_duplicate_columns">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.drop_duplicate_columns">[docs]</a>
+<span class="k">def</span> <span class="nf">drop_duplicate_columns</span><span class="p">(</span><span class="n">outcome</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove duplicate columns arising from multiple aggregation functions.&quot;&quot;&quot;</span>
+    <span class="n">lowestlevelfound</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">to_drops</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">thetuple</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">outcome</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">thetuple</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">lowestlevelfound</span><span class="p">:</span>
+            <span class="n">to_drops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thetuple</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lowestlevelfound</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thetuple</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">drop</span> <span class="ow">in</span> <span class="n">to_drops</span><span class="p">:</span>
+        <span class="n">outcome</span> <span class="o">=</span> <span class="n">outcome</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">drop</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;columns&quot;</span><span class="p">)</span>
+
+    <span class="n">outcome</span> <span class="o">=</span> <span class="n">outcome</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">outcome</span></div>
+
+
+
+<div class="viewcode-block" id="collate_risk_assessments">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.collate_risk_assessments">[docs]</a>
+<span class="k">def</span> <span class="nf">collate_risk_assessments</span><span class="p">(</span>
+    <span class="n">table</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">allcheckresults</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ChecksResults</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collate the Risk Assessment for a table.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    table : DataFrame</span>
+<span class="sd">        Table to be risk assessed.</span>
+<span class="sd">    allcheckresults : dict[str, ChecksResults]</span>
+<span class="sd">        Dictionary of dataclasses specifying individual risk assessments results.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    DataFrame</span>
+<span class="sd">        Table with collated outcomes of suppression checks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="c1"># old = True</span>
+    <span class="c1"># if old:</span>
+    <span class="c1">#     if isinstance(list(outcome_df)[0], tuple):</span>
+    <span class="c1">#         # outcome_df = drop_duplicate_columns(outcome_df)</span>
+    <span class="c1">#         pass</span>
+    <span class="c1">#     outcome_df = outcome_df.fillna(&quot;&quot;)</span>
+
+    <span class="c1"># else:</span>
+    <span class="c1">#     outcome_df = outcome_df.fillna(&quot;&quot;)</span>
+
+    <span class="c1"># if isinstance(table.columns, pd.CategoricalIndex):</span>
+    <span class="c1">#     logger.debug(&quot;categorical index, not dropping columns&quot;)</span>
+    <span class="c1">#     pass</span>
+    <span class="c1"># elif isinstance(table.columns, pd.MultiIndex):</span>
+    <span class="c1">#     # logger.debug(f&#39;start of collate_risk_assessments, outcome is\n{outcome_df}\nwhich is a {type(outcome_df)}&#39;)</span>
+    <span class="c1">#     levels = outcome_df.columns.levels</span>
+    <span class="c1">#     logger.debug(f&quot;got a multiindex: {levels}&quot;)</span>
+
+    <span class="c1">#     # numcols = len(table.columns) if isinstance(table.columns, list) else 1</span>
+    <span class="c1">#     # numlevels = len(levels)</span>
+    <span class="c1">#     # logger.debug(f&#39;columns={table.columns}, numcols={numcols}, numlevels={numlevels}, levels[0]={levels[0]}&#39;)</span>
+    <span class="c1">#     if isinstance(list(outcome_df)[0], tuple):</span>
+    <span class="c1">#         #outcome_df = drop_duplicate_columns(outcome_df)</span>
+    <span class="c1">#         pass</span>
+    <span class="c1">#     outcome_df = outcome_df.fillna(&quot;&quot;)</span>
+    <span class="c1"># else:</span>
+    <span class="c1">#     logger.debug(f&quot;unknown type for table.columns{type(table.columns)}&quot;)</span>
+
+    <span class="c1"># logger.debug(f&#39;after dropping duplicate columns, outcome is\n{outcome_df}&#39;)</span>
+
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">checkresults</span> <span class="ow">in</span> <span class="n">allcheckresults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">checkresults</span><span class="o">.</span><span class="n">outcomes</span>
+        <span class="c1"># report if negatives are present</span>
+        <span class="k">if</span> <span class="s2">&quot;negative&quot;</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span>
+            <span class="n">outcome_df</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()]</span> <span class="o">=</span> <span class="s2">&quot;negative&quot;</span>
+        <span class="c1">#   report if missing values are present</span>
+        <span class="k">elif</span> <span class="s2">&quot;missing&quot;</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="s2">&quot;missing&quot;</span><span class="p">]</span>
+            <span class="n">outcome_df</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()]</span> <span class="o">=</span> <span class="s2">&quot;missing&quot;</span>
+        <span class="c1"># collate at-risk cells from individual risk masks</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;checks: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Skip non-DataFrame masks (e.g., numpy arrays)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="k">def</span> <span class="nf">string_in_frame</span><span class="p">(</span><span class="n">testname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">(</span>
+                        <span class="n">df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">testname</span><span class="p">))</span>
+                        <span class="o">.</span><span class="n">any</span><span class="p">()</span>
+                        <span class="o">.</span><span class="n">any</span><span class="p">()</span>
+                    <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">string_in_frame</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">outcome_df</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;found </span><span class="si">%s</span><span class="s2"> already so not repeating it&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">tmp_df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">outcome_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">outcome_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+                <span class="n">tmp_df</span> <span class="o">=</span> <span class="n">tmp_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Align mask to outcome_df structure</span>
+                <span class="n">mask_aligned</span> <span class="o">=</span> <span class="n">_align_mask_to_outcome</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">outcome_df</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;aligned mask:</span><span class="se">\n</span><span class="si">{</span><span class="n">mask_aligned</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Check for non-empty intersections</span>
+                <span class="n">shared_index</span> <span class="o">=</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">mask_aligned</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                <span class="n">shared_cols</span> <span class="o">=</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">mask_aligned</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">shared_index</span><span class="o">.</span><span class="n">empty</span> <span class="ow">or</span> <span class="n">shared_cols</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">&quot;no intersections shared_index=</span><span class="si">%s</span><span class="s2"> shared_cols=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">shared_index</span><span class="p">,</span>
+                        <span class="n">shared_cols</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">&quot;outcome_df cols= </span><span class="si">%s</span><span class="s2"> mask_aligned cols = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">outcome_df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+                        <span class="n">mask_aligned</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># Apply mask to tmp_df</span>
+                <span class="n">mask_trimmed</span> <span class="o">=</span> <span class="n">mask_aligned</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span>
+                    <span class="n">index</span><span class="o">=</span><span class="n">shared_index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">shared_cols</span>
+                <span class="p">)</span>
+                <span class="n">mask_trimmed</span> <span class="o">=</span> <span class="n">mask_trimmed</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+                <span class="n">tmp_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">shared_index</span><span class="p">,</span> <span class="n">shared_cols</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="n">shared_index</span><span class="p">,</span> <span class="n">shared_cols</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">mask_trimmed</span><span class="p">,</span> <span class="n">other</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;; &quot;</span><span class="p">)</span>
+                <span class="n">outcome_df</span> <span class="o">+=</span> <span class="n">tmp_df</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;outcome with mask for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> added:</span><span class="se">\n</span><span class="si">{</span><span class="n">outcome_df</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">outcome_df</span> <span class="o">=</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">})</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;outcome_df:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">prettify_table_string</span><span class="p">(</span><span class="n">outcome_df</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">outcome_df</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_align_mask_to_outcome</span><span class="p">(</span><span class="n">mask</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">outcome_df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Align a check outcome mask to the column structure of the outcome DataFrame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mask : DataFrame</span>
+<span class="sd">        Suppression mask to align.</span>
+<span class="sd">    outcome_df : DataFrame</span>
+<span class="sd">        The target outcome DataFrame whose column structure is used for alignment.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    DataFrame</span>
+<span class="sd">        Aligned mask with columns matching outcome_df structure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_diff</span> <span class="o">=</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">nlevels</span> <span class="o">-</span> <span class="n">mask</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">nlevels</span>
+    <span class="k">if</span> <span class="n">n_diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Outcome has more column levels than mask - extract relevant level(s) from outcome columns</span>
+        <span class="n">mask_cols_aligned</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outcome_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">sub_c</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">n_diff</span><span class="p">:]</span>
+                <span class="c1"># Append single column name or tuple of remaining levels</span>
+                <span class="n">mask_cols_aligned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">sub_c</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mask_cols_aligned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+        <span class="c1"># Create aligned mask with outcome&#39;s column structure</span>
+        <span class="n">mask_aligned</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">mask</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">outcome_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col_out</span><span class="p">,</span> <span class="n">col_mask</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">outcome_df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">mask_cols_aligned</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">col_mask</span> <span class="ow">in</span> <span class="n">mask</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">mask_aligned</span><span class="p">[</span><span class="n">col_out</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="n">col_mask</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">mask_aligned</span>
+
+    <span class="c1"># Outcome has fewer or equal column levels than mask</span>
+    <span class="k">if</span> <span class="n">n_diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">mask</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">n_diff</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mask</span>
+
+
+<div class="viewcode-block" id="get_analysis_summary">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.get_analysis_summary">[docs]</a>
+<span class="k">def</span> <span class="nf">get_analysis_summary</span><span class="p">(</span><span class="n">sdc</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the status and summary of the suppression masks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sdc : dict</span>
+<span class="sd">        Properties of the SDC checks for an analysis.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Status: {&quot;review&quot;, &quot;fail&quot;, &quot;pass&quot;}.</span>
+<span class="sd">    str</span>
+<span class="sd">        Summary of the suppression masks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pass&quot;</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">sdc_summary</span> <span class="o">=</span> <span class="n">sdc</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">]</span>
+    <span class="n">sup</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;suppressed&quot;</span> <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;suppressed&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;may need suppressing&quot;</span>
+    <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">summary</span> <span class="o">+=</span> <span class="s2">&quot;negative values found&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;review&quot;</span>
+    <span class="k">elif</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;missing&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">summary</span> <span class="o">+=</span> <span class="s2">&quot;missing values found&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;review&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;threshold: </span><span class="si">{</span><span class="n">sdc_summary</span><span class="p">[</span><span class="s1">&#39;threshold&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cells </span><span class="si">{</span><span class="n">sup</span><span class="si">}</span><span class="s2">; &quot;</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;review&quot;</span> <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;suppressed&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;fail&quot;</span>
+        <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;p-ratio&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;p-ratio: </span><span class="si">{</span><span class="n">sdc_summary</span><span class="p">[</span><span class="s1">&#39;p-ratio&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cells </span><span class="si">{</span><span class="n">sup</span><span class="si">}</span><span class="s2">; &quot;</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;review&quot;</span> <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;suppressed&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;fail&quot;</span>
+        <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;nk-rule&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;nk-rule: </span><span class="si">{</span><span class="n">sdc_summary</span><span class="p">[</span><span class="s1">&#39;nk-rule&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cells </span><span class="si">{</span><span class="n">sup</span><span class="si">}</span><span class="s2">; &quot;</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;review&quot;</span> <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;suppressed&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;fail&quot;</span>
+        <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;all-values-are-same&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;all-values-are-same: </span><span class="si">{</span><span class="n">sdc_summary</span><span class="p">[</span><span class="s1">&#39;all-values-are-same&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;cells </span><span class="si">{</span><span class="n">sup</span><span class="si">}</span><span class="s2">; &quot;</span>
+            <span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;review&quot;</span> <span class="k">if</span> <span class="n">sdc_summary</span><span class="p">[</span><span class="s2">&quot;suppressed&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;fail&quot;</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">; </span><span class="si">{</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">summary</span> <span class="k">else</span> <span class="n">status</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;get_summary(): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">status</span><span class="p">,</span> <span class="n">summary</span></div>
+
+
+
+<div class="viewcode-block" id="get_redacted_table">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.get_redacted_table">[docs]</a>
+<span class="k">def</span> <span class="nf">get_redacted_table</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">TableModelDetails</span><span class="p">,</span> <span class="n">collated_assessment</span><span class="p">:</span> <span class="n">DataFrame</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Redact table as needed then rereun the table query.&quot;&quot;&quot;</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_crosstab_args</span><span class="p">()</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_crosstab_kwargs</span><span class="p">()</span>
+    <span class="n">variable_metadata</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">variable_metadata</span>
+    <span class="n">queries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_queries_from_collated_risk</span><span class="p">(</span>
+        <span class="n">collated_assessment</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;aggfunc&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">dim_names</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_dimension_names</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;queries are </span><span class="si">{</span><span class="n">queries</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">relevant_data</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">get_relevant_dataframe</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="n">redacted_data</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">get_redacted_data</span><span class="p">(</span><span class="n">relevant_data</span><span class="p">,</span> <span class="n">queries</span><span class="p">,</span> <span class="n">dim_names</span><span class="p">)</span>
+
+    <span class="c1"># ensure missing categories are present</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">redacted_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">variable_metadata</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">DIMENSION_URI</span><span class="p">:</span>
+            <span class="n">cat_type</span> <span class="o">=</span> <span class="n">CategoricalDtype</span><span class="p">(</span>
+                <span class="n">categories</span><span class="o">=</span><span class="n">variable_metadata</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;categories&quot;</span><span class="p">],</span>
+                <span class="n">ordered</span><span class="o">=</span><span class="n">variable_metadata</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;ordered&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">redacted_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">redacted_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">cat_type</span><span class="p">)</span>
+
+    <span class="n">newargs</span> <span class="o">=</span> <span class="n">translate_args_to_newdf</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">redacted_data</span><span class="p">)</span>
+    <span class="n">newkwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">newkwargs</span><span class="p">[</span><span class="s2">&quot;dropna&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">newkwargs</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">redacted_data</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">newkwargs</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="o">*</span><span class="n">newargs</span><span class="p">,</span> <span class="o">**</span><span class="n">newkwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">risk_appetite</span><span class="p">[</span><span class="s2">&quot;zeros_are_disclosive&quot;</span><span class="p">]:</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">table</span></div>
+
+
+
+<div class="viewcode-block" id="get_redacted_pivottable">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.get_redacted_pivottable">[docs]</a>
+<span class="k">def</span> <span class="nf">get_redacted_pivottable</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">TableModelDetails</span><span class="p">,</span> <span class="n">collated_assessment</span><span class="p">:</span> <span class="n">DataFrame</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Redact table as needed then rereun the table query.&quot;&quot;&quot;</span>
+    <span class="c1"># args = model.get_crosstab_args()</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_crosstab_kwargs</span><span class="p">()</span>
+    <span class="n">variable_metadata</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">variable_metadata</span>
+    <span class="n">queries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_queries_from_collated_risk</span><span class="p">(</span>
+        <span class="n">collated_assessment</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;aggfunc&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">dim_names</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_dimension_names</span><span class="p">()</span>
+
+    <span class="n">relevant_data</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">get_relevant_dataframe</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">redacted_data</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">get_redacted_data</span><span class="p">(</span><span class="n">relevant_data</span><span class="p">,</span> <span class="n">queries</span><span class="p">,</span> <span class="n">dim_names</span><span class="p">)</span>
+    <span class="c1"># ensure missing categories are present</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">redacted_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">variable_metadata</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">DIMENSION_URI</span><span class="p">:</span>
+            <span class="n">cat_type</span> <span class="o">=</span> <span class="n">CategoricalDtype</span><span class="p">(</span>
+                <span class="n">categories</span><span class="o">=</span><span class="n">variable_metadata</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;categories&quot;</span><span class="p">],</span>
+                <span class="n">ordered</span><span class="o">=</span><span class="n">variable_metadata</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;ordered&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">redacted_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">redacted_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">cat_type</span><span class="p">)</span>
+
+    <span class="n">newkwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">newkwargs</span><span class="p">[</span><span class="s2">&quot;dropna&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># logger.debug(f&#39;newkwargs are {newkwargs}&#39;)</span>
+    <span class="c1"># added for testing</span>
+    <span class="k">if</span> <span class="n">newkwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">index_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">index_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">newkwargs</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index_names</span>
+    <span class="k">if</span> <span class="n">newkwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;columns&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">column_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">newkwargs</span><span class="p">[</span><span class="s2">&quot;columns&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">column_names</span>
+    <span class="c1"># line below assumes only one values series which may get expanded later</span>
+    <span class="k">if</span> <span class="n">newkwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;values&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">values_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">values_names</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">name</span>
+        <span class="p">)</span>
+        <span class="n">newkwargs</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values_names</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">redacted_data</span><span class="p">,</span> <span class="o">**</span><span class="n">newkwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">risk_appetite</span><span class="p">[</span><span class="s2">&quot;zeros_are_disclosive&quot;</span><span class="p">]:</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">table</span></div>
+
+
+
+<div class="viewcode-block" id="add_backticks">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.add_backticks">[docs]</a>
+<span class="k">def</span> <span class="nf">add_backticks</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add backticks to a name if it contains spaces and doesn&#39;t have them.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name to add backticks to.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The name with backticks if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot; &quot;</span> <span class="ow">in</span> <span class="n">name</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;`&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">`&quot;</span>
+    <span class="k">return</span> <span class="n">name</span>  <span class="c1"># pragma: no cover</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_format_label_condition</span><span class="p">(</span><span class="n">level_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">label</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Format a label into a list of condition strings.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    level_names : list</span>
+<span class="sd">        The names of the levels.</span>
+<span class="sd">    label : tuple or scalar</span>
+<span class="sd">        The label value(s).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[str]</span>
+<span class="sd">        List of condition strings for this label.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">orig_level_name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">level_names</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">level_name</span> <span class="o">=</span> <span class="n">add_backticks</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">orig_level_name</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">level_name</span><span class="si">}</span><span class="s2"> == </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="n">level_name</span><span class="si">}</span><span class="s1"> == &quot;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1">&quot;)&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="n">add_backticks</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">level_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2"> == </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s1"> == &quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">&quot;)&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parts</span>
+
+
+<div class="viewcode-block" id="get_relevant_dataframe">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.get_relevant_dataframe">[docs]</a>
+<span class="k">def</span> <span class="nf">get_relevant_dataframe</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">TableModelDetails</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract copy of data relevant to crosstab into new DataFrame.</span>
+
+<span class="sd">    Assumes preprocessing has happened, so index and columns in model</span>
+<span class="sd">    should both have been converted into lists of Series.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : TableModelDetails</span>
+<span class="sd">        The table model details object containing index, columns, and values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    DataFrame</span>
+<span class="sd">        DataFrame containing copies of pandas series needed to calculate the crosstab.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">relevant_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">relevant_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+        <span class="n">relevant_data</span><span class="p">[</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span>
+    <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">relevant_data</span><span class="p">[</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">series</span>
+    <span class="k">return</span> <span class="n">relevant_data</span></div>
+
+
+
+<div class="viewcode-block" id="translate_args_to_newdf">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.translate_args_to_newdf">[docs]</a>
+<span class="k">def</span> <span class="nf">translate_args_to_newdf</span><span class="p">(</span><span class="n">arguments</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">redacted_data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Translate arguments or keys from one data frame to another.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arguments : list</span>
+<span class="sd">        list of positional arguments to be translated to a different dataframe</span>
+<span class="sd">    redacted_data : Dataframe</span>
+<span class="sd">        the name of the &#39;host&#39; dataframe</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">         arguments  translate on to columns with the same name in the host DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># todo put in checks to make this robust</span>
+    <span class="c1"># decide whether to return args i.e. don&#39;t do redaction/suppression</span>
+    <span class="c1"># instead of raising valueerror</span>
+    <span class="n">newargs</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;list passed as positional args has wrong type or length&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">contents</span> <span class="ow">in</span> <span class="n">arguments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+            <span class="n">newargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">redacted_data</span><span class="p">[</span><span class="n">contents</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">newlist</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">series</span> <span class="ow">in</span> <span class="n">contents</span><span class="p">:</span>
+                <span class="n">newlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">redacted_data</span><span class="p">[</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+            <span class="n">newargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newlist</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">newargs</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_get_cell_query</span><span class="p">(</span>
+    <span class="n">mask</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">row_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">index_level_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+    <span class="n">column_level_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a query string for a cell if it&#39;s marked as true in the mask.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mask : DataFrame</span>
+<span class="sd">        The suppression mask.</span>
+<span class="sd">    row_index : int</span>
+<span class="sd">        Row index.</span>
+<span class="sd">    col_index : int</span>
+<span class="sd">        Column index.</span>
+<span class="sd">    index_level_names : list</span>
+<span class="sd">        Names of index levels.</span>
+<span class="sd">    column_level_names : list</span>
+<span class="sd">        Names of column levels.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        Query string if cell is true, None otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mask</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row_index</span><span class="p">,</span> <span class="n">col_index</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">row_label</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span>
+    <span class="n">col_label</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">col_index</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;type column_level_names =</span><span class="si">%s</span><span class="s2">,len=</span><span class="si">%s</span><span class="s2"> type content=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="p">(</span><span class="n">column_level_names</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">column_level_names</span><span class="p">),</span>
+        <span class="nb">type</span><span class="p">(</span><span class="n">column_level_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="p">)</span>
+
+    <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_format_label_condition</span><span class="p">(</span><span class="n">index_level_names</span><span class="p">,</span> <span class="n">row_label</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">column_level_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">column_level_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">joined</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;joined is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">joined</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">joined</span>
+    <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_format_label_condition</span><span class="p">(</span><span class="n">column_level_names</span><span class="p">,</span> <span class="n">col_label</span><span class="p">))</span>
+    <span class="n">joined</span> <span class="o">=</span> <span class="s2">&quot; &amp; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;parts is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">joined</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">joined</span>
+
+
+<div class="viewcode-block" id="get_queries_from_collated_risk">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.get_queries_from_collated_risk">[docs]</a>
+<span class="k">def</span> <span class="nf">get_queries_from_collated_risk</span><span class="p">(</span>
+    <span class="n">collated_risk</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">aggfunc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a list of the boolean conditions for each true (disclosive) cell in the suppression masks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    collated_risk : DataFrame</span>
+<span class="sd">        DataFrame with collated risk assessment outcomes per cell.</span>
+<span class="sd">    masks : dict[str, DataFrame]</span>
+<span class="sd">        Dictionary of tables specifying suppression masks for application.</span>
+<span class="sd">    aggfunc : str | None</span>
+<span class="sd">        The aggregation function</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The boolean conditions for each true (disclosive) cell in the suppression masks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">true_cell_queries</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">themask</span> <span class="o">=</span> <span class="n">collated_risk</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">themask</span> <span class="o">=</span> <span class="n">themask</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;ok&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+    <span class="n">themask</span> <span class="o">=</span> <span class="n">themask</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">themask</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">other</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># noqa: E712</span>
+    <span class="c1"># get rid of top level of multIndexer for columns IF its just the agg func</span>
+    <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">themask</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">nlevels</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># delete the top level if it is just agg funcs</span>
+        <span class="n">level0names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">themask</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="c1"># logger.debug(f&#39;l0names is a {type(level0names)} = {level0names}&#39;)</span>
+        <span class="n">level0names</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="s2">&quot;All&quot;</span><span class="p">)</span>
+        <span class="c1"># logger.debug(f&#39;l0names is a {type(level0names)} = {level0names}&#39;)</span>
+        <span class="c1"># logger.debug(f&#39;affunc is a {type(aggfunc)}={aggfunc}&#39;)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">aggfunc</span> <span class="ow">in</span> <span class="n">level0names</span><span class="p">:</span>
+            <span class="n">themask</span> <span class="o">=</span> <span class="n">themask</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span> <span class="o">==</span> <span class="n">level0names</span><span class="p">:</span>
+            <span class="n">themask</span> <span class="o">=</span> <span class="n">themask</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">index_level_names</span> <span class="o">=</span> <span class="n">themask</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span>
+    <span class="n">column_level_names</span> <span class="o">=</span> <span class="n">themask</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">names</span>
+    <span class="k">for</span> <span class="n">col_index</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">themask</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">row_index</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">themask</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">_get_cell_query</span><span class="p">(</span>
+                <span class="n">themask</span><span class="p">,</span> <span class="n">row_index</span><span class="p">,</span> <span class="n">col_index</span><span class="p">,</span> <span class="n">index_level_names</span><span class="p">,</span> <span class="n">column_level_names</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">query</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;new query </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+                <span class="n">true_cell_queries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;got None query&quot;</span><span class="p">)</span>
+    <span class="n">true_cell_queries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">true_cell_queries</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">true_cell_queries</span></div>
+
+
+
+<div class="viewcode-block" id="get_redacted_data">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.get_redacted_data">[docs]</a>
+<span class="k">def</span> <span class="nf">get_redacted_data</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">dimensions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply set of queries to remove sensitive data from DataFrame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pandas DataFrame</span>
+<span class="sd">        the raw data</span>
+<span class="sd">    queries : list[str]</span>
+<span class="sd">        a set of queries that define the data in cells marked as being disclosive</span>
+<span class="sd">    dimensions : list[str]</span>
+<span class="sd">        the names of the dimensional variablss - these  are the categorical entities in the queries</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    DataFrame</span>
+<span class="sd">         the data after the sensitive data has been removed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">redacted_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># queries are in string form</span>
+    <span class="n">oldtypes</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">dimensions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">redacted_data</span><span class="p">):</span>
+            <span class="n">oldtypes</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="n">redacted_data</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="c1"># logger.debug(</span>
+            <span class="c1">#    f&quot;converting {dimension} from {redacted_data[dimension].dtype} to str&quot;</span>
+            <span class="c1"># )</span>
+            <span class="n">redacted_data</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="n">redacted_data</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="c1"># logger.debug(f&#39;now columns are {list(redacted_data)}&#39;)</span>
+    <span class="c1"># for col in redacted_data:</span>
+    <span class="c1">#     logger.debug(f&#39;{col}: {redacted_data[col].unique()}&#39;)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;in get_redacted_data: queries are:</span><span class="se">\n</span><span class="si">{</span><span class="n">queries</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;initially redacted  data has shape </span><span class="si">{</span><span class="n">redacted_data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">queries</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;applying query</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">redacted_data</span> <span class="o">=</span> <span class="n">redacted_data</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;not (</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;now redacted data has shape </span><span class="si">{</span><span class="n">redacted_data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># logger.debug(f&#39;after querying, columns are {list(redacted_data)}&#39;)</span>
+    <span class="c1"># for col in redacted_data:</span>
+    <span class="c1">#    logger.debug(f&#39;{col}: {redacted_data[col].dtype} ;  uniques {redacted_data[col].unique()}&#39;)</span>
+    <span class="c1"># reconvert dimensions to original data types</span>
+    <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">dimensions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">redacted_data</span><span class="p">):</span>
+            <span class="c1">## be mindful of where str &#39;False&#39; gets converted to bool True</span>
+            <span class="k">if</span> <span class="n">oldtypes</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># noqa:E721</span>
+                <span class="c1"># logger.debug(&#39;mapping true false  from string to bool&#39;)</span>
+                <span class="n">redacted_data</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="n">redacted_data</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                    <span class="p">{</span><span class="s2">&quot;True&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+                <span class="p">)</span>
+            <span class="n">redacted_data</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="n">redacted_data</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                <span class="n">oldtypes</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span>
+            <span class="p">)</span>
+    <span class="c1"># logger.debug(f&#39;after astype() operation , columns are {list(redacted_data)}&#39;)</span>
+    <span class="c1"># for col in redacted_data:</span>
+    <span class="c1">#    logger.debug(f&#39;{col}: {redacted_data[col].dtype} ; {redacted_data[col].unique()}&#39;)</span>
+    <span class="k">return</span> <span class="n">redacted_data</span></div>
+
+
+
+<div class="viewcode-block" id="get_debugging_table_analysis">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.get_debugging_table_analysis">[docs]</a>
+<span class="k">def</span> <span class="nf">get_debugging_table_analysis</span><span class="p">(</span><span class="n">allchecksresults</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ChecksResults</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get string of status/summary debugging info.&quot;&quot;&quot;</span>
+    <span class="n">thestring</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">thestring</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">====start acro.crosstab print statement=====&quot;</span>
+
+    <span class="k">for</span> <span class="n">analysis</span><span class="p">,</span> <span class="n">checksresults</span> <span class="ow">in</span> <span class="n">allchecksresults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">thestring</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">====findings for </span><span class="si">{</span><span class="n">analysis</span><span class="si">}</span><span class="s2">=====&quot;</span>
+
+        <span class="n">thestring</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">== statuses==</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">thestring</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">checksresults</span><span class="o">.</span><span class="n">overall_status</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="n">thestring</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">== summaries==</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">thestring</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">checksresults</span><span class="o">.</span><span class="n">summaries</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="n">thestring</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">== allmasks==</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">checksresults</span><span class="o">.</span><span class="n">outcomes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">thestring</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Mask for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">thestring</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="c1"># for key, val in mask.items():</span>
+            <span class="c1"># thestring +=  f&quot;{key} \n{val}\n&quot;</span>
+
+        <span class="n">thestring</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">== fair_dicts==</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">checksresults</span><span class="o">.</span><span class="n">fair_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">key2</span><span class="p">,</span> <span class="n">val2</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">thestring</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">key2</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">val2</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">thestring</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># thestring +=  &quot;\n=== collated masks ===\n&quot;</span>
+    <span class="c1"># thestring +=  f&quot;{collated_assessment}\n&quot;</span>
+    <span class="c1"># thestring +=  &quot;====end acro.crosstab print statement=====\n&quot;</span>
+    <span class="k">return</span> <span class="n">thestring</span></div>
+
+
+
+<div class="viewcode-block" id="aggfunc_to_strings">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.aggfunc_to_strings">[docs]</a>
+<span class="k">def</span> <span class="nf">aggfunc_to_strings</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Turn aggfunc into list of strings.&quot;&quot;&quot;</span>
+    <span class="n">analysis_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">analysis_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AGGFUNC_TO_TYPE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="s2">&quot;missing&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">analysis_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AGGFUNC_TO_TYPE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="s2">&quot;missing&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">aggfunc</span><span class="p">:</span>
+            <span class="n">analysis_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AGGFUNC_TO_TYPE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;missing&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">analysis_names</span></div>
+
+
+
+<div class="viewcode-block" id="round_table">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.round_table">[docs]</a>
+<span class="k">def</span> <span class="nf">round_table</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">base</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Round numeric cells to the nearest multiple of ``base`` (NaNs preserved).&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;round_table(base=</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">base</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">base</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">numeric</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;number&quot;</span><span class="p">])</span>
+    <span class="n">rounded</span> <span class="o">=</span> <span class="p">(</span><span class="n">numeric</span> <span class="o">/</span> <span class="n">base</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">()</span> <span class="o">*</span> <span class="n">base</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">numeric</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span> <span class="o">=</span> <span class="n">rounded</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="append_rounded_margins">
+<a class="viewcode-back" href="../../api.html#acro.table_utils.append_rounded_margins">[docs]</a>
+<span class="k">def</span> <span class="nf">append_rounded_margins</span><span class="p">(</span>
+    <span class="n">rounded_table</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">aggfunc</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="n">margins_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">base</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Append row/column/grand-total margins to a pre-rounded table.</span>
+
+<span class="sd">    Once cells have been rounded,</span>
+<span class="sd">    margins are computed by aggregating the rounded cells (so rounded inner</span>
+<span class="sd">    cells add up to the displayed totals) and then rounded again to ``base``</span>
+<span class="sd">    so the whole output respects the rounding base.</span>
+
+<span class="sd">    Conceptually this is the same as the &quot;synthetic-data&quot; approach Jim</span>
+<span class="sd">    described - exploding the rounded table into one record per cell and</span>
+<span class="sd">    re-running ``pd.crosstab(margins=True)`` - but implemented directly on</span>
+<span class="sd">    the rounded DataFrame to keep it simple. We currently support single-</span>
+<span class="sd">    level row and column indices; multi-level or list-of-aggfunc tables fall</span>
+<span class="sd">    back to returning the table without margins.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">aggnames</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">aggfunc_to_strings</span><span class="p">(</span><span class="n">aggfunc</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">aggnames</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Cannot add margins to a rounded table when multiple aggregation &quot;</span>
+            <span class="s2">&quot;functions were requested; returning the table without margins.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">rounded_table</span>
+    <span class="k">if</span> <span class="n">rounded_table</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">nlevels</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">rounded_table</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">nlevels</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Margin recomputation for hierarchical row/column indexes is not &quot;</span>
+            <span class="s2">&quot;yet supported under rounding; returning the table without margins.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">rounded_table</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">aggnames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">aggfunc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;FrequencyTable&quot;</span><span class="p">,</span> <span class="s2">&quot;Sum&quot;</span><span class="p">,</span> <span class="s2">&quot;ModeCalculation&quot;</span><span class="p">):</span>
+        <span class="n">agg_method</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Mean&quot;</span><span class="p">:</span>
+        <span class="n">agg_method</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Median&quot;</span><span class="p">:</span>
+        <span class="n">agg_method</span> <span class="o">=</span> <span class="s2">&quot;median&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Margin recomputation for aggfunc </span><span class="si">%r</span><span class="s2"> is not supported under &quot;</span>
+            <span class="s2">&quot;rounding; returning the table without margins.&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">rounded_table</span>
+
+    <span class="n">numeric</span> <span class="o">=</span> <span class="n">rounded_table</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;number&quot;</span><span class="p">])</span>
+    <span class="n">row_margin</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">numeric</span><span class="p">,</span> <span class="n">agg_method</span><span class="p">)(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">skipna</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">col_margin</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">numeric</span><span class="p">,</span> <span class="n">agg_method</span><span class="p">)(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">skipna</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">grand</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">numeric</span><span class="o">.</span><span class="n">stack</span><span class="p">(),</span> <span class="n">agg_method</span><span class="p">)())</span>
+
+    <span class="k">if</span> <span class="n">base</span> <span class="ow">and</span> <span class="n">base</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">row_margin</span> <span class="o">=</span> <span class="p">(</span><span class="n">row_margin</span> <span class="o">/</span> <span class="n">base</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">()</span> <span class="o">*</span> <span class="n">base</span>
+        <span class="n">col_margin</span> <span class="o">=</span> <span class="p">(</span><span class="n">col_margin</span> <span class="o">/</span> <span class="n">base</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">()</span> <span class="o">*</span> <span class="n">base</span>
+        <span class="n">grand</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">grand</span> <span class="o">/</span> <span class="n">base</span><span class="p">)</span> <span class="o">*</span> <span class="n">base</span>
+
+    <span class="n">table</span> <span class="o">=</span> <span class="n">rounded_table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">table</span><span class="p">[</span><span class="n">margins_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">row_margin</span>
+    <span class="n">new_row</span> <span class="o">=</span> <span class="n">col_margin</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">new_row</span><span class="p">[</span><span class="n">margins_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">grand</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">margins_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_row</span>
+    <span class="k">return</span> <span class="n">table</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, SACRO Project Team.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

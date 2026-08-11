@@ -8,7 +8,6 @@
 
 Updated package data for 'acro' to include additional JSON files.
 * Fix typo in package-data for acro
-## Unreleased
 
 ### Bug Fixes
 * resolve shape mismatch in crosstab/pivot_table with aggfuncs ([#347](https://github.com/AI-SDC/ACRO/pull/347))

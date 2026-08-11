@@ -299,10 +299,14 @@ The steps are:
     **Note** w3id.org/statbarnsdc (and hence the json files) already contain over 100 types of analysis - **so you probably don't need to do steps 1 and 2.**
 3. **Add a method** to the ``ACRO`` class (or ``Tables`` / ``Regression`` mixin) that:
 
+   For most regression and covariate analyses, this is much simpler than the table case: the method typically builds the model and then passes it through the common check pipeline.
+
    a. Creates a ``TableModelDetails`` instance (or uses the statsmodels model directly).
    b. Calls ``self.sdc_checks.get_evidence_forall_analyses([analysis_name], model)``.
    c. Calls ``self.sdc_checks.run_checks_for_analysis(analysis_name, evidence, model)``.
    d. Calls ``self._process_table_output(...)`` or ``self._process_analysis_output(...)``.
+
+   For table-style analyses and associated plots, there is more work to build the table description and preserve categorical metadata.
 
 No changes to ``SDCChecks``, ``SDCEvidence``, or any check implementation are needed
 unless the new analysis requires genuinely new evidence types.

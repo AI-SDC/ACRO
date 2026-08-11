@@ -89,7 +89,7 @@ The object also provides helper methods used during evidence collection:
      - Returns a table of zeros, matching the table's structure.
    * - ``get_newagg_table(aggfunc)``
      - Reruns the table with a different aggregation function (used to
-       compute  evidence (counts, dominance statistics,...) without storing the full data twice).
+       compute  evidence (counts, dominance statistics,...) needed by disclosure risks checks without storing the full data twice).
 
 SDCEvidence
 -----------
@@ -179,7 +179,7 @@ In federated mode:
 How Categories Are Preserved
 =============================
 
-A subtle but important improvement in v0.4.12 is that ACRO now stores the ``CategoricalDtype``
+A subtle but important improvement in v1.0.0 is that ACRO now stores the ``CategoricalDtype``
 of every dimension in the ``TableModelDetails`` object.  When records are redacted to apply
 suppression, pandas would ordinarily drop any categories that no longer appear in the data.
 ACRO prevents this by re-casting each dimension column to its original ``CategoricalDtype``

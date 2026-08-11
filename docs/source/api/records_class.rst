@@ -19,7 +19,7 @@ Records Class
    :no-index:
 
 .. note::
-   **New in v0.4.12  Federated evidence serialisation:**
+   **New in v1.0.0+:** Federated evidence serialisation:
    :py:meth:`Records.finalise_evidence` is called by :py:meth:`acro.ACRO.finalise`
    when running in federated mode (``ACRO(federated=True)``).  It serialises each
    output's ``SDCEvidence`` interim tables to CSV files and writes an

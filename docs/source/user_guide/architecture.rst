@@ -3,7 +3,7 @@ Architecture Reference
 ==============================
 
 This page gives a detailed technical overview of ACRO's ontology-driven architecture
-introduced in v0.4.12.  It is aimed at developers, TRE administrators, and curious
+introduced in v1.0.0.  It is aimed at developers, TRE administrators, and curious
 researchers who want to understand how the disclosure checking process works internally.
 
 .. contents::
@@ -227,7 +227,7 @@ functions (e.g. ``aggfunc=["mean", "std"]``).
 Suppression via Data Redaction
 ===============================
 
-A key design change in v0.4.12 is *how* suppression is applied.
+A key design change in v1.0.0 is *how* suppression is applied.
 
 **Previous approach**: Apply a boolean mask to the computed table, replacing risky cells
 with ``NaN``.  This made it nearly impossible to recompute marginal totals correctly

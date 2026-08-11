@@ -49,7 +49,8 @@ ACRO uses configurable thresholds to determine whether an output is safe:
 * **Degrees of freedom**  Default: ≥10 for regression models
 
 These thresholds are set by the TRE administrator in a YAML configuration file and are
-loaded when your ACRO session starts. See :doc:`configuration` for details.
+loaded when your ACRO session starts. Researchers do not change them directly;
+see :doc:`configuration` for details.
 
 Basic Workflow
 ==============
@@ -170,9 +171,19 @@ What Happens at Runtime
    a plain-English summary.  The results are combined and the chosen
    mitigation is applied.
 
-This means adding support for a completely new analysis type requires only
-adding entries to the ontology (and regenerating the JSON files)  no
-Python code changes are needed.
+Implementing support for a new type of analysis that is already represented in the
+StatbarnsSDC ontology means:
+
+* identifying the analysis type from the ontology
+* creating a new ACRO function (typically as a method in
+  ``acro_regression.py`` for statsmodels-based models or
+  ``acro_tables.py`` for pandas-based models)
+* calling the package that creates the model inside the new function
+* adding three lines to the function to specify the analysis type,
+  collect the evidence needed for disclosure risk assessment, and
+  process that evidence
+* seeing, for example, the regression functions in
+  ``acro/acro_regression.py``
 
 Federated Mode
 ==============

@@ -111,7 +111,7 @@ All cell values are rounded to the nearest multiple of a configurable *base*
 How ACRO's Ontology-Driven Architecture Works
 =============================================
 
-Before v0.4.12, the list of checks applied to each analysis was hard-coded.
+Prior to  v1.0, the list of checks applied to each analysis was hard-coded.
 This made it difficult to:
 
 * Add support for new analysis types without touching multiple files.

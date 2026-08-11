@@ -42,7 +42,7 @@ Audit and Accountability
 * **FAIR reporting**  the structured check results are suitable for producing FAIR statements
   about which SDC processes were applied and why.
 
-The New Ontology-Driven Architecture (v0.4.12+)
+The New Ontology-Driven Architecture (v1.0.0+)
 ================================================
 
 ACRO's most significant change in v0.4.12 is moving from hard-coded checking logic to an

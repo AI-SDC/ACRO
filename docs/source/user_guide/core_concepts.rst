@@ -45,7 +45,7 @@ Audit and Accountability
 The New Ontology-Driven Architecture (v1.0.0+)
 ================================================
 
-ACRO's most significant change in v0.4.12 is moving from hard-coded checking logic to an
+ACRO's most significant change in v1 is moving from hard-coded checking logic to an
 ontology-driven approach.  This section explains the key classes and how they fit together.
 
 SDCChecks

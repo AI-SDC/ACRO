@@ -66,7 +66,7 @@ TRE Risk Appetite Settings
    P-percent rule threshold for concentration
 
 **check_missing_values** (default: true)
-   Include missing values in safety calculations
+   Include missing values in safety calculations. When enabled, outputs where missing values were silently ignored during mean/std calculations are flagged as ``review`` (not ``fail``) with a note: *"missing values have been ignored when calculating mean/std etc. Please check this is the expected behaviour."*
 
 **survival_safe_threshold** (default: 10)
    Minimum observations for survival analysis outputs

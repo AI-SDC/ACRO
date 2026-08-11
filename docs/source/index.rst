@@ -20,6 +20,7 @@ Our tools are designed to help researchers assess the privacy disclosure risks o
    support
    installation
    user_guide
+   news
    examples
    api
 
@@ -91,7 +92,7 @@ ACRO: Statistical Disclosure Control
 ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. SACRO is a framework that applies best-practice principles-based statistical disclosure control (SDC) techniques on-the-fly as researchers conduct their analysis. SACRO is designed to assist human checkers rather than seeking to replace them as with current automated rules-based approaches.
 
 .. note::
-   **New in v0.4.8:** Enhanced support for complex statistical models and improved R integration.
+   **New in v1.0.0+:** Improved missing values handling — outputs where missing values are silently ignored during mean/std calculations are now flagged as ``review`` with an explanatory note. `See what's new → <news.html>`_
 
 What is ACRO?
 =============

@@ -4,7 +4,7 @@ Welcome to ACRO
 ACRO is a free and open source tool that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. This package acts as a lightweight Python tool that sits over well-known analysis tools to provide statistical disclosure control.
 
 .. note::
-   **New in v0.4.8:** Enhanced support for complex statistical models and improved R integration.
+   **New in v1.0.0+:** Improved missing values handling — when ``check_missing_values`` is enabled and mean/std calculations silently ignore missing data, outputs are now flagged as ``review`` with an explanatory note rather than ``fail``.
 
 .. image:: ../schematic.png
    :alt: ACRO workflow and architecture schematic

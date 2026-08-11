@@ -11,18 +11,24 @@ Complete guide to using ACRO for statistical disclosure control.
    user_guide/getting_started
    user_guide/core_concepts
    user_guide/configuration
+   user_guide/architecture
 
 Overview
 ========
 
-This user guide provides comprehensive documentation for using ACRO effectively in your research workflows.
+This user guide provides comprehensive documentation for using ACRO effectively in your
+research workflows.  If you are new to ACRO, start with :doc:`user_guide/getting_started`.
+If you want to understand *how* the disclosure checking works, see
+:doc:`user_guide/core_concepts` and :doc:`user_guide/architecture`.
 
 Quick Navigation
 ================
 
-* **New Users**: Start with the :doc:`examples` section
-* **Advanced Features**: Explore custom disclosure checking
-* **Integration**: Check integration workflows in :doc:`examples`
+* **New users**: Start with :doc:`user_guide/getting_started`
+* **Understand the checks**: Read :doc:`user_guide/core_concepts`
+* **Configure thresholds**: See :doc:`user_guide/configuration`
+* **Developers / TRE admins**: See :doc:`user_guide/architecture`
+* **Hands-on examples**: Browse :doc:`examples`
 
 Key Topics
 ==========
@@ -30,46 +36,43 @@ Key Topics
 Data Analysis
 -------------
 
-* **Cross-tabulations** - Safe table creation with disclosure control
-* **Statistical modeling** - Regression analysis with privacy protection
-* **Summary statistics** - Descriptive statistics with safety checks
-* **Data visualization** - Safe plotting and chart generation
+* **Cross-tabulations**  Safe table creation with automatic disclosure control
+* **Statistical modelling**  Regression analysis with privacy protection
+* **Summary statistics**  Descriptive statistics with safety checks
+* **Data visualisation**  Safe histograms and survival plots
+
+Mitigation Strategies
+---------------------
+
+* **Suppression**  Remove records that fall into disclosive cells, then rerun the table
+* **Rounding**  Round all cell values to the nearest multiple of a configurable base
 
 Configuration
 -------------
 
-* **Safety parameters** - Customizing disclosure thresholds
-* **Custom checks** - Advanced safety rule configuration
+* **Safety parameters**  Customising disclosure thresholds via YAML
+* **Federated mode**  Evidence-only mode for use with a trusted aggregator
+* **Ontology knowledge base**  How the JSON lookup files are generated and updated
 
 Integration
 -----------
 
-* **Python workflows** - Jupyter notebook integration
-* **R integration** - Using ACRO-R package
-* **Stata workflows** - Statistical software integration
+* **Python workflows**  Jupyter notebook integration
+* **R integration**  Using the ACRO-R package
+* **Stata workflows**  Statistical software integration
 
 Best Practices
 ==============
 
-1. **Always use suppress=True** in production environments
-2. **Review disclosure checks** before finalizing outputs
-3. **Use meaningful output names** for better tracking
-4. **Document your analysis workflow** for reproducibility
-5. **Test with sample data** before running on sensitive data
-
-Troubleshooting
-===============
-
-Common issues and solutions:
-
-* **Import errors**: Check Python environment and ACRO installation
-* **Configuration issues**: Verify YAML syntax and parameter values
-* **Disclosure warnings**: Review safety thresholds and data characteristics
-* **Output problems**: Check file permissions and directory structure
+1. **Use** ``suppress=True`` **or** ``enable_rounding()`` in production environments.
+2. **Review** all ``review`` and ``fail`` outputs before calling ``finalise()``.
+3. **Name your outputs** with ``rename_output()`` for easier output checker review.
+4. **Document your analysis**  add comments and exceptions as you go.
+5. **Test with synthetic data** before running on sensitive datasets.
 
 Getting Help
 ============
 
-* :doc:`api` - Complete API reference
-* `GitHub Issues <https://github.com/AI-SDC/ACRO/issues>`_ - Report bugs
-* `Discussions <https://github.com/AI-SDC/ACRO/discussions>`_ - Community support
+* :doc:`api`  Complete API reference
+* `GitHub Issues <https://github.com/AI-SDC/ACRO/issues>`_  Report bugs
+* `Discussions <https://github.com/AI-SDC/ACRO/discussions>`_  Community support

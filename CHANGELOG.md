@@ -1,4 +1,65 @@
 # Changelog
+## Version 1.0.1 (Aug 10, 2026)
+
+### Other
+* Bump version number to 1.0.1
+* Add JSON files to package data for 'acro'
+* Modify package data for 'acro' in pyproject.toml
+
+Updated package data for 'acro' to include additional JSON files.
+* Fix typo in package-data for acro
+## Unreleased
+
+### Bug Fixes
+* resolve shape mismatch in crosstab/pivot_table with aggfuncs ([#347](https://github.com/AI-SDC/ACRO/pull/347))
+* correct cell ID misalignment and hierarchical reindexing ([#367](https://github.com/AI-SDC/ACRO/pull/367))
+
+### CI
+* run tests on PR ([#368](https://github.com/AI-SDC/ACRO/pull/368))
+* run tests on PR - avoid running twice
+
+### Chore
+* notebook maintenance and folder cleanup ([#336](https://github.com/AI-SDC/ACRO/pull/336))
+* add type hints ([#343](https://github.com/AI-SDC/ACRO/pull/343))
+* pre-commit autoupdate ([#333](https://github.com/AI-SDC/ACRO/pull/333))
+* bump the actions group with 3 updates ([#356](https://github.com/AI-SDC/ACRO/pull/356))
+* pre-commit autoupdate ([#366](https://github.com/AI-SDC/ACRO/pull/366))
+* pre-commit autoupdate ([#372](https://github.com/AI-SDC/ACRO/pull/372))
+* remove unused pylint inline pragmas ([#371](https://github.com/AI-SDC/ACRO/pull/371))
+* enable 11 additional ruff lint rule sets ([#373](https://github.com/AI-SDC/ACRO/pull/373))
+* bump codecov/codecov-action from 5 to 6 in the actions group ([#374](https://github.com/AI-SDC/ACRO/pull/374))
+* **deps:** update pre-commit hooks ([#375](https://github.com/AI-SDC/ACRO/pull/375))
+* **deps:** update pre-commit hooks ([#385](https://github.com/AI-SDC/ACRO/pull/385))
+* **deps:** update pre-commit hooks ([#388](https://github.com/AI-SDC/ACRO/pull/388))
+
+### Documentation
+* update documentation and simplify examples ([#334](https://github.com/AI-SDC/ACRO/pull/334))
+* replace pre-commit with prek in CONTRIBUTING guide ([#338](https://github.com/AI-SDC/ACRO/pull/338))
+* update Stata cheat sheet ([#354](https://github.com/AI-SDC/ACRO/pull/354))
+* fix README python notebook link ([#359](https://github.com/AI-SDC/ACRO/pull/359))
+* automate changelog from PR names ([#352](https://github.com/AI-SDC/ACRO/pull/352))
+* update contributing guide and add AI policy ([#369](https://github.com/AI-SDC/ACRO/pull/369))
+
+### Features
+* Make ACRO ontology-driven ([#395](https://github.com/AI-SDC/ACRO/pull/395))
+* add pie chart support ([#355](https://github.com/AI-SDC/ACRO/pull/355))
+* improve handling invalid aggregation functions in stata ([#365](https://github.com/AI-SDC/ACRO/pull/365))
+* create and enforce blocked file extension list for custom outputs ([#377](https://github.com/AI-SDC/ACRO/pull/377))
+* add rounding as a protection mechanism ([#381](https://github.com/AI-SDC/ACRO/pull/381))
+* honor zeros_are_disclosive in hist() empty bin check ([#308](https://github.com/AI-SDC/ACRO/pull/308)) ([#386](https://github.com/AI-SDC/ACRO/pull/386))
+* **hist:** flag bin-edge disclosure risks ([#192](https://github.com/AI-SDC/ACRO/pull/192)) ([#382](https://github.com/AI-SDC/ACRO/pull/382))
+
+### Other
+* Update Ruff linting configuration in pyproject.toml
+
+ignore D213 with conflicts with D212
+* Remove extend-ignore from ruff lint settings
+
+Removed extend-ignore setting from ruff lint configuration.
+
+### Refactoring
+* update rounded_survival_table to use dynamic column names ([#332](https://github.com/AI-SDC/ACRO/pull/332))
+* extract acro_artifacts folder name to ARTIFACTS_DIR constant ([#376](https://github.com/AI-SDC/ACRO/pull/376))
 
 ## Version 0.4.12 (Feb 02, 2026)
 

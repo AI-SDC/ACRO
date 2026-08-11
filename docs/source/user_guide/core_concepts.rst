@@ -89,7 +89,7 @@ The object also provides helper methods used during evidence collection:
      - Returns a table of zeros, matching the table's structure.
    * - ``get_newagg_table(aggfunc)``
      - Reruns the table with a different aggregation function (used to
-       compute dominance statistics without storing the full data twice).
+       compute  evidence (counts, dominance statistics,...) without storing the full data twice).
 
 SDCEvidence
 -----------

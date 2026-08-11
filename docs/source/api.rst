@@ -150,9 +150,9 @@ Many ACRO methods share common parameters:
    * - ``federated``
      - bool
      - Whether to run in federated mode (evidence sent to a trusted aggregator).
-    * - ``show_suppressed``
-       - bool
-       - Deprecated: retained for backward compatibility; it has no effect.
+   * - ``show_suppressed``
+     - bool
+     - Deprecated: retained for backward compatibility; it has no effect.
    * -
      -
      - **The following parameters should never be manipulated in code. They should only be set via the configuration file provided by the TRE as discussed below.**

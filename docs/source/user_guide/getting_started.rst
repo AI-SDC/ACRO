@@ -11,7 +11,7 @@ ACRO (Automatic Checking of Research Outputs) is a Python package that provides 
 disclosure control for research outputs. It wraps common analysis functions, automatically
 checking for potential privacy disclosures before outputs leave a secure data environment.
 
-From v0.4.12, ACRO's checking logic is driven by a formal ontology  see
+From v1.0 onwards, ACRO's checking logic is driven by a formal ontology  see
 `How ACRO's Ontology-Driven Architecture Works`_ below for an explanation of what that means in practice.
 
 Key Concepts

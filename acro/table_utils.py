@@ -32,7 +32,7 @@ AGGFUNC_TO_TYPE: dict[str, str] = {
 }
 
 
-def axis_to_list(axis: Series | list[Series]) -> list[Series]:
+def axis_to_list(axis: Any) -> list[Series]:
     """Translate axis into standard format.
 
     Convert variables describing an axis (row/column) into a list
@@ -41,17 +41,49 @@ def axis_to_list(axis: Series | list[Series]) -> list[Series]:
 
     Parameters
     ----------
-    axis : Series or list of Series
-        Pandas series or list of series describing an axis.
+    axis : Series or list of Series or ArrayLike
+    Pandas series or list of series describing an axis.
 
     Returns
     -------
     list
-        List of Series objects.
+    List of Series objects.
     """
-    if not isinstance(axis, list):
-        return [axis] if axis is not None else []
-    return axis
+    if axis is None:  # empty
+        return []
+    if isinstance(axis, pd.DataFrame):
+        return [axis[col] for col in axis]
+    if len(axis) == 1 and isinstance(axis[0], pd.DataFrame):
+        return [pd.Series(axis[0][col]) for col in axis[0]]
+
+    if isinstance(axis, str):  # this is how some pivot table data is passed
+        return [axis]
+
+    if isinstance(axis, np.ndarray):  # numpy n-d array esp. from R
+        if len(axis.shape) == 1:  # 1d array
+            ret = [pd.Series(axis)]
+        elif len(axis.shape) > 2:  # >2d is problematic
+            logger.info("received row/column/values spec in more than 2d")
+            ret = pd.Series(axis)
+        else:
+            ret = [pd.Series(axis[:, col]) for col in range(axis.shape[1])]
+
+        return ret
+
+    if isinstance(axis, list):
+        oktypes = [pd.Series, str]
+        for thetype in oktypes:
+            if all(
+                isinstance(x, thetype) for x in axis
+            ):  # leave list of series/strings alone
+                return axis
+        if all(isinstance(x, pd.DataFrame) for x in axis):
+            return [pd.Series(x) for x in axis]
+
+        if len(axis) == 1 and isinstance(axis[0], pd.DataFrame):
+            return [axis[0][col] for col in axis[0]]
+
+    return [pd.Series(axis)]  # lists of mixed types get converted to a single series
 
 
 def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:

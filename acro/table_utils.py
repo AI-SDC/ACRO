@@ -71,6 +71,15 @@ def axis_to_list(axis: Any) -> list[pd.Series]:
         return ret
 
     if isinstance(axis, list):
+        # logger.warning('got a list of length %s of types:',len(axis))
+        # thetype=type(axis[0])
+        # if all(type(axis[idx])==thetype for idx,x in enumerate(axis)):
+        #        logger.warning('everything in axis is a %s',thetype)
+        # for idx,x in enumerate(axis):
+        #     if isinstance(x,list):
+        #         logger.warning(f'idx {idx} is a {type(x)} with length {len(x)}')
+        #         logger.warning(f'firrst item is a {type(x[0])}: {x[0]}')
+
         # pd.series - happy days
         if all(isinstance(x, (pd.Series)) for x in axis):
             return axis
@@ -95,7 +104,12 @@ def axis_to_list(axis: Any) -> list[pd.Series]:
                     # logger.debug('newseries is a %s:\n%s',(type(newseries),newseries))
                     ret3.append(newseries)
             return ret3
-
+        # another list
+        if all(isinstance(x, list) for x in axis):
+            ret4: list = []
+            for thelist in axis:
+                ret4.append(pd.Series(thelist))
+            return ret4
     return [pd.Series(axis)]  # lists of mixed types get converted to a single series
 
 

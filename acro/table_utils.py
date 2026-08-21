@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from pandas.api.types import CategoricalDtype
 
 from . import utils
@@ -32,7 +32,7 @@ AGGFUNC_TO_TYPE: dict[str, str] = {
 }
 
 
-def axis_to_list(axis: Series | list[Series]) -> list[Series]:
+def axis_to_list(axis: Any) -> list[pd.Series]:
     """Translate axis into standard format.
 
     Convert variables describing an axis (row/column) into a list
@@ -41,17 +41,76 @@ def axis_to_list(axis: Series | list[Series]) -> list[Series]:
 
     Parameters
     ----------
-    axis : Series or list of Series
-        Pandas series or list of series describing an axis.
+    axis : Series or list of Series or ArrayLike
+    Pandas series or list of series describing an axis.
 
     Returns
     -------
     list
-        List of Series objects.
+    List of Series objects.
     """
-    if not isinstance(axis, list):
-        return [axis] if axis is not None else []
-    return axis
+    if axis is None:  # empty
+        return []
+    # simple datatypes
+    if isinstance(axis, (str, int, float, bool)):
+        return [pd.Series(axis)]
+    if isinstance(axis, pd.DataFrame):
+        return [axis[col] for col in axis]
+    if len(axis) == 1 and isinstance(axis[0], pd.DataFrame):
+        return [pd.Series(axis[0][col]) for col in axis[0]]
+
+    if isinstance(axis, np.ndarray):  # numpy n-d array esp. from R
+        if len(axis.shape) == 1:  # 1d array
+            ret = [pd.Series(axis)]
+        elif len(axis.shape) > 2:  # >2d is problematic
+            logger.info("received row/column/values spec in more than 2d")
+            ret = pd.Series(axis)
+        else:
+            ret = [pd.Series(axis[:, col]) for col in range(axis.shape[1])]
+
+        return ret
+
+    if isinstance(axis, list):
+        # logger.warning('got a list of length %s of types:',len(axis))
+        # thetype=type(axis[0])
+        # if all(type(axis[idx])==thetype for idx,x in enumerate(axis)):
+        #        logger.warning('everything in axis is a %s',thetype)
+        # for idx,x in enumerate(axis):
+        #     if isinstance(x,list):
+        #         logger.warning(f'idx {idx} is a {type(x)} with length {len(x)}')
+        #         logger.warning(f'firrst item is a {type(x[0])}: {x[0]}')
+
+        # pd.series - happy days
+        if all(isinstance(x, (pd.Series)) for x in axis):
+            return axis
+        # simple contents- turn into a single series
+        if all(isinstance(x, (str, float, int, bool)) for x in axis):
+            return [pd.Series(axis)]
+
+        # one or more dataframes
+        if all(isinstance(x, pd.DataFrame) for x in axis):
+            ret2: list = []
+            for x in axis:
+                newlist = [pd.Series(y) for y in x]
+                ret2.extend(newlist)
+            return ret2
+        # one or more numpy arrays-must be same length
+        if all(isinstance(x, np.ndarray) for x in axis):
+            ret3: list = []
+            for thearray in axis:
+                # logger.debug('thearray has shape %s:\n%s',(thearray.shape,thearray))
+                for col in range(thearray.shape[1]):
+                    newseries = pd.Series(thearray[:, col])
+                    # logger.debug('newseries is a %s:\n%s',(type(newseries),newseries))
+                    ret3.append(newseries)
+            return ret3
+        # another list
+        if all(isinstance(x, list) for x in axis):
+            ret4: list = []
+            for thelist in axis:
+                ret4.append(pd.Series(thelist))
+            return ret4
+    return [pd.Series(axis)]  # lists of mixed types get converted to a single series
 
 
 def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:

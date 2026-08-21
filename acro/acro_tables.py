@@ -7,6 +7,7 @@ import os
 from inspect import stack
 from typing import Any
 
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from matplotlib import pyplot as plt
@@ -430,6 +431,21 @@ class Tables:
 
         index = axis_to_list(index)
         columns = axis_to_list(columns)
+        if values is None or isinstance(values, pd.Series):
+            pass
+        elif isinstance(values, np.ndarray):
+            values = pd.Series(values[:, 0])
+        else:
+            values = pd.Series(values)
+
+        if rownames is not None:
+            if len(rownames) == len(index):
+                for idx, series in enumerate(index):
+                    series.name = rownames[idx]
+        if colnames is not None:
+            if len(colnames) == len(columns):
+                for idx, series in enumerate(columns):
+                    series.name = colnames[idx]
 
         recompute_margins = margins and self._mitigation == "round"
         pandas_margins = False if recompute_margins else margins
@@ -555,8 +571,14 @@ class Tables:
                 "Specifying multiple values columns is not currently supported."
             )
 
-        index = axis_to_list(index)
-        columns = axis_to_list(columns)
+        # index = axis_to_list(index)
+        if not isinstance(index, list):
+            index = [index]
+        # columns = axis_to_list(columns)
+        if columns is None:
+            columns = []
+        elif not isinstance(columns, list):
+            columns = [columns]
 
         recompute_margins = margins and self._mitigation == "round"
         pandas_margins = False if recompute_margins else margins
@@ -676,7 +698,9 @@ class Tables:
             command="surv_func",
         )
         model_details.model_type = "survival"
-        model_details.df_resid = len(status) - len(time.unique())
+        uniq_op = getattr(time, "unique", None)
+        num_unique = len(time.unique()) if callable(uniq_op) else len(set(time))
+        model_details.df_resid = len(status) - num_unique
 
         analysis = "KaplanMeier"
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(

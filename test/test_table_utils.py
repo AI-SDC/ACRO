@@ -297,17 +297,22 @@ class TestAxisToList:
 
         myother2darray = np.array([[11, 12, 13], [14, 15, 16]])
         mylistofarrays = [numpy2darray, myother2darray]
+        mylistoflists: list = [["a", "b", "c"], ["d", "e", "f"]]
+        my3darray = np.ones((3, 3, 3))
 
         to_test = [
             "abc",
             645,
             98.4,
             survival_table,
+            [survival_table, survival_table],
             col_of_dataframe,
             numpy2darray,
             mylistofarrays,
+            mylistoflists,
+            my3darray,
         ]
-        expectedlen = [1, 1, 1, 3, 1, 3, 6]
+        expectedlen = [1, 1, 1, 3, 6, 1, 3, 6, 2, 1]
         for idx, thing in enumerate(to_test):
             self.runtest_axistype(thing, expectedlen[idx])
 

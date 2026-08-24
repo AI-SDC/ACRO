@@ -179,6 +179,31 @@ def test_get_count_table():
     assert (table.to_numpy() == [[0, 2], [2, 0]]).all(), f"countable is {table}"
 
 
+def test_get_pivot_data():
+    """Get count table."""
+    df = pd.DataFrame(
+        {
+            "A": [True, False, True, False],
+            "B": [False, True, False, True],
+            "C": [True, True, True, True],
+            "D": [True, False, False, True],
+            "E": [True, True, True, True],
+            "vals": [1, 2, 3, 4],
+        }
+    )
+    model = TableModelDetails(
+        index=[df["A"], df["B"]],
+        columns=[df["C"], df["D"]],
+        values=df["vals"],
+    )
+    df2 = model.get_pivot_data()
+    df1copy = df.copy().drop(columns="E")
+    assert set(df2.columns) == set(df1copy.columns)
+    assert df2.sort_index(axis=1).equals(df1copy.sort_index(axis=1)), (
+        f"expected:\n{df1copy}\ngot\n{df2}"
+    )
+
+
 def test_get_table_newagg():
     """Get count table."""
     df = pd.DataFrame(

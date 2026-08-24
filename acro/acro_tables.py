@@ -421,22 +421,29 @@ class Tables:
         _ = show_suppressed  # hide complaint about unused legacy variable
         _ = dropna  # hide complaint about unused param
 
+        index = axis_to_list(index, prefix="row")
+        columns = axis_to_list(columns, prefix="col")
+
         if aggfunc is not None:
-            if values is None or isinstance(values, list):
+            if values is None or (
+                isinstance(values, list) and len(values) != len(index[0])
+            ):
                 raise ValueError(
                     "If you pass an aggregation function to crosstab "
                     "you must also specify a single values column "
                     "to aggregate over."
                 )
 
-        index = axis_to_list(index)
-        columns = axis_to_list(columns)
         if values is None or isinstance(values, pd.Series):
             pass
         elif isinstance(values, np.ndarray):
-            values = pd.Series(values[:, 0])
+            values = (
+                pd.Series(values) if len(values.shape) == 1 else pd.Series(values[:, 0])
+            )
         else:
             values = pd.Series(values)
+        if values is not None and values.name is None:
+            values.name = "dependent_var"
 
         if rownames is not None:
             if len(rownames) == len(index):
@@ -571,10 +578,9 @@ class Tables:
                 "Specifying multiple values columns is not currently supported."
             )
 
-        # index = axis_to_list(index)
+        # logger.debug(f"index is a {type(index)}:\n{index}")
         if not isinstance(index, list):
             index = [index]
-        # columns = axis_to_list(columns)
         if columns is None:
             columns = []
         elif not isinstance(columns, list):

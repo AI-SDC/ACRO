@@ -20,8 +20,6 @@ class TableModelDetails:
     """Class for details needed to create a table.
 
     FOR NOW this will effectively hold copies of all the data needed
-    TODO refactor to hold pointers to reduce memory footprint and speed up
-    TODO change init to support other types of data beyond pd.Series
     """
 
     model_type: str = "table"
@@ -150,11 +148,20 @@ class TableModelDetails:
         return thiskwargs
 
     def get_dimension_names(self) -> list[str]:
-        """Names from joint list of rows and columns."""
+        """Names from joint list of rows and columns.
+
+        provides dummy names if needed - butthuis shoulkd have been done earlier
+        """
         names: list = []
-        for dimension in self.index:
+        for idx, dimension in enumerate(self.index):
+            if dimension.name is None:
+                dimension.name = f"row_{str(idx)}"
+
             names.append(dimension.name)
         for dimension in self.columns:
+            if dimension.name is None:
+                dimension.name = f"col_{str(idx)}"
+
             names.append(dimension.name)
         return names
 
@@ -226,8 +233,6 @@ class TableModelDetails:
         -----
         Expand docstring and handle arraylike as well as series.
         """
-        # TODO handle arraylike as well as series
-        # TODO handle rownames/colnames
         variable_metadata: dict[str, dict] = {}
         variable_metadata.update(self._get_axis_metadata(index, where="index"))
         variable_metadata.update(self._get_axis_metadata(columns, where="columns"))
@@ -246,12 +251,10 @@ class TableModelDetails:
     def get_count_table(self) -> pd.DataFrame:
         """Make count table as specified by model."""
         args = self.get_crosstab_args()
-        if len(args[1]) == 0:
+        if len(args[1]) == 0:  # no columns were specified in the original call
             data = self.get_pivot_data()
             index_names = [x.name for x in args[0]]
-            logger.debug(
-                f"making pivot counts table data={data}\nindex_names={index_names},values={index_names[0]}"
-            )
+
             counts = pd.pivot_table(
                 data,
                 index=index_names,
@@ -330,12 +333,10 @@ class TableModelDetails:
                 thiskwargs["aggfunc"] = thiskwargs["values"] = None
                 mask = pd.crosstab(*args, **thiskwargs).astype(bool)
             mask[:] = False
-            # logger.info(f'get_allfalse_mask for table, mask=:\n{mask}')
 
         else:  # array
             series_mask = self.index[0].value_counts()
             series_mask = pd.Series(False, index=series_mask.index, dtype=bool)
             mask = pd.DataFrame(series_mask, dtype=bool)
-            # logger.info(f'get_allfalse_mask for other {model.model_type}, mask=:\n{mask}')
 
         return mask

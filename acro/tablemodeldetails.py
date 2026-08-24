@@ -150,18 +150,16 @@ class TableModelDetails:
     def get_dimension_names(self) -> list[str]:
         """Names from joint list of rows and columns.
 
-        provides dummy names if needed - butthuis shoulkd have been done earlier
+        uncomment to provide dummy names if needed - but this should have been done earlier
         """
         names: list = []
         for idx, dimension in enumerate(self.index):
-            if dimension.name is None:
-                dimension.name = f"row_{str(idx)}"
-
+            #if dimension.name is None:
+            #    dimension.name = f"row_{str(idx)}"
             names.append(dimension.name)
         for dimension in self.columns:
-            if dimension.name is None:
-                dimension.name = f"col_{str(idx)}"
-
+            #if dimension.name is None:
+            #    dimension.name = f"col_{str(idx)}"
             names.append(dimension.name)
         return names
 

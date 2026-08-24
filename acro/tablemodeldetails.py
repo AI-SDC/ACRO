@@ -153,12 +153,12 @@ class TableModelDetails:
         uncomment to provide dummy names if needed - but this should have been done earlier
         """
         names: list = []
-        for idx, dimension in enumerate(self.index):
-            #if dimension.name is None:
+        for dimension in self.index:
+            # if dimension.name is None:
             #    dimension.name = f"row_{str(idx)}"
             names.append(dimension.name)
         for dimension in self.columns:
-            #if dimension.name is None:
+            # if dimension.name is None:
             #    dimension.name = f"col_{str(idx)}"
             names.append(dimension.name)
         return names

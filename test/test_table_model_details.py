@@ -205,7 +205,7 @@ def test_get_pivot_data():
 
 
 def test_get_table_newagg():
-    """Get count table."""
+    """Get table with new agg function."""
     df = pd.DataFrame(
         {
             "A": [True, False, True, False],

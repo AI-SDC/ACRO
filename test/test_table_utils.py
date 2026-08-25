@@ -1,5 +1,7 @@
 """Unit tests for functions in table_utils.py."""
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -236,6 +238,7 @@ class TestAxisToList:
         result = axis_to_list(s)
         assert isinstance(result, list)
         assert len(result) == 1
+        assert isinstance(result[0], pd.Series)
         assert result[0].equals(s)
 
     def test_axis_to_list_already_list(self):
@@ -260,6 +263,63 @@ class TestAxisToList:
         result = axis_to_list([])
         assert isinstance(result, list)
         assert len(result) == 0
+
+    def test_axis_to_list_stringlist(self):
+        """Transform list of stringa aointo series within list."""
+        mylist: list = ["a", "b", "c"]
+        result = axis_to_list(mylist)
+        assert isinstance(result, list)
+        assert len(result) == 1
+        assert isinstance(result[0], pd.Series)
+        assert np.array_equal(result[0].values, np.array(["a", "b", "c"]))
+
+    def runtest_axistype(self, thing: Any, expectedlen: int) -> None:
+        """Run translation checks for something presented as an axis."""
+        # print(f'got a {type(thing)}: \n{thing}')
+        foo = axis_to_list(thing)
+        assert isinstance(foo, list), f"should now be list but is a {type(foo)}"
+        assert len(foo) == expectedlen
+        for idx, x in enumerate(foo):
+            assert isinstance(x, pd.Series), f"{idx} : is {type(x)} not pd.Series:\n{x}"
+
+    def test_axis_to_list_translations(self) -> None:
+        """Test types all get translated correctly."""
+        survival_table = pd.DataFrame(
+            {
+                "Surv prob": [1.0, 0.95, 0.90, 0.85, 0.80],
+                "num at risk": [100, 95, 85, 75, 60],
+                "num events": [0, 5, 10, 10, 15],
+            }
+        )
+
+        col_of_dataframe = survival_table["Surv prob"]
+
+        numpy2darray = np.array([[1, 2, 3], [4, 5, 6]])
+
+        myother2darray = np.array([[11, 12, 13], [14, 15, 16]])
+        mylistofarrays = [numpy2darray, myother2darray]
+        mylistoflists: list = [["a", "b", "c"], ["d", "e", "f"]]
+        my3darray = np.ones((3, 3, 3))
+        mixedarray = [col_of_dataframe, numpy2darray, ["a", "b"]]
+        pandascategorical = pd.Categorical([1, 2, 3, 1, 2, 3])
+
+        to_test = [
+            "abc",
+            645,
+            98.4,
+            survival_table,
+            [survival_table, survival_table],
+            col_of_dataframe,
+            numpy2darray,
+            mylistofarrays,
+            mylistoflists,
+            my3darray,
+            mixedarray,
+            pandascategorical,
+        ]
+        expectedlen = [1, 1, 1, 3, 6, 1, 3, 6, 2, 1, 1, 1]
+        for idx, thing in enumerate(to_test):
+            self.runtest_axistype(thing, expectedlen[idx])
 
 
 class TestDropDuplicateColumns:

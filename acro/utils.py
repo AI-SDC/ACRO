@@ -76,45 +76,6 @@ def prettify_table_string(table: pd.DataFrame, separator: str | None = None) -> 
     return tabulate(
         mytable, headers="keys", showindex=False, tablefmt="rounded_outline"
     )
-    # hdelim: str = "-"
-    # vdelim: str = "|"
-
-    # # logger.info(f'in utils table as table before prettifying:\n{table}')
-
-    # table.rename(columns=lambda x: str(x).replace(" ", "_"), inplace=True)
-    # output: str = table.to_string(justify="left")
-    # # logger.info(f'in utils table after removing spaces in column names and converting to string :\n{output}')
-
-    # as_strings: list[str] = output.split("\n")
-    # nheaders = len(as_strings) - table.shape[0]
-    # rowlen = len(as_strings[0])
-
-    # # get top level column labels and their positions
-    # if separator is not None:
-    #     rowone_strings: list[str] = as_strings[0].split(separator)
-    # else:
-    #     rowone_strings = as_strings[0].split()
-
-    # vals: list[str] = rowone_strings[1:]
-    # positions: list[int] = []
-    # for val in vals:
-    #     positions.append(as_strings[0].find(val))
-
-    # for row, _ in enumerate(as_strings):
-    #     for pos in positions[::-1]:
-    #         as_strings[row] = as_strings[row][0:pos] + vdelim + as_strings[row][pos:]
-
-    # rowlen += len(positions)  # add on space for v delimiters
-
-    # outstr: str = ""
-    # outstr += hdelim * rowlen + vdelim + "\n"
-    # for row in range(nheaders):
-    #     outstr += as_strings[row] + vdelim + "\n"
-    # outstr += hdelim * rowlen + vdelim + "\n"
-    # for row in range(nheaders, len(as_strings)):
-    #     outstr += as_strings[row] + vdelim + "\n"
-    # outstr += hdelim * rowlen + vdelim + "\n"
-    # return outstr
 
 
 def get_unique_artefact_filename(filename: str) -> str:
@@ -145,6 +106,6 @@ def get_unique_artefact_filename(filename: str) -> str:
 def get_catdtype(series: pd.Series) -> pd.CategoricalDtype:
     """Get info for pandas datatype to convert series to CategoricalDtype."""
     ordered = True if series.astype(int, errors="ignore").dtype == "int64" else False
-    categories = np.sort(series.dropna().unique())
+    categories = np.sort(series.dropna().explode().unique())
     cat_type = pd.CategoricalDtype(categories, ordered)
     return cat_type

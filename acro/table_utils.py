@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from pandas.api.types import CategoricalDtype
 
 from . import utils
@@ -32,7 +32,7 @@ AGGFUNC_TO_TYPE: dict[str, str] = {
 }
 
 
-def axis_to_list(axis: Series | list[Series]) -> list[Series]:
+def axis_to_list(axis: Any, prefix: str = "row") -> list[pd.Series]:
     """Translate axis into standard format.
 
     Convert variables describing an axis (row/column) into a list
@@ -41,17 +41,103 @@ def axis_to_list(axis: Series | list[Series]) -> list[Series]:
 
     Parameters
     ----------
-    axis : Series or list of Series
-        Pandas series or list of series describing an axis.
+    axis : Series or list of Series or ArrayLike
+    Pandas series or list of series describing an axis.
 
     Returns
     -------
     list
-        List of Series objects.
+    List of Series objects.
     """
-    if not isinstance(axis, list):
-        return [axis] if axis is not None else []
-    return axis
+    converted: list[pd.Series] = []
+
+    if axis is None:  # empty
+        pass
+    elif isinstance(axis, list):
+        converted = list_to_list_of_series(axis)
+
+    # simple datatypes
+    elif isinstance(axis, (str, int, float, bool)):
+        converted = [pd.Series(axis)]
+
+    # pandas things
+    elif isinstance(axis, pd.Series):
+        converted = [axis]
+    elif isinstance(axis, pd.Categorical):
+        # Handle pandas Categorical directly
+        converted = [pd.Series(axis)]
+    elif isinstance(axis, pd.DataFrame):
+        converted = [axis[col] for col in axis]
+    # numpy things
+
+    elif isinstance(axis, np.ndarray):  # numpy n-d array esp. from R
+        if len(axis.shape) == 1:  # 1d array
+            converted = [pd.Series(axis)]
+        elif len(axis.shape) > 2:  # >2d is problematic
+            logger.error(
+                "received row/column/values spec in more than 2d"
+                "ignoring all but the first dimension"
+            )
+            converted = [pd.Series(axis[:, 0, 0])]
+        else:
+            converted = [pd.Series(axis[:, col]) for col in range(axis.shape[1])]
+
+    # make sure everything has a name numbering sequentially using the prefix (typically row/col)
+    for idx, x in enumerate(converted):
+        if x.name is None:
+            x.name = f"{prefix}_var{str(idx)}"
+    return converted
+
+
+def list_to_list_of_series(mylist: list) -> list[pd.Series]:
+    """Convert list of objects to list of pandas series.
+
+    Pandas crosstab supports ArrayLike objects for crosstabs etc but internally we assume lists of pd.Series.
+
+    Parameters
+    ----------
+    mylist : list(Any)
+        list to be converted
+
+    Returns
+    -------
+    list of pandas Series
+    """
+    converted: list[pd.Series] = []
+    # pd.series - happy days
+    if all(isinstance(x, (pd.Series)) for x in mylist):
+        converted = mylist
+
+    # simple scalar contents- turn into a single series
+    elif all(isinstance(x, (str, float, int, bool)) for x in mylist):
+        converted = [pd.Series(mylist)]
+
+    # one or more dataframes- concatenate all the columns
+    elif all(isinstance(x, pd.DataFrame) for x in mylist):
+        for x in mylist:
+            newlist = [pd.Series(y) for y in x]
+            converted.extend(newlist)
+
+    # one or more numpy arrays-must be same length
+    elif all(isinstance(x, np.ndarray) for x in mylist):
+        for thearray in mylist:
+            # logger.debug('thearray has shape %s:\n%s',(thearray.shape,thearray))
+            for col in range(thearray.shape[1]):
+                newseries = pd.Series(thearray[:, col])
+                # logger.debug('newseries is a %s:\n%s',(type(newseries),newseries))
+                converted.append(newseries)
+
+    # another list
+    elif all(isinstance(x, list) for x in mylist):
+        for thelist in mylist:
+            converted.append(pd.Series(thelist))
+
+    else:
+        converted = [
+            pd.Series(mylist)
+        ]  # lists of mixed types get converted to a single series
+
+    return converted
 
 
 def drop_duplicate_columns(outcome: pd.DataFrame) -> pd.DataFrame:
@@ -286,7 +372,7 @@ def get_redacted_table(
         collated_assessment, kwargs["aggfunc"]
     )
     dim_names = model.get_dimension_names()
-    logger.debug(f"queries are {queries}")
+    # logger.debug(f"queries are {queries}, dimension names are {dim_names}")
     relevant_data: DataFrame = get_relevant_dataframe(model)
 
     redacted_data: DataFrame = get_redacted_data(relevant_data, queries, dim_names)
@@ -603,18 +689,19 @@ def get_redacted_data(
     redacted_data = data.copy()
 
     # queries are in string form
+    # logger.debug(f'data has columns {list(data)} but dimensions is {dimensions}')
     oldtypes: dict = {}
     for dimension in dimensions:
         if dimension in list(redacted_data):
             oldtypes[dimension] = redacted_data[dimension].dtype
-            # logger.debug(
-            #    f"converting {dimension} from {redacted_data[dimension].dtype} to str"
-            # )
-            redacted_data[dimension] = redacted_data[dimension].astype(str)
+            logger.debug(
+                f"converting {dimension} from {redacted_data[dimension].dtype} to str"
+            )
+            redacted_data[dimension] = redacted_data[dimension].astype(str).fillna("")
 
-    # logger.debug(f'now columns are {list(redacted_data)}')
-    # for col in redacted_data:
-    #     logger.debug(f'{col}: {redacted_data[col].unique()}')
+    logger.debug(f"now columns are {list(redacted_data.columns)}")
+    for col in redacted_data:
+        logger.debug(f"{col}: {redacted_data[col].unique()}")
 
     logger.debug(f"in get_redacted_data: queries are:\n{queries}")
     logger.debug(f"initially redacted  data has shape {redacted_data.shape}")

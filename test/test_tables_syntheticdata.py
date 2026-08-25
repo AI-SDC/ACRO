@@ -464,7 +464,7 @@ def test_crosstab_with_totals_with_suppression_hierarchical(data, acro):
     assert output.status == "review"
 
     for idx in table.index[:-1]:
-        unsuppressed = table.loc[idx, table.columns[:-1]].dropna()
+        unsuppressed = table.iloc[table.index.get_loc(idx), :-1].dropna()
         if len(unsuppressed) > 0:
             unsup_sum = unsuppressed.sum()
             row_total = table.loc[idx, "All"]
@@ -759,6 +759,52 @@ def test_2d_tables(synthetic_2d_unsafe, synthetic_2d_safe):
     )  # native pandas will produce zeros
     assert (safe_crosstab == 0).sum().sum() == expected_unsafe
     _assert_suppressed_output(output, expected_unsafe=expected_unsafe)
+
+
+# 2D checking odd aspects of crosstab behaviour
+def test_2d_crosstab_oddments(synthetic_2d_unsafe):
+    """Check acro behaviour for different data formats."""
+    unsafe = synthetic_2d_unsafe
+    unsafe["myindvar1"] = unsafe["indvar1"]
+    unsafe["myindvar2"] = unsafe["indvar2"]
+    unsafe["mydepvar"] = unsafe["depvar"]
+
+    acro = ACRO()
+    acro.disable_suppression()
+
+    series_crosstab = acro.crosstab(
+        index=unsafe["myindvar1"],
+        columns=unsafe["myindvar2"],
+        values=unsafe["mydepvar"],
+        aggfunc="count",
+        margins=True,
+    )
+    rownames = ["myindvar1"]
+    colnames = ["myindvar2"]
+    # test datahandling if everything is in a numpy array
+    numpy_crosstab = acro.crosstab(
+        index=unsafe["indvar1"].copy().to_numpy(),
+        columns=unsafe["indvar2"].copy().to_numpy(),
+        values=unsafe["depvar"].copy().to_numpy(),
+        rownames=rownames,
+        colnames=colnames,
+        aggfunc="count",
+        margins=True,
+    )
+    assert series_crosstab.equals(numpy_crosstab)
+    # test datahandling if everything is as lists
+    list_crosstab = acro.crosstab(
+        index=unsafe["indvar1"].tolist(),
+        columns=unsafe["indvar2"].tolist(),
+        values=unsafe["depvar"].tolist(),
+        rownames=rownames,
+        colnames=colnames,
+        aggfunc="count",
+        margins=True,
+    )
+    assert series_crosstab.equals(list_crosstab), (
+        f"expected:\n{series_crosstab}\ngot\n{list_crosstab}"
+    )
 
 
 # 3D

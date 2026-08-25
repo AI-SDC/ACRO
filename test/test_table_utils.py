@@ -238,6 +238,7 @@ class TestAxisToList:
         result = axis_to_list(s)
         assert isinstance(result, list)
         assert len(result) == 1
+        assert isinstance(result[0], pd.Series)
         assert result[0].equals(s)
 
     def test_axis_to_list_already_list(self):
@@ -300,6 +301,7 @@ class TestAxisToList:
         mylistoflists: list = [["a", "b", "c"], ["d", "e", "f"]]
         my3darray = np.ones((3, 3, 3))
         mixedarray = [col_of_dataframe, numpy2darray, ["a", "b"]]
+        pandascategorical = pd.Categorical([1, 2, 3, 1, 2, 3])
 
         to_test = [
             "abc",
@@ -313,8 +315,9 @@ class TestAxisToList:
             mylistoflists,
             my3darray,
             mixedarray,
+            pandascategorical,
         ]
-        expectedlen = [1, 1, 1, 3, 6, 1, 3, 6, 2, 1, 1]
+        expectedlen = [1, 1, 1, 3, 6, 1, 3, 6, 2, 1, 1, 1]
         for idx, thing in enumerate(to_test):
             self.runtest_axistype(thing, expectedlen[idx])
 

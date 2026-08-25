@@ -63,7 +63,9 @@ def axis_to_list(axis: Any, prefix: str = "row") -> list[pd.Series]:
     # pandas things
     elif isinstance(axis, pd.Series):
         converted = [axis]
-
+    elif isinstance(axis, pd.Categorical):
+        # Handle pandas Categorical directly
+        converted = [pd.Series(axis)]
     elif isinstance(axis, pd.DataFrame):
         converted = [axis[col] for col in axis]
     # numpy things

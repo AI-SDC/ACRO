@@ -154,7 +154,7 @@ class VariableMatrixBuilder:
 
     @staticmethod
     def build_matrix(
-        output_metadata_list: list[dict[str, Any]]
+        output_metadata_list: list[dict[str, Any]],
     ) -> dict[str, dict[str, int]]:
         """Build variable usage matrix.
 

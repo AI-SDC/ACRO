@@ -63,9 +63,7 @@ def test_extract_session_metadata_empty_records():
     timestamp = "2024-01-15T10:00:00"
     version = "0.5.0"
 
-    metadata = MetadataExtractor.extract_session_metadata(
-        records, timestamp, version
-    )
+    metadata = MetadataExtractor.extract_session_metadata(records, timestamp, version)
 
     assert metadata["version"] == version
     assert metadata["timestamp"] == timestamp
@@ -203,11 +201,17 @@ def test_extract_output_metadata_variations(
     "metadata, expected_vars",
     [
         (
-            {"dependent_variables": "income", "independent_variables": ["age", "gender"]},
+            {
+                "dependent_variables": "income",
+                "independent_variables": ["age", "gender"],
+            },
             {"income", "age", "gender"},
         ),
         (
-            {"dependent_variables": ["income", "score"], "independent_variables": ["age"]},
+            {
+                "dependent_variables": ["income", "score"],
+                "independent_variables": ["age"],
+            },
             {"income", "score", "age"},
         ),
         (
@@ -215,7 +219,10 @@ def test_extract_output_metadata_variations(
             {"income"},
         ),
         (
-            {"dependent_variables": "unknown", "independent_variables": ["age", "gender"]},
+            {
+                "dependent_variables": "unknown",
+                "independent_variables": ["age", "gender"],
+            },
             {"age", "gender"},
         ),
         (
@@ -227,7 +234,10 @@ def test_extract_output_metadata_variations(
             {"age"},
         ),
         (
-            {"dependent_variables": ["unknown", "score"], "independent_variables": ["age", "none", ""]},
+            {
+                "dependent_variables": ["unknown", "score"],
+                "independent_variables": ["age", "none", ""],
+            },
             {"score", "age"},
         ),
         (
@@ -303,7 +313,11 @@ def test_build_matrix_skips_entries_without_uid():
     """Entries missing a uid should be safely skipped."""
     metadata_list = [
         {"dependent_variables": "income", "independent_variables": ["age"]},
-        {"uid": "output_0", "dependent_variables": "income", "independent_variables": ["gender"]},
+        {
+            "uid": "output_0",
+            "dependent_variables": "income",
+            "independent_variables": ["gender"],
+        },
     ]
     matrix = VariableMatrixBuilder.build_matrix(metadata_list)
     assert list(matrix.keys()) == ["output_0"]
@@ -436,7 +450,9 @@ def test_generate_session_summary_handles_write_failure(tmp_path, caplog):
 def test_generate_session_summary_handles_add_custom_failure(tmp_path, caplog):
     """Errors in records.add_custom should be logged without raising exceptions."""
     records = Records()
-    with patch.object(records, "add_custom", side_effect=RuntimeError("Add custom failed")):
+    with patch.object(
+        records, "add_custom", side_effect=RuntimeError("Add custom failed")
+    ):
         generate_session_summary(records, str(tmp_path))
 
     assert "Failed to add session summary as custom output" in caplog.text
@@ -507,9 +523,35 @@ def test_full_acro_session_summary_generation(tmp_path):
     acro = ACRO(suppress=False)
     sample_df = pd.DataFrame(
         {
-            "year": [2010, 2011, 2012, 2010, 2011, 2012, 2010, 2011, 2012, 2010, 2011, 2012],
+            "year": [
+                2010,
+                2011,
+                2012,
+                2010,
+                2011,
+                2012,
+                2010,
+                2011,
+                2012,
+                2010,
+                2011,
+                2012,
+            ],
             "grant_type": ["G", "G", "G", "R", "R", "R", "N", "N", "N", "G", "R", "N"],
-            "inc_activity": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0],
+            "inc_activity": [
+                10.0,
+                20.0,
+                30.0,
+                40.0,
+                50.0,
+                60.0,
+                70.0,
+                80.0,
+                90.0,
+                100.0,
+                110.0,
+                120.0,
+            ],
         }
     )
 
@@ -543,11 +585,17 @@ def test_full_acro_session_summary_generation(tmp_path):
     outputs_by_uid = {out["uid"]: out for out in summary["outputs"]}
 
     assert outputs_by_uid["output_0"]["analysis_name"] == "crosstab"
-    assert set(outputs_by_uid["output_0"]["independent_variables"]) == {"year", "grant_type"}
+    assert set(outputs_by_uid["output_0"]["independent_variables"]) == {
+        "year",
+        "grant_type",
+    }
 
     assert outputs_by_uid["output_1"]["analysis_name"] == "pivot_table"
     assert outputs_by_uid["output_1"]["dependent_variables"] == "inc_activity"
-    assert set(outputs_by_uid["output_1"]["independent_variables"]) == {"year", "grant_type"}
+    assert set(outputs_by_uid["output_1"]["independent_variables"]) == {
+        "year",
+        "grant_type",
+    }
 
     assert outputs_by_uid["output_2"]["analysis_name"] == "ols"
     assert outputs_by_uid["output_2"]["dependent_variables"] == "inc_activity"
@@ -611,7 +659,9 @@ def test_finalise_continues_on_summary_failure(tmp_path, caplog):
 
     output_path = str(tmp_path / "fail_summary_results")
 
-    with patch("acro.record.generate_session_summary", side_effect=RuntimeError("Summary boom")):
+    with patch(
+        "acro.record.generate_session_summary", side_effect=RuntimeError("Summary boom")
+    ):
         records.finalise(output_path, ext="json")
 
     assert (Path(output_path) / "results.json").exists()

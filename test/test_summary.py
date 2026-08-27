@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import json
 from pathlib import Path
 from typing import Any
@@ -12,7 +13,8 @@ import pandas as pd
 import pytest
 
 from acro import ACRO
-from acro.record import Record, Records
+from acro.constants import ARTIFACTS_DIR
+from acro.record import Record, Records, _copy_output_file_if_needed
 from acro.summary import (
     SUMMARY_FILENAME,
     SUMMARY_OUTPUT_TYPE,
@@ -39,7 +41,7 @@ def make_record(
     output: list[Any] | None = None,
     comments: list[str] | None = None,
 ) -> Record:
-    """Instantiate a valid Record object for tests."""
+    """Helper function to instantiate a valid Record object for tests."""
     return Record(
         uid=uid,
         status=status,
@@ -63,7 +65,9 @@ def test_extract_session_metadata_empty_records():
     timestamp = "2024-01-15T10:00:00"
     version = "0.5.0"
 
-    metadata = MetadataExtractor.extract_session_metadata(records, timestamp, version)
+    metadata = MetadataExtractor.extract_session_metadata(
+        records, timestamp, version
+    )
 
     assert metadata["version"] == version
     assert metadata["timestamp"] == timestamp
@@ -134,14 +138,7 @@ def test_extract_output_metadata_complete_fair():
 
 
 @pytest.mark.parametrize(
-    (
-        "fair_input",
-        "properties",
-        "command",
-        "expected_dep",
-        "expected_indep",
-        "expected_analysis",
-    ),
+    "fair_input, properties, command, expected_dep, expected_indep, expected_analysis",
     [
         # Standard record with method property
         (
@@ -161,7 +158,7 @@ def test_extract_output_metadata_complete_fair():
             [],
             "crosstab",
         ),
-        # Record with missing dependent variable (sentinel default)
+        # Record with missing dependent variable 
         (
             {"dependent": "unknown", "independent": ["year"]},
             {"method": "ols"},
@@ -205,20 +202,14 @@ def test_extract_output_metadata_variations(
 
 
 @pytest.mark.parametrize(
-    ("metadata", "expected_vars"),
+    "metadata, expected_vars",
     [
         (
-            {
-                "dependent_variables": "income",
-                "independent_variables": ["age", "gender"],
-            },
+            {"dependent_variables": "income", "independent_variables": ["age", "gender"]},
             {"income", "age", "gender"},
         ),
         (
-            {
-                "dependent_variables": ["income", "score"],
-                "independent_variables": ["age"],
-            },
+            {"dependent_variables": ["income", "score"], "independent_variables": ["age"]},
             {"income", "score", "age"},
         ),
         (
@@ -226,10 +217,7 @@ def test_extract_output_metadata_variations(
             {"income"},
         ),
         (
-            {
-                "dependent_variables": "unknown",
-                "independent_variables": ["age", "gender"],
-            },
+            {"dependent_variables": "unknown", "independent_variables": ["age", "gender"]},
             {"age", "gender"},
         ),
         (
@@ -241,10 +229,7 @@ def test_extract_output_metadata_variations(
             {"age"},
         ),
         (
-            {
-                "dependent_variables": ["unknown", "score"],
-                "independent_variables": ["age", "none", ""],
-            },
+            {"dependent_variables": ["unknown", "score"], "independent_variables": ["age", "none", ""]},
             {"score", "age"},
         ),
         (
@@ -320,11 +305,7 @@ def test_build_matrix_skips_entries_without_uid():
     """Entries missing a uid should be safely skipped."""
     metadata_list = [
         {"dependent_variables": "income", "independent_variables": ["age"]},
-        {
-            "uid": "output_0",
-            "dependent_variables": "income",
-            "independent_variables": ["gender"],
-        },
+        {"uid": "output_0", "dependent_variables": "income", "independent_variables": ["gender"]},
     ]
     matrix = VariableMatrixBuilder.build_matrix(metadata_list)
     assert list(matrix.keys()) == ["output_0"]
@@ -399,7 +380,6 @@ def test_convert_numpy_types_json_serializable():
         },
     }
     converted = _convert_numpy_types(data)
-    # Must be valid for json.dumps without TypeError
     serialized = json.dumps(converted)
     deserialized = json.loads(serialized)
 
@@ -450,16 +430,13 @@ def test_generate_session_summary_handles_write_failure(tmp_path, caplog):
         generate_session_summary(records, str(tmp_path))
 
     assert "Failed to write session summary" in caplog.text
-    # When file write fails, no custom output pointing to a missing file should be added
     assert len(records.results) == 0
 
 
 def test_generate_session_summary_handles_add_custom_failure(tmp_path, caplog):
     """Errors in records.add_custom should be logged without raising exceptions."""
     records = Records()
-    with patch.object(
-        records, "add_custom", side_effect=RuntimeError("Add custom failed")
-    ):
+    with patch.object(records, "add_custom", side_effect=RuntimeError("Add custom failed")):
         generate_session_summary(records, str(tmp_path))
 
     assert "Failed to add session summary as custom output" in caplog.text
@@ -501,16 +478,14 @@ def test_load_session_summary_io_error(tmp_path):
     summary_file = tmp_path / SUMMARY_FILENAME
     summary_file.write_text("{}", encoding="utf-8")
 
-    with (
-        patch("builtins.open", side_effect=OSError("Read error")),
-        pytest.raises(ValueError, match="Failed to read session summary file"),
-    ):
-        load_session_summary(str(tmp_path))
+    with patch("builtins.open", side_effect=OSError("Read error")):
+        with pytest.raises(ValueError, match="Failed to read session summary file"):
+            load_session_summary(str(tmp_path))
 
 
 def test_load_session_summary_missing_sections(tmp_path):
     """Load session summary raises ValueError when required sections are missing."""
-    invalid_summary: dict[str, dict[str, int]] = {"metadata": {}}
+    invalid_summary = {"metadata": {}}
 
     summary_file = tmp_path / SUMMARY_FILENAME
     with open(summary_file, "w", encoding="utf-8") as f:
@@ -532,35 +507,9 @@ def test_full_acro_session_summary_generation(tmp_path):
     acro = ACRO(suppress=False)
     sample_df = pd.DataFrame(
         {
-            "year": [
-                2010,
-                2011,
-                2012,
-                2010,
-                2011,
-                2012,
-                2010,
-                2011,
-                2012,
-                2010,
-                2011,
-                2012,
-            ],
+            "year": [2010, 2011, 2012, 2010, 2011, 2012, 2010, 2011, 2012, 2010, 2011, 2012],
             "grant_type": ["G", "G", "G", "R", "R", "R", "N", "N", "N", "G", "R", "N"],
-            "inc_activity": [
-                10.0,
-                20.0,
-                30.0,
-                40.0,
-                50.0,
-                60.0,
-                70.0,
-                80.0,
-                90.0,
-                100.0,
-                110.0,
-                120.0,
-            ],
+            "inc_activity": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0],
         }
     )
 
@@ -594,17 +543,11 @@ def test_full_acro_session_summary_generation(tmp_path):
     outputs_by_uid = {out["uid"]: out for out in summary["outputs"]}
 
     assert outputs_by_uid["output_0"]["analysis_name"] == "crosstab"
-    assert set(outputs_by_uid["output_0"]["independent_variables"]) == {
-        "year",
-        "grant_type",
-    }
+    assert set(outputs_by_uid["output_0"]["independent_variables"]) == {"year", "grant_type"}
 
     assert outputs_by_uid["output_1"]["analysis_name"] == "pivot_table"
     assert outputs_by_uid["output_1"]["dependent_variables"] == "inc_activity"
-    assert set(outputs_by_uid["output_1"]["independent_variables"]) == {
-        "year",
-        "grant_type",
-    }
+    assert set(outputs_by_uid["output_1"]["independent_variables"]) == {"year", "grant_type"}
 
     assert outputs_by_uid["output_2"]["analysis_name"] == "ols"
     assert outputs_by_uid["output_2"]["dependent_variables"] == "inc_activity"
@@ -626,7 +569,6 @@ def test_full_acro_session_summary_generation(tmp_path):
     assert matrix["output_2"]["year"] == 1
     assert matrix["output_2"]["grant_type"] == 0
 
-    # Check that results.json includes the session summary custom output
     results_file = Path(output_dir) / "results.json"
     assert results_file.exists()
     with open(results_file, encoding="utf-8") as f:
@@ -668,9 +610,7 @@ def test_finalise_continues_on_summary_failure(tmp_path, caplog):
 
     output_path = str(tmp_path / "fail_summary_results")
 
-    with patch(
-        "acro.record.generate_session_summary", side_effect=RuntimeError("Summary boom")
-    ):
+    with patch("acro.record.generate_session_summary", side_effect=RuntimeError("Summary boom")):
         records.finalise(output_path, ext="json")
 
     assert (Path(output_path) / "results.json").exists()
@@ -696,3 +636,39 @@ def test_federated_mode_skips_summary(tmp_path):
 
     assert evidence_file.exists()
     assert not summary_file.exists()
+
+
+def test_copy_output_file_missing_returns_none(tmp_path, caplog):
+    """_copy_output_file_if_needed returns None when the source file does not exist."""
+    result = _copy_output_file_if_needed(
+        str(tmp_path / "nonexistent.csv"), str(tmp_path)
+    )
+
+    assert result is None
+    assert "nonexistent.csv" in caplog.text
+
+
+def test_copy_output_file_already_in_dest_does_not_copy(tmp_path):
+    """_copy_output_file_if_needed returns the filename and skips copy when src == dest."""
+    existing = tmp_path / "plot.png"
+    existing.write_bytes(b"data")
+
+    result = _copy_output_file_if_needed(str(existing), str(tmp_path))
+
+    assert result == "plot.png"
+
+
+def test_finalise_removes_artifacts_dir(tmp_path):
+    """Records.finalise() deletes the ARTIFACTS_DIR directory when it exists."""
+
+    records = Records()
+    record = make_record(uid="output_0", status="pass", output_type="table")
+    records.results[record.uid] = record
+
+  
+    os.makedirs(ARTIFACTS_DIR, exist_ok=True)
+
+    output_path = str(tmp_path / "results")
+    records.finalise(output_path, ext="json")
+
+    assert not os.path.exists(ARTIFACTS_DIR)

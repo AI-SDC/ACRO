@@ -85,7 +85,7 @@ def test_extract_session_metadata_single_output():
     )
 
     assert metadata["total_outputs"] == 1
-    assert metadata["status_counts"] == {"pass": 1}
+    assert metadata["status_counts"] == {"pass": 1}  # nosec B105 - "pass" is an SDC status, not a password
     assert metadata["type_counts"] == {"table": 1}
 
 
@@ -105,7 +105,7 @@ def test_extract_session_metadata_multiple_outputs():
     )
 
     assert metadata["total_outputs"] == 4
-    assert metadata["status_counts"] == {"pass": 2, "fail": 1, "review": 1}
+    assert metadata["status_counts"] == {"pass": 2, "fail": 1, "review": 1}  # nosec B105 - "pass" is an SDC status, not a password
     assert metadata["type_counts"] == {
         "table": 2,
         "regression": 1,

@@ -15,10 +15,42 @@ import pandas as pd
 from pandas import DataFrame
 
 from .constants import ARTIFACTS_DIR
+from .summary import generate_session_summary
 from .utils import is_blocked_extension
 from .version import __version__
 
 logger = logging.getLogger("acro:records")
+
+
+def _copy_output_file_if_needed(filename: str, dest_dir: str) -> str | None:
+    """Copy a file to the output directory if it exists and is not already there.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the source file.
+    dest_dir : str
+        Destination directory path.
+
+    Returns
+    -------
+    str | None
+        The filename (not full path) if successful, None if file doesn't exist.
+    """
+    if not os.path.exists(filename):
+        logger.info(
+            "WARNING: Unable to add %s because the file does not exist", filename
+        )
+        return None
+
+    dest_path = os.path.normpath(os.path.join(dest_dir, Path(filename).name))
+    src_path = os.path.normpath(filename)
+
+    # Only copy if source and destination are different
+    if src_path != dest_path:
+        shutil.copy(filename, dest_dir)
+
+    return Path(filename).name
 
 
 def load_outcome(outcome: dict[str, Any]) -> DataFrame:
@@ -169,6 +201,7 @@ class Record:
             logger.debug("Directory %s created successfully", path)
         except FileExistsError:
             logger.debug("Directory %s already exists", path)
+
         # save each output DataFrame to a different csv
         if all(isinstance(obj, DataFrame) for obj in self.output):
             for i, data in enumerate(self.output):
@@ -177,17 +210,14 @@ class Record:
                 filename = os.path.normpath(f"{path}/{filename}")
                 with open(filename, mode="w", newline="", encoding="utf-8") as file:
                     file.write(data.to_csv())
-        # move custom files to the output folder
-        if self.output_type == "custom":
+
+        # move custom files or plot files to the output folder
+        if self.output_type in ["custom", "survival plot", "histogram", "pie chart"]:
             for filename in self.output:
-                if os.path.exists(filename):
-                    shutil.copy(filename, path)
-                    output.append(Path(filename).name)
-        if self.output_type in ["survival plot", "histogram", "pie chart"]:
-            for filename in self.output:
-                if os.path.exists(filename):
-                    output.append(Path(filename).name)
-                    shutil.copy(filename, path)
+                copied_filename = _copy_output_file_if_needed(filename, path)
+                if copied_filename:
+                    output.append(copied_filename)
+
         return output
 
     def __str__(self) -> str:
@@ -481,12 +511,19 @@ class Records:
         logger.debug("finalise()")
         if interactive:
             self.validate_outputs()
+
+        if ext not in ["json", "xlsx"]:
+            raise ValueError("Invalid file extension. Options: {json, xlsx}")
+
+        try:
+            generate_session_summary(self, path)
+        except Exception as e:
+            logger.warning("Failed to generate session summary: %s", str(e))
+
         if ext == "json":
             self.finalise_json(path)
         elif ext == "xlsx":
             self.finalise_excel(path)
-        else:
-            raise ValueError("Invalid file extension. Options: {json, xlsx}")
         self.write_checksums(path)
         # check if the artifacts directory exists and delete it
         if os.path.exists(ARTIFACTS_DIR):

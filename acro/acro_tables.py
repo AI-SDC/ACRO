@@ -938,6 +938,9 @@ class Tables:
         fair_dict.update(model_details.get_variable_type_dict())
         summary = collatedres.get_overall_summary()
         unique_filename = ""
+        unique_filename1 = utils.get_unique_artefact_filename(filename)
+        if unique_filename1 is not None:
+            unique_filename = unique_filename1
         output = []
 
         if status == "fail" and self.suppress:
@@ -946,32 +949,32 @@ class Tables:
                 column,
             )
             summary = summary + "Disclosive Histogram Redacted."
+            data["dummy"] = 1.0
+            column = "dummy"
 
         else:
             summary += "Please also check bin ends and empty bins are not disclosive."
-            data.hist(
-                column=column,
-                by=by_val,
-                grid=grid,
-                xlabelsize=xlabelsize,
-                xrot=xrot,
-                ylabelsize=ylabelsize,
-                yrot=yrot,
-                ax=axis,
-                sharex=sharex,
-                sharey=sharey,
-                figsize=figsize,
-                layout=layout,
-                bins=bins,
-                backend=backend,
-                legend=legend,
-                **kwargs,
-            )
-            unique_filename1 = utils.get_unique_artefact_filename(filename)
-            if unique_filename1 is not None:
-                unique_filename = unique_filename1
-                plt.savefig(unique_filename)
-                output = [os.path.normpath(unique_filename)]
+        data.hist(
+            column=column,
+            by=by_val,
+            grid=grid,
+            xlabelsize=xlabelsize,
+            xrot=xrot,
+            ylabelsize=ylabelsize,
+            yrot=yrot,
+            ax=axis,
+            sharex=sharex,
+            sharey=sharey,
+            figsize=figsize,
+            layout=layout,
+            bins=bins,
+            backend=backend,
+            legend=legend,
+            **kwargs,
+        )
+
+        plt.savefig(unique_filename)
+        output = [os.path.normpath(unique_filename)]
 
         # record output
         self.results.add(
@@ -1051,6 +1054,12 @@ class Tables:
 
         output: list = []
         unique_filename = ""
+        unique_filename1 = utils.get_unique_artefact_filename(filename)
+        if unique_filename1 is not None:
+            unique_filename = unique_filename1
+        # gget counts to display
+        counts = data[column].value_counts()
+        # redact if needed
         if self.suppress and "MinimumThresholdCheck" in summary:
             logger.warning(
                 "Pie chart will not be shown as the %s column is disclosive.",
@@ -1058,20 +1067,13 @@ class Tables:
             )
             overall_status = "fail"
             summary = summary + " Pie Chart Redacted."
-            output = []
-
+            counts[:] = 0.01
         else:
-            summary += "Please also for missing categories."
-
-            counts = data[column].value_counts()
-            _, ax = plt.subplots()
-            ax.pie(counts.values, labels=counts.index, **kwargs)
-
-            unique_filename1 = utils.get_unique_artefact_filename(filename)
-            if unique_filename1 is not None:
-                unique_filename = unique_filename1
-                plt.savefig(unique_filename)
-                output = [os.path.normpath(unique_filename)]
+            summary += "Please also check for missing categories."
+        _, ax = plt.subplots()
+        ax.pie(counts.values, labels=counts.index, **kwargs)
+        plt.savefig(unique_filename)
+        output = [os.path.normpath(unique_filename)]
 
         self.results.add(
             status=overall_status,

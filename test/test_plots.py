@@ -95,7 +95,7 @@ def test_histogram_disclosive(acro, caplog):
     small_data = pd.DataFrame({"value": [1, 2, 3]})
     result = acro.hist(small_data, "value")
 
-    assert result == ""
+    # assert result == "" file is now produced but with all 1s
     acro.add_exception("output_0", "Let me have it")
     results: Records = acro.finalise(path=PATH)
     output_0 = results.get_index(0)
@@ -104,7 +104,7 @@ def test_histogram_disclosive(acro, caplog):
         "Histogram will not be shown as the value column is disclosive." in caplog.text
     )
     assert output_0.status == "fail"
-    assert output_0.output == []
+    assert output_0.output == [os.path.normpath(result)]
     shutil.rmtree(PATH, ignore_errors=True)
 
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv as csv_mod
 import json
 import os
 from pathlib import Path
@@ -16,6 +17,7 @@ from acro import ACRO
 from acro.constants import ARTIFACTS_DIR
 from acro.record import Record, Records, _copy_output_file_if_needed
 from acro.summary import (
+    SUMMARY_CSV_FILENAME,
     SUMMARY_FILENAME,
     SUMMARY_OUTPUT_TYPE,
     SUMMARY_WARNING_COMMENT,
@@ -25,6 +27,7 @@ from acro.summary import (
     _convert_numpy_types,
     generate_session_summary,
     load_session_summary,
+    write_summary_csv,
 )
 
 
@@ -729,3 +732,150 @@ def test_finalise_removes_artifacts_dir(tmp_path):
     records.finalise(output_path, ext="json")
 
     assert not os.path.exists(ARTIFACTS_DIR)
+
+
+def test_write_summary_csv_creates_file(tmp_path):
+    """Write_summary_csv creates a CSV file at the given path."""
+    summary = {
+        "outputs": [
+            {
+                "uid": "output_0",
+                "output_type": "table",
+                "analysis_name": "crosstab",
+                "dependent_variables": "unknown",
+                "independent_variables": ["year", "grant_type"],
+            }
+        ],
+        "variable_matrix": {
+            "output_0": {"grant_type": 1, "year": 1},
+        },
+    }
+    csv_path = str(tmp_path / SUMMARY_CSV_FILENAME)
+    write_summary_csv(summary, csv_path)
+
+    assert Path(csv_path).exists()
+
+
+def test_write_summary_csv_header_and_row(tmp_path):
+    """Write_summary_csv produces the correct header and one row per output."""
+    summary = {
+        "outputs": [
+            {
+                "uid": "output_0",
+                "output_type": "table",
+                "analysis_name": "crosstab",
+                "dependent_variables": "unknown",
+                "independent_variables": ["grant_type", "year"],
+            },
+            {
+                "uid": "output_1",
+                "output_type": "regression",
+                "analysis_name": "ols",
+                "dependent_variables": "inc_activity",
+                "independent_variables": ["year"],
+            },
+        ],
+        "variable_matrix": {
+            "output_0": {"grant_type": 1, "inc_activity": 0, "year": 1},
+            "output_1": {"grant_type": 0, "inc_activity": 1, "year": 1},
+        },
+    }
+    csv_path = str(tmp_path / SUMMARY_CSV_FILENAME)
+    write_summary_csv(summary, csv_path)
+
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        rows = list(csv_mod.DictReader(f))
+
+    assert len(rows) == 2
+    assert {
+        "uid",
+        "output_type",
+        "analysis_name",
+        "dependent_variables",
+        "independent_variables",
+        "grant_type",
+        "inc_activity",
+        "year",
+    }.issubset(rows[0].keys())
+
+    assert rows[0]["uid"] == "output_0"
+    assert rows[0]["analysis_name"] == "crosstab"
+    assert rows[0]["grant_type"] == "1"
+    assert rows[0]["inc_activity"] == "0"
+    assert "grant_type" in rows[0]["independent_variables"]
+    assert "year" in rows[0]["independent_variables"]
+
+    assert rows[1]["uid"] == "output_1"
+    assert rows[1]["dependent_variables"] == "inc_activity"
+    assert rows[1]["inc_activity"] == "1"
+    assert rows[1]["grant_type"] == "0"
+
+
+def test_write_summary_csv_empty_outputs(tmp_path):
+    """Write_summary_csv handles a summary with no outputs gracefully."""
+    summary: dict = {"outputs": [], "variable_matrix": {}}
+    csv_path = str(tmp_path / SUMMARY_CSV_FILENAME)
+    write_summary_csv(summary, csv_path)
+
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        rows = list(csv_mod.DictReader(f))
+
+    assert rows == []
+
+
+def test_summary_csv_filename_constant():
+    """SUMMARY_CSV_FILENAME has the expected value."""
+    assert SUMMARY_CSV_FILENAME == "session_summary.csv"
+
+
+def test_finalise_produces_csv(tmp_path):
+    """After Records.finalise(), session_summary.csv exists alongside session_summary.json."""
+    records = Records()
+    r1 = make_record(
+        uid="output_0",
+        status="fail",
+        output_type="table",
+        fair={"dependent": "unknown", "independent": ["year", "grant_type"]},
+        command="crosstab(year, grant_type)",
+    )
+    r2 = make_record(
+        uid="output_1",
+        status="pass",  # nosec B105 - SDC status, not a password
+        output_type="regression",
+        fair={"dependent": "inc_activity", "independent": ["year"]},
+        command="ols(inc_activity, year)",
+    )
+    records.results[r1.uid] = r1
+    records.results[r2.uid] = r2
+
+    output_path = str(tmp_path / "csv_results")
+    records.finalise(output_path, ext="json")
+
+    csv_file = Path(output_path) / SUMMARY_CSV_FILENAME
+    assert csv_file.exists(), "session_summary.csv was not created"
+
+    with open(csv_file, newline="", encoding="utf-8") as f:
+        rows = list(csv_mod.DictReader(f))
+
+    assert len(rows) == 2
+    row_by_uid = {r["uid"]: r for r in rows}
+    assert set(row_by_uid.keys()) == {"output_0", "output_1"}
+    assert row_by_uid["output_0"]["output_type"] == "table"
+    assert row_by_uid["output_1"]["output_type"] == "regression"
+    assert "year" in row_by_uid["output_0"]["independent_variables"]
+    assert row_by_uid["output_1"]["dependent_variables"] == "inc_activity"
+
+
+def test_generate_session_summary_csv_write_failure_continues(tmp_path, caplog):
+    """If write_summary_csv raises, generate_session_summary still writes the JSON."""
+    records = Records()
+    record = make_record(uid="output_0", status="fail", output_type="table")
+    records.results[record.uid] = record
+
+    output_path = str(tmp_path / "csv_fail_results")
+
+    with patch("acro.summary.write_summary_csv", side_effect=OSError("disk full")):
+        generate_session_summary(records, output_path)
+
+    assert (Path(output_path) / SUMMARY_FILENAME).exists()
+    assert "Failed to write session summary CSV" in caplog.text

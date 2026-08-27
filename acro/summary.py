@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import datetime
 import json
 import logging
@@ -17,6 +18,7 @@ logger = logging.getLogger("acro:summary")
 # Module-level constants
 SUMMARY_OUTPUT_TYPE = "summary_report"
 SUMMARY_FILENAME = "session_summary.json"
+SUMMARY_CSV_FILENAME = "session_summary.csv"
 SUMMARY_WARNING_COMMENT = "DO NOT RELEASE - SUMMARY FOR OUTPUT CHECKER USE ONLY"
 
 
@@ -92,7 +94,6 @@ class MetadataExtractor:
         if independent_variables is None:
             independent_variables = []
 
-        # Determine analysis_name from fair, properties, command, or output_type
         analysis_name = fair.get("analysis_name")
         if not analysis_name:
             analysis_name = properties.get("method")
@@ -241,25 +242,79 @@ class SummaryGenerator:
         }
 
 
+def write_summary_csv(summary: dict[str, Any], csv_path: str) -> None:
+    """Write a flat CSV representation of the session summary.
+
+    Each row represents one output. Columns are:
+    uid, output_type, analysis_name, dependent_variables,
+    independent_variables (semicolon-separated), then one column per
+    discovered variable from the variable_matrix (values 0 or 1).
+
+    Parameters
+    ----------
+    summary : dict[str, Any]
+        The complete summary dict produced by SummaryGenerator.generate().
+    csv_path : str
+        Full file path where the CSV will be written.
+    """
+    outputs = summary.get("outputs", [])
+    matrix = summary.get("variable_matrix", {})
+
+    variable_columns: list[str] = []
+    if matrix:
+        first_uid = next(iter(matrix))
+        variable_columns = list(matrix[first_uid].keys())
+
+    fieldnames = [
+        "uid",
+        "output_type",
+        "analysis_name",
+        "dependent_variables",
+        "independent_variables",
+        *variable_columns,
+    ]
+
+    with open(csv_path, "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for out in outputs:
+            uid = out.get("uid", "")
+            indep = out.get("independent_variables", [])
+            indep_str = "; ".join(indep) if isinstance(indep, list) else str(indep)
+            row: dict[str, Any] = {
+                "uid": uid,
+                "output_type": out.get("output_type", ""),
+                "analysis_name": out.get("analysis_name", ""),
+                "dependent_variables": out.get("dependent_variables", "unknown"),
+                "independent_variables": indep_str,
+            }
+            uid_matrix = matrix.get(uid, {})
+            for var in variable_columns:
+                row[var] = uid_matrix.get(var, 0)
+            writer.writerow(row)
+
+
 def generate_session_summary(records: Any, output_path: str) -> None:
     """Generate and save session summary report.
 
     This is the main entry point for summary generation, called from Records.finalise().
-    It creates a SummaryGenerator instance, generates the summary, writes it to JSON,
-    and adds it as a custom output to the Records object.
+    It creates a SummaryGenerator instance, generates the summary, writes it to JSON
+    and CSV, and adds both files as custom outputs to the Records object.
 
     Parameters
     ----------
     records : Records
         The Records object containing all session outputs.
     output_path : str
-        Path to the outputs directory where session_summary.json will be written.
+        Path to the outputs directory where session_summary.json and
+        session_summary.csv will be written.
     """
     generator = SummaryGenerator(records, __version__)
     summary = generator.generate()
     summary = _convert_numpy_types(summary)
 
     summary_path = os.path.normpath(f"{output_path}/{SUMMARY_FILENAME}")
+    csv_path = os.path.normpath(f"{output_path}/{SUMMARY_CSV_FILENAME}")
 
     try:
         os.makedirs(output_path, exist_ok=True)
@@ -269,6 +324,12 @@ def generate_session_summary(records: Any, output_path: str) -> None:
     except Exception as e:
         logger.error("Failed to write session summary to %s: %s", summary_path, str(e))
         return
+
+    try:
+        write_summary_csv(summary, csv_path)
+        logger.info("Session summary CSV written to: %s", csv_path)
+    except Exception as e:
+        logger.error("Failed to write session summary CSV to %s: %s", csv_path, str(e))
 
     try:
         records.add_custom(summary_path, comment=SUMMARY_WARNING_COMMENT)

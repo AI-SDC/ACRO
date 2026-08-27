@@ -39,7 +39,7 @@ def make_record(
     output: list[Any] | None = None,
     comments: list[str] | None = None,
 ) -> Record:
-    """Helper function to instantiate a valid Record object for tests."""
+    """Instantiate a valid Record object for tests."""
     return Record(
         uid=uid,
         status=status,
@@ -134,7 +134,14 @@ def test_extract_output_metadata_complete_fair():
 
 
 @pytest.mark.parametrize(
-    "fair_input, properties, command, expected_dep, expected_indep, expected_analysis",
+    (
+        "fair_input",
+        "properties",
+        "command",
+        "expected_dep",
+        "expected_indep",
+        "expected_analysis",
+    ),
     [
         # Standard record with method property
         (
@@ -198,7 +205,7 @@ def test_extract_output_metadata_variations(
 
 
 @pytest.mark.parametrize(
-    "metadata, expected_vars",
+    ("metadata", "expected_vars"),
     [
         (
             {
@@ -494,14 +501,16 @@ def test_load_session_summary_io_error(tmp_path):
     summary_file = tmp_path / SUMMARY_FILENAME
     summary_file.write_text("{}", encoding="utf-8")
 
-    with patch("builtins.open", side_effect=OSError("Read error")):
-        with pytest.raises(ValueError, match="Failed to read session summary file"):
-            load_session_summary(str(tmp_path))
+    with (
+        patch("builtins.open", side_effect=OSError("Read error")),
+        pytest.raises(ValueError, match="Failed to read session summary file"),
+    ):
+        load_session_summary(str(tmp_path))
 
 
 def test_load_session_summary_missing_sections(tmp_path):
     """Load session summary raises ValueError when required sections are missing."""
-    invalid_summary = {"metadata": {}}
+    invalid_summary: dict[str, dict[str, int]] = {"metadata": {}}
 
     summary_file = tmp_path / SUMMARY_FILENAME
     with open(summary_file, "w", encoding="utf-8") as f:

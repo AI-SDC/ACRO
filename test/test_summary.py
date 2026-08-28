@@ -547,9 +547,10 @@ def test_summary_constants():
     assert SUMMARY_CSV_KEY == "2ndary_risk_summary_csv-DONT_RELEASE"
 
 
-def _create_sample_dataframe() -> pd.DataFrame:
-    """Create sample dataframe for testing ACRO session summary generation."""
-    return pd.DataFrame(
+def test_full_acro_session_summary_generation(tmp_path):
+    """Test a complete ACRO session with crosstab, pivot_table, regression, and finalise."""
+    acro = ACRO(suppress=False)
+    sample_df = pd.DataFrame(
         {
             "year": [
                 2010,
@@ -583,74 +584,6 @@ def _create_sample_dataframe() -> pd.DataFrame:
         }
     )
 
-
-def _verify_summary_metadata(summary: dict) -> None:
-    """Verify session summary metadata and output counts."""
-    assert summary["metadata"]["total_outputs"] == 3
-    assert summary["metadata"]["type_counts"] == {"table": 2, "regression": 1}
-    assert len(summary["outputs"]) == 3
-
-
-def _verify_output_metadata(outputs_by_uid: dict[str, dict]) -> None:
-    """Verify individual output metadata."""
-    assert outputs_by_uid["output_0"]["analysis_name"] == "crosstab"
-    assert set(outputs_by_uid["output_0"]["independent_variables"]) == {
-        "year",
-        "grant_type",
-    }
-
-    assert outputs_by_uid["output_1"]["analysis_name"] == "pivot_table"
-    assert outputs_by_uid["output_1"]["dependent_variables"] == "inc_activity"
-    assert set(outputs_by_uid["output_1"]["independent_variables"]) == {
-        "year",
-        "grant_type",
-    }
-
-    assert outputs_by_uid["output_2"]["analysis_name"] == "ols"
-    assert outputs_by_uid["output_2"]["dependent_variables"] == "inc_activity"
-
-
-def _verify_variable_matrix(matrix: dict[str, dict]) -> None:
-    """Verify variable matrix entries for all outputs."""
-    assert "output_0" in matrix
-    assert "output_1" in matrix
-    assert "output_2" in matrix
-
-    assert matrix["output_0"]["grant_type"] == 1
-    assert matrix["output_0"]["year"] == 1
-    assert matrix["output_0"]["inc_activity"] == 0
-
-    assert matrix["output_1"]["inc_activity"] == 1
-    assert matrix["output_1"]["year"] == 1
-    assert matrix["output_1"]["grant_type"] == 1
-
-    assert matrix["output_2"]["inc_activity"] == 1
-    assert matrix["output_2"]["year"] == 1
-    assert matrix["output_2"]["grant_type"] == 0
-
-
-def _verify_results_json(results_data: dict) -> None:
-    """Verify custom summary outputs in results.json."""
-    assert SUMMARY_JSON_KEY in results_data["results"]
-    summary_result = results_data["results"][SUMMARY_JSON_KEY]
-    assert summary_result["uid"] == SUMMARY_JSON_KEY
-    assert summary_result["type"] == "custom"
-    assert summary_result["status"] == "review"
-    assert SUMMARY_WARNING_COMMENT in summary_result["comments"]
-
-    assert SUMMARY_CSV_KEY in results_data["results"]
-    csv_summary_result = results_data["results"][SUMMARY_CSV_KEY]
-    assert csv_summary_result["uid"] == SUMMARY_CSV_KEY
-    assert csv_summary_result["type"] == "custom"
-    assert csv_summary_result["status"] == "review"
-    assert SUMMARY_WARNING_COMMENT in csv_summary_result["comments"]
-
-
-def test_full_acro_session_summary_generation(tmp_path):
-    """Test a complete ACRO session with crosstab, pivot_table, regression, and finalise."""
-    acro = ACRO(suppress=False)
-    sample_df = _create_sample_dataframe()
-
     acro.crosstab(
         sample_df["year"],
         sample_df["grant_type"],
@@ -673,20 +606,64 @@ def test_full_acro_session_summary_generation(tmp_path):
     assert summary_file.exists()
 
     summary = load_session_summary(output_dir)
-    _verify_summary_metadata(summary)
 
+    assert summary["metadata"]["total_outputs"] == 3
+    assert summary["metadata"]["type_counts"] == {"table": 2, "regression": 1}
+
+    assert len(summary["outputs"]) == 3
     outputs_by_uid = {out["uid"]: out for out in summary["outputs"]}
-    _verify_output_metadata(outputs_by_uid)
+
+    assert outputs_by_uid["output_0"]["analysis_name"] == "crosstab"
+    assert set(outputs_by_uid["output_0"]["independent_variables"]) == {
+        "year",
+        "grant_type",
+    }
+
+    assert outputs_by_uid["output_1"]["analysis_name"] == "pivot_table"
+    assert outputs_by_uid["output_1"]["dependent_variables"] == "inc_activity"
+    assert set(outputs_by_uid["output_1"]["independent_variables"]) == {
+        "year",
+        "grant_type",
+    }
+
+    assert outputs_by_uid["output_2"]["analysis_name"] == "ols"
+    assert outputs_by_uid["output_2"]["dependent_variables"] == "inc_activity"
 
     matrix = summary["variable_matrix"]
-    _verify_variable_matrix(matrix)
+    assert "output_0" in matrix
+    assert "output_1" in matrix
+    assert "output_2" in matrix
+
+    assert matrix["output_0"]["grant_type"] == 1
+    assert matrix["output_0"]["year"] == 1
+    assert matrix["output_0"]["inc_activity"] == 0
+
+    assert matrix["output_1"]["inc_activity"] == 1
+    assert matrix["output_1"]["year"] == 1
+    assert matrix["output_1"]["grant_type"] == 1
+
+    assert matrix["output_2"]["inc_activity"] == 1
+    assert matrix["output_2"]["year"] == 1
+    assert matrix["output_2"]["grant_type"] == 0
 
     results_file = Path(output_dir) / "results.json"
     assert results_file.exists()
     with open(results_file, encoding="utf-8") as f:
         results_data = json.load(f)
 
-    _verify_results_json(results_data)
+    assert SUMMARY_JSON_KEY in results_data["results"]
+    summary_result = results_data["results"][SUMMARY_JSON_KEY]
+    assert summary_result["uid"] == SUMMARY_JSON_KEY
+    assert summary_result["type"] == "custom"
+    assert summary_result["status"] == "review"
+    assert SUMMARY_WARNING_COMMENT in summary_result["comments"]
+
+    assert SUMMARY_CSV_KEY in results_data["results"]
+    csv_summary_result = results_data["results"][SUMMARY_CSV_KEY]
+    assert csv_summary_result["uid"] == SUMMARY_CSV_KEY
+    assert csv_summary_result["type"] == "custom"
+    assert csv_summary_result["status"] == "review"
+    assert SUMMARY_WARNING_COMMENT in csv_summary_result["comments"]
 
 
 def test_records_finalise_excel_generates_summary(tmp_path):
@@ -946,9 +923,5 @@ def test_generate_session_summary_meaningful_output_names(tmp_path):
     assert "output_1" not in records.results
     assert "output_2" not in records.results
 
-    assert (
-        records.results[SUMMARY_JSON_KEY].uid == "2ndary_risk_summary_json-DONT_RELEASE"
-    )
-    assert (
-        records.results[SUMMARY_CSV_KEY].uid == "2ndary_risk_summary_csv-DONT_RELEASE"
-    )
+    assert records.results[SUMMARY_JSON_KEY].uid == "2ndary_risk_summary_json-DONT_RELEASE"
+    assert records.results[SUMMARY_CSV_KEY].uid == "2ndary_risk_summary_csv-DONT_RELEASE"

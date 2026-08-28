@@ -923,5 +923,9 @@ def test_generate_session_summary_meaningful_output_names(tmp_path):
     assert "output_1" not in records.results
     assert "output_2" not in records.results
 
-    assert records.results[SUMMARY_JSON_KEY].uid == "2ndary_risk_summary_json-DONT_RELEASE"
-    assert records.results[SUMMARY_CSV_KEY].uid == "2ndary_risk_summary_csv-DONT_RELEASE"
+    assert (
+        records.results[SUMMARY_JSON_KEY].uid == "2ndary_risk_summary_json-DONT_RELEASE"
+    )
+    assert (
+        records.results[SUMMARY_CSV_KEY].uid == "2ndary_risk_summary_csv-DONT_RELEASE"
+    )

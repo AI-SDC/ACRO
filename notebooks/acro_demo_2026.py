@@ -289,7 +289,7 @@ help(acro.logit)
 #
 # Therefore acro provides the following commands for  'session management'
 # ### 1: Listing the  current contents of an  ACRO session
-# This output is not beautiful (there's a GUI coming soon) but it should let you identify outputs you want to rename,comment on, or delete.
+# This output is not beautiful (there's a [GUI version available](https://github.com/AI-SDC/SACRO-Viewer) but it should let you identify outputs you want to rename, comment on, or delete.
 
 # %%
 _ = acro.print_outputs()

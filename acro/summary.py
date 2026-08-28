@@ -333,6 +333,8 @@ def generate_session_summary(records: Any, output_path: str) -> None:
 
     try:
         records.add_custom(summary_path, comment=SUMMARY_WARNING_COMMENT)
+        records.add_custom(csv_path, comment=SUMMARY_WARNING_COMMENT)
+
         logger.info("Session summary added as custom output to Records")
     except Exception as e:
         logger.error("Failed to add session summary as custom output: %s", str(e))

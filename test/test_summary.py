@@ -18,7 +18,9 @@ from acro.constants import ARTIFACTS_DIR
 from acro.record import Record, Records, _copy_output_file_if_needed
 from acro.summary import (
     SUMMARY_CSV_FILENAME,
+    SUMMARY_CSV_KEY,
     SUMMARY_FILENAME,
+    SUMMARY_JSON_KEY,
     SUMMARY_OUTPUT_TYPE,
     SUMMARY_WARNING_COMMENT,
     MetadataExtractor,
@@ -434,17 +436,29 @@ def test_generate_session_summary_creates_json_file(tmp_path):
 
 
 def test_generate_session_summary_adds_custom_output_with_warning(tmp_path):
-    """Generate session summary adds custom output to records with DO NOT RELEASE warning."""
+    """Generate session summary adds JSON and CSV custom outputs to records with DO NOT RELEASE warning and meaningful names."""
     records = Records()
     output_path = str(tmp_path)
 
     generate_session_summary(records, output_path)
 
-    assert len(records.results) == 1
-    summary_record = records.get_index(0)
-    assert summary_record.output_type == "custom"
-    assert summary_record.status == "review"
-    assert summary_record.comments == [SUMMARY_WARNING_COMMENT]
+    assert len(records.results) == 2
+    assert SUMMARY_JSON_KEY in records.results
+    assert SUMMARY_CSV_KEY in records.results
+
+    json_record = records.get(SUMMARY_JSON_KEY)
+    assert json_record.uid == SUMMARY_JSON_KEY
+    assert json_record.output_type == "custom"
+    assert json_record.status == "review"
+    assert json_record.comments == [SUMMARY_WARNING_COMMENT]
+    assert json_record.output == [os.path.normpath(str(tmp_path / SUMMARY_FILENAME))]
+
+    csv_record = records.get(SUMMARY_CSV_KEY)
+    assert csv_record.uid == SUMMARY_CSV_KEY
+    assert csv_record.output_type == "custom"
+    assert csv_record.status == "review"
+    assert csv_record.comments == [SUMMARY_WARNING_COMMENT]
+    assert csv_record.output == [os.path.normpath(str(tmp_path / SUMMARY_CSV_FILENAME))]
 
 
 def test_generate_session_summary_handles_write_failure(tmp_path, caplog):
@@ -526,8 +540,11 @@ def test_load_session_summary_missing_sections(tmp_path):
 def test_summary_constants():
     """Verify module constants."""
     assert SUMMARY_FILENAME == "session_summary.json"
+    assert SUMMARY_CSV_FILENAME == "session_summary.csv"
     assert SUMMARY_OUTPUT_TYPE == "summary_report"
     assert "DO NOT RELEASE" in SUMMARY_WARNING_COMMENT
+    assert SUMMARY_JSON_KEY == "2ndary_risk_summary_json-DONT_RELEASE"
+    assert SUMMARY_CSV_KEY == "2ndary_risk_summary_csv-DONT_RELEASE"
 
 
 def test_full_acro_session_summary_generation(tmp_path):
@@ -634,11 +651,19 @@ def test_full_acro_session_summary_generation(tmp_path):
     with open(results_file, encoding="utf-8") as f:
         results_data = json.load(f)
 
-    assert "output_3" in results_data["results"]
-    summary_result = results_data["results"]["output_3"]
+    assert SUMMARY_JSON_KEY in results_data["results"]
+    summary_result = results_data["results"][SUMMARY_JSON_KEY]
+    assert summary_result["uid"] == SUMMARY_JSON_KEY
     assert summary_result["type"] == "custom"
     assert summary_result["status"] == "review"
     assert SUMMARY_WARNING_COMMENT in summary_result["comments"]
+
+    assert SUMMARY_CSV_KEY in results_data["results"]
+    csv_summary_result = results_data["results"][SUMMARY_CSV_KEY]
+    assert csv_summary_result["uid"] == SUMMARY_CSV_KEY
+    assert csv_summary_result["type"] == "custom"
+    assert csv_summary_result["status"] == "review"
+    assert SUMMARY_WARNING_COMMENT in csv_summary_result["comments"]
 
 
 def test_records_finalise_excel_generates_summary(tmp_path):
@@ -879,3 +904,24 @@ def test_generate_session_summary_csv_write_failure_continues(tmp_path, caplog):
 
     assert (Path(output_path) / SUMMARY_FILENAME).exists()
     assert "Failed to write session summary CSV" in caplog.text
+
+
+def test_generate_session_summary_meaningful_output_names(tmp_path):
+    """Verify session summary custom outputs use meaningful names instead of generic output_x."""
+    records = Records()
+    records.add(status="pass", output_type="table")
+
+    output_path = str(tmp_path)
+    generate_session_summary(records, output_path)
+
+    # Initial analysis record
+    assert "output_0" in records.results
+
+    # Summary outputs must have descriptive keys starting with 2ndary_risk_summary
+    assert SUMMARY_JSON_KEY in records.results
+    assert SUMMARY_CSV_KEY in records.results
+    assert "output_1" not in records.results
+    assert "output_2" not in records.results
+
+    assert records.results[SUMMARY_JSON_KEY].uid == "2ndary_risk_summary_json-DONT_RELEASE"
+    assert records.results[SUMMARY_CSV_KEY].uid == "2ndary_risk_summary_csv-DONT_RELEASE"

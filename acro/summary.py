@@ -20,6 +20,8 @@ SUMMARY_OUTPUT_TYPE = "summary_report"
 SUMMARY_FILENAME = "session_summary.json"
 SUMMARY_CSV_FILENAME = "session_summary.csv"
 SUMMARY_WARNING_COMMENT = "DO NOT RELEASE - SUMMARY FOR OUTPUT CHECKER USE ONLY"
+SUMMARY_JSON_KEY = "2ndary_risk_summary_json-DONT_RELEASE"
+SUMMARY_CSV_KEY = "2ndary_risk_summary_csv-DONT_RELEASE"
 
 
 class MetadataExtractor:
@@ -332,8 +334,15 @@ def generate_session_summary(records: Any, output_path: str) -> None:
         logger.error("Failed to write session summary CSV to %s: %s", csv_path, str(e))
 
     try:
-        records.add_custom(summary_path, comment=SUMMARY_WARNING_COMMENT)
-        records.add_custom(csv_path, comment=SUMMARY_WARNING_COMMENT)
+        if records.add_custom(summary_path, comment=SUMMARY_WARNING_COMMENT):
+            json_uid = f"output_{records.output_id - 1}"
+            if json_uid in records.results:
+                records.rename(json_uid, SUMMARY_JSON_KEY)
+
+        if records.add_custom(csv_path, comment=SUMMARY_WARNING_COMMENT):
+            csv_uid = f"output_{records.output_id - 1}"
+            if csv_uid in records.results:
+                records.rename(csv_uid, SUMMARY_CSV_KEY)
 
         logger.info("Session summary added as custom output to Records")
     except Exception as e:

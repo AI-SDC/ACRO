@@ -16,6 +16,7 @@ from acro import (
     record,
 )
 from acro.record import Records, load_records
+from acro.version import __version__
 
 PATH: str = "RES_PYTEST"
 
@@ -473,3 +474,42 @@ def test_show_fair_summaries_regression(data):
         "independent:['grant_type', 'year']\n\n"
     )
     assert result == correct_str, f"expected\nx{correct_str}x\ngot\nx{result}x\n"
+
+
+def test_tool_uri_in_results_json(data, acro):
+    """Test that tool URI is included in results.json for 5s-crate Ro-CRATE compliance."""
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.finalise(PATH)
+
+    results_path = os.path.normpath(f"{PATH}/results.json")
+    assert os.path.exists(results_path)
+
+    with open(results_path, encoding="utf-8") as file:
+        json_data = json.load(file)
+
+    assert "tool" in json_data
+    assert json_data["tool"]["@type"] == "SoftwareApplication"
+    assert json_data["tool"]["name"] == "ACRO"
+    assert json_data["tool"]["url"] == "https://github.com/AI-SDC/ACRO"
+    assert json_data["tool"]["version"] == __version__
+
+    shutil.rmtree(PATH)
+
+
+def test_tool_uri_in_evidence_json(data):
+    """Test that tool URI is included in evidence.json for federated mode."""
+    acro = ACRO(federated=True)
+    _ = acro.crosstab(data.year, data.grant_type)
+    _ = acro.finalise(PATH)
+
+    evidence_path = os.path.normpath(f"{PATH}/evidence.json")
+    assert os.path.exists(evidence_path)
+
+    with open(evidence_path, encoding="utf-8") as file:
+        json_data = json.load(file)
+
+    assert "tool" in json_data
+    assert json_data["tool"]["@type"] == "SoftwareApplication"
+    assert json_data["tool"]["name"] == "ACRO"
+    assert json_data["tool"]["url"] == "https://github.com/AI-SDC/ACRO"
+    assert json_data["tool"]["version"] == __version__

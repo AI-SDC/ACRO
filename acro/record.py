@@ -493,6 +493,21 @@ class Records:
             shutil.rmtree(ARTIFACTS_DIR)
         logger.info("outputs written to: %s", path)
 
+    def _tool_metadata(self) -> dict[str, str]:
+        """Return tool metadata for 5s-crate Ro-CRATE compliance.
+
+        Returns
+        -------
+        dict
+            Tool metadata with @type, name, url, and version.
+        """
+        return {
+            "@type": "SoftwareApplication",
+            "name": "ACRO",
+            "url": "https://github.com/AI-SDC/ACRO",
+            "version": __version__,
+        }
+
     def finalise_json(self, path: str) -> None:
         """Write outputs to a JSON file.
 
@@ -521,7 +536,11 @@ class Records:
             for file in files:
                 outputs[key]["files"].append({"name": file, "sdc": val.sdc})
 
-        results: dict[str, str | dict] = {"version": __version__, "results": outputs}
+        results: dict[str, str | dict] = {
+            "version": __version__,
+            "tool": self._tool_metadata(),
+            "results": outputs,
+        }
         filename: str = os.path.normpath(f"{path}/results.json")
         try:
             with open(filename, "w", newline="", encoding="utf-8") as handle:
@@ -637,7 +656,11 @@ class Records:
                 "interim_tables": table_files,
             }
 
-        return {"version": __version__, "outputs": outputs}
+        return {
+            "version": __version__,
+            "tool": self._tool_metadata(),
+            "outputs": outputs,
+        }
 
     def write_checksums(self, path: str) -> None:
         """Write checksums for each file to checksums folder.

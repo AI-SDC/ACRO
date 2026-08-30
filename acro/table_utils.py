@@ -606,7 +606,7 @@ def _get_cell_query(
 
     parts.extend(_format_label_condition(index_level_names, row_label))
     if len(column_level_names) == 1 and column_level_names[0] is None:
-        joined = "".join(parts)
+        joined = " & ".join(parts)
         logger.debug("joined is %s", joined)
         return joined
     parts.extend(_format_label_condition(column_level_names, col_label))

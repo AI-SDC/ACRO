@@ -919,7 +919,23 @@ class TestGetRedactedData:
             f"\ngot\n{redacted_table.values}\nexpected\n{pandas_redacted_pivot.values}"
             f"types of columns are\n{unsafedata['over30'].dtype}\n{safedata['over30'].dtype}"
         )
-        # assert False, (
-        #     f"\ngot\n{redacted_table.values}\nexpected\n{pandas_redacted_pivot.values}"
-        #     f"types of columns are\n{unsafedata['over30'].dtype}\n{safedata['over30'].dtype}"
-        # )
+
+    def test_get_redacted_pivottable_multi_index_no_columns(self):
+        """Test that query generation works correctly with multi-index and no column dimensions."""
+        df = pd.DataFrame(
+            {
+                "parents": ["usual", "usual", "pretentious", "pretentious"],
+                "recommend": ["not_recom", "recommend", "not_recom", "recommend"],
+                "children": [1, 2, 1, 2],
+            }
+        )
+        ac = ACRO()
+        ac.enable_suppression()
+        result = ac.pivot_table(
+            data=df,
+            index=["parents", "recommend"],
+            values="children",
+            aggfunc=["mean"],
+        )
+        assert result is not None
+        assert isinstance(result, pd.DataFrame)

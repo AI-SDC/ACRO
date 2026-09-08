@@ -49,7 +49,7 @@ See the example notebooks for:
 
 ### Try Online with MyBinder
 
-Try an example notebook online on [MyBinder.org](https://mybinder.org/v2/gh/AI-SDC/ACRO/main?filepath=notebooks/test-nursery.ipynb).
+Try an example notebook online on [MyBinder.org](https://mybinder.org/v2/gh/AI-SDC/ACRO/main?urlpath=/lab/tree/notebooks/acro_demo_2026.ipynb).
 
 ### Documentation
 

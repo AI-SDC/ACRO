@@ -22,7 +22,9 @@ from .version import __version__
 logger = logging.getLogger("acro:records")
 
 
-def _copy_output_file_if_needed(filename: str, dest_dir: str) -> str | None:
+def _copy_output_file_if_needed(
+    filename: str, dest_dir: str, reserved_names: set[str] | None = None
+) -> str | None:
     """Copy a file to the output directory if it exists and is not already there.
 
     Parameters
@@ -31,6 +33,8 @@ def _copy_output_file_if_needed(filename: str, dest_dir: str) -> str | None:
         Path to the source file.
     dest_dir : str
         Destination directory path.
+    reserved_names : set[str] | None
+        Case-folded names to avoid, updated with each copied filename.
 
     Returns
     -------
@@ -43,14 +47,26 @@ def _copy_output_file_if_needed(filename: str, dest_dir: str) -> str | None:
         )
         return None
 
-    dest_path = os.path.normpath(os.path.join(dest_dir, Path(filename).name))
+    basename = Path(filename).name
+    if (
+        reserved_names is not None
+        and Path(filename).resolve() != (Path(dest_dir) / basename).resolve()
+    ):
+        source = Path(filename)
+        suffix = 1
+        while basename.casefold() in reserved_names:
+            basename = f"{source.stem}_{suffix}{source.suffix}"
+            suffix += 1
+    dest_path = os.path.normpath(os.path.join(dest_dir, basename))
     src_path = os.path.normpath(filename)
 
     # Only copy if source and destination are different
     if src_path != dest_path:
-        shutil.copy(filename, dest_dir)
+        shutil.copy(filename, dest_path)
 
-    return Path(filename).name
+    if reserved_names is not None:
+        reserved_names.add(basename.casefold())
+    return basename
 
 
 def load_outcome(outcome: dict[str, Any]) -> DataFrame:
@@ -181,13 +197,17 @@ class Record:
         now = datetime.datetime.now()
         self.timestamp: str = now.isoformat()
 
-    def serialize_output(self, path: str = "outputs") -> list[str]:
+    def serialize_output(
+        self, path: str = "outputs", reserved_names: set[str] | None = None
+    ) -> list[str]:
         """Serialize outputs.
 
         Parameters
         ----------
         path : str, default 'outputs'
             Name of the folder that outputs are to be written.
+        reserved_names : set[str] | None
+            Case-folded filenames to avoid when copying files.
 
         Returns
         -------
@@ -214,7 +234,9 @@ class Record:
         # move custom files or plot files to the output folder
         if self.output_type in ["custom", "survival plot", "histogram", "pie chart"]:
             for filename in self.output:
-                copied_filename = _copy_output_file_if_needed(filename, path)
+                copied_filename = _copy_output_file_if_needed(
+                    filename, path, reserved_names
+                )
                 if copied_filename:
                     output.append(copied_filename)
 
@@ -603,25 +625,39 @@ class Records:
             logger.debug("Directory %s created successfully", path)
         except FileExistsError:  # pragma: no cover
             logger.debug("Directory %s already exists", path)
+        # Reserve generated files and existing entries before copying custom outputs.
+        reserved_names = {entry.name.casefold() for entry in Path(path).iterdir()}
+        reserved_names.update({"results.xlsx", "config.json", "checksums"})
+        custom_files = {
+            output_id: output.serialize_output(path, reserved_names)
+            for output_id, output in self.results.items()
+            if output.output_type == "custom"
+        }
         with pd.ExcelWriter(filename, engine="openpyxl") as writer:
             # description sheet
             sheet: list[str] = []
             summary: list[str] = []
             command: list[str] = []
+            files: list[str] = []
             for output_id, output in self.results.items():
-                if output.output_type == "custom":
-                    continue  # avoid writing custom outputs
-                sheet.append(output_id)
+                sheet.append("" if output.output_type == "custom" else output_id)
                 command.append(output.command)
                 summary.append(output.summary)
+                files.append("\n".join(custom_files.get(output_id, [])))
             tmp_df = pd.DataFrame(
-                {"Sheet": sheet, "Command": command, "Summary": summary}
+                {
+                    "Output": list(self.results),
+                    "Sheet": sheet,
+                    "Command": command,
+                    "Summary": summary,
+                    "Files": files,
+                }
             )
             tmp_df.to_excel(writer, sheet_name="description", index=False, startrow=0)
             # individual sheets
             for output_id, output in self.results.items():
                 if output.output_type == "custom":
-                    continue  # avoid writing custom outputs
+                    continue  # Custom files are listed in the description sheet.
                 # command and summary
                 start = 0
                 tmp_df = pd.DataFrame(

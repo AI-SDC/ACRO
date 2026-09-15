@@ -36,6 +36,11 @@ def test_finalise_excel(data, acro):
     correct_cell: str = "_ = acro.crosstab(data.year, data.grant_type)"
     assert load_data.iloc[0, 0] == "Command"
     assert load_data.iloc[0, 1] == correct_cell
+    with open(os.path.normpath(f"{PATH}/foo.txt"), encoding="utf-8") as handle:
+        assert handle.read() == "Your text goes here"
+    description = pd.read_excel(filename, sheet_name="description")
+    assert description["Output"].tolist()[:2] == results.get_keys()[:2]
+    assert description.loc[1, "Files"] == "foo.txt"
     shutil.rmtree(PATH)
 
 
@@ -165,6 +170,55 @@ def test_custom_output(acro):
     assert output_0.output == [file_path]
     assert os.path.exists(os.path.normpath(f"{PATH}/XandY.jpeg"))
     shutil.rmtree(PATH)
+
+
+@pytest.mark.parametrize("ext", ["pdf", "jpeg"])
+def test_custom_output_xlsx(acro, tmp_path, ext):
+    """Copy custom files and describe them in a custom-only workbook."""
+    source = tmp_path / f"report.{ext}"
+    source.write_bytes(b"custom output contents")
+    acro.custom_output(str(source), "Custom report")
+    destination = tmp_path / "export"
+    results = acro.finalise(path=str(destination), ext="xlsx")
+    output = results.get_index(0)
+    assert output.output == [str(source)]
+    assert (destination / source.name).read_bytes() == source.read_bytes()
+    description = pd.read_excel(destination / "results.xlsx", sheet_name="description")
+    assert description.loc[0, "Output"] == output.uid
+    assert description.loc[0, "Command"] == "custom"
+    assert description.loc[0, "Files"] == source.name
+    assert {"session_summary.json", "session_summary.csv"}.issubset(
+        set(description["Files"])
+    )
+    workbook = pd.ExcelFile(destination / "results.xlsx")
+    assert workbook.sheet_names == ["description"]
+    assert description["Sheet"].isna().all()
+
+
+@pytest.mark.parametrize(
+    "filename",
+    ["results.xlsx", "RESULTS.XLSX", "config.json", "checksums", "report.pdf"],
+)
+def test_custom_output_xlsx_filename_collisions(acro, tmp_path, filename):
+    """Preserve generated files and distinct custom files with colliding names."""
+    for index in range(2):
+        folder = tmp_path / str(index)
+        folder.mkdir()
+        source = folder / filename
+        source.write_bytes(f"custom content {index}".encode())
+        acro.custom_output(str(source))
+    destination = tmp_path / "export"
+    acro.finalise(path=str(destination), ext="xlsx")
+    description = pd.read_excel(destination / "results.xlsx", sheet_name="description")
+    exported = description.loc[
+        description["Output"].isin(["output_0", "output_1"]), "Files"
+    ].tolist()
+    assert len({name.casefold() for name in exported}) == 2
+    for index, name in enumerate(exported):
+        assert (destination / name).read_bytes() == f"custom content {index}".encode()
+    assert (destination / "checksums").is_dir()
+    with (destination / "config.json").open(encoding="utf-8") as handle:
+        assert isinstance(json.load(handle), dict)
 
 
 def test_add_custom_blocked_extension(tmp_path) -> None:

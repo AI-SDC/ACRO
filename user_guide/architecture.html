@@ -1,0 +1,917 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Architecture Reference &#8212; ACRO 1.0.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=17306193" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=1ed6394b"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/architecture';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="News" href="../news.html" />
+    <link rel="prev" title="Configuration" href="configuration.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ACRO 1.0.2 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../news.html">
+    News
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../news.html">
+    News
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts.html">Core Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Architecture Reference</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../user_guide.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Architecture Reference</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="architecture-reference">
+<h1>Architecture Reference<a class="headerlink" href="#architecture-reference" title="Link to this heading">#</a></h1>
+<p>This page gives a detailed technical overview of ACRO’s ontology-driven architecture
+introduced in v1.0.0.  It is aimed at developers, TRE administrators, and curious
+researchers who want to understand how the disclosure checking process works internally.</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#background-and-motivation" id="id1">Background and Motivation</a></p></li>
+<li><p><a class="reference internal" href="#the-four-json-knowledge-files" id="id2">The Four JSON Knowledge Files</a></p>
+<ul>
+<li><p><a class="reference internal" href="#analyses-json" id="id3">analyses.json</a></p></li>
+<li><p><a class="reference internal" href="#statbarns-json" id="id4">statbarns.json</a></p></li>
+<li><p><a class="reference internal" href="#risks-json" id="id5">risks.json</a></p></li>
+<li><p><a class="reference internal" href="#checks-json" id="id6">checks.json</a></p></li>
+<li><p><a class="reference internal" href="#how-they-chain-together" id="id7">How They Chain Together</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#the-core-classes" id="id8">The Core Classes</a></p>
+<ul>
+<li><p><a class="reference internal" href="#sdcchecks" id="id9">SDCChecks</a></p></li>
+<li><p><a class="reference internal" href="#tablemodeldetails" id="id10">TableModelDetails</a></p></li>
+<li><p><a class="reference internal" href="#sdcevidence" id="id11">SDCEvidence</a></p></li>
+<li><p><a class="reference internal" href="#checksresults" id="id12">ChecksResults</a></p></li>
+<li><p><a class="reference internal" href="#manychecksresults" id="id13">ManyChecksResults</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#suppression-via-data-redaction" id="id14">Suppression via Data Redaction</a></p>
+<ul>
+<li><p><a class="reference internal" href="#category-preservation" id="id15">Category Preservation</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#federated-evidence-serialisation" id="id16">Federated Evidence Serialisation</a></p></li>
+<li><p><a class="reference internal" href="#regenerating-the-knowledge-files" id="id17">Regenerating the Knowledge Files</a></p></li>
+<li><p><a class="reference internal" href="#adding-a-new-analysis-type" id="id18">Adding a New Analysis Type</a></p></li>
+</ul>
+</nav>
+<section id="background-and-motivation">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Background and Motivation</a><a class="headerlink" href="#background-and-motivation" title="Link to this heading">#</a></h2>
+<p>In earlier versions of ACRO, the checks applied to each type of analysis were hard-coded
+in Python.  This created several problems:</p>
+<ul class="simple">
+<li><p><strong>Hard to extend</strong>  adding a new analysis type required editing multiple files.</p></li>
+<li><p><strong>No FAIR audit trail</strong>  there was no easy way to record <em>which</em> checks ran or <em>why</em>.</p></li>
+<li><p><strong>Drift from the knowledge base</strong>  the code could silently diverge from the SDC
+knowledge encoded in the StatbarnsSDC ontology.</p></li>
+<li><p><strong>Bloated code</strong>  <code class="docutils literal notranslate"><span class="pre">acro_tables.py</span></code> had grown to the point where it was hard to
+maintain.</p></li>
+</ul>
+<p>The solution was to move the rules out of Python and into the
+<a class="reference external" href="https://w3id.org/statbarnsdc">StatbarnsSDC ontology</a>, then generate compact JSON
+lookup tables from the ontology at release time.</p>
+</section>
+<section id="the-four-json-knowledge-files">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">The Four JSON Knowledge Files</a><a class="headerlink" href="#the-four-json-knowledge-files" title="Link to this heading">#</a></h2>
+<p>The ontology is compiled into four JSON files by <code class="docutils literal notranslate"><span class="pre">acro/ontology_handler.py</span></code>.  These
+files are bundled with every ACRO release so the package works fully offline inside a TRE.</p>
+<section id="analyses-json">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">analyses.json</a><a class="headerlink" href="#analyses-json" title="Link to this heading">#</a></h3>
+<p>Maps each <em>analysis name</em> (the type of statistic being computed) to the <em>statbarn</em>
+(the SDC category it belongs to) and any additional metadata.</p>
+<p>Example entry:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;Mean&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;statbarn&quot;</span><span class="p">:</span> <span class="s2">&quot;DescriptiveStatistics&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="statbarns-json">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">statbarns.json</a><a class="headerlink" href="#statbarns-json" title="Link to this heading">#</a></h3>
+<p>Maps each <em>statbarn</em> to the list of <em>risks</em> associated with it.</p>
+<p>Example entry:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;DescriptiveStatistics&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;risks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;https://w3id.org/statbarnsdc#SmallGroupRisk&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;https://w3id.org/statbarnsdc#DominanceRisk&quot;</span><span class="p">],</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="risks-json">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">risks.json</a><a class="headerlink" href="#risks-json" title="Link to this heading">#</a></h3>
+<p>Maps each <em>risk</em> to the <em>checks</em> that detect it and the <em>mitigations</em> that address it.</p>
+<p>Example entry:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;SmallGroupRisk&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;checks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MinimumThresholdCheck&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;mitigations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Suppression&quot;</span><span class="p">,</span> <span class="s2">&quot;Rounding&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="checks-json">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">checks.json</a><a class="headerlink" href="#checks-json" title="Link to this heading">#</a></h3>
+<p>Maps each <em>check</em> to the <em>evidence</em> it requires in order to run.</p>
+<p>Example entry:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;MinimumThresholdCheck&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;evidence&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;count_table&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="how-they-chain-together">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">How They Chain Together</a><a class="headerlink" href="#how-they-chain-together" title="Link to this heading">#</a></h3>
+<p>When a researcher calls <code class="docutils literal notranslate"><span class="pre">acro.crosstab(...,</span> <span class="pre">aggfunc=&quot;mean&quot;)</span></code>, ACRO follows this chain:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&quot;Mean&quot;  →  analyses.json  →  statbarn: &quot;DescriptiveStatistics&quot;
+             ↓
+statbarns.json  →  risks: [&quot;SmallGroupRisk&quot;, &quot;DominanceRisk&quot;, ...]
+             ↓
+risks.json  →  checks: [&quot;MinimumThresholdCheck&quot;, &quot;NKCheck&quot;, &quot;PPercentCheck&quot;, ...]
+             ↓
+checks.json  →  evidence: [&quot;count_table&quot;, &quot;top_n_sum&quot;, &quot;sum&quot;, &quot;max&quot;, ...]
+</pre></div>
+</div>
+<p>All required evidence is collected in one pass before any check runs.</p>
+</section>
+</section>
+<section id="the-core-classes">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">The Core Classes</a><a class="headerlink" href="#the-core-classes" title="Link to this heading">#</a></h2>
+<section id="sdcchecks">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">SDCChecks</a><a class="headerlink" href="#sdcchecks" title="Link to this heading">#</a></h3>
+<p><strong>Module</strong>: <code class="docutils literal notranslate"><span class="pre">acro.sdcchecks</span></code></p>
+<p>The central rule engine.  One instance is created per ACRO session and shared across
+all analysis calls.</p>
+<p><strong>Key responsibilities:</strong></p>
+<ul class="simple">
+<li><p>Loads and holds the four JSON knowledge files and the TRE’s risk appetite.</p></li>
+<li><p>Provides <code class="docutils literal notranslate"><span class="pre">get_evidence_forall_analyses(analyses,</span> <span class="pre">model)</span></code>  given a list of analysis
+names and a model object, returns a populated <code class="docutils literal notranslate"><span class="pre">SDCEvidence</span></code> instance.</p></li>
+<li><p>Provides <code class="docutils literal notranslate"><span class="pre">run_checks_for_analysis(analysis_name,</span> <span class="pre">evidence,</span> <span class="pre">model)</span></code>  runs all checks
+for a given analysis and returns a <code class="docutils literal notranslate"><span class="pre">ChecksResults</span></code>.</p></li>
+<li><p>Maintains a <code class="docutils literal notranslate"><span class="pre">check_to_method</span></code> dictionary mapping check names (strings) to the Python
+methods that implement them.</p></li>
+</ul>
+<p><strong>You do not use this class directly.</strong>  It is created inside <code class="docutils literal notranslate"><span class="pre">ACRO.__init__()</span></code>.</p>
+</section>
+<section id="tablemodeldetails">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">TableModelDetails</a><a class="headerlink" href="#tablemodeldetails" title="Link to this heading">#</a></h3>
+<p><strong>Module</strong>: <code class="docutils literal notranslate"><span class="pre">acro.tablemodeldetails</span></code></p>
+<p>A portable description of a table-type analysis.  Created at the start of every call
+to <code class="docutils literal notranslate"><span class="pre">crosstab()</span></code>, <code class="docutils literal notranslate"><span class="pre">pivot_table()</span></code>, <code class="docutils literal notranslate"><span class="pre">hist()</span></code>, <code class="docutils literal notranslate"><span class="pre">pie()</span></code>, or <code class="docutils literal notranslate"><span class="pre">surv_func()</span></code>.</p>
+<p><strong>What it stores:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">index</span></code>, <code class="docutils literal notranslate"><span class="pre">columns</span></code>, <code class="docutils literal notranslate"><span class="pre">values</span></code>  the Series passed to the analysis command.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kwargs</span></code>  all keyword arguments needed to reproduce the table.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model_type</span></code>  <code class="docutils literal notranslate"><span class="pre">&quot;table&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;array&quot;</span></code> (histograms, pie charts), or <code class="docutils literal notranslate"><span class="pre">&quot;survival&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">risk_appetite</span></code>  the TRE’s thresholds (copied from <code class="docutils literal notranslate"><span class="pre">SDCChecks</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variable_metadata</span></code>  a dictionary mapping each dimension name to its
+<code class="docutils literal notranslate"><span class="pre">CategoricalDtype</span></code> and URI, preserving all category values even after suppression.</p></li>
+</ul>
+<p><strong>Key methods for evidence collection:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Returns</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_count_table()</span></code></p></td>
+<td><p>DataFrame of observation counts per cell.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_allfalse_table()</span></code></p></td>
+<td><p>Boolean DataFrame with all cells <code class="docutils literal notranslate"><span class="pre">False</span></code> (used as a base mask).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_zeros_table()</span></code></p></td>
+<td><p>DataFrame of zeros matching the table structure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_newagg_table(aggfunc)</span></code></p></td>
+<td><p>The table rerun with a different aggregation function.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_dimension_names()</span></code></p></td>
+<td><p>List of dimension (categorical) variable names.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_variable_type_dict()</span></code></p></td>
+<td><p>Dict mapping each variable to its ontology URI
+(<code class="docutils literal notranslate"><span class="pre">DIMENSION_URI</span></code> or <code class="docutils literal notranslate"><span class="pre">MEASURE_URI</span></code>).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="sdcevidence">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">SDCEvidence</a><a class="headerlink" href="#sdcevidence" title="Link to this heading">#</a></h3>
+<p><strong>Module</strong>: <code class="docutils literal notranslate"><span class="pre">acro.sdcchecks</span></code></p>
+<p>A data container populated by <code class="docutils literal notranslate"><span class="pre">SDCChecks.get_evidence_forall_analyses()</span></code>.</p>
+<p><strong>Attributes:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Contents</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dof</span></code></p></td>
+<td><p>Residual degrees of freedom.  An integer for regression models; a
+DataFrame of per-cell (count − 1) values for table models.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">interim_tables</span></code></p></td>
+<td><p>Dict of DataFrames, keyed by evidence name (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;count_table&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;sum&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;top_n_sum&quot;</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">variable_type_dict</span></code></p></td>
+<td><p>Names of dependent and independent variables (supports secondary
+disclosure control review).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="checksresults">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">ChecksResults</a><a class="headerlink" href="#checksresults" title="Link to this heading">#</a></h3>
+<p><strong>Module</strong>: <code class="docutils literal notranslate"><span class="pre">acro.sdcchecks</span></code> (dataclass)</p>
+<p>Returned by <code class="docutils literal notranslate"><span class="pre">SDCChecks.run_checks_for_analysis()</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Contents</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">overall_status</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;pass&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;review&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;fail&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">summaries</span></code></p></td>
+<td><p>Concatenated plain-English summaries from every check.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">outcomes</span></code></p></td>
+<td><p>Dict mapping check name → result (mask DataFrame or scalar).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fair_dict</span></code></p></td>
+<td><p>Structured SDC process metadata for FAIR reporting.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="manychecksresults">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">ManyChecksResults</a><a class="headerlink" href="#manychecksresults" title="Link to this heading">#</a></h3>
+<p><strong>Module</strong>: <code class="docutils literal notranslate"><span class="pre">acro.sdcchecks</span></code></p>
+<p>Wraps a dictionary of <code class="docutils literal notranslate"><span class="pre">ChecksResults</span></code> when a table uses multiple aggregation
+functions (e.g. <code class="docutils literal notranslate"><span class="pre">aggfunc=[&quot;mean&quot;,</span> <span class="pre">&quot;std&quot;]</span></code>).</p>
+<p><strong>Key methods:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_overall_status()</span></code>  <code class="docutils literal notranslate"><span class="pre">&quot;fail&quot;</span></code> if any analysis fails, else <code class="docutils literal notranslate"><span class="pre">&quot;review&quot;</span></code>
+if any reviews, else <code class="docutils literal notranslate"><span class="pre">&quot;pass&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_overall_summary()</span></code>  concatenated summaries.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_overall_fair()</span></code>  merged FAIR dict across all analyses.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_table_sdc()</span></code>  structured SDC dict for storage in the audit record.</p></li>
+</ul>
+</section>
+</section>
+<section id="suppression-via-data-redaction">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Suppression via Data Redaction</a><a class="headerlink" href="#suppression-via-data-redaction" title="Link to this heading">#</a></h2>
+<p>A key design change in v1.0.0 is <em>how</em> suppression is applied.</p>
+<p><strong>Previous approach</strong>: Apply a boolean mask to the computed table, replacing risky cells
+with <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.  This made it nearly impossible to recompute marginal totals correctly
+for non-additive aggregation functions (mean, median, etc.).</p>
+<p><strong>New approach</strong>: Identify which records fall into disclosive cells, <strong>remove those records
+from the data</strong>, then <strong>rerun the full pandas table query</strong> on the redacted data.  Because
+pandas computes margins from the data, the marginal totals are always correct.</p>
+<p>The functions that implement this live in <code class="docutils literal notranslate"><span class="pre">acro/table_utils.py</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_redacted_data(data,</span> <span class="pre">queries,</span> <span class="pre">dimensions)</span></code>  removes records matching a list of
+cell queries.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_redacted_table(model,</span> <span class="pre">collated_assessment)</span></code>  orchestrates redaction and reruns
+<code class="docutils literal notranslate"><span class="pre">pd.crosstab()</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_redacted_pivottable(model,</span> <span class="pre">collated_assessment)</span></code>  same for <code class="docutils literal notranslate"><span class="pre">pd.pivot_table()</span></code>.</p></li>
+</ul>
+<section id="category-preservation">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Category Preservation</a><a class="headerlink" href="#category-preservation" title="Link to this heading">#</a></h3>
+<p>When records are removed, any dimension (categorical) column may lose some of its
+category values, which might cause an implicit risk of <em>class disclosure</em>.  ACRO creates a new <code class="docutils literal notranslate"><span class="pre">CategoricalDtype</span></code> for each dimension, including all of the values present. During the redaction process it  re-casts each dimension to its original <code class="docutils literal notranslate"><span class="pre">CategoricalDtype</span></code>, so all of the possible values are reported in tables, even if they  are no longer present.
+after redaction, so the rerun table always has the same rows and columns as the
+original.  This is handled by the <code class="docutils literal notranslate"><span class="pre">variable_metadata</span></code> stored in <code class="docutils literal notranslate"><span class="pre">TableModelDetails</span></code>.</p>
+</section>
+</section>
+<section id="federated-evidence-serialisation">
+<h2><a class="toc-backref" href="#id16" role="doc-backlink">Federated Evidence Serialisation</a><a class="headerlink" href="#federated-evidence-serialisation" title="Link to this heading">#</a></h2>
+<p>When <code class="docutils literal notranslate"><span class="pre">federated=True</span></code>, ACRO skips the checks locally and instead serialises the
+collected evidence so it can be sent to a trusted aggregator.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Records.finalise_evidence(path,</span> <span class="pre">evidence_store)</span></code> method:</p>
+<ol class="arabic simple">
+<li><p>Creates the output directory.</p></li>
+<li><p>For each output, writes each <code class="docutils literal notranslate"><span class="pre">SDCEvidence.interim_table</span></code> DataFrame to a
+separate <code class="docutils literal notranslate"><span class="pre">{output_id}_{table_name}.csv</span></code> file.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">dof</span></code> is a multi-line string (i.e. a serialised DataFrame), writes it to
+<code class="docutils literal notranslate"><span class="pre">{output_id}_dof.csv</span></code>.</p></li>
+<li><p>Returns a <code class="docutils literal notranslate"><span class="pre">evidence.json</span></code> manifest listing every file and metadata for each output.</p></li>
+</ol>
+<p>The aggregator can reconstruct the evidence from these files and run the checks
+centrally without accessing individual-level data.</p>
+</section>
+<section id="regenerating-the-knowledge-files">
+<h2><a class="toc-backref" href="#id17" role="doc-backlink">Regenerating the Knowledge Files</a><a class="headerlink" href="#regenerating-the-knowledge-files" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">acro/ontology_handler.py</span></code> is the script used by maintainers to regenerate the four
+JSON files from the live ontology.  <strong>Researchers do not need to run this.</strong></p>
+<p>The script:</p>
+<ol class="arabic simple">
+<li><p>Fetches the StatbarnsSDC ontology from <code class="docutils literal notranslate"><span class="pre">https://ai-sdc.github.io/statbarnsdc/statbarnsdc.ttl</span></code>.</p></li>
+<li><p>Parses the RDF graph.</p></li>
+<li><p>Extracts statbarns, risks, checks, and analyses with their definitions and labels.</p></li>
+<li><p>Writes <code class="docutils literal notranslate"><span class="pre">analyses.json</span></code>, <code class="docutils literal notranslate"><span class="pre">statbarns.json</span></code>, <code class="docutils literal notranslate"><span class="pre">risks.json</span></code>, <code class="docutils literal notranslate"><span class="pre">checks.json</span></code> to the
+<code class="docutils literal notranslate"><span class="pre">acro/</span></code> directory.</p></li>
+</ol>
+<p>TRE administrators who need to customise the knowledge base can run this script against
+a locally modified ontology.</p>
+</section>
+<section id="adding-a-new-analysis-type">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">Adding a New Analysis Type</a><a class="headerlink" href="#adding-a-new-analysis-type" title="Link to this heading">#</a></h2>
+<p>The ontology-driven architecture makes it straightforward to support new analysis types.
+The steps are:</p>
+<ol class="arabic">
+<li><p><strong>Define the analysis</strong> in the StatbarnsSDC ontology (or extend a local copy).</p></li>
+<li><dl class="simple">
+<dt><strong>Regenerate</strong> the JSON files using <code class="docutils literal notranslate"><span class="pre">ontology_handler.py</span></code>.</dt><dd><p><strong>Note</strong> w3id.org/statbarnsdc (and hence the json files) already contain over 100 types of analysis - <strong>so you probably don’t need to do steps 1 and 2.</strong></p>
+</dd>
+</dl>
+</li>
+<li><p><strong>Add a method</strong> to the <code class="docutils literal notranslate"><span class="pre">ACRO</span></code> class (or <code class="docutils literal notranslate"><span class="pre">Tables</span></code> / <code class="docutils literal notranslate"><span class="pre">Regression</span></code> mixin) that:</p>
+<p>For most regression and covariate analyses, this is much simpler than the table case: the method typically builds the model and then passes it through the common check pipeline.</p>
+<ol class="loweralpha simple">
+<li><p>Creates a <code class="docutils literal notranslate"><span class="pre">TableModelDetails</span></code> instance (or uses the statsmodels model directly).</p></li>
+<li><p>Calls <code class="docutils literal notranslate"><span class="pre">self.sdc_checks.get_evidence_forall_analyses([analysis_name],</span> <span class="pre">model)</span></code>.</p></li>
+<li><p>Calls <code class="docutils literal notranslate"><span class="pre">self.sdc_checks.run_checks_for_analysis(analysis_name,</span> <span class="pre">evidence,</span> <span class="pre">model)</span></code>.</p></li>
+<li><p>Calls <code class="docutils literal notranslate"><span class="pre">self._process_table_output(...)</span></code> or <code class="docutils literal notranslate"><span class="pre">self._process_analysis_output(...)</span></code>.</p></li>
+</ol>
+<p>For table-style analyses and associated plots, there is more work to build the table description and preserve categorical metadata.</p>
+</li>
+</ol>
+<p>No changes to <code class="docutils literal notranslate"><span class="pre">SDCChecks</span></code>, <code class="docutils literal notranslate"><span class="pre">SDCEvidence</span></code>, or any check implementation are needed
+unless the new analysis requires genuinely new evidence types.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="configuration.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Configuration</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../news.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">News</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#background-and-motivation">Background and Motivation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-four-json-knowledge-files">The Four JSON Knowledge Files</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analyses-json">analyses.json</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#statbarns-json">statbarns.json</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#risks-json">risks.json</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#checks-json">checks.json</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-they-chain-together">How They Chain Together</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-core-classes">The Core Classes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdcchecks">SDCChecks</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tablemodeldetails">TableModelDetails</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sdcevidence">SDCEvidence</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#checksresults">ChecksResults</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#manychecksresults">ManyChecksResults</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#suppression-via-data-redaction">Suppression via Data Redaction</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#category-preservation">Category Preservation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#federated-evidence-serialisation">Federated Evidence Serialisation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#regenerating-the-knowledge-files">Regenerating the Knowledge Files</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-new-analysis-type">Adding a New Analysis Type</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/user_guide/architecture.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, SACRO Project Team.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

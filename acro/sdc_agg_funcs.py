@@ -135,3 +135,25 @@ def get_statsmodel_dof(model: Any) -> int:
     if not hasattr(model, "df_resid"):
         raise AttributeError("model does not have df_resid attribute")
     return int(model.df_resid)
+
+
+def get_lifelines_dof(model: Any) -> int:
+    """Get the residual degrees of freedom for a lifelines model.
+
+    Parameters
+    ----------
+        model : Any
+            A lifelines model.
+
+    Returns
+    -------
+        int
+            The residual degrees of freedom.
+    """
+    if not hasattr(model, "params_") or not hasattr(model, "event_observed"):
+        raise AttributeError("model does not have attributes for DOF calculation")
+
+    # Observations minus estimated parameters
+    return int(
+        len(model.event_observed) - len(model.params_) - 1
+    )  # Number of observations - 1 (baseline parameter B0) - number of modelled parameter (n = b1 … bn)

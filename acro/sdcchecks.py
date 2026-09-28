@@ -12,6 +12,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+import lifelines
 import numpy as np
 import pandas as pd
 import statsmodels
@@ -22,6 +23,7 @@ from .sdc_agg_funcs import (
     agg_num_negative,
     agg_top_2_sum,
     agg_top_n_sum,
+    get_lifelines_dof,
     get_statsmodel_dof,
 )
 from .tablemodeldetails import TableModelDetails
@@ -55,6 +57,8 @@ class SDCEvidence:
             self.dof = get_statsmodel_dof(model)
         elif isinstance(model, TableModelDetails):
             self.dof = model.get_count_table() - 1
+        elif isinstance(model, lifelines.fitters.RegressionFitter):
+            self.dof = get_lifelines_dof(model)
         else:
             self.dof = -1
 
@@ -87,6 +91,22 @@ class SDCEvidence:
                     )
             self.variable_type_dict = model.get_variable_type_dict()
             logger.debug(f"interim tables are {list(self.interim_tables.keys())}")
+
+        # Check if it's a lifelines regression model
+        if isinstance(model, lifelines.fitters.RegressionFitter):
+            if hasattr(model, "params_"):
+                indeps = list(model.params_.index)
+                logger.debug("independent variables are %s", indeps)
+                self.variable_type_dict["independent"] = indeps
+
+            deps = []
+            if hasattr(model, "duration_col") and model.duration_col:
+                deps.append(model.duration_col)
+            if hasattr(model, "event_col") and model.event_col:
+                deps.append(model.event_col)
+
+            logger.debug("dependent variables are %s", deps)
+            self.variable_type_dict["dependent"] = deps
 
 
 @dataclass

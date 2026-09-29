@@ -87,7 +87,7 @@ class Regression:
                 analysis_name, evidence, model
             )
             if analysis_name == "proportionalHazardsRegression":
-                checkresults.fair_dict.update(get_lifelines_variable_type_dict(results))
+                checkresults.fair_dict.update(get_lifelines_variable_type_dict(model))
             else:
                 checkresults.fair_dict.update(get_variable_type_dict(results))
                 tables: list[SimpleTable] = results.summary().tables
@@ -552,6 +552,8 @@ class Regression:
             fit_options=fit_options,
         )
         model.print_summary()
+        model._duration_col = duration_col
+        model._event_col = event_col
 
         analysis_name = "proportionalHazardsRegression"
         evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
@@ -635,7 +637,7 @@ def get_variable_type_dict(results: RegressionResultsWrapper) -> dict[str, Any]:
     return thedict
 
 
-def get_lifelines_variable_type_dict(model: Any) -> dict[str, Any]:
+def get_lifelines_variable_type_dict(model: CoxPHFitter) -> dict[str, Any]:
     """Get dict of independent and dependent variable names for a lifelines model."""
     thedict: dict[str, Any] = {"dependent": "unknown", "independent": ["unknown"]}
     if hasattr(model, "params_"):

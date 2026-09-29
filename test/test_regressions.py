@@ -123,6 +123,12 @@ def test_coxph(acro):
         df=df, duration_col="duration", event_col="event", penalizer=0.1
     )
 
+    res = acro.results.get_index(-1)
+    fair_dict = res.fair
+    assert "independent" in fair_dict
+    assert "age" in fair_dict["independent"]
+    assert "weight" in fair_dict["independent"]
+
     # Finalise and check SDC output status
     results = acro.finalise(PATH)
     output_0 = results.get_index(0)

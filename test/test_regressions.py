@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import shutil
 
+import numpy as np
+import pandas as pd
 import pytest
 
 from acro import ACRO, add_constant
@@ -87,6 +89,50 @@ def test_probit_logit(data, acro):
     results = acro.finalise(PATH)
     for i in range(4):
         assert results.get_index(i).status == "pass"
+    shutil.rmtree(PATH)
+
+
+def test_coxph(acro):
+    """Cox Proportional Hazards test using a synthetic dataset."""
+    # Create a synthetic dataset for Cox regression
+    np.random.seed(42)
+
+    # Synthetic dataset
+    df = pd.DataFrame(
+        {
+            "duration": np.random.uniform(1, 100, 100),
+            "event": np.random.choice([0, 1], size=100, p=[0.3, 0.7]),
+            "age": np.random.randn(100),
+            "height": np.random.randn(100),
+            "weight": np.random.randn(100),
+        }
+    )
+
+    # CoxPH with too few degrees of freedom (should trigger SDC fail)
+    small_df = df.iloc[0:5]
+    results = acro.coxph(
+        df=small_df, duration_col="duration", event_col="event", penalizer=0.1
+    )
+
+    res = acro.results.get_index(-1)
+    assert res.status == "fail"
+    acro.remove_output(res.uid)
+
+    # CoxPH with pass status
+    results = acro.coxph(
+        df=df, duration_col="duration", event_col="event", penalizer=0.1
+    )
+
+    res = acro.results.get_index(-1)
+    fair_dict = res.fair
+    assert "independent" in fair_dict
+    assert "age" in fair_dict["independent"]
+    assert "weight" in fair_dict["independent"]
+
+    # Finalise and check SDC output status
+    results = acro.finalise(PATH)
+    output_0 = results.get_index(0)
+    assert output_0.status == "pass"
     shutil.rmtree(PATH)
 
 

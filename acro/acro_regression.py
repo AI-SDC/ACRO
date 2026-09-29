@@ -7,9 +7,12 @@ from inspect import stack
 from io import StringIO
 from typing import Any
 
+import lifelines
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from lifelines import CoxPHFitter
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 from statsmodels.discrete.discrete_model import BinaryResultsWrapper
@@ -83,9 +86,12 @@ class Regression:
             checkresults: ChecksResults = self.sdc_checks.run_checks_for_analysis(
                 analysis_name, evidence, model
             )
-            checkresults.fair_dict.update(get_variable_type_dict(results))
+            if analysis_name == "proportionalHazardsRegression":
+                checkresults.fair_dict.update(get_lifelines_variable_type_dict(model))
+            else:
+                checkresults.fair_dict.update(get_variable_type_dict(results))
+                tables: list[SimpleTable] = results.summary().tables
 
-            tables: list[SimpleTable] = results.summary().tables
             self.results.add(
                 status=checkresults.overall_status,
                 output_type="regression",
@@ -98,7 +104,9 @@ class Regression:
                 command=command,
                 summary=checkresults.summaries,
                 outcome=DataFrame(),
-                output=get_summary_dataframes(tables),
+                output=[model.summary]
+                if isinstance(model, lifelines.fitters.RegressionFitter)
+                else get_summary_dataframes(tables),
             )
 
     def ols(
@@ -442,6 +450,126 @@ class Regression:
         )
         return results
 
+    def coxph(
+        self,
+        df: pd.DataFrame,
+        duration_col: str | None = None,
+        event_col: str | None = None,
+        strata: list[str] | str | None = None,
+        penalizer: float | np.ndarray = 0.0,
+        l1_ratio: float = 0.0,
+        alpha: float = 0.05,
+        baseline_estimation_method: str = "breslow",
+        n_baseline_knots: int | None = None,
+        knots: list | None = None,
+        breakpoints: list | None = None,
+        show_progress: bool = False,
+        initial_point: np.ndarray | None = None,
+        weights_col: str | None = None,
+        cluster_col: str | None = None,
+        entry_col: str | None = None,
+        robust: bool = False,
+        formula: str | None = None,
+        batch_mode: bool | None = None,
+        fit_options: dict | None = None,
+    ) -> CoxPHFitter:
+        """Fits Cox Proportional Hazards model using lifelines.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            A DataFrame containing the survival data.
+        duration_col : str, optional
+            The column name representing the time-to-event or duration.
+        event_col : str, optional
+            The column name representing the event indicator (1 = event, 0 = censored).
+        strata : list[str] or str, optional
+            A column or list of columns to stratify the baseline hazard.
+        penalizer : float or ndarray, optional
+            Attach a penalty to the size of coefficients for regularization (ridge/lasso).
+        l1_ratio : float, optional
+            Specify ratio to assign to L1 vs L2 penalty (0.0 to 1.0).
+        alpha : float, optional
+            The level in the confidence intervals. Default is 0.05.
+        baseline_estimation_method : str, optional
+            How to estimate baseline hazard: "breslow", "spline", or "piecewise".
+        n_baseline_knots : int, optional
+            Number of knots when using spline baseline estimation.
+        knots : list, optional
+            Custom knots when using spline baseline estimation.
+        breakpoints : list, optional
+            Breakpoints when using piecewise baseline estimation.
+        show_progress : bool, optional
+            Whether to show convergence diagnostics during optimization.
+        initial_point : np.ndarray, optional
+            Initial guess for the coefficients.
+        weights_col : str, optional
+            Column name containing weights for rows.
+        cluster_col : str, optional
+            Column name for clustered/grouped data (robust standard errors).
+        entry_col : str, optional
+            Column denoting when a subject entered the study, i.e. left-truncation.
+        robust : bool, optional
+            Compute robust standard errors (Huber-White sandwich estimator).
+        formula : str, optional
+            R-like formula string to define covariates and interactions.
+        batch_mode : bool, optional
+            enabling batch_mode can be faster for datasets with a large number of ties.
+            If left as None, lifelines will choose the best option.
+        fit_options : dict, optional
+            Override default optimization parameters (e.g., step_size, max_steps).
+
+        Returns
+        -------
+        CoxPHFitter
+            Fitted lifelines CoxPHFitter results object.
+        """
+        logger.debug("coxph()")
+        command: str = utils.get_command("coxph()", stack())
+        model = CoxPHFitter(
+            baseline_estimation_method=baseline_estimation_method,
+            penalizer=penalizer,
+            strata=strata,
+            l1_ratio=l1_ratio,
+            n_baseline_knots=n_baseline_knots,
+            knots=knots,
+            breakpoints=breakpoints,
+            alpha=alpha,
+        )
+
+        model.fit(
+            df=df,
+            duration_col=duration_col,
+            event_col=event_col,
+            show_progress=show_progress,
+            initial_point=initial_point,
+            weights_col=weights_col,
+            cluster_col=cluster_col,
+            entry_col=entry_col,
+            robust=robust,
+            formula=formula,
+            batch_mode=batch_mode,
+            fit_options=fit_options,
+        )
+        model.print_summary()
+        model._duration_col = duration_col
+        model._event_col = event_col
+
+        analysis_name = "proportionalHazardsRegression"
+        evidence: SDCEvidence = self.sdc_checks.get_evidence_forall_analyses(
+            [analysis_name], model
+        )
+
+        self._process_output(
+            "coxph",
+            command,
+            analysis_name,
+            evidence,
+            model=model,
+            results=model.summary,
+        )
+        return model
+
 
 def get_summary_dataframes(results: list[SimpleTable]) -> list[DataFrame]:
     """Convert a list of SimpleTable objects to a list of DataFrame objects.
@@ -506,4 +634,16 @@ def get_variable_type_dict(results: RegressionResultsWrapper) -> dict[str, Any]:
     if "Intercept" in indeps:
         indeps.remove("Intercept")
     thedict["independent"] = indeps
+    return thedict
+
+
+def get_lifelines_variable_type_dict(model: CoxPHFitter) -> dict[str, Any]:
+    """Get dict of independent and dependent variable names for a lifelines model."""
+    thedict: dict[str, Any] = {"dependent": "unknown", "independent": ["unknown"]}
+    if hasattr(model, "params_"):
+        thedict["independent"] = list(model.params_.index)
+
+    if hasattr(model, "_duration_col") and hasattr(model, "_event_col"):
+        thedict["dependent"] = [model._duration_col, model._event_col]
+
     return thedict

@@ -608,6 +608,13 @@
         "statbarn": "CorrelationCoefficients",
         "uri": "https://www.w3id.org/statbarnsdc#Probit"
     },
+    "proportionalHazardsRegression":{
+        "definition": "A regression model used in survival analysis to examine the relationship between survival time and one or more predictor variables",
+        "name": "proportionalHazardsRegression",
+        "prefix_label": "proportionalHazardsRegression",
+        "statbarn": "CorrelationCoefficients",
+        "uri": ""
+    },
     "PseudoRSquared": {
         "definition": "Measure used in models like logistic regression to indicate the proportion of variation in the dependent variable explained by the model.",
         "name": "PseudoRSquared",

@@ -11,6 +11,7 @@ from acro.sdc_agg_funcs import (
     agg_top_2_sum,
     agg_top_n_sum,
     agg_values_are_same,
+    get_lifelines_dof,
     get_statsmodel_dof,
 )
 
@@ -66,6 +67,18 @@ def test_get_statsmodel_dof_no_attribute():
 
     with pytest.raises(AttributeError, match="model does not have df_resid attribute"):
         get_statsmodel_dof(FakeModel())
+
+
+def test_get_lifelines_dof_no_attribute():
+    """Get_lifelines_dof raises AttributeError when model lacks params_ or event_observed."""
+
+    class FakeModel:
+        pass
+
+    with pytest.raises(
+        AttributeError, match="model does not have attributes for DOF calculation"
+    ):
+        get_lifelines_dof(FakeModel())
 
 
 def test_agg_values_are_same_empty_series() -> None:

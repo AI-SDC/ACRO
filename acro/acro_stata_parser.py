@@ -5,6 +5,8 @@ Jim Smith 2023 @james.smith@uwe.ac.uk
 MIT licenses apply.
 """
 
+import contextlib
+import io
 import logging
 import os
 import re
@@ -324,7 +326,8 @@ def parse_and_run(
     elif command == "table" and fstata_version >= 17:
         varlist = extract_strings(varlist_as_str)
         outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
-
+    elif command == "stcox":
+        outcome = run_cox_regression(mydata, varlist, options)
     else:
         outcome = f"acro command not recognised: {command}"
     return outcome
@@ -697,6 +700,62 @@ def run_regression(command: str, data: pd.DataFrame, varlist: list[str]) -> str:
     return res_str
 
 
+def run_cox_regression(data: pd.DataFrame, varlist: list[str], options: str) -> str:
+    """Interpret and run cox regression command."""
+    # Check if data has been stset
+    if "_t" not in data.columns or "_d" not in data.columns:
+        raise ValueError("data are not st")
+
+    # Get covariates from the user's varlist
+    independent_vars = varlist
+
+    # Filter the dataframe using the _st column
+    if "_st" in data.columns:
+        survival_data = data[data["_st"] == 1].copy()
+    else:
+        survival_data = data.copy()
+
+    # Parse options
+    options_lower = options.lower() if options else ""
+
+    robust = "vce(robust)" in options_lower
+
+    # Parse level(#) if specified, otherwise default to 0.95 (alpha = 0.05)
+    conf_level = 95
+    alpha = 0.05
+    level_match = re.search(r"level\s*\(\s*(\d+)\s*\)", options_lower)
+    if level_match:
+        conf_level = int(level_match.group(1))
+        alpha = 1.0 - (conf_level / 100.0)
+
+    # Parse strata for stratified Cox models
+    strata_vars = None
+    strata_match = re.search(r"strata\s*\(\s*([^)]+)\s*\)", options_lower)
+    if strata_match:
+        raw_strata = strata_match.group(1)
+        # Split by spaces or commas in case multiple strata variables are provided
+        strata_vars = [v.strip() for v in re.split(r"[\s,]+", raw_strata) if v.strip()]
+
+    # Call acro.coxph
+    with contextlib.redirect_stdout(io.StringIO()):
+        results = stata_config.stata_acro.coxph(
+            df=survival_data,
+            duration_col="_t",
+            event_col="_d",
+            formula=" + ".join(independent_vars),
+            robust=robust,
+            alpha=alpha,
+            strata=strata_vars,
+        )
+
+    # Check if 'nohr' is present in Stata options
+    show_coef = "nohr" in options.lower() if options else False
+    pretty_results = get_cox_regr_results(
+        results, show_coef=show_coef, conf_level=conf_level
+    )
+    return pretty_results
+
+
 def get_regr_results(results: sm_iolib_summary.Summary, title: str) -> str:
     """Translate statsmodels fit result into prettified table."""
     res_str: str = title + "\n"
@@ -704,3 +763,72 @@ def get_regr_results(results: sm_iolib_summary.Summary, title: str) -> str:
         res_str += prettify_table_string(table, separator=",") + "\n"
         res_str += f"{results.summary().extra_txt}\n"
     return res_str
+
+
+def get_cox_regr_results(
+    cph_model, show_coef=False, conf_level=95, title="Cox regression"
+):
+    """Format a fitted lifelines CoxPHFitter results object to mimic Stata's stcox output."""
+    summary = cph_model.summary
+
+    # Calculate all the values for the output's header
+    n_obs = cph_model.durations.shape[0]
+    n_events = cph_model.event_observed.sum()
+    log_lik = cph_model.log_likelihood_
+    chi2 = (
+        cph_model.score_test.test_statistic if hasattr(cph_model, "score_test") else 0.0
+    )
+    p_value = cph_model.score_test.p_value if hasattr(cph_model, "score_test") else 0.0
+
+    metric_label = "Coef." if show_coef else "Haz. Ratio"
+    method_text = "Efron method for ties"
+    ci_header = f"[{conf_level}% Conf. Interval]"
+
+    # Determine the width of the first column based on the longest var name
+    max_var_len = (
+        max([len(str(idx)) for idx in summary.index]) if not summary.empty else 2
+    )
+    col1_width = max(12, max_var_len + 2)
+
+    # Calculate total line width based on columns
+    numeric_columns_width = 60
+    total_width = col1_width + 3 + numeric_columns_width  # +3 for " | "
+
+    # Build the header to mimic the stata stcox output
+    out = []
+    out.append(f"{title} -- {method_text}")
+    out.append(f"No. of subjects = {n_obs}                  Number of obs = {n_obs}")
+    out.append(f"No. of failures = {int(n_events)}")
+    out.append(
+        f"                                            LR chi2({len(summary)})   = {chi2:.2f}"
+    )
+    out.append(
+        f"Log likelihood  = {log_lik:.4f}             Prob > chi2   = {p_value:.4f}"
+    )
+    out.append("-" * total_width)
+    out.append(
+        f"{'_t':<12} | {metric_label:>10}  {'Std. Err.':>9}  {'z':>6}  {'P>|z|':>6}   {ci_header:>22}"
+    )
+    out.append("-" * total_width)
+
+    for index, row in summary.iterrows():
+        z = row["z"]
+        p = row["p"]
+
+        if show_coef:
+            val = row["coef"]
+            se = row["se(coef)"]
+            ci_lower = row[f"coef lower {int(conf_level)}%"]
+            ci_upper = row[f"coef upper {int(conf_level)}%"]
+        else:  # showing hazard ratio
+            val = row["exp(coef)"]
+            se = row["se(coef)"] * row["exp(coef)"]
+            ci_lower = row[f"exp(coef) lower {int(conf_level)}%"]
+            ci_upper = row[f"exp(coef) upper {int(conf_level)}%"]
+
+        out.append(
+            f"{index:<12} | {val:10.4f}  {se:9.4f}  {z:6.2f}  {p:6.3f}     {ci_lower:9.4f}  {ci_upper:9.4f}"
+        )
+
+    out.append("-" * total_width)
+    return "\n".join(out)

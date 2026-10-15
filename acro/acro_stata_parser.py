@@ -818,13 +818,13 @@ def get_cox_regr_results(
         if show_coef:
             val = row["coef"]
             se = row["se(coef)"]
-            ci_lower = row["coef lower 95%"]
-            ci_upper = row["coef upper 95%"]
+            ci_lower = row[f"coef lower {int(conf_level)}%"]
+            ci_upper = row[f"coef upper {int(conf_level)}%"]
         else:  # showing hazard ratio
             val = row["exp(coef)"]
             se = row["se(coef)"] * row["exp(coef)"]
-            ci_lower = row["exp(coef) lower 95%"]
-            ci_upper = row["exp(coef) upper 95%"]
+            ci_lower = row[f"exp(coef) lower {int(conf_level)}%"]
+            ci_upper = row[f"exp(coef) upper {int(conf_level)}%"]
 
         out.append(
             f"{index:<12} | {val:10.4f}  {se:9.4f}  {z:6.2f}  {p:6.3f}     {ci_lower:9.4f}  {ci_upper:9.4f}"

@@ -916,9 +916,6 @@ def test_stata_logit(data):
     assert val == pytest.approx(0.214, 0.01)
 
 
-import pytest
-
-
 def test_stata_stcox(survival_data):
     """Check stcox (Cox regression) gets called and formatted correctly and check the results against Stata's stcox output."""
     ret = dummy_acrohandler(

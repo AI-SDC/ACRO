@@ -34,6 +34,14 @@ def data() -> pd.DataFrame:
     return data
 
 
+@pytest.fixture
+def survival_data():
+    """Load a dataset for survival analysis."""
+    path = os.path.join("data", "survival_data.dta")
+    survival_data = pd.read_stata(path)
+    return survival_data
+
+
 def clean_up(name):
     """Remove unwanted files or directory."""
     if os.path.exists(name):
@@ -906,6 +914,76 @@ def test_stata_logit(data):
         val = val[0:-1]
     val = float(val)
     assert val == pytest.approx(0.214, 0.01)
+
+
+import pytest
+
+
+def test_stata_stcox(survival_data):
+    """Check stcox (Cox regression) gets called and formatted correctly and check the results against Stata's stcox output."""
+    ret = dummy_acrohandler(
+        survival_data,
+        command="stcox",
+        varlist=" age drug",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+
+    tokens = ret.split()
+
+    # Verify Number of Subjects
+    subj_idx = tokens.index("subjects")
+    n_subs = float(tokens[subj_idx + 2])  # Skips "="
+    assert n_subs == pytest.approx(50.0, 0.1)
+
+    # Verify Number of Failures
+    fail_idx = tokens.index("failures")
+    n_fails = float(tokens[fail_idx + 2])  # Skips "="
+    assert n_fails == pytest.approx(36.0, 0.1)
+
+    # Verify a covariate ('age') row is present and has the correct calculations
+    age_idx = tokens.index("age")
+    # Hazard ratio
+    hazard_ratio = float(tokens[age_idx + 2])
+    assert hazard_ratio == pytest.approx(1.00, 0.1)
+    # Standard error
+    standard_error = float(tokens[age_idx + 3])
+    assert standard_error == pytest.approx(0.014, 0.1)
+    # z
+    z = float(tokens[age_idx + 4])
+    assert z == pytest.approx(0.51, 0.1)
+    # p
+    p = float(tokens[age_idx + 5])
+    assert pytest.approx(0.60, 0.1) == p
+    # conf_lower
+    conf_lower = float(tokens[age_idx + 6])
+    assert conf_lower == pytest.approx(0.97, 0.1)
+    # conf_upper
+    conf_upper = float(tokens[age_idx + 7])
+    assert conf_upper == pytest.approx(1.03, 0.1)
+
+    # Verify a covariate ('drug') row is present and has the correct calculations
+    drug_idx = tokens.index("drug")
+    hazard_ratio = float(tokens[age_idx + 2])
+    assert hazard_ratio == pytest.approx(0.920, 0.1)
+    # Standard error
+    standard_error = float(tokens[drug_idx + 3])
+    assert standard_error == pytest.approx(0.31, 0.1)
+    # z
+    z = float(tokens[drug_idx + 4])
+    assert z == pytest.approx(-0.24, 0.1)
+    # p
+    p = float(tokens[drug_idx + 5])
+    assert pytest.approx(0.81, 0.1) == p
+    # conf_lower
+    conf_lower = float(tokens[drug_idx + 6])
+    assert conf_lower == pytest.approx(0.46, 0.1)
+    # conf_upper
+    conf_upper = float(tokens[drug_idx + 7])
+    assert conf_upper == pytest.approx(1.81, 0.1)
 
 
 def test_unsupported_formatting_options(data):

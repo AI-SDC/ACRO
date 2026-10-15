@@ -967,7 +967,7 @@ def test_stata_stcox(survival_data):
 
     # Verify a covariate ('drug') row is present and has the correct calculations
     drug_idx = tokens.index("drug")
-    hazard_ratio = float(tokens[age_idx + 2])
+    hazard_ratio = float(tokens[drug_idx + 2])
     assert hazard_ratio == pytest.approx(0.920, 0.1)
     # Standard error
     standard_error = float(tokens[drug_idx + 3])
@@ -984,6 +984,89 @@ def test_stata_stcox(survival_data):
     # conf_upper
     conf_upper = float(tokens[drug_idx + 7])
     assert conf_upper == pytest.approx(1.81, 0.1)
+
+
+def test_stata_stcox_with_options(survival_data):
+    """Check stcox (Cox regression) with options."""
+    ret = dummy_acrohandler(
+        survival_data,
+        command="stcox",
+        varlist=" age drug",
+        exclusion="",
+        exp="",
+        weights="",
+        options="nohr level(80) strata(group)",
+        stata_version="16",
+    )
+
+    tokens = ret.split()
+
+    # Verify Number of Subjects
+    subj_idx = tokens.index("subjects")
+    n_subs = float(tokens[subj_idx + 2])  # Skips "="
+    assert n_subs == pytest.approx(50.0, 0.1)
+
+    # Verify Number of Failures
+    fail_idx = tokens.index("failures")
+    n_fails = float(tokens[fail_idx + 2])  # Skips "="
+    assert n_fails == pytest.approx(36.0, 0.1)
+
+    # Verify a covariate ('age') row is present and has the correct coefficient
+    age_idx = tokens.index("age")
+    # coefficient
+    coefficient = float(tokens[age_idx + 2])
+    assert coefficient == pytest.approx(0.01, 0.1)
+
+    # Verify a covariate ('drug') row is present and has the correct coefficient
+    drug_idx = tokens.index("drug")
+    coefficient = float(tokens[drug_idx + 2])
+    assert coefficient == pytest.approx(-0.13, 0.1)
+
+
+def test_stcox_raises_error_when_data_not_stset():
+    """Test that stcox raises a ValueError whenteh data is not stset."""
+    invalid_data = pd.DataFrame({"age": [45, 50, 55], "drug": [0, 1, 0]})
+
+    with pytest.raises(ValueError, match="data are not st"):
+        dummy_acrohandler(
+            invalid_data,
+            command="stcox",
+            varlist=" age drug",
+            exclusion="",
+            exp="",
+            weights="",
+            options="",
+            stata_version="16",
+        )
+
+
+def test_stcox_when_st_column_missing():
+    """Test that stcox correctly uses the data when the _st column is absent."""
+    data_without_st = pd.DataFrame(
+        {
+            "_t": [10.5, 20.1, 15.2, 30.0, 25.4],
+            "_d": [1, 0, 1, 1, 0],
+            "age": [45, 50, 55, 60, 48],
+            "drug": [0, 1, 0, 1, 0],
+        }
+    )
+
+    ret = dummy_acrohandler(
+        data_without_st,
+        command="stcox",
+        varlist=" age drug",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+
+    # Check the command has executed successfully
+    assert isinstance(ret, str)
+    assert "Cox regression" in ret
+    assert "Haz. Ratio" in ret
+    assert "age" in ret
 
 
 def test_unsupported_formatting_options(data):

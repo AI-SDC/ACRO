@@ -19,6 +19,9 @@ from acro.utils import ALLOWED_MITIGATIONS, prettify_table_string
 
 logger = logging.getLogger("acro")
 
+# Add any new supported command to this list
+SUPPORTED_COMMANDS = ["table", "regress", "logit", "probit", "stcox"]
+
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     """Parse an if statement from stata format. Uses it to subset a dataframe by contents."""
@@ -257,6 +260,24 @@ def get_rows_cols_v17on(varlist: list[Any]) -> dict[str, Any]:
     return rows_cols
 
 
+def expand_abbreviated_command(command: str) -> str:
+    """Expand an abbreviated acro command to its full name based on the supported list of commands."""
+    abb_command = command.strip().lower()
+
+    # Find all supported commands that start with the abbreviation provided
+    matches = [
+        command for command in SUPPORTED_COMMANDS if command.startswith(abb_command)
+    ]
+
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        raise ValueError(
+            f"Ambiguous command abbreviation '{command}'; could be: {', '.join(matches)}"
+        )
+    raise ValueError(f"Unrecognized command: {command}")
+
+
 def parse_and_run(
     mydata: pd.DataFrame,
     command: str,
@@ -317,16 +338,19 @@ def parse_and_run(
         outcome = add_custom_output(varlist)
     elif command in output_commands:
         outcome = run_output_command(command, varlist)
-    elif command in regression_commands:
-        outcome = run_regression(command, mydata, varlist)
-    elif command == "table" and fstata_version == 16:
-        outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
-    elif command == "table" and fstata_version >= 17:
-        varlist = extract_strings(varlist_as_str)
-        outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
-
     else:
-        outcome = f"acro command not recognised: {command}"
+        unabbreviated_command = expand_abbreviated_command(command)
+
+        if unabbreviated_command in regression_commands:
+            outcome = run_regression(unabbreviated_command, mydata, varlist)
+        elif unabbreviated_command == "table":
+            if fstata_version >= 17:
+                varlist = extract_strings(varlist_as_str)
+            outcome = run_table_command(
+                mydata, varlist, weights, options, fstata_version
+            )
+        else:
+            raise ValueError(f"Unrecognized or invalid command: {command}")
     return outcome
 
 

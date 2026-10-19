@@ -14,6 +14,7 @@ from acro import ACRO, stata_config
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,
+    expand_abbreviated_command,
     find_brace_word,
     parse_and_run,
     parse_table_details,
@@ -908,6 +909,71 @@ def test_stata_logit(data):
     assert val == pytest.approx(0.214, 0.01)
 
 
+def test_expand_exact_command():
+    """Test that exact command names return themselves."""
+    assert expand_abbreviated_command("regress") == "regress"
+    assert expand_abbreviated_command("stcox") == "stcox"
+    assert expand_abbreviated_command("table") == "table"
+
+
+def test_expand_command_with_abbreviation():
+    """Test that valid short prefixes successfully expand to the correct command."""
+    assert expand_abbreviated_command("reg") == "regress"
+    assert expand_abbreviated_command("stc") == "stcox"
+    assert expand_abbreviated_command("tab") == "table"
+    assert expand_abbreviated_command("log") == "logit"
+
+
+def test_expand_command_unrecognized():
+    """Test that  invalid commands raise a ValueError."""
+    with pytest.raises(ValueError, match="Unrecognized command: invalid_command"):
+        expand_abbreviated_command("invalid_command")
+
+
+def test_abbreviated_regress(data):
+    """Check that abbreviated command 'reg' correctly executes linear regression."""
+    ret = dummy_acrohandler(
+        data,
+        command="reg",
+        varlist=" inc_activity inc_grants inc_donations total_costs",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    assert isinstance(ret, str)
+
+
+def test_abbreviated_table(data):
+    """Check that abbreviated command 'tab' correctly executes table output."""
+    ret = dummy_acrohandler(
+        data,
+        command="tab",
+        varlist=" survivor grant_type",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    assert isinstance(ret, str)
+
+
+def test_two_command_same_abbreviation(monkeypatch):
+    """Test if two commands has the same abbreviation provided by the user, this will raise a value error."""
+    # Temporarily override the module-level SUPPORTED_COMMANDS list for this test
+    monkeypatch.setattr(
+        "acro.acro_stata_parser.SUPPORTED_COMMANDS", ["regress", "regression", "table"]
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Ambiguous command abbreviation 'reg'; could be: regress, regression",
+    ):
+        expand_abbreviated_command("reg")
+
+
 def test_unsupported_formatting_options(data):
     """Check that user gets warning if they try to format table."""
     format_string = "acro does not currently support table formatting commands."
@@ -988,18 +1054,17 @@ def test_stata_finalise_default_filetype(monkeypatch):
 
 def test_stata_unknown(data):
     """Test unknown acro command."""
-    ret = dummy_acrohandler(
-        data,
-        command="foo",
-        varlist=" survivor inc_activity inc_grants inc_donations total_costs",
-        exclusion="",
-        exp="",
-        weights="",
-        options="",
-        stata_version="16",
-    )
-    correct = "acro command not recognised: foo"
-    assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
+    with pytest.raises(ValueError, match="Unrecognized command: foo"):
+        dummy_acrohandler(
+            data,
+            command="foo",
+            varlist=" survivor inc_activity inc_grants inc_donations total_costs",
+            exclusion="",
+            exp="",
+            weights="",
+            options="",
+            stata_version="16",
+        )
 
 
 def test_stata_acro_init_with_mitigation_and_round_base(data):

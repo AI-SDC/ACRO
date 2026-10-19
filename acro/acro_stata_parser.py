@@ -275,7 +275,7 @@ def expand_abbreviated_command(command: str) -> str:
         raise ValueError(
             f"Ambiguous command abbreviation '{command}'; could be: {', '.join(matches)}"
         )
-    raise ValueError(f"Unrecognized command: {command}")
+    raise ValueError(f"Unrecognised command: {command}")
 
 
 def parse_and_run(
@@ -349,8 +349,7 @@ def parse_and_run(
             outcome = run_table_command(
                 mydata, varlist, weights, options, fstata_version
             )
-        else:
-            raise ValueError(f"Unrecognized or invalid command: {command}")
+
     return outcome
 
 

@@ -928,7 +928,7 @@ def test_stata_finalise_default_filetype(monkeypatch):
 
 def test_stata_unknown(data):
     """Test unknown acro command."""
-    with pytest.raises(ValueError, match="Unrecognized command: foo"):
+    with pytest.raises(ValueError, match="Unrecognised command: foo"):
         dummy_acrohandler(
             data,
             command="foo",

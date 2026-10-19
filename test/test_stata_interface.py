@@ -926,7 +926,7 @@ def test_expand_command_with_abbreviation():
 
 def test_expand_command_unrecognized():
     """Test that  invalid commands raise a ValueError."""
-    with pytest.raises(ValueError, match="Unrecognized command: invalid_command"):
+    with pytest.raises(ValueError, match="Unrecognised command: invalid_command"):
         expand_abbreviated_command("invalid_command")
 
 
@@ -1054,7 +1054,7 @@ def test_stata_finalise_default_filetype(monkeypatch):
 
 def test_stata_unknown(data):
     """Test unknown acro command."""
-    with pytest.raises(ValueError, match="Unrecognized command: foo"):
+    with pytest.raises(ValueError, match="Unrecognised command: foo"):
         dummy_acrohandler(
             data,
             command="foo",

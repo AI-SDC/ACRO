@@ -19,8 +19,14 @@ from acro.utils import ALLOWED_MITIGATIONS, prettify_table_string
 
 logger = logging.getLogger("acro")
 
-# Add any new supported command to this list
-SUPPORTED_COMMANDS = ["table", "regress", "logit", "probit", "stcox"]
+# Dictionary mapping valid Stata abbreviations to the full command names
+LIST_OF_COMMANDS = {
+    "regress": ["reg", "regr", "regre", "regres", "regress"],
+    "probit": ["prob", "probi", "probit"],
+    "logit": ["logi", "logit"],
+    "table": ["ta", "tab", "tab2", "table"],
+    "stcox": ["stcox"],
+}
 
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
@@ -261,21 +267,13 @@ def get_rows_cols_v17on(varlist: list[Any]) -> dict[str, Any]:
 
 
 def expand_abbreviated_command(command: str) -> str:
-    """Expand an abbreviated acro command to its full name based on the supported list of commands."""
-    abb_command = command.strip().lower()
+    """Expand an abbreviated stata command to its full name."""
+    command = command.strip().lower()
 
-    # Find all supported commands that start with the abbreviation provided
-    matches = [
-        command for command in SUPPORTED_COMMANDS if command.startswith(abb_command)
-    ]
-
-    if len(matches) == 1:
-        return matches[0]
-    if len(matches) > 1:
-        raise ValueError(
-            f"Ambiguous command abbreviation '{command}'; could be: {', '.join(matches)}"
-        )
-    raise ValueError(f"Unrecognised command: {command}")
+    for full_command, abbreviations in LIST_OF_COMMANDS.items():
+        if command in abbreviations:
+            command = full_command
+    return command
 
 
 def parse_and_run(
@@ -349,7 +347,8 @@ def parse_and_run(
             outcome = run_table_command(
                 mydata, varlist, weights, options, fstata_version
             )
-
+        else:
+            outcome = f"acro command not recognised: {command}"
     return outcome
 
 

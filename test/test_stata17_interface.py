@@ -942,7 +942,6 @@ def test_stata_unknown(data):
     assert ret == correct
 
 
-
 # ----Test stata 17 new table command syntax-------------------------------------
 def test_table_stata17(data):
     """Check that the simple table command works as expected."""

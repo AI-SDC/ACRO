@@ -928,17 +928,19 @@ def test_stata_finalise_default_filetype(monkeypatch):
 
 def test_stata_unknown(data):
     """Test unknown acro command."""
-    with pytest.raises(ValueError, match="Unrecognised command: foo"):
-        dummy_acrohandler(
-            data,
-            command="foo",
-            varlist=" survivor inc_activity inc_grants inc_donations total_costs",
-            exclusion="",
-            exp="",
-            weights="",
-            options="",
-            stata_version="16",
-        )
+    ret = dummy_acrohandler(
+        data,
+        command="foo",
+        varlist=" survivor inc_activity inc_grants inc_donations total_costs",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    correct = "acro command not recognised: foo"
+    assert ret == correct
+
 
 
 # ----Test stata 17 new table command syntax-------------------------------------

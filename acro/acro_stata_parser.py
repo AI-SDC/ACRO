@@ -19,6 +19,15 @@ from acro.utils import ALLOWED_MITIGATIONS, prettify_table_string
 
 logger = logging.getLogger("acro")
 
+# Dictionary mapping valid Stata abbreviations to the full command names
+LIST_OF_COMMANDS = {
+    "regress": ["reg", "regr", "regre", "regres", "regress"],
+    "probit": ["prob", "probi", "probit"],
+    "logit": ["logi", "logit"],
+    "table": ["ta", "tab", "tab2", "table"],
+    "stcox": ["stcox"],
+}
+
 
 def apply_stata_ifstmt(raw: str, all_data: pd.DataFrame) -> pd.DataFrame:
     """Parse an if statement from stata format. Uses it to subset a dataframe by contents."""
@@ -257,6 +266,16 @@ def get_rows_cols_v17on(varlist: list[Any]) -> dict[str, Any]:
     return rows_cols
 
 
+def expand_abbreviated_command(command: str) -> str:
+    """Expand an abbreviated stata command to its full name."""
+    command = command.strip().lower()
+
+    for full_command, abbreviations in LIST_OF_COMMANDS.items():
+        if command in abbreviations:
+            command = full_command
+    return command
+
+
 def parse_and_run(
     mydata: pd.DataFrame,
     command: str,
@@ -317,16 +336,19 @@ def parse_and_run(
         outcome = add_custom_output(varlist)
     elif command in output_commands:
         outcome = run_output_command(command, varlist)
-    elif command in regression_commands:
-        outcome = run_regression(command, mydata, varlist)
-    elif command == "table" and fstata_version == 16:
-        outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
-    elif command == "table" and fstata_version >= 17:
-        varlist = extract_strings(varlist_as_str)
-        outcome = run_table_command(mydata, varlist, weights, options, fstata_version)
-
     else:
-        outcome = f"acro command not recognised: {command}"
+        unabbreviated_command = expand_abbreviated_command(command)
+
+        if unabbreviated_command in regression_commands:
+            outcome = run_regression(unabbreviated_command, mydata, varlist)
+        elif unabbreviated_command == "table":
+            if fstata_version >= 17:
+                varlist = extract_strings(varlist_as_str)
+            outcome = run_table_command(
+                mydata, varlist, weights, options, fstata_version
+            )
+        else:
+            outcome = f"acro command not recognised: {command}"
     return outcome
 
 

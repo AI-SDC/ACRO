@@ -216,6 +216,27 @@ The diagram below summarises the full pipeline, from session start to output rec
    │  Record output + audit    │  Record output locally  │
    └───────────────────────────┴─────────────────────────┘
 
+Explaining Disclosure Risks
+==========================
+
+Use these methods to explain an analysis's risks, individual risks and checks,
+or a risk-appetite setting. Each method returns text; use ``print()`` to display it::
+
+   from acro import ACRO
+
+   session = ACRO()
+   print(session.describe_analysis_risks("Mean"))
+   print(session.describe_risk("Dominance"))
+   print(session.describe_check("MinimumThresholdCheck"))
+   print(session.describe_risk_appetite("safe_threshold"))
+
+The analysis explanation includes definitions, source URIs, risks, checks and
+required evidence. The risk-appetite explanation includes the current session value.
+
+Names are case-sensitive ontology names or configuration keys. An unknown name
+raises ``ValueError`` and lists the available names. These explanations describe
+potential risks, not whether a particular output is safe to release.
+
 Best Practices
 ==============
 

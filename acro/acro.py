@@ -151,6 +151,140 @@ class ACRO(Tables, Regression):
         self.config["federated"] = self.federated
         logger.info("federated: %s", self.federated)
 
+    def describe_analysis_risks(self, analysis_name: str) -> str:
+        """Describe the ontology risks and checks for an analysis type.
+
+        Parameters
+        ----------
+        analysis_name : str
+            Case-sensitive ontology analysis name, for example ``Mean``.
+
+        Returns
+        -------
+        str
+            Analysis and statbarn definitions, source URIs, risks and checks.
+            This describes potential risks, not a risk assessment of an output.
+
+        Raises
+        ------
+        ValueError
+            If the analysis name is unknown.
+        """
+        analysis = self._description_entry(
+            self.sdc_checks.analyses, analysis_name, "analysis"
+        )
+        statbarn_name = analysis["statbarn"]
+        statbarn = self.sdc_checks.statbarns[statbarn_name]
+        sections = [
+            f"Analysis: {analysis_name}\n{analysis['definition']}\n{analysis['uri']}",
+            f"Statbarn: {statbarn_name}\n{statbarn['definition']}\n{statbarn['uri']}",
+        ]
+        sections.extend(self.describe_risk(risk) for risk in statbarn["risks"])
+        if not statbarn["risks"]:
+            sections.append(
+                "No risks listed in the ontology; this does not imply safety."
+            )
+        return "\n\n".join(sections)
+
+    def describe_risk(self, risk_name: str) -> str:
+        """Return a risk's definition, source URI and associated check descriptions.
+
+        Parameters
+        ----------
+        risk_name : str
+            Case-sensitive ontology risk name, for example ``Dominance``.
+
+        Returns
+        -------
+        str
+            Risk definition and associated checks.
+
+        Raises
+        ------
+        ValueError
+            If the risk name is unknown.
+        """
+        risk = self._description_entry(self.sdc_checks.risks, risk_name, "risk")
+        sections = [f"Risk: {risk_name}\n{risk['definition']}\n{risk['uri']}"]
+        sections.extend(self.describe_check(check) for check in risk["checks"])
+        if not risk["checks"]:
+            sections.append("No checks listed in the ontology.")
+        return "\n\n".join(sections)
+
+    def describe_check(self, check_name: str) -> str:
+        """Return a check's definition, source URI and required evidence.
+
+        Parameters
+        ----------
+        check_name : str
+            Case-sensitive ontology check name, for example ``MinimumThresholdCheck``.
+
+        Returns
+        -------
+        str
+            Check definition and required evidence.
+
+        Raises
+        ------
+        ValueError
+            If the check name is unknown.
+        """
+        check = self._description_entry(self.sdc_checks.checks, check_name, "check")
+        evidence = ", ".join(check["evidence"]) or "None listed"
+        return (
+            f"Check: {check_name}\n{check['definition']}\n{check['uri']}\n"
+            f"Required evidence: {evidence}"
+        )
+
+    def describe_risk_appetite(self, parameter_name: str) -> str:
+        """Explain a risk-appetite parameter and report its current session value.
+
+        Parameters
+        ----------
+        parameter_name : str
+            Configuration key, for example ``safe_threshold``.
+
+        Returns
+        -------
+        str
+            Parameter explanation and current session value.
+
+        Raises
+        ------
+        ValueError
+            If the name is not a supported parameter present in this session.
+        """
+        descriptions = {
+            "safe_threshold": "Minimum number of records required in a group.",
+            "safe_dof_threshold": "Minimum residual degrees of freedom required for a model.",
+            "safe_nk_n": "Number of largest values used in the N-K dominance check.",
+            "safe_nk_k": "Dominance limit for the largest N values, expressed as a proportion of the total.",
+            "safe_pratio_p": "Minimum ratio of the sum of the smallest N-2 values to the largest value.",
+            "check_missing_values": "Whether to check for missing values.",
+            "survival_safe_threshold": "Minimum frequency used for survival tables and plots.",
+            "zeros_are_disclosive": "Whether zero counts are considered potentially disclosive.",
+            "safe_round_base": "Configured default rounding base for table mitigation.",
+        }
+        available = {
+            name: description
+            for name, description in descriptions.items()
+            if name in self.sdc_checks.risk_appetite
+        }
+        description = self._description_entry(
+            available, parameter_name, "risk-appetite parameter"
+        )
+        value = self.sdc_checks.risk_appetite[parameter_name]
+        return f"Risk appetite: {parameter_name}\n{description}\nCurrent value: {value}"
+
+    @staticmethod
+    def _description_entry(entries: dict, name: str, kind: str) -> Any:
+        """Look up an explanation entry, reporting available names on failure."""
+        if name not in entries:
+            raise ValueError(
+                f"Unknown {kind} {name!r}. Available names: {', '.join(sorted(entries))}"
+            )
+        return entries[name]
+
     def finalise(
         self, path: str = "outputs", ext: str = "json", interactive: bool = False
     ) -> Records | None:

@@ -14,6 +14,7 @@ from acro import ACRO, stata_config
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,
+    expand_abbreviated_command,
     find_brace_word,
     parse_and_run,
     parse_table_details,
@@ -908,6 +909,71 @@ def test_stata_logit(data):
     assert val == pytest.approx(0.214, 0.01)
 
 
+def test_expand_exact_command():
+    """Test that exact command names return themselves."""
+    assert expand_abbreviated_command("regress") == "regress"
+    assert expand_abbreviated_command("stcox") == "stcox"
+    assert expand_abbreviated_command("table") == "table"
+
+
+def test_expand_command_with_abbreviation():
+    """Test that valid short prefixes successfully expand to the correct command."""
+    assert expand_abbreviated_command("reg") == "regress"
+    assert expand_abbreviated_command("stc") == "stcox"
+    assert expand_abbreviated_command("tab") == "table"
+    assert expand_abbreviated_command("log") == "logit"
+
+
+def test_expand_command_unrecognized():
+    """Test that  invalid commands raise a ValueError."""
+    with pytest.raises(ValueError, match="Unrecognised command: invalid_command"):
+        expand_abbreviated_command("invalid_command")
+
+
+def test_abbreviated_regress(data):
+    """Check that abbreviated command 'reg' correctly executes linear regression."""
+    ret = dummy_acrohandler(
+        data,
+        command="reg",
+        varlist=" inc_activity inc_grants inc_donations total_costs",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    assert isinstance(ret, str)
+
+
+def test_abbreviated_table(data):
+    """Check that abbreviated command 'tab' correctly executes table output."""
+    ret = dummy_acrohandler(
+        data,
+        command="tab",
+        varlist=" survivor grant_type",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    assert isinstance(ret, str)
+
+
+def test_two_command_same_abbreviation(monkeypatch):
+    """Test if two commands has the same abbreviation provided by the user, this will raise a value error."""
+    # Temporarily override the module-level SUPPORTED_COMMANDS list for this test
+    monkeypatch.setattr(
+        "acro.acro_stata_parser.SUPPORTED_COMMANDS", ["regress", "regression", "table"]
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Ambiguous command abbreviation 'reg'; could be: regress, regression",
+    ):
+        expand_abbreviated_command("reg")
+
+
 def test_unsupported_formatting_options(data):
     """Check that user gets warning if they try to format table."""
     format_string = "acro does not currently support table formatting commands."
@@ -988,18 +1054,17 @@ def test_stata_finalise_default_filetype(monkeypatch):
 
 def test_stata_unknown(data):
     """Test unknown acro command."""
-    ret = dummy_acrohandler(
-        data,
-        command="foo",
-        varlist=" survivor inc_activity inc_grants inc_donations total_costs",
-        exclusion="",
-        exp="",
-        weights="",
-        options="",
-        stata_version="16",
-    )
-    correct = "acro command not recognised: foo"
-    assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
+    with pytest.raises(ValueError, match="Unrecognised command: foo"):
+        dummy_acrohandler(
+            data,
+            command="foo",
+            varlist=" survivor inc_activity inc_grants inc_donations total_costs",
+            exclusion="",
+            exp="",
+            weights="",
+            options="",
+            stata_version="16",
+        )
 
 
 def test_stata_acro_init_with_mitigation_and_round_base(data):
@@ -1133,6 +1198,267 @@ def test_stata_acro_enable_rounding_invalid_base(data, caplog):
     assert stata_config.stata_acro.mitigation == "round"
     assert stata_config.stata_acro.round_base == default_base
     assert "banana" in caplog.text
+
+
+def test_factor_variable_notation(data):
+    """Test standard i. notation regression output against Stata benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets i.year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+
+    # Verify base category (2010) is not in the output
+    assert "2010" not in tokens, "Base category 2010 should not be part of the output"
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 808
+
+    # Verify the coefficient for variable assets
+    idx = tokens.index("assets")
+    coef_assets = float(tokens[idx + 2])
+
+    assert coef_assets == pytest.approx(0.5098463, 0.01)
+
+    # Verify coefficients for all other year (2011 to 2015)
+    expected_year_coefs_from_stata = {
+        "2011": -9023369,
+        "2012": -9418088,
+        "2013": -5732769,
+        "2014": -6783030,
+        "2015": -6371089,
+    }
+    for year, expected_coef in expected_year_coefs_from_stata.items():
+        year_idx = tokens.index(f"year_{year}")
+        coef = float(tokens[year_idx + 2])
+        assert coef == pytest.approx(expected_coef, 0.01)
+
+    # Verify constant coefficient
+    idx = tokens.index("const")
+    coef_cons = float(tokens[idx + 2])
+    assert coef_cons == pytest.approx(2.56e07, 0.01)
+
+
+def test_factor_variable_notation_with_ib_first(data):
+    """Test ib(first) factor notation would have the right base category."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets ib(first).year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+    # Verify base category (2010) is not in the output
+    assert "2010" not in tokens, "Base category 2010 should not be part of the output"
+
+
+def test_factor_variable_notation_with_ib_freq(data):
+    """Test regression output for ib(freq) factor notation against Stata benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets ib(freq).year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+    # Verify the freq category (2013) is not in the output
+    assert "2013" not in tokens, "category 2013 should not be part of the output"
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 808
+
+    # Verify the coefficient for the asset variable
+    idx = tokens.index("assets")
+    coef_assets = float(tokens[idx + 2])
+
+    assert coef_assets == pytest.approx(0.5098463, 0.01)
+
+    # Verify coefficients for all other year levels
+    expected_year_coefs_from_stata = {
+        "2010": 5732769,
+        "2011": -3290600,
+        "2012": -3685320,
+        "2014": -1050262,
+        "2015": -638320.8,
+    }
+    for year, expected_coef in expected_year_coefs_from_stata.items():
+        year_idx = tokens.index(f"year_{year}")
+        coef = float(tokens[year_idx + 2])
+        assert coef == pytest.approx(expected_coef, 0.01)
+
+    # Verify constant coefficient
+    idx = tokens.index("const")
+    coef_cons = float(tokens[idx + 2])
+    assert coef_cons == pytest.approx(1.98e07, 0.01)
+
+
+def test_factor_variable_notation_with_ib_none(data):
+    """Test ib(none) factor notation does not have any bae category."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets ib(none).year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+    # Verify category 2015 is not in the output
+    assert "2015" not in tokens, "category 2015 should not be part of the output"
+
+
+def test_factor_variable_notation_with_ib_none_and_noconstant(data):
+    """Test regression output for ib(none) factor notation and option noconstant against Stata benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets ib(none).year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="noconstant",
+        stata_version="16",
+    )
+    tokens = ret.split()
+    # Verify there is no constant in the output
+    assert "constant" not in tokens, "constant should not be part of the output"
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 808
+
+    # Verify the coefficient for the assets variable
+    idx = tokens.index("assets")
+    coef_assets = float(tokens[idx + 2])
+
+    assert coef_assets == pytest.approx(0.5098463, 0.01)
+
+    # Verify coefficients for all other year levels
+    expected_year_coefs_from_stata = {
+        "2010": 2.56e07,
+        "2011": 1.66e07,
+        "2012": 1.62e07,
+        "2013": 1.98e07,
+        "2014": 1.88e07,
+        "2015": 1.92e07,
+    }
+    for year, expected_coef in expected_year_coefs_from_stata.items():
+        year_idx = tokens.index(f"year_{year}")
+        coef = float(tokens[year_idx + 2])
+        assert coef == pytest.approx(expected_coef, 0.01)
+
+
+def test_factor_variable_notation_with_user_custom_base_category(data):
+    """Test regression output for ib(2014) factor notation against Stata benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets ib2014.year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+    # Verify category 2014 is not in the output
+    assert "2014" not in tokens, "category 2014 should not be part of the output"
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 808
+
+    # Verify the coefficient of the assets variable
+    idx = tokens.index("assets")
+    coef_assets = float(tokens[idx + 2])
+
+    assert coef_assets == pytest.approx(0.5098463, 0.01)
+
+    # Verify coefficients for all other year levels
+    expected_year_coefs_from_stata = {
+        "2010": 6783030,
+        "2011": -2240338,
+        "2012": -2635058,
+        "2013": 1050262,
+        "2015": 411941,
+    }
+    for year, expected_coef in expected_year_coefs_from_stata.items():
+        year_idx = tokens.index(f"year_{year}")
+        coef = float(tokens[year_idx + 2])
+        assert coef == pytest.approx(expected_coef, 0.01)
+
+    # Verify constant coefficient
+    idx = tokens.index("const")
+    coef_cons = float(tokens[idx + 2])
+    assert coef_cons == pytest.approx(1.88e07, 0.01)
+
+
+def test_factor_variable_notation_with_ib_last(data):
+    """Test regression output for ib(last) factor notation against Stata benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets ib(last).year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+    # Verify category 2015 is not in the output
+    assert "2015" not in tokens, "category 2015 should not be part of the output"
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 808
+
+    # Verify the coefficient of the assets variable
+    idx = tokens.index("assets")
+    coef_assets = float(tokens[idx + 2])
+
+    assert coef_assets == pytest.approx(0.5098463, 0.01)
+
+    # Verify coefficients for all other year levels
+    expected_year_coefs_from_stata = {
+        "2010": 6371089,
+        "2011": -2652279,
+        "2012": -3046999,
+        "2013": 638320.8,
+        "2014": -411941,
+    }
+    for year, expected_coef in expected_year_coefs_from_stata.items():
+        year_idx = tokens.index(f"year_{year}")
+        coef = float(tokens[year_idx + 2])
+        assert coef == pytest.approx(expected_coef, 0.01)
+
+    # Verify constant coefficient
+    idx = tokens.index("const")
+    coef_cons = float(tokens[idx + 2])
+    assert coef_cons == pytest.approx(1.92e07, 0.01)
 
 
 def test_cleanup():

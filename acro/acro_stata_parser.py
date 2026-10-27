@@ -278,6 +278,59 @@ def expand_abbreviated_command(command: str) -> str:
     raise ValueError(f"Unrecognised command: {command}")
 
 
+def process_factor_notation(data: pd.DataFrame, varlist: list[str], options: str):
+    """Check if stata factor variables (ie. i. or ib.) are present in the varlist, it creates dummy columns in the dataframe, and returns the updated dataframe and modified varlist."""
+    all_vars = {var.split(".")[-1] if "." in var else var for var in varlist}
+
+    # Delete empty rows (mimicking Stata behaviour)
+    df_clean = data.dropna(subset=list(all_vars)).copy()
+
+    the_varlist = []
+    for var in varlist:
+        if "." not in var:
+            # Variables without the i.
+            the_varlist.append(var)
+        else:
+            # Factor variables
+            factor_notation, varname = var.split(".", 1)
+            series = df_clean[varname]
+            unique_levels = sorted(series.unique())  # the categories
+
+            # Define the base category based on user's input
+            base_cat = unique_levels[
+                0
+            ]  # Stata's default base category is the first category
+            all_levels = False
+
+            if "ib(last)" in factor_notation:
+                base_cat = unique_levels[-1]
+            elif "ib(freq)" in factor_notation or "ib(frequent)" in factor_notation:
+                base_cat = series.mode().iloc[0]
+            elif "ib(none)" in factor_notation or factor_notation == "ibn":
+                has_noconstant = "noconstant" in options.lower()
+                if has_noconstant:
+                    # If noconstant is in the options, we will keep all the categories
+                    all_levels = True
+                else:
+                    # Else: the base category will be the last one (mimicking stata behaviour)
+                    base_cat = unique_levels[-1]
+            else:
+                # Check for a custom numeric category base
+                match = re.search(r"ib(\d+)", factor_notation)
+                if match:
+                    base_cat = int(match.group(1))
+
+            # Generate the dummy columns
+            for lvl in unique_levels:
+                if all_levels or lvl != base_cat:
+                    col_name = f"{varname}_{lvl}"
+                    # Create binary column
+                    df_clean[col_name] = (series == lvl).astype(int)
+                    the_varlist.append(col_name)
+
+    return df_clean, the_varlist
+
+
 def parse_and_run(
     mydata: pd.DataFrame,
     command: str,
@@ -342,7 +395,8 @@ def parse_and_run(
         unabbreviated_command = expand_abbreviated_command(command)
 
         if unabbreviated_command in regression_commands:
-            outcome = run_regression(unabbreviated_command, mydata, varlist)
+            mydata, varlist = process_factor_notation(mydata, varlist, options)
+            outcome = run_regression(unabbreviated_command, mydata, varlist, options)
         elif unabbreviated_command == "table":
             if fstata_version >= 17:
                 varlist = extract_strings(varlist_as_str)
@@ -692,14 +746,21 @@ def run_table_command(
     return msg + options_str + results
 
 
-def run_regression(command: str, data: pd.DataFrame, varlist: list[str]) -> str:
+def run_regression(
+    command: str, data: pd.DataFrame, varlist: list[str], options: str
+) -> str:
     """Interpret and run appropriate regression command."""
     # get components of formula
     depvar = varlist[0]
     indep_vars = varlist[1:]
     new_data = data[varlist].dropna()
     x_var = new_data[indep_vars]
-    x_var = add_constant(x_var)
+
+    # Check if 'noconstant' is in the options
+    has_noconstant = "noconstant" in options.lower()
+    if not has_noconstant:
+        x_var = add_constant(x_var)
+
     res_str = ""
     if command == "regress":
         y_var = new_data[depvar]

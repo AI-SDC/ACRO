@@ -919,7 +919,7 @@ def test_expand_exact_command():
 def test_expand_command_with_abbreviation():
     """Test that valid short prefixes successfully expand to the correct command."""
     assert expand_abbreviated_command("reg") == "regress"
-    assert expand_abbreviated_command("tab") == "table"
+    assert expand_abbreviated_command("probi") == "probit"
     assert expand_abbreviated_command("logi") == "logit"
 
 
@@ -1044,6 +1044,22 @@ def test_stata_unknown(data):
         stata_version="16",
     )
     correct = "acro command not recognised: foo"
+    assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
+
+
+def test_stata_unsupported_table_command(data):
+    """Test unsupported commands to create table would send a user message to use the table command."""
+    ret = dummy_acrohandler(
+        data,
+        command="fre",
+        varlist=" survivor inc_activity",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    correct = "'fre' is not currently supported. To generate tables, please use the 'table' command instead."
     assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
 
 

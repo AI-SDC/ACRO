@@ -24,7 +24,7 @@ LIST_OF_COMMANDS = {
     "regress": ["reg", "regr", "regre", "regres", "regress"],
     "probit": ["prob", "probi", "probit"],
     "logit": ["logi", "logit"],
-    "table": ["ta", "tab", "tab2", "table"],
+    "table": ["table"],
     "stcox": ["stcox"],
 }
 
@@ -346,6 +346,17 @@ def parse_and_run(
                 varlist = extract_strings(varlist_as_str)
             outcome = run_table_command(
                 mydata, varlist, weights, options, fstata_version
+            )
+        elif unabbreviated_command in [
+            "tabulate",
+            "tabstat",
+            "dtable",
+            "fre",
+            "summarize",
+        ]:
+            outcome = (
+                f"'{unabbreviated_command}' is not currently supported. "
+                "To generate tables, please use the 'table' command instead."
             )
         else:
             outcome = f"acro command not recognised: {command}"

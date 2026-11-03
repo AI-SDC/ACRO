@@ -7,15 +7,14 @@ MIT licenses apply.
 
 import logging
 import os
-import patsy
 import re
 from typing import Any
 
-import numpy as np
 import pandas as pd
+import patsy
 from statsmodels.iolib import summary as sm_iolib_summary
 
-from acro import ACRO, acro_regression, add_constant, stata_config
+from acro import ACRO, acro_regression, stata_config
 from acro.acro_tables import AGGFUNC
 from acro.utils import ALLOWED_MITIGATIONS, prettify_table_string
 
@@ -277,135 +276,98 @@ def expand_abbreviated_command(command: str) -> str:
             command = full_command
     return command
 
-"""
-def process_factor_notation(data: pd.DataFrame, varlist: list[str], options: str):
-    Check if stata factor variables (ie. i. or ib.) are present in the varlist, it creates dummy columns in the dataframe, and returns the updated dataframe and modified varlist.
-    all_vars = {var.split(".")[-1] if "." in var else var for var in varlist}
 
-    # Delete empty rows (mimicking Stata behaviour)
-    df_clean = data.dropna(subset=list(all_vars)).copy()
-
-    the_varlist = []
-    for var in varlist:
-        if "." not in var:
-            # Variables without the i.
-            the_varlist.append(var)
-        else:
-            # Factor variables
-            factor_notation, varname = var.split(".", 1)
-            series = df_clean[varname]
-            unique_levels = sorted(series.unique())  # the categories
-
-            # Define the base category based on user's input
-            base_cat = unique_levels[
-                0
-            ]  # Stata's default base category is the first category
-            all_levels = False
-
-            if "ib(last)" in factor_notation:
-                base_cat = unique_levels[-1]
-            elif "ib(freq)" in factor_notation or "ib(frequent)" in factor_notation:
-                base_cat = series.mode().iloc[0]
-            elif "ib(none)" in factor_notation or factor_notation == "ibn":
-                has_noconstant = "noconstant" in options.lower()
-                if has_noconstant:
-                    # If noconstant is in the options, we will keep all the categories
-                    all_levels = True
-                else:
-                    # Else: the base category will be the last one (mimicking stata behaviour)
-                    base_cat = unique_levels[-1]
-            else:
-                # Check for a custom numeric category base
-                match = re.search(r"ib(\d+)", factor_notation)
-                if match:
-                    base_cat = int(match.group(1))
-
-            # Generate the dummy columns
-            for lvl in unique_levels:
-                if all_levels or lvl != base_cat:
-                    col_name = f"{varname}_{lvl}"
-                    # Create binary column
-                    df_clean[col_name] = (series == lvl).astype(int)
-                    the_varlist.append(col_name)
-
-    return df_clean, the_varlist
-"""
-
-def process_simple_factor_notation(term:str, data: pd.DataFrame, options: str) -> tuple[str, list[str]]:
+def process_simple_factor_notation(
+    term: str, data: pd.DataFrame, options: str
+) -> tuple[str, list[str]]:
     """Translate simple Stata factor notation (without interaction) into Patsy formula terms."""
     raw_vars = []
     patsy_terms = ""
     term = term.strip()
+    # If it is a normal variable and not a factor notation
     if "." not in term:
         raw_vars.append(term)
-        patsy_terms = term  # year, row_vars = [year]
+        patsy_terms = term
     elif term.startswith("c."):
         # Continuous variable notation
         _, var_name = term.split(".", 1)
         raw_vars.append(var_name)
-        patsy_terms = var_name  # year, [year]
+        patsy_terms = var_name
     else:
         # Factor variables
         factor_notation, var_name = term.split(".", 1)
         raw_vars.append(var_name)
-        if factor_notation == "i" or factor_notation == "ib(first)":
-            # Standard i. notation
-            patsy_terms = (f"C({var_name})")
-        elif factor_notation == "ib(last)": 
-            patsy_terms = (f"C({var_name}, Treatment(reference=-1))")
-        elif factor_notation == "ib(freq)" or factor_notation == "ib(frequent)":
+        if factor_notation in ("i", "ib(first)"):
+            # Standard i. notation where the base category is the category with the smallest number
+            raw_min = data[var_name].min()
+            first_val = raw_min.item() if hasattr(raw_min, "item") else raw_min
+            patsy_terms = f"C({var_name}, Treatment(reference={repr(first_val)}))"
+        elif factor_notation == "ib(last)":
+            # The base category is the last category
+            patsy_terms = f"C({var_name}, Treatment(reference=-1))"
+        elif factor_notation in ("ib(freq)", "ib(frequent)"):
+            # The base category is the most frequent category
             most_common_val = data[var_name].mode().iloc[0]
-            patsy_terms = (f"C({var_name}, Treatment(reference={repr(most_common_val)}))")
-        elif factor_notation == "ib(none)" or factor_notation == "ibn":
+            patsy_terms = f"C({var_name}, Treatment(reference={repr(most_common_val)}))"
+        elif factor_notation in ("ib(none)", "ibn"):
             has_noconstant = "noconstant" in options.lower()
             if has_noconstant:
-                patsy_terms = (f"0 + C({var_name}, Treatment)")
+                # There is no base category
+                patsy_terms = f"0 + C({var_name}, Treatment)"
             else:
-                # Default base category is the last one (mimicking Stata behavior)
-                patsy_terms = (f"C({var_name}, Treatment(reference=-1))")
+                # The base category is the last one (mimicking Stata behavior)
+                patsy_terms = f"C({var_name}, Treatment(reference=-1))"
         else:
-            # Check for custom base numbers like
-            match = re.search(r"ib(\d+)", factor_notation)
+            # Check for custom base numbers
+            match = re.search(r"ib\(?(\d+)\)?", factor_notation)
             if match:
                 base_val = int(match.group(1))
-                patsy_terms = (f"C({var_name}, Treatment(reference={repr(base_val)}))")
+                patsy_terms = f"C({var_name}, Treatment(reference={repr(base_val)}))"
             else:
-                patsy_terms = (f"C({var_name})")
+                patsy_terms = f"C({var_name})"
     return patsy_terms, raw_vars
 
 
-def process_factor_notation(varlist: list[str], data: pd.DataFrame, options: str) -> tuple[list[str], list[str]]:
+def process_factor_notation(
+    varlist: list[str], data: pd.DataFrame, options: str
+) -> tuple[list[str], list[str]]:
     """Translate Stata factor notation, interactions, and general polynomials into Patsy formula terms."""
     patsy_terms = []
     all_raw_vars = []
-    
+
     for token in varlist:
         token = token.strip()
-            
+
         # Check if it's an interaction term
         if "##" in token or "#" in token:
             delimiter = "##" if "##" in token else "#"
             terms = token.split(delimiter)
-            
+
             # Extract the variable name for each term
             term_vars = []
             for term in terms:
                 _, vars = process_simple_factor_notation(term, data, options)
                 term_vars.append(vars)
-            
-            # Check for factor-variable notation for polynomials (eg. c.age##c.age##c.age)
-            if len(term_vars) > 1 and all(v == term_vars[0] for v in term_vars):
-                var_name = term_vars[0]
-                if isinstance(var_name, list):
-                    var_name = var_name[0]
+
+            # Check for factor-variable notation for polynomials like c.age##c.age
+            if len(term_vars) > 1 and all(
+                v == term_vars[0] for v in term_vars
+            ):  # check if all term_vars are the same
+                var = term_vars[0]
+                if isinstance(var, list):
+                    var_name = var[0]
                 degree = len(term_vars)
-                
-                if delimiter == "##":
-                    poly_terms = [var_name] + [f"I({var_name}**{i})" for i in range(2, degree + 1)]
+
+                if (
+                    delimiter == "##"
+                ):  # fit the variable and the power (square, cubic,..) of the variables
+                    poly_terms = [var_name] + [
+                        f"I({var_name}**{i})" for i in range(2, degree + 1)
+                    ]
                     patsy_terms.append(" + ".join(poly_terms))
-                else:
+                else:  # fit the power of the variable
                     patsy_terms.append(f"I({var_name}**{degree})")
-                    
+
                 all_raw_vars.append(var_name)
             else:
                 # Regular multi-variable interaction (e.g. i.diabetes##c.age)
@@ -413,8 +375,11 @@ def process_factor_notation(varlist: list[str], data: pd.DataFrame, options: str
                 for term in terms:
                     term, vars = process_simple_factor_notation(term, data, options)
                     trans_parts.append(term)
-                    all_raw_vars.append(vars)
-                
+                    if isinstance(vars, list):
+                        var_name = vars[0]
+                    all_raw_vars.append(var_name)
+
+                # Replacing the stata interactions symbols with the pastsy formula interaction symbols
                 join_op = " * " if delimiter == "##" else " : "
                 patsy_terms.append(join_op.join(trans_parts))
         else:
@@ -422,54 +387,60 @@ def process_factor_notation(varlist: list[str], data: pd.DataFrame, options: str
             term, vars = process_simple_factor_notation(token, data, options)
             patsy_terms.append(term)
             if isinstance(vars, list):
-                vars = vars[0]
-            all_raw_vars.append(vars)
-            
+                var_name = vars[0]
+            all_raw_vars.append(var_name)
     return patsy_terms, all_raw_vars
 
-def clean_single_term(col_str: str) -> str:
-    """Helper function sitting at the top level to clean an individual term."""
-    match = re.search(r"C\(\s*([a-zA-Z_]\w*).*?\)\s*\[(.*?)\]", col_str)
-    if match:
-        varname = match.group(1)
-        val = match.group(2)
-        
-        if val.startswith("T."):
-            val = val[2:]
-        if val.endswith(".0"):
-            val = val[:-2]
-            
-        return f"{varname}_{val}"
+
+def clean_patsy_name(names):
+    """Clean up the categorical and interaction names created by Patsy."""
+    # Handle lists or pandas Index objects recursively
+    if isinstance(names, (list, tuple, pd.Index)):
+        return [clean_patsy_name(item) for item in names]
+
+    col_str = str(names)
+
+    # Handle Interactions by dividing the name then clean each part separately and rejoin them
+    if ":" in col_str:
+        cleaned_parts = [clean_patsy_name(part.strip()) for part in col_str.split(":")]
+        return "_".join(cleaned_parts)
+
+    # Handle categorical terms
+    if "C(" in col_str and "[" in col_str:
+        # Extract variable name right after C(
+        var_match = re.search(r"C\(\s*([a-zA-Z_]\w*)", col_str)
+        # Extract value inside the brackets at the end
+        val_match = re.search(r"\[([^\]]+)\]", col_str)
+
+        if var_match and val_match:
+            varname = var_match.group(1)
+            val = val_match.group(1)
+
+            # Remove the T. and 0. that pasty automatically adds for the names
+            if val.startswith("T."):
+                val = val[2:]
+            if val.endswith(".0"):
+                val = val[:-2]
+
+            # Replace spaces and clean special chars
+            val = re.sub(r"\s+", "_", val)
+            val = re.sub(r"[^a-zA-Z0-9_]", "", val)
+
+            return f"{varname}_{val}"
+    # If no patterns match
     return col_str
 
-def clean_patsy_column_names(columns: list[str]) -> list[str]:
-    """Clean up Patsy categorical names for standard, custom, ibn, and interactions."""
-    clean_col_names = []
-    
-    for col in columns:
-        if ":" in col:
-            # Split interaction, clean each part, and join with '#'
-            terms = col.split(":")
-            cleaned_parts = [clean_single_term(part.strip()) for part in terms]
-            clean_col_names.append("#".join(cleaned_parts))
-        else:
-            clean_col_names.append(clean_single_term(col))
-            
-    return clean_col_names
 
 def prepare_regression_data(data: pd.DataFrame, varlist: list[str], options: str = ""):
+    """Create the regression formula out of the patsy terms and clean the data accordingly."""
     depvar = varlist[0]
     indep_vars = varlist[1:]
-    
+
     # Process factor notation
     patsy_terms, raw_vars_needed = process_factor_notation(indep_vars, data, options)
     rhs = " + ".join(patsy_terms)
-    
-    # Handle 'noconstant' option
-    has_noconstant = "noconstant" in options.lower()
-    if has_noconstant:
-        rhs += " - 1"
-        
+
+    # Put the formula together
     formula = f"{depvar} ~ {rhs}"
 
     # Clean data (dropping NaNs for all required variables)
@@ -477,10 +448,11 @@ def prepare_regression_data(data: pd.DataFrame, varlist: list[str], options: str
 
     # Use patsy to construct two design matrices given a formula_like and data
     y_var, x_var = patsy.dmatrices(formula, data=clean_data, return_type="dataframe")
-    x_var.columns = clean_patsy_column_names(x_var.columns)
+    x_var.columns = clean_patsy_name(x_var.columns)
     y_var = y_var.iloc[:, 0]
-    
+
     return y_var, x_var
+
 
 def parse_and_run(
     mydata: pd.DataFrame,
@@ -546,7 +518,7 @@ def parse_and_run(
         unabbreviated_command = expand_abbreviated_command(command)
 
         if unabbreviated_command in regression_commands:
-            #mydata, varlist = process_factor_notation(mydata, varlist, options)
+            # mydata, varlist = process_factor_notation(mydata, varlist, options)
             outcome = run_regression(unabbreviated_command, mydata, varlist, options)
         elif unabbreviated_command == "table":
             if fstata_version >= 17:
@@ -914,11 +886,11 @@ def run_regression(
 ) -> str:
     """Interpret and run appropriate regression command."""
     # get components of formula
-    #depvar = varlist[0]
-    #indep_vars = varlist[1:]
-    #new_data = data[varlist].dropna()
-    #x_var = new_data[indep_vars]
-   
+    # depvar = varlist[0]
+    # indep_vars = varlist[1:]
+    # new_data = data[varlist].dropna()
+    # x_var = new_data[indep_vars]
+
     y_var, x_var = prepare_regression_data(data, varlist, options)
 
     res_str = ""
@@ -930,8 +902,8 @@ def run_regression(
         results = stata_config.stata_acro.probit(y_var, x_var)
         res_str = get_regr_results(results, "Probit Regression")
     elif command == "logit":
-        #y_var = new_data[depvar].astype("category").cat.codes  # numeric
-        #y_var.name = depvar
+        # y_var = new_data[depvar].astype("category").cat.codes  # numeric
+        # y_var.name = depvar
         y_var = y_var.astype("category").cat.codes
         results = stata_config.stata_acro.logit(y_var, x_var)
         res_str = get_regr_results(results, "Logit Regression")

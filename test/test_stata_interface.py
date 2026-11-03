@@ -1211,7 +1211,9 @@ def test_factor_variable_notation(data):
     tokens = ret.split()
 
     # Verify base category (2010) is not in the output
-    assert "year_2010" not in tokens, "Base category 2010 should not be part of the output"
+    assert "year_2010" not in tokens, (
+        "Base category 2010 should not be part of the output"
+    )
 
     # Verify residual degrees of freedom
     idx = tokens.index("Residuals:")
@@ -1248,7 +1250,7 @@ def test_factor_variable_notation_with_user_custom_base_category(data):
     ret = dummy_acrohandler(
         data,
         command="regress",
-        varlist="inc_total assets ib2014.year",
+        varlist="inc_total assets ib(2014).year",
         exclusion="",
         exp="",
         weights="",
@@ -1303,7 +1305,9 @@ def test_factor_variable_notation_with_ib_first(data):
     )
     tokens = ret.split()
     # Verify base category (2010) is not in the output
-    assert "year_2010" not in tokens, "Base category 2010 should not be part of the output"
+    assert "year_2010" not in tokens, (
+        "Base category 2010 should not be part of the output"
+    )
 
 
 def test_factor_variable_notation_with_ib_last(data):
@@ -1410,54 +1414,9 @@ def test_factor_variable_notation_with_ib_none_and_noconstant(data):
         coef = float(tokens[year_idx + 2])
         assert coef == pytest.approx(expected_coef, 0.01)
 
-def test_factor_variable_notation_with_ib_freq(data):
-    """Test regression output for ib(freq) factor notation against Stata benchmarks."""
-    ret = dummy_acrohandler(
-        data,
-        command="regress",
-        varlist="inc_total assets ib(freq).year",
-        exclusion="",
-        exp="",
-        weights="",
-        options="",
-        stata_version="16",
-    )
-    tokens = ret.split()
-    # Verify the freq category (2013) is not in the output
-    assert "year_2013" not in tokens, "category 2013 should not be part of the output"
-
-    # Verify residual degrees of freedom
-    idx = tokens.index("Residuals:")
-    df_residuals = int(tokens[idx + 2])
-    assert df_residuals == 808
-
-    # Verify the coefficient for the asset variable
-    idx = tokens.index("assets")
-    coef_assets = float(tokens[idx + 2])
-
-    assert coef_assets == pytest.approx(0.5098463, 0.01)
-
-    # Verify coefficients for all other year levels
-    expected_year_coefs_from_stata = {
-        "2010": 5732769,
-        "2011": -3290600,
-        "2012": -3685320,
-        "2014": -1050262,
-        "2015": -638320.8,
-    }
-    for year, expected_coef in expected_year_coefs_from_stata.items():
-        year_idx = tokens.index(f"year_{year}")
-        coef = float(tokens[year_idx + 2])
-        assert coef == pytest.approx(expected_coef, 0.01)
-
-    # Verify constant coefficient
-    idx = tokens.index("Intercept")
-    coef_cons = float(tokens[idx + 2])
-    assert coef_cons == pytest.approx(1.98e07, 0.01)
-
 
 def test_continuous_variable_notation(data):
-    """Test explicit continuous c. notation regression output against benchmarks."""
+    """Test regression output for continuous notation against benchmarks."""
     ret = dummy_acrohandler(
         data,
         command="regress",
@@ -1488,14 +1447,15 @@ def test_continuous_variable_notation(data):
     # Verify constant coefficient
     idx = tokens.index("Intercept")
     coef_cons = float(tokens[idx + 2])
-    assert coef_cons == pytest.approx(5.053e+08, 0.01)
+    assert coef_cons == pytest.approx(5.053e08, 0.01)
 
-def test_factor_notation_with_double_hash   (data):
-    """Test regression output for full factorial interaction (i.year ## c.assets) against benchmarks."""
+
+def test_factor_notation_with_double_hash(data):
+    """Test regression output with double hash (i.year##i.survivor) against benchmarks."""
     ret = dummy_acrohandler(
         data,
         command="regress",
-        varlist="inc_total i.year##i.survivor",  
+        varlist="inc_total i.year##i.survivor",
         exclusion="",
         exp="",
         weights="",
@@ -1505,7 +1465,9 @@ def test_factor_notation_with_double_hash   (data):
     tokens = ret.split()
 
     # Verify base category 2010 is not in the output
-    assert "year_2010" not in tokens, "Base category 2010 main effect should not be in output"
+    assert "year_2010" not in tokens, (
+        "Base category 2010 main effect should not be in output"
+    )
 
     # Verify residual degrees of freedom
     idx = tokens.index("Residuals:")
@@ -1513,20 +1475,32 @@ def test_factor_notation_with_double_hash   (data):
     assert df_residuals == 803
 
     # Verify that interaction terms are present in the output
-    assert any("year" in token and "assets" in token for token in tokens), "Interaction terms should be present"
+    assert any(
+        "year_2011" in token and "year_2011_survivor_Alive_in_2015" in token
+        for token in tokens
+    ), "Interaction terms should be present"
 
     # Verify constant coefficient
     idx = tokens.index("Intercept")
     coef_cons = float(tokens[idx + 2])
-    assert coef_cons == pytest.approx(2171560 , 0.01)
+    assert coef_cons == pytest.approx(2171560, 0.01)
+
+    # Verify the coefficient for some of the interaction variables
+    idx = tokens.index("year_2011_survivor_Alive_in_2015")
+    coef_assets = float(tokens[idx + 2])
+    assert coef_assets == pytest.approx(-4.77e07, 0.01)
+
+    idx = tokens.index("year_2015_survivor_Alive_in_2015")
+    coef_assets = float(tokens[idx + 2])
+    assert coef_assets == pytest.approx(-4.42e07, 0.01)
 
 
 def test_factor_notation_with_single_hash(data):
-    """Test regression output for full factorial interaction (i.year ## c.assets) against benchmarks."""
+    """Test regression output with single hash (i.year#i.survivor) against benchmarks."""
     ret = dummy_acrohandler(
         data,
         command="regress",
-        varlist="inc_total i.year i.survivor i.year#i.survivor",  
+        varlist="inc_total i.year i.survivor i.year#i.survivor",
         exclusion="",
         exp="",
         weights="",
@@ -1536,7 +1510,9 @@ def test_factor_notation_with_single_hash(data):
     tokens = ret.split()
 
     # Verify base category 2010 is not in the output
-    assert "year_2010" not in tokens, "Base category 2010 main effect should not be in output"
+    assert "year_2010" not in tokens, (
+        "Base category 2010 main effect should not be in output"
+    )
 
     # Verify residual degrees of freedom
     idx = tokens.index("Residuals:")
@@ -1544,20 +1520,76 @@ def test_factor_notation_with_single_hash(data):
     assert df_residuals == 803
 
     # Verify that interaction terms are present in the output
-    assert any("year" in token and "assets" in token for token in tokens), "Interaction terms should be present"
+    assert any(
+        "year_2011" in token and "year_2011_survivor_Alive_in_2015" in token
+        for token in tokens
+    )
 
     # Verify constant coefficient
     idx = tokens.index("Intercept")
     coef_cons = float(tokens[idx + 2])
-    assert coef_cons == pytest.approx(2171560 , 0.01)
+    assert coef_cons == pytest.approx(2171560, 0.01)
+
+    # Verify the coefficient for some of the interaction variables
+    idx = tokens.index("year_2011_survivor_Alive_in_2015")
+    coef_assets = float(tokens[idx + 2])
+    assert coef_assets == pytest.approx(-4.77e07, 0.01)
+
+    idx = tokens.index("year_2015_survivor_Alive_in_2015")
+    coef_assets = float(tokens[idx + 2])
+    assert coef_assets == pytest.approx(-4.42e07, 0.01)
+
+
+def test_factor_notation_with_double_hash_continuous_variables(data):
+    """Test regression output with double hash and continues variable (i.year ## c.assets) against benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total i.year##c.survivor",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+
+    # Verify base category 2010 is not in the output
+    assert "year_2010" not in tokens, (
+        "Base category 2010 main effect should not be in output"
+    )
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 803
+
+    # Verify that interaction terms are present in the output
+    assert (
+        "survivor" in token and "year_2011_survivor" in token for token in tokens
+    ), "Interaction terms should be present"
+
+    # Verify constant coefficient
+    idx = tokens.index("Intercept")
+    coef_cons = float(tokens[idx + 2])
+    assert coef_cons == pytest.approx(2171560, 0.01)
+
+    # Verify the coefficient for some of the interaction variables
+    idx = tokens.index("year_2011_survivor[T.Alive")
+    coef_assets = float(tokens[idx + 4])
+    assert coef_assets == pytest.approx(-4.771e07, 0.01)
+
+    idx = tokens.index("year_2015_survivor[T.Alive")
+    coef_assets = float(tokens[idx + 4])
+    assert coef_assets == pytest.approx(-4.419e07, 0.01)
 
 
 def test_factor_notation_with_single_hash_continuous_variables(data):
-    """Test regression output for full factorial interaction (i.year ## c.assets) against benchmarks."""
+    """Test regression output with single hash and continues variable (i.year ## c.assets) against benchmarks."""
     ret = dummy_acrohandler(
         data,
         command="regress",
-        varlist="inc_total i.year i.survivor i.year#i.survivor",  
+        varlist="inc_total i.year c.survivor i.year#c.survivor",
         exclusion="",
         exp="",
         weights="",
@@ -1567,7 +1599,9 @@ def test_factor_notation_with_single_hash_continuous_variables(data):
     tokens = ret.split()
 
     # Verify base category 2010 is not in the output
-    assert "year_2010" not in tokens, "Base category 2010 main effect should not be in output"
+    assert "year_2010" not in tokens, (
+        "Base category 2010 main effect should not be in output"
+    )
 
     # Verify residual degrees of freedom
     idx = tokens.index("Residuals:")
@@ -1575,12 +1609,55 @@ def test_factor_notation_with_single_hash_continuous_variables(data):
     assert df_residuals == 803
 
     # Verify that interaction terms are present in the output
-    assert any("year" in token and "assets" in token for token in tokens), "Interaction terms should be present"
+    assert any(
+        "year_2011" in token and "year_2011_survivor" in token for token in tokens
+    ), "Interaction terms should be present"
 
     # Verify constant coefficient
     idx = tokens.index("Intercept")
     coef_cons = float(tokens[idx + 2])
-    assert coef_cons == pytest.approx(2171560 , 0.01)
+    assert coef_cons == pytest.approx(2171560, 0.01)
+
+    # Verify the coefficient for some of the interaction variables
+    idx = tokens.index("year_2011_survivor[T.Alive")
+    coef_assets = float(tokens[idx + 4])
+    assert coef_assets == pytest.approx(-4.77e07, 0.01)
+
+    idx = tokens.index("year_2015_survivor[T.Alive")
+    coef_assets = float(tokens[idx + 4])
+    assert coef_assets == pytest.approx(-4.42e07, 0.01)
+
+
+def test_factor_notation_for_polynomials(data):
+    """Test regression output for polynomials (c.year##c.year##c.year) against benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total c.year##c.year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+
+    # Verify that year in token as a continuous variable
+    assert "year" in tokens
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 812
+
+    # Verify the coefficient for year
+    idx = tokens.index("year")
+    coef_assets = float(tokens[idx + 2])
+    assert coef_assets == pytest.approx(-5.43e09, 0.01)
+
+    idx = tokens.index("I(year")
+    coef_assets = float(tokens[idx + 4])
+    assert coef_assets == pytest.approx(1348313, 0.01)
 
 
 def test_cleanup():

@@ -1356,6 +1356,44 @@ def test_factor_variable_notation_with_ib_last(data):
     assert coef_cons == pytest.approx(1.92e07, 0.01)
 
 
+def test_factor_variable_notation_with_ib_frequancy(data):
+    """Test regression output for ib(frequancy) factor notation against Stata benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets ib(freq).survivor",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+    for index, token in enumerate(tokens):
+        print(f"Index {index}: {token}")
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 812
+
+    # Verify the coefficient of the assets variable
+    idx = tokens.index("assets")
+    coef_assets = float(tokens[idx + 2])
+
+    assert coef_assets == pytest.approx(0.4888386, 0.01)
+
+    # Verify coefficients for the survivor variable
+    survivor_idx = tokens.index("survivor_Dead_in_2015")
+    coef = float(tokens[survivor_idx + 2])
+    assert coef == pytest.approx(-2.62e+07, 0.01)
+
+    # Verify constant coefficient
+    idx = tokens.index("Intercept")
+    coef_cons = float(tokens[idx + 2])
+    assert coef_cons == pytest.approx( 2.80e+07, 0.01)
+
+
 def test_factor_variable_notation_with_ib_none(data):
     """Test ib(none) factor notation does not have any bae category."""
     ret = dummy_acrohandler(
@@ -1413,6 +1451,25 @@ def test_factor_variable_notation_with_ib_none_and_noconstant(data):
         year_idx = tokens.index(f"year_{year}")
         coef = float(tokens[year_idx + 2])
         assert coef == pytest.approx(expected_coef, 0.01)
+
+
+def test_invalid_ib_notation_raises_error():
+    # Setup dummy data
+    df = pd.DataFrame({"year": [2010, 2011, 2012]})
+    
+    # Test that passing an invalid/malformed ib option (like ib(abc) or ib()) 
+    # correctly raises a ValueError with your message.
+    with pytest.raises(ValueError, match="ib not found"):
+        dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total assets ib(xyz).year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="noconstant",
+        stata_version="16",
+    )
 
 
 def test_continuous_variable_notation(data):
@@ -1628,7 +1685,7 @@ def test_factor_notation_with_single_hash_continuous_variables(data):
     assert coef_assets == pytest.approx(-4.42e07, 0.01)
 
 
-def test_factor_notation_for_polynomials(data):
+def test_factor_notation_for_polynomials_double_hash(data):
     """Test regression output for polynomials (c.year##c.year##c.year) against benchmarks."""
     ret = dummy_acrohandler(
         data,
@@ -1658,6 +1715,30 @@ def test_factor_notation_for_polynomials(data):
     idx = tokens.index("I(year")
     coef_assets = float(tokens[idx + 4])
     assert coef_assets == pytest.approx(1348313, 0.01)
+
+
+def test_factor_notation_for_polynomials_single_hash(data):
+    """Test regression output for polynomials against benchmarks."""
+    ret = dummy_acrohandler(
+        data,
+        command="regress",
+        varlist="inc_total c.year#c.year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    tokens = ret.split()
+
+    # Verify residual degrees of freedom
+    idx = tokens.index("Residuals:")
+    df_residuals = int(tokens[idx + 2])
+    assert df_residuals == 813
+
+    idx = tokens.index("I(year")
+    coef_assets = float(tokens[idx + 4])
+    assert coef_assets == pytest.approx(-57.13002 , 0.01)
 
 
 def test_cleanup():

@@ -307,7 +307,10 @@ def process_simple_factor_notation(
             patsy_terms = f"C({var_name}, Treatment(reference=-1))"
         elif factor_notation in ("ib(freq)", "ib(frequent)"):
             # The base category is the most frequent category
-            most_common_val = data[var_name].mode().iloc[0]
+            raw_mode = data[var_name].mode().iloc[0]
+            most_common_val = raw_mode.item() if hasattr(raw_mode, "item") else raw_mode
+            if hasattr(most_common_val, "item"):
+                most_common_val = most_common_val.item()
             patsy_terms = f"C({var_name}, Treatment(reference={repr(most_common_val)}))"
         elif factor_notation in ("ib(none)", "ibn"):
             has_noconstant = "noconstant" in options.lower()
@@ -324,7 +327,7 @@ def process_simple_factor_notation(
                 base_val = int(match.group(1))
                 patsy_terms = f"C({var_name}, Treatment(reference={repr(base_val)}))"
             else:
-                patsy_terms = f"C({var_name})"
+                raise ValueError("ib not found")
     return patsy_terms, raw_vars
 
 
@@ -346,8 +349,8 @@ def process_factor_notation(
             # Extract the variable name for each term
             term_vars = []
             for term in terms:
-                _, vars = process_simple_factor_notation(term, data, options)
-                term_vars.append(vars)
+                _, var_list = process_simple_factor_notation(term, data, options)
+                term_vars.append(var_list)
 
             # Check for factor-variable notation for polynomials like c.age##c.age
             if len(term_vars) > 1 and all(
@@ -373,10 +376,10 @@ def process_factor_notation(
                 # Regular multi-variable interaction (e.g. i.diabetes##c.age)
                 trans_parts = []
                 for term in terms:
-                    term, vars = process_simple_factor_notation(term, data, options)
+                    term, var_list = process_simple_factor_notation(term, data, options)
                     trans_parts.append(term)
-                    if isinstance(vars, list):
-                        var_name = vars[0]
+                    if isinstance(var_list, list):
+                        var_name = var_list[0]
                     all_raw_vars.append(var_name)
 
                 # Replacing the stata interactions symbols with the pastsy formula interaction symbols
@@ -384,10 +387,10 @@ def process_factor_notation(
                 patsy_terms.append(join_op.join(trans_parts))
         else:
             # Standard single variable notation without interaction
-            term, vars = process_simple_factor_notation(token, data, options)
+            term, var_list = process_simple_factor_notation(token, data, options)
             patsy_terms.append(term)
-            if isinstance(vars, list):
-                var_name = vars[0]
+            if isinstance(var_list, list):
+                var_name = var_list[0]
             all_raw_vars.append(var_name)
     return patsy_terms, all_raw_vars
 

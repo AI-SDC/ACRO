@@ -14,6 +14,7 @@ from acro import ACRO, stata_config
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,
+    clean_patsy_name,
     expand_abbreviated_command,
     find_brace_word,
     parse_and_run,
@@ -1361,7 +1362,7 @@ def test_factor_variable_notation_with_ib_frequancy(data):
     ret = dummy_acrohandler(
         data,
         command="regress",
-        varlist="inc_total assets ib(freq).survivor",
+        varlist="inc_total assets ib(freq).year",
         exclusion="",
         exp="",
         weights="",
@@ -1370,26 +1371,39 @@ def test_factor_variable_notation_with_ib_frequancy(data):
     )
     tokens = ret.split()
 
+    # Verify base category (2010) is not in the output
+    assert "year_2010" not in tokens, (
+        "Base category 2010 should not be part of the output"
+    )
+
     # Verify residual degrees of freedom
     idx = tokens.index("Residuals:")
     df_residuals = int(tokens[idx + 2])
-    assert df_residuals == 812
+    assert df_residuals == 808
 
-    # Verify the coefficient of the assets variable
+    # Verify the coefficient for variable assets
     idx = tokens.index("assets")
     coef_assets = float(tokens[idx + 2])
 
-    assert coef_assets == pytest.approx(0.4888386, 0.01)
+    assert coef_assets == pytest.approx(0.5098463, 0.01)
 
-    # Verify coefficients for the survivor variable
-    survivor_idx = tokens.index("survivor_Dead_in_2015")
-    coef = float(tokens[survivor_idx + 2])
-    assert coef == pytest.approx(-2.62e07, 0.01)
+    # Verify coefficients for all other year (2011 to 2015)
+    expected_year_coefs_from_stata = {
+        "2011": -9023369,
+        "2012": -9418088,
+        "2013": -5732769,
+        "2014": -6783030,
+        "2015": -6371089,
+    }
+    for year, expected_coef in expected_year_coefs_from_stata.items():
+        year_idx = tokens.index(f"year_{year}")
+        coef = float(tokens[year_idx + 2])
+        assert coef == pytest.approx(expected_coef, 0.01)
 
     # Verify constant coefficient
     idx = tokens.index("Intercept")
     coef_cons = float(tokens[idx + 2])
-    assert coef_cons == pytest.approx(2.80e07, 0.01)
+    assert coef_cons == pytest.approx(2.56e07, 0.01)
 
 
 def test_factor_variable_notation_with_ib_none(data):
@@ -1709,6 +1723,15 @@ def test_factor_notation_for_polynomials_double_hash(data):
     idx = tokens.index("I(year")
     coef_assets = float(tokens[idx + 4])
     assert coef_assets == pytest.approx(1348313, 0.01)
+
+
+def test_trailing_zero_from_names_in_factor_notation():
+    """Test that the '.0' will be removed from a category value that ends with it."""
+    raw_name = "C(year)[T.2010.0]"
+    cleaned = clean_patsy_name(raw_name)
+
+    # Assert that '.0' was successfully stripped out
+    assert cleaned == "year_2010"
 
 
 def test_factor_notation_for_polynomials_single_hash(data):

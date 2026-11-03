@@ -279,56 +279,50 @@ def expand_abbreviated_command(command: str) -> str:
 
 def process_simple_factor_notation(
     term: str, data: pd.DataFrame, options: str
-) -> tuple[str, list[str]]:
+) -> tuple[str, str]:
     """Translate simple Stata factor notation (without interaction) into Patsy formula terms."""
-    raw_vars = []
-    patsy_terms = ""
     term = term.strip()
     # If it is a normal variable and not a factor notation
     if "." not in term:
-        raw_vars.append(term)
-        patsy_terms = term
+        var_name = term
+        factor_notation = None
     elif term.startswith("c."):
         # Continuous variable notation
         _, var_name = term.split(".", 1)
-        raw_vars.append(var_name)
-        patsy_terms = var_name
+        factor_notation = "c"
     else:
-        # Factor variables
         factor_notation, var_name = term.split(".", 1)
-        raw_vars.append(var_name)
-        if factor_notation in ("i", "ib(first)"):
-            # Standard i. notation where the base category is the category with the smallest number
-            raw_min = data[var_name].min()
-            first_val = raw_min.item() if hasattr(raw_min, "item") else raw_min
-            patsy_terms = f"C({var_name}, Treatment(reference={repr(first_val)}))"
-        elif factor_notation == "ib(last)":
-            # The base category is the last category
-            patsy_terms = f"C({var_name}, Treatment(reference=-1))"
-        elif factor_notation in ("ib(freq)", "ib(frequent)"):
-            # The base category is the most frequent category
-            raw_mode = data[var_name].mode().iloc[0]
-            most_common_val = raw_mode.item() if hasattr(raw_mode, "item") else raw_mode
-            if hasattr(most_common_val, "item"):
-                most_common_val = most_common_val.item()
-            patsy_terms = f"C({var_name}, Treatment(reference={repr(most_common_val)}))"
-        elif factor_notation in ("ib(none)", "ibn"):
-            has_noconstant = "noconstant" in options.lower()
-            if has_noconstant:
-                # There is no base category
-                patsy_terms = f"0 + C({var_name}, Treatment)"
-            else:
-                # The base category is the last one (mimicking Stata behavior)
-                patsy_terms = f"C({var_name}, Treatment(reference=-1))"
+
+    # Factor variables
+    if factor_notation is None or factor_notation == "c":
+        patsy_terms = var_name
+    elif factor_notation in ("i", "ib(first)"):
+        # Standard i. notation where the base category is the category with the smallest number
+        raw_min = data[var_name].min()
+        first_val = raw_min.item() if hasattr(raw_min, "item") else raw_min
+        patsy_terms = f"C({var_name}, Treatment(reference={repr(first_val)}))"
+    elif factor_notation in ("ib(freq)", "ib(frequent)"):
+        # The base category is the most frequent category
+        most_common = data[var_name].mode().iloc[0]
+        if hasattr(most_common, "item"):
+            most_common = most_common.item()
+        patsy_terms = f"C({var_name}, Treatment(reference={repr(most_common)}))"
+    elif factor_notation in ("ib(none)", "ibn") and "noconstant" in options.lower():
+        # There is no base category
+        patsy_terms = f"0 + C({var_name}, Treatment)"
+    elif factor_notation in ("ib(last)", "ib(none)", "ibn"):
+        # # The base category is the last category
+        patsy_terms = f"C({var_name}, Treatment(reference=-1))"
+    else:
+        # Check for custom base numbers
+        match = re.search(r"ib\(?(\d+)\)?", factor_notation)
+        if match:
+            base_val = int(match.group(1))
+            patsy_terms = f"C({var_name}, Treatment(reference={repr(base_val)}))"
         else:
-            # Check for custom base numbers
-            match = re.search(r"ib\(?(\d+)\)?", factor_notation)
-            if match:
-                base_val = int(match.group(1))
-                patsy_terms = f"C({var_name}, Treatment(reference={repr(base_val)}))"
-            else:
-                raise ValueError("ib not found")
-    return patsy_terms, raw_vars
+            raise ValueError("ib not found")
+
+    return patsy_terms, var_name
 
 
 def process_factor_notation(
@@ -346,42 +340,32 @@ def process_factor_notation(
             delimiter = "##" if "##" in token else "#"
             terms = token.split(delimiter)
 
-            # Extract the variable name for each term
-            term_vars = []
-            for term in terms:
-                _, var_list = process_simple_factor_notation(term, data, options)
-                term_vars.append(var_list)
+            # Process regular multi-variable interaction
+            processed = [
+                process_simple_factor_notation(t, data, options) for t in terms
+            ]
+            trans_parts = [item[0] for item in processed]
+            term_vars = [item[1] for item in processed]
+
+            all_raw_vars.extend(term_vars)
 
             # Check for factor-variable notation for polynomials like c.age##c.age
             if len(term_vars) > 1 and all(
                 v == term_vars[0] for v in term_vars
             ):  # check if all term_vars are the same
-                var = term_vars[0]
-                if isinstance(var, list):
-                    var_name = var[0]
+                var_1 = term_vars[0]
                 degree = len(term_vars)
 
                 if (
                     delimiter == "##"
                 ):  # fit the variable and the power (square, cubic,..) of the variables
-                    poly_terms = [var_name] + [
-                        f"I({var_name}**{i})" for i in range(2, degree + 1)
+                    poly_terms = [var_1] + [
+                        f"I({var_1}**{i})" for i in range(2, degree + 1)
                     ]
                     patsy_terms.append(" + ".join(poly_terms))
                 else:  # fit the power of the variable
-                    patsy_terms.append(f"I({var_name}**{degree})")
-
-                all_raw_vars.append(var_name)
+                    patsy_terms.append(f"I({var_1}**{degree})")
             else:
-                # Regular multi-variable interaction (e.g. i.diabetes##c.age)
-                trans_parts = []
-                for term in terms:
-                    term, var_list = process_simple_factor_notation(term, data, options)
-                    trans_parts.append(term)
-                    if isinstance(var_list, list):
-                        var_name = var_list[0]
-                    all_raw_vars.append(var_name)
-
                 # Replacing the stata interactions symbols with the pastsy formula interaction symbols
                 join_op = " * " if delimiter == "##" else " : "
                 patsy_terms.append(join_op.join(trans_parts))
@@ -389,9 +373,7 @@ def process_factor_notation(
             # Standard single variable notation without interaction
             term, var_list = process_simple_factor_notation(token, data, options)
             patsy_terms.append(term)
-            if isinstance(var_list, list):
-                var_name = var_list[0]
-            all_raw_vars.append(var_name)
+            all_raw_vars.append(var_list)
     return patsy_terms, all_raw_vars
 
 

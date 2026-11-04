@@ -277,9 +277,7 @@ def expand_abbreviated_command(command: str) -> str:
     return command
 
 
-def process_simple_factor_notation(
-    term: str, data: pd.DataFrame, options: str
-) -> tuple[str, str]:
+def process_simple_factor_notation(term: str, data: pd.DataFrame, options: str) -> str:
     """Translate simple Stata factor notation (without interaction) into Patsy formula terms."""
     term = term.strip()
     # If it is a normal variable and not a factor notation
@@ -314,45 +312,58 @@ def process_simple_factor_notation(
         # # The base category is the last category
         patsy_terms = f"C({var_name}, Treatment(reference=-1))"
     else:
-        # Check for custom base numbers
-        match = re.search(r"ib\(?(\d+)\)?", factor_notation)
+        # Check for custom base numbers (handle ib5, ib(5), ib(#5))
+        match = re.search(r"ib\(?#?(\d+)\)?", factor_notation)
         if match:
             base_val = int(match.group(1))
             patsy_terms = f"C({var_name}, Treatment(reference={repr(base_val)}))"
         else:
             raise ValueError("ib not found")
 
-    return patsy_terms, var_name
+    return patsy_terms
 
 
 def process_factor_notation(
     varlist: list[str], data: pd.DataFrame, options: str
-) -> tuple[list[str], list[str]]:
+) -> list[str]:
     """Translate Stata factor notation, interactions, and general polynomials into Patsy formula terms."""
     patsy_terms = []
-    all_raw_vars = []
 
     for token in varlist:
         token = token.strip()
 
         # Check if it's an interaction term
         if "##" in token or "#" in token:
-            delimiter = "##" if "##" in token else "#"
-            terms = token.split(delimiter)
+            # Temporarily replace any '#' inside parentheses with a null byte placeholder to ensure that the split will happen for the terms of the interactiona and not the Stata’s positional-base syntax such as ib(#4)
+            masked = re.sub(
+                r"\([^)]*\)", lambda m: m.group(0).replace("#", "\x00"), token
+            )
+
+            # Split and replace the null byte placeholder back to the # symbol
+            delimiter = "##" if "##" in masked else "#"
+            terms = [
+                t.replace("\x00", "#").strip()
+                for t in masked.split(delimiter)
+                if t.strip()
+            ]
+
+            # Stata's interaction default: unprefixed variables are treated as categorical (i.)
+            terms = [t if t.startswith(("c.", "i.", "ib")) else f"i.{t}" for t in terms]
 
             # Process regular multi-variable interaction
-            processed = [
+            patsy_parts = [
                 process_simple_factor_notation(t, data, options) for t in terms
             ]
-            trans_parts = [item[0] for item in processed]
-            term_vars = [item[1] for item in processed]
 
-            all_raw_vars.extend(term_vars)
-
-            # Check for factor-variable notation for polynomials like c.age##c.age
-            if len(term_vars) > 1 and all(
+            # Check if all terms in the interaction are explicitly continuous
+            all_var_continuous = all(term.startswith("c.") for term in terms)
+            # Check if variable names are the same (check for polynomials)
+            term_vars = [t.split(".")[-1] if "." in t else t for t in terms]
+            names_match = len(term_vars) > 1 and all(
                 v == term_vars[0] for v in term_vars
-            ):  # check if all term_vars are the same
+            )
+
+            if all_var_continuous and names_match:
                 var_1 = term_vars[0]
                 degree = len(term_vars)
 
@@ -368,13 +379,12 @@ def process_factor_notation(
             else:
                 # Replacing the stata interactions symbols with the pastsy formula interaction symbols
                 join_op = " * " if delimiter == "##" else " : "
-                patsy_terms.append(join_op.join(trans_parts))
+                patsy_terms.append(join_op.join(patsy_parts))
         else:
             # Standard single variable notation without interaction
-            term, var_list = process_simple_factor_notation(token, data, options)
+            term = process_simple_factor_notation(token, data, options)
             patsy_terms.append(term)
-            all_raw_vars.append(var_list)
-    return patsy_terms, all_raw_vars
+    return patsy_terms
 
 
 def clean_patsy_name(names):
@@ -421,20 +431,39 @@ def prepare_regression_data(data: pd.DataFrame, varlist: list[str], options: str
     depvar = varlist[0]
     indep_vars = varlist[1:]
 
+    # Extract all variable names for data cleaning, handling both interaction delimiters (#, ##) and Stata prefixes (c., i., ib(...))
+    all_vars = set()
+    for var in varlist:
+        # Mask any '#' inside parentheses (like in ib(#4)) so split doesn't break it
+        masked = re.sub(r"\([^)]*\)", lambda m: m.group(0).replace("#", "\x00"), var)
+
+        # Split by ## or #
+        sub_tokens = re.split(r"##|#", masked)
+
+        for st in sub_tokens:
+            # Restore the placeholder back to '#'
+            st_clean = st.replace("\x00", "#").strip()
+
+            # Strip all Stata prefixes (c., i., ib4., ib(4)., ib(#4).)
+            clean_name = re.sub(r"^(?:c\.|i\.|ib(?:\(#?\d+\)|\d+)\.)", "", st_clean)
+
+            if clean_name:
+                all_vars.add(clean_name)
+
+    # Convert to list and filter valid dataframe columns for dropna
+    valid_subset = [v for v in list(all_vars) if v in data.columns]
+    clean_data = data.dropna(subset=valid_subset).copy()
+
+    # Extract the dependent variable
+    y_var = clean_data[depvar]
+
     # Process factor notation
-    patsy_terms, raw_vars_needed = process_factor_notation(indep_vars, data, options)
+    patsy_terms = process_factor_notation(indep_vars, clean_data, options)
     rhs = " + ".join(patsy_terms)
 
-    # Put the formula together
-    formula = f"{depvar} ~ {rhs}"
-
-    # Clean data (dropping NaNs for all required variables)
-    clean_data = data[[depvar] + list(set(raw_vars_needed))].dropna()
-
-    # Use patsy to construct two design matrices given a formula_like and data
-    y_var, x_var = patsy.dmatrices(formula, data=clean_data, return_type="dataframe")
+    # Use patsy to create the design matrix
+    x_var = patsy.dmatrix(rhs, data=clean_data, return_type="dataframe")
     x_var.columns = clean_patsy_name(x_var.columns)
-    y_var = y_var.iloc[:, 0]
 
     return y_var, x_var
 
@@ -870,11 +899,7 @@ def run_regression(
     command: str, data: pd.DataFrame, varlist: list[str], options: str
 ) -> str:
     """Interpret and run appropriate regression command."""
-    # get components of formula
-    # depvar = varlist[0]
-    # indep_vars = varlist[1:]
-    # new_data = data[varlist].dropna()
-    # x_var = new_data[indep_vars]
+    depvar = varlist[0]
 
     y_var, x_var = prepare_regression_data(data, varlist, options)
 
@@ -884,12 +909,14 @@ def run_regression(
         res_str = get_regr_results(results, "OLS Regression")
     elif command == "probit":
         y_var = y_var.astype("category").cat.codes
+        y_var.name = depvar
         results = stata_config.stata_acro.probit(y_var, x_var)
         res_str = get_regr_results(results, "Probit Regression")
     elif command == "logit":
         # y_var = new_data[depvar].astype("category").cat.codes  # numeric
         # y_var.name = depvar
         y_var = y_var.astype("category").cat.codes
+        y_var.name = depvar
         results = stata_config.stata_acro.logit(y_var, x_var)
         res_str = get_regr_results(results, "Logit Regression")
     else:  # pragma: no cover

@@ -1643,7 +1643,7 @@ def test_factor_notation_with_double_hash_continuous_variables(data):
     assert df_residuals == 803
 
     # Verify that interaction terms are present in the output
-    assert (
+    assert any(
         "survivor" in token and "year_2011_survivor" in token for token in tokens
     ), "Interaction terms should be present"
 

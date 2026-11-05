@@ -1419,7 +1419,7 @@ def test_factor_variable_notation_with_stata_positional_base(data):
     )
     tokens = ret.split()
     # Verify category 2014 is not in the output
-    assert "year_2014" not in tokens, "category 2014 should not be part of the output"
+    assert "year_2013" not in tokens, "category 2013 should not be part of the output"
 
     # Verify residual degrees of freedom
     idx = tokens.index("Residuals:")
@@ -1434,11 +1434,11 @@ def test_factor_variable_notation_with_stata_positional_base(data):
 
     # Verify coefficients for all other year levels
     expected_year_coefs_from_stata = {
-        "2010": 6783030,
-        "2011": -2240338,
-        "2012": -2635058,
-        "2013": 1050262,
-        "2015": 411941,
+        "2010": 5732769,
+        "2011": -3290600,
+        "2012": -3685320,
+        "2014": -1050262,
+        "2015": -638320.8,
     }
     for year, expected_coef in expected_year_coefs_from_stata.items():
         year_idx = tokens.index(f"year_{year}")
@@ -1448,7 +1448,7 @@ def test_factor_variable_notation_with_stata_positional_base(data):
     # Verify constant coefficient
     idx = tokens.index("Intercept")
     coef_cons = float(tokens[idx + 2])
-    assert coef_cons == pytest.approx(1.88e07, 0.01)
+    assert coef_cons == pytest.approx(1.98e07, 0.01)
 
 
 def test_factor_variable_notation_with_ib_first(data):
@@ -2002,6 +2002,46 @@ def test_factor_notation_for_interaction_with_the_same_categorical_var(data):
     idx = tokens.index("Intercept")
     coef_cons = float(tokens[idx + 2])
     assert coef_cons == pytest.approx(4.63e07, 0.01)
+
+
+def test_factor_notation_with_missing_values(data):
+    """Test that multiple missing values across dependent and independent variables will not throw an error."""
+    test_data = data.copy()
+
+    # Inject msising values to the dep and indep vars
+    test_data.loc[[0, 5, 10], "inc_total"] = float("nan")
+    test_data.loc[[2, 7, 12], "assets"] = float("nan")
+    test_data.loc[[3, 8], "year"] = float("nan")
+
+    ret = dummy_acrohandler(
+        test_data,
+        command="regress",
+        varlist="inc_total assets ib(first).year",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+
+    # Verify the regression executed successfully without raising a ValueError
+    assert ret is not None
+    assert isinstance(ret, str)
+
+
+def test_invalid_ib_category_in_factor_notation_raises_error(data):
+    """Test that passing an invalid ib category number raises a ValueError."""
+    with pytest.raises(ValueError, match="out of range"):
+        dummy_acrohandler(
+            data,
+            command="regress",
+            varlist="inc_total assets ib(#99999).year",
+            exclusion="",
+            exp="",
+            weights="",
+            options="",
+            stata_version="16",
+        )
 
 
 def test_cleanup():

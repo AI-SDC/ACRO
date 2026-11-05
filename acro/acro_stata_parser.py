@@ -279,6 +279,27 @@ def expand_abbreviated_command(command: str) -> str:
     return command
 
 
+def resolve_base_value(factor_notation: str, var_name: str, data: pd.DataFrame):
+    """Resolve ib(#k), ib(k), or ibk into its actual reference value."""
+    # Search for Stata base factor notation
+    match = re.search(r"ib\(?(?:#(\d+)|(\d+))\)?", factor_notation)
+    if not match:
+        raise ValueError("ib not found")
+
+    # Extract capture groups: pos_match for positional hashes (#k), lit_match for literals (k)
+    pos_match, lit_match = match.groups()
+
+    if pos_match:
+        k_index = int(pos_match) - 1
+        sorted_unique = sorted(data[var_name].dropna().unique())
+        if not (0 <= k_index < len(sorted_unique)):
+            raise ValueError(f"Index #{pos_match} out of range for variable {var_name}")
+        # Return the actual value sitting at that sorted rank position
+        return sorted_unique[k_index]
+
+    return int(lit_match)
+
+
 def process_simple_factor_notation(term: str, data: pd.DataFrame, options: str) -> str:
     """Translate simple Stata factor notation (without interaction) into Patsy formula terms."""
     term = term.strip()
@@ -314,13 +335,10 @@ def process_simple_factor_notation(term: str, data: pd.DataFrame, options: str) 
         # # The base category is the last category
         patsy_terms = f"C({var_name}, Treatment(reference=-1))"
     else:
-        # Check for custom base numbers (handle ib5, ib(5), ib(#5))
-        match = re.search(r"ib\(?#?(\d+)\)?", factor_notation)
-        if match:
-            base_val = int(match.group(1))
-            patsy_terms = f"C({var_name}, Treatment(reference={repr(base_val)}))"
-        else:
-            raise ValueError("ib not found")
+        base_val = resolve_base_value(factor_notation, var_name, data)
+        if hasattr(base_val, "item"):
+            base_val = base_val.item()
+        patsy_terms = f"C({var_name}, Treatment(reference={repr(base_val)}))"
 
     return patsy_terms
 
@@ -447,7 +465,7 @@ def prepare_regression_data(data: pd.DataFrame, varlist: list[str], options: str
             st_clean = st.replace("\x00", "#").strip()
 
             # Strip all Stata prefixes (c., i., ib4., ib(4)., ib(#4).)
-            clean_name = re.sub(r"^(?:c\.|i\.|ib(?:\(#?\d+\)|\d+)\.)", "", st_clean)
+            clean_name = re.sub(r"^(?:c\.|i\.|ib(?:n|\(.*?\)|\d+)?\.)", "", st_clean)
 
             if clean_name:
                 all_vars.add(clean_name)

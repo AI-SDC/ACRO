@@ -349,6 +349,8 @@ def parse_and_run(
             outcome = run_table_command(
                 mydata, varlist, weights, options, fstata_version
             )
+        elif unabbreviated_command == "stcox":
+            outcome = run_cox_regression(mydata, varlist, options)
         elif unabbreviated_command in [
             "tabulate",
             "tabstat",

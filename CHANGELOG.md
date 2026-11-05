@@ -1,4 +1,17 @@
 # Changelog
+## Version 1.1.0 (Nov 05, 2026)
+
+### Changes
+* Fix: join index conditions with & to avoid TypeError ([#415](https://github.com/AI-SDC/ACRO/pull/415))
+* fix: mybinder.org link ([#417](https://github.com/AI-SDC/ACRO/pull/417))
+* Fix: include custom outputs in XLSX finalisation ([#418](https://github.com/AI-SDC/ACRO/pull/418))
+* Adding functionality for cox regression ([#419](https://github.com/AI-SDC/ACRO/pull/419))
+* Feat: add disclosure risk explanations ([#428](https://github.com/AI-SDC/ACRO/pull/428))
+* Support for command shortcuts ([#423](https://github.com/AI-SDC/ACRO/pull/423))
+* Stata cox regression ([#422](https://github.com/AI-SDC/ACRO/pull/422))
+* Support for Stata deal with factor notation ([#427](https://github.com/AI-SDC/ACRO/pull/427))
+* Bump version number to 1.1.0 ([#430](https://github.com/AI-SDC/ACRO/pull/430))
+
 ## Version 1.0.1 (Aug 10, 2026)
 
 ### Other

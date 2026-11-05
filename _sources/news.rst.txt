@@ -1,0 +1,331 @@
+====
+News
+====
+
+Stay up to date with the latest releases across the SACRO tools family.
+
+.. note::
+   For the full version history, see the
+   `CHANGELOG <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md>`_.
+
+----
+
+Latest Release
+==============
+
+**ACRO v1.0.1** - *Aug 10, 2026*
+
+`View full changelog for v1.0.1 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-101-aug-10-2026>`_
+
+### Other
+* Bump version number to 1.0.1
+* Add JSON files to package data for 'acro'
+* Modify package data for 'acro' in pyproject.toml
+
+Updated package data for 'acro' to include additional JSON files.
+* Fix typo in package-data for acro
+
+### Bug Fixes
+* resolve shape mismatch in crosstab/pivot_table with aggfuncs (`#347 <https://github.com/AI-SDC/ACRO/pull/347>`_)
+* correct cell ID misalignment and hierarchical reindexing (`#367 <https://github.com/AI-SDC/ACRO/pull/367>`_)
+
+### CI
+* run tests on PR (`#368 <https://github.com/AI-SDC/ACRO/pull/368>`_)
+* run tests on PR - avoid running twice
+
+### Chore
+* notebook maintenance and folder cleanup (`#336 <https://github.com/AI-SDC/ACRO/pull/336>`_)
+* add type hints (`#343 <https://github.com/AI-SDC/ACRO/pull/343>`_)
+* pre-commit autoupdate (`#333 <https://github.com/AI-SDC/ACRO/pull/333>`_)
+* bump the actions group with 3 updates (`#356 <https://github.com/AI-SDC/ACRO/pull/356>`_)
+* pre-commit autoupdate (`#366 <https://github.com/AI-SDC/ACRO/pull/366>`_)
+* pre-commit autoupdate (`#372 <https://github.com/AI-SDC/ACRO/pull/372>`_)
+* remove unused pylint inline pragmas (`#371 <https://github.com/AI-SDC/ACRO/pull/371>`_)
+* enable 11 additional ruff lint rule sets (`#373 <https://github.com/AI-SDC/ACRO/pull/373>`_)
+* bump codecov/codecov-action from 5 to 6 in the actions group (`#374 <https://github.com/AI-SDC/ACRO/pull/374>`_)
+* **deps:** update pre-commit hooks (`#375 <https://github.com/AI-SDC/ACRO/pull/375>`_)
+* **deps:** update pre-commit hooks (`#385 <https://github.com/AI-SDC/ACRO/pull/385>`_)
+* **deps:** update pre-commit hooks (`#388 <https://github.com/AI-SDC/ACRO/pull/388>`_)
+
+### Documentation
+* update documentation and simplify examples (`#334 <https://github.com/AI-SDC/ACRO/pull/334>`_)
+* replace pre-commit with prek in CONTRIBUTING guide (`#338 <https://github.com/AI-SDC/ACRO/pull/338>`_)
+* update Stata cheat sheet (`#354 <https://github.com/AI-SDC/ACRO/pull/354>`_)
+* fix README python notebook link (`#359 <https://github.com/AI-SDC/ACRO/pull/359>`_)
+* automate changelog from PR names (`#352 <https://github.com/AI-SDC/ACRO/pull/352>`_)
+* update contributing guide and add AI policy (`#369 <https://github.com/AI-SDC/ACRO/pull/369>`_)
+
+### Features
+* Make ACRO ontology-driven (`#395 <https://github.com/AI-SDC/ACRO/pull/395>`_)
+* add pie chart support (`#355 <https://github.com/AI-SDC/ACRO/pull/355>`_)
+* improve handling invalid aggregation functions in stata (`#365 <https://github.com/AI-SDC/ACRO/pull/365>`_)
+* create and enforce blocked file extension list for custom outputs (`#377 <https://github.com/AI-SDC/ACRO/pull/377>`_)
+* add rounding as a protection mechanism (`#381 <https://github.com/AI-SDC/ACRO/pull/381>`_)
+* honor zeros_are_disclosive in hist() empty bin check (`#308 <https://github.com/AI-SDC/ACRO/pull/308>`_) (`#386 <https://github.com/AI-SDC/ACRO/pull/386>`_)
+* **hist:** flag bin-edge disclosure risks (`#192 <https://github.com/AI-SDC/ACRO/pull/192>`_) (`#382 <https://github.com/AI-SDC/ACRO/pull/382>`_)
+
+### Other
+* Update Ruff linting configuration in pyproject.toml
+
+ignore D213 with conflicts with D212
+* Remove extend-ignore from ruff lint settings
+
+Removed extend-ignore setting from ruff lint configuration.
+
+### Refactoring
+* update rounded_survival_table to use dynamic column names (`#332 <https://github.com/AI-SDC/ACRO/pull/332>`_)
+* extract acro_artifacts folder name to ARTIFACTS_DIR constant (`#376 <https://github.com/AI-SDC/ACRO/pull/376>`_)
+
+----
+
+**ACRO v0.4.12** - *Feb 02, 2026*
+
+`View full changelog for v0.4.12 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-0412-feb-02-2026>`_
+
+Changes:
+* docs: add documentation (`#273 <https://github.com/AI-SDC/ACRO/pull/273>`_, `#287 <https://github.com/AI-SDC/ACRO/pull/287>`_, `#288 <https://github.com/AI-SDC/ACRO/pull/288>`_, `#289 <https://github.com/AI-SDC/ACRO/pull/289>`_, `#291 <https://github.com/AI-SDC/ACRO/pull/291>`_, `#304 <https://github.com/AI-SDC/ACRO/pull/304>`_, `#306 <https://github.com/AI-SDC/ACRO/pull/306>`_, `#318 <https://github.com/AI-SDC/ACRO/pull/318>`_)
+* feat: disallow `.gph` files as custom outputs in Stata (`#296 <https://github.com/AI-SDC/ACRO/pull/296>`_)
+* feat: make finalise non-interactive by default (`#309 <https://github.com/AI-SDC/ACRO/pull/309>`_)
+* feat: add setters to toggle suppression (`#326 <https://github.com/AI-SDC/ACRO/pull/326>`_)
+* feat: add support for `init` options in Stata (`#320 <https://github.com/AI-SDC/ACRO/pull/320>`_)
+* fix: update summary status logic to reflect suppression state (`#317 <https://github.com/AI-SDC/ACRO/pull/317>`_)
+* fix: handle spaces in variable names for `crosstab` (`#321 <https://github.com/AI-SDC/ACRO/pull/321>`_)
+* test: add test for `rounded_survival_table` function in survival analysis (`#324 <https://github.com/AI-SDC/ACRO/pull/324>`_)
+* ci: set `MPLBACKEND`
+
+----
+
+**ACRO v0.4.11** - *Nov 03, 2025*
+
+`View full changelog for v0.4.11 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-0411-nov-03-2025>`_
+
+Changes:
+* chore: increase max pandas to <=2.3.3 to avoid building from source for Python 3.14 (`#282 <https://github.com/AI-SDC/ACRO/pull/282>`_)
+
+----
+
+**ACRO v0.4.10** - *Nov 03, 2025*
+
+`View full changelog for v0.4.10 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-0410-nov-03-2025>`_
+
+Changes:
+* fix: various fixes and improvements for stata (`#278 <https://github.com/AI-SDC/ACRO/pull/278>`_)
+* chore: drop Python 3.9 and support Python 3.14 (`#280 <https://github.com/AI-SDC/ACRO/pull/280>`_)
+
+----
+
+**ACRO v0.4.9** - *Jul 02, 2025*
+
+`View full changelog for v0.4.9 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-049-jul-02-2025>`_
+
+Changes:
+* Update notebooks for Numpy version 2 compatibility (`#258 <https://github.com/AI-SDC/ACRO/pull/258>`_)
+* Cap `scipy<1.16.0` (`#266 <https://github.com/AI-SDC/ACRO/pull/266>`_)
+
+----
+
+**ACRO v0.4.8** - *Jan 29, 2025*
+
+`View full changelog for v0.4.8 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-048-jan-29-2025>`_
+
+Changes:
+* Add support for Numpy version 2 (`#247 <https://github.com/AI-SDC/ACRO/pull/247>`_)
+
+----
+
+**ACRO v0.4.7** - *Oct 22, 2024*
+
+`View full changelog for v0.4.7 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-047-oct-22-2024>`_
+
+Changes:
+* Add support for Pandas version 2 (`#237 <https://github.com/AI-SDC/ACRO/pull/237>`_)
+
+----
+
+**ACRO v0.4.6** - *Jun 25, 2024*
+
+`View full changelog for v0.4.6 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-046-jun-25-2024>`_
+
+Changes:
+* Add mode aggregation function (`#194 <https://github.com/AI-SDC/ACRO/pull/194>`_)
+* Update Stata examples (`#197 <https://github.com/AI-SDC/ACRO/pull/197>`_)
+* Various minor bug fixes, including fixing suppression when `margins=True`
+* Update CI (`#207 <https://github.com/AI-SDC/ACRO/pull/207>`_, `#208 <https://github.com/AI-SDC/ACRO/pull/208>`_)
+* Update packaging (`#209 <https://github.com/AI-SDC/ACRO/pull/209>`_)
+* Improve robustness of `create_dataframe()` (`#211 <https://github.com/AI-SDC/ACRO/pull/211>`_)
+* Add Ruff linting/formatting (`#210 <https://github.com/AI-SDC/ACRO/pull/210>`_, `#214 <https://github.com/AI-SDC/ACRO/pull/214>`_)
+* PEP 257 docstring formatting (`#212 <https://github.com/AI-SDC/ACRO/pull/212>`_)
+* Remove useless pylint suppression (`#213 <https://github.com/AI-SDC/ACRO/pull/213>`_)
+* Fix code coverage reporting (`#215 <https://github.com/AI-SDC/ACRO/pull/215>`_)
+* Limit numpy dependency to less than v2.0.0 (`#220 <https://github.com/AI-SDC/ACRO/pull/220>`_)
+
+----
+
+**ACRO v0.4.5** - *Nov 16, 2023*
+
+`View full changelog for v0.4.5 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-045-nov-16-2023>`_
+
+Changes:
+* CI updates, version numbers
+
+----
+
+**ACRO v0.4.4** - *Nov 15, 2023*
+
+`View full changelog for v0.4.4 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-044-nov-15-2023>`_
+
+Changes:
+* Update table suppression when totals are true for pivot table (`#165 <https://github.com/AI-SDC/ACRO/pull/165>`_)
+* Fix the problem of shape mismatch when there are two columns and the aggfunc is count or sum (`#167 <https://github.com/AI-SDC/ACRO/pull/167>`_)
+* Remove all files and folders created during testing (`#168 <https://github.com/AI-SDC/ACRO/pull/168>`_)
+* Create an example notebook with simple examples of acro (`#170 <https://github.com/AI-SDC/ACRO/pull/170>`_)
+* Add support for histogram (`#176 <https://github.com/AI-SDC/ACRO/pull/176>`_)
+* Add inherited members from acro_tables and acro_regression to the sphinx docs (`#177 <https://github.com/AI-SDC/ACRO/pull/177>`_)
+* Update the R help function (`#178 <https://github.com/AI-SDC/ACRO/pull/178>`_)
+* Update the finalise function by checking the provided folder name and ask for new one if it exists (`#179 <https://github.com/AI-SDC/ACRO/pull/179>`_)
+* Add histogram and survival analysis to R (`#182 <https://github.com/AI-SDC/ACRO/pull/182>`_)
+
+----
+
+**ACRO v0.4.3** - *Sep 22, 2023*
+
+`View full changelog for v0.4.3 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-043-sep-22-2023>`_
+
+Changes:
+* Add installation support for Python 3.8 and 3.9 (`#135 <https://github.com/AI-SDC/ACRO/pull/135>`_)
+* Add a directory of outputs to an acro object and creates a results file for checking (`#130 <https://github.com/AI-SDC/ACRO/pull/130>`_)
+* Improve screen formatting of tables (`#139 <https://github.com/AI-SDC/ACRO/pull/139>`_)
+* Integrate Stata support (`#142 <https://github.com/AI-SDC/ACRO/pull/142>`_)
+* Fix crosstab when index or columns is a list and there is an aggregation function (`#147 <https://github.com/AI-SDC/ACRO/pull/147>`_)
+* Add support for survival analysis (`#145 <https://github.com/AI-SDC/ACRO/pull/145>`_)
+* Update pandas version dependency to 1.5 (`#150 <https://github.com/AI-SDC/ACRO/pull/150>`_)
+* Refactor ACRO class (`#152 <https://github.com/AI-SDC/ACRO/pull/152>`_)
+* Adding support for table function in R (`#153 <https://github.com/AI-SDC/ACRO/pull/153>`_)
+* Update table suppression when totals are true (`#160 <https://github.com/AI-SDC/ACRO/pull/160>`_)
+
+----
+
+**ACRO v0.4.2** - *Jul 13, 2023*
+
+`View full changelog for v0.4.2 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-042-jul-13-2023>`_
+
+Changes:
+* Use INFO for exception handling finalise prompt (`#116 <https://github.com/AI-SDC/ACRO/pull/116>`_)
+* Add version number to INFO (`#116 <https://github.com/AI-SDC/ACRO/pull/116>`_)
+* Update R wrapper (`#116 <https://github.com/AI-SDC/ACRO/pull/116>`_)
+
+----
+
+**ACRO v0.4.0** - *Jul 11, 2023*
+
+`View full changelog for v0.4.0 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-040-jul-11-2023>`_
+
+Changes:
+* Add writing sha256 checksums upon finalise (`#107 <https://github.com/AI-SDC/ACRO/pull/107>`_)
+* Refactor load_json Records class function to static load_results (`#110 <https://github.com/AI-SDC/ACRO/pull/110>`_)
+* Write SDC parameters to config.json upon finalise (`#111 <https://github.com/AI-SDC/ACRO/pull/111>`_)
+* Add explicit exception handling and finalise prompt (`#112 <https://github.com/AI-SDC/ACRO/pull/112>`_)
+* Add version number to JSON and use new schema (`#114 <https://github.com/AI-SDC/ACRO/pull/114>`_)
+
+----
+
+**ACRO v0.3.0** - *Jul 04, 2023*
+
+`View full changelog for v0.3.0 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-030-jul-04-2023>`_
+
+Changes:
+* Disable automatic table suppression by default (`#91 <https://github.com/AI-SDC/ACRO/pull/91>`_)
+* Add support for multiple aggregation functions (`#99 <https://github.com/AI-SDC/ACRO/pull/99>`_)
+* Minor code refactor and used mypy to fix types (`#97 <https://github.com/AI-SDC/ACRO/pull/97>`_)
+* Add lists of flagged table cells to properties (`#104 <https://github.com/AI-SDC/ACRO/pull/104>`_)
+* Change missing and negative table properties to sums (`#104 <https://github.com/AI-SDC/ACRO/pull/104>`_)
+
+----
+
+**ACRO v0.2.0** - *Jun 28, 2023*
+
+`View full changelog for v0.2.0 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-020-jun-28-2023>`_
+
+Changes:
+* Serialize JSON outcome field as a dictionary instead of string (`#88 <https://github.com/AI-SDC/ACRO/pull/88>`_)
+* Major code refactor of output storage (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Add status, type and properties to the output metadata (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Remove the timestamp from the output naming (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Remove automatic reloading of existing results (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Make custom file paths relatve instead of absolute (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Split statsmodels outputs into multiple csv files (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Change output field in JSON to a list of file paths (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Finalise now takes two arguments: path and ext to specify a folder (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Automatically copy custom outputs to the outputs folder upon finalise (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Fix a bug attempting to write custom outputs in excel (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* ISO format timestamps (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+* Store comments as a list of strings (`#89 <https://github.com/AI-SDC/ACRO/pull/89>`_)
+
+----
+
+**ACRO v0.1.0** - *Apr 28, 2023*
+
+`View full changelog for v0.1.0 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-010-apr-28-2023>`_
+
+Changes:
+* Add missing value handling (`#59 <https://github.com/AI-SDC/ACRO/pull/59>`_)
+* Add a new line between statsmodel tables when writing csv (`#60 <https://github.com/AI-SDC/ACRO/pull/60>`_)
+* Fix problems with NaNs in masks (`#63 <https://github.com/AI-SDC/ACRO/pull/63>`_)
+* Fix loading existing results (`#64 <https://github.com/AI-SDC/ACRO/pull/64>`_)
+
+----
+
+**ACRO v0.0.6** - *Apr 16, 2023*
+
+`View full changelog for v0.0.6 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-006-apr-16-2023>`_
+
+Changes:
+* Add explicit stack level to warnings (`#45 <https://github.com/AI-SDC/ACRO/pull/45>`_)
+* Separate analytic results from JSON files (`#46 <https://github.com/AI-SDC/ACRO/pull/46>`_)
+* Add timestamps to the output names and append the new outputs to the existing JSON file (`#51 <https://github.com/AI-SDC/ACRO/pull/51>`_)
+* Add functionality for users to rename outputs (`#52 <https://github.com/AI-SDC/ACRO/pull/52>`_)
+* Add functionality to add comments to outputs (`#54 <https://github.com/AI-SDC/ACRO/pull/54>`_)
+* Add functionality to add currently unsupported outputs (`#58 <https://github.com/AI-SDC/ACRO/pull/58>`_)
+
+----
+
+**ACRO v0.0.5** - *Nov 02, 2022*
+
+`View full changelog for v0.0.5 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-005-nov-02-2022>`_
+
+Changes:
+* Package for PyPI
+* Clean tests
+
+----
+
+**ACRO v0.0.4** - *Oct 14, 2022*
+
+`View full changelog for v0.0.4 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-004-oct-14-2022>`_
+
+Changes:
+* Fix complex table checking
+
+----
+
+**ACRO v0.0.3** - *Oct 14, 2022*
+
+`View full changelog for v0.0.3 → <https://github.com/AI-SDC/ACRO/blob/main/CHANGELOG.md#version-003-oct-14-2022>`_
+
+Initial alpha
+
+----
+
+Other Tools
+===========
+
+* `SACRO-ML <https://github.com/AI-SDC/SACRO-ML>`_ - machine learning privacy tools
+* `ACRO-R <https://github.com/AI-SDC/ACRO-R>`_ - R language interface
+* `SACRO-Viewer <https://github.com/AI-SDC/SACRO-Viewer>`_ - graphical user interface
+
+Subscribe to Updates
+====================
+
+* Watch the `GitHub repository <https://github.com/AI-SDC/ACRO>`_ for release notifications.
+* Browse `GitHub Releases <https://github.com/AI-SDC/ACRO/releases>`_.
+* Contact the team: sacro.contact@uwe.ac.uk

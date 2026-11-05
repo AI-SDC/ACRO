@@ -45,6 +45,8 @@ Data Analysis  Regression
    :no-index:
 .. automethod:: ACRO.probitr
    :no-index:
+.. automethod:: ACRO.coxph
+   :no-index:
 
 Output Management
 -----------------

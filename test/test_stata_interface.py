@@ -15,7 +15,6 @@ from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,
     clean_patsy_name,
-    expand_abbreviated_command,
     find_brace_word,
     parse_and_run,
     parse_table_details,

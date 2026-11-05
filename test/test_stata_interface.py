@@ -14,6 +14,7 @@ from acro import ACRO, stata_config
 from acro.acro_stata_parser import (
     apply_stata_expstmt,
     apply_stata_ifstmt,
+    expand_abbreviated_command,
     find_brace_word,
     parse_and_run,
     parse_table_details,
@@ -1157,6 +1158,22 @@ def test_stata_unknown(data):
         stata_version="16",
     )
     correct = "acro command not recognised: foo"
+    assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
+
+
+def test_stata_unsupported_table_command(data):
+    """Test unsupported commands to create table would send a user message to use the table command."""
+    ret = dummy_acrohandler(
+        data,
+        command="fre",
+        varlist=" survivor inc_activity",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="16",
+    )
+    correct = "'fre' is not currently supported. To generate tables, please use the 'table' command instead."
     assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
 
 

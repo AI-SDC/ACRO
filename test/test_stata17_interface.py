@@ -942,6 +942,22 @@ def test_stata_unknown(data):
     assert ret == correct
 
 
+def test_stata_unsupported_table_command(data):
+    """Test unsupported commands to create table would send a user message to use the table command."""
+    ret = dummy_acrohandler(
+        data,
+        command="fre",
+        varlist=" survivor inc_activity",
+        exclusion="",
+        exp="",
+        weights="",
+        options="",
+        stata_version="17",
+    )
+    correct = "'fre' is not currently supported. To generate tables, please use the 'table' command instead."
+    assert ret == correct, f"got:\n{ret}\nexpected:\n{correct}\n"
+
+
 # ----Test stata 17 new table command syntax-------------------------------------
 def test_table_stata17(data):
     """Check that the simple table command works as expected."""

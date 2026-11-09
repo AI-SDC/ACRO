@@ -8,7 +8,7 @@
 * Adding  support for cox proportional hazards regression models ([#419](https://github.com/AI-SDC/ACRO/pull/419))
 * Feat: add disclosure risk explanations ([#428](https://github.com/AI-SDC/ACRO/pull/428))
 * Support for command shortcuts ([#423](https://github.com/AI-SDC/ACRO/pull/423))
-* Stata cox regression ([#422](https://github.com/AI-SDC/ACRO/pull/422))
+* Stata:  support for cox proportional hazards regression models ([#422](https://github.com/AI-SDC/ACRO/pull/422))
 * Support for Stata deal with factor notation ([#427](https://github.com/AI-SDC/ACRO/pull/427))
 * Bump version number to 1.1.0 ([#430](https://github.com/AI-SDC/ACRO/pull/430))
 

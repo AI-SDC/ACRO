@@ -10,6 +10,8 @@ on:
       - '!**.md'
       - '!**.cff'
       - 'CHANGELOG.md'
+      - 'docs/source/news.md'
+      - 'docs/source/acro-changelog.md'
 
 jobs:
   build:

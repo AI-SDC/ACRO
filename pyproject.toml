@@ -59,6 +59,7 @@ version = {attr = "acro.version.__version__"}
 
 [project.optional-dependencies]
 doc = [
+    "myst-parser>=2.0",
     "numpydoc",
     "pytest",
     "sphinx-autopackagesummary",

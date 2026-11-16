@@ -8,10 +8,11 @@ body = """
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
 ### {{ group }}
-{% for commit in commits -%}
+
+{% for commit in commits | sort(attribute="message") -%}
 * {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | trim }}
 {% endfor %}
-{%- endfor %}
+{% endfor %}
 """
 trim = true
 footer = ""
@@ -29,8 +30,8 @@ commit_parsers = [
     { message = "^docs: update changelog", skip = true },
     { message = "^docs: update citation", skip = true },
     { message = "^chore: prepare", skip = true },
-    { message = "^feat", group = "Features" },
-    { message = "^fix", group = "Bug Fixes" },
+    { message = "^feat", group = "Additional Functionality" },
+    { message = "^fix", group = "Fix" },
     { message = "^docs", group = "Documentation" },
     { message = "^perf", group = "Performance" },
     { message = "^refactor", group = "Refactoring" },

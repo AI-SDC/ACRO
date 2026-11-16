@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ACRO changelog &#8212; ACRO 1.1.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=17306193" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="_static/documentation_options.js?v=fc837d61"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'acro-changelog';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="News" href="news.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ACRO 1.1.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="news.html">
+    News
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="introduction.html">
+    Welcome to ACRO
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="support.html">
+    What ACRO Supports
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="news.html">
+    News
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">ACRO changelog</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="news.html" class="nav-link">News</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ACRO changelog</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="acro-changelog">
+<h1>ACRO changelog<a class="headerlink" href="#acro-changelog" title="Link to this heading">#</a></h1>
+<p>Detailed ACRO version history, with the newest releases first.
+For announcements covering the tools together, visit <a class="reference internal" href="news.html"><span class="std std-doc">SACRO Tools News</span></a>.</p>
+<section id="version-1-1-0-nov-05-2026">
+<h2>Version 1.1.0 (Nov 05, 2026)<a class="headerlink" href="#version-1-1-0-nov-05-2026" title="Link to this heading">#</a></h2>
+<section id="additional-functionality">
+<h3>Additional Functionality<a class="headerlink" href="#additional-functionality" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add command shortcuts and factor notation in Stata. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/423">#423</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/427">#427</a>)</p></li>
+<li><p>Add Cox proportional hazards regression support in Python and Stata. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/419">#419</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/422">#422</a>)</p></li>
+<li><p>Add disclosure risk explanations. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/428">#428</a>)</p></li>
+</ul>
+</section>
+<section id="chore">
+<h3>Chore<a class="headerlink" href="#chore" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Bump the version number to 1.1.0. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/430">#430</a>)</p></li>
+</ul>
+</section>
+<section id="fix">
+<h3>Fix<a class="headerlink" href="#fix" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Correct the MyBinder link. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/417">#417</a>)</p></li>
+<li><p>Include custom outputs in XLSX finalisation. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/418">#418</a>)</p></li>
+<li><p>Join index conditions with <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> to avoid <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/415">#415</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-1-0-1-aug-10-2026">
+<h2>Version 1.0.1 (Aug 10, 2026)<a class="headerlink" href="#version-1-0-1-aug-10-2026" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h3>Additional Functionality<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add pie chart support. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/355">#355</a>)</p></li>
+<li><p>Add rounding as a protection mechanism. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/381">#381</a>)</p></li>
+<li><p>Create and enforce a blocked file extension list for custom outputs. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/377">#377</a>)</p></li>
+<li><p>Flag histogram bin-edge disclosure risks. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/192">#192</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/382">#382</a>)</p></li>
+<li><p>Make ACRO ontology-driven. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/395">#395</a>)</p></li>
+</ul>
+</section>
+<section id="id2">
+<h3>Chore<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add type hints. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/343">#343</a>)</p></li>
+<li><p>Bump the version number to 1.0.1.</p></li>
+<li><p>Clean up notebooks and folders. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/336">#336</a>)</p></li>
+<li><p>Include the required JSON files in the <code class="docutils literal notranslate"><span class="pre">acro</span></code> package data and correct its <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> configuration.</p></li>
+<li><p>Update GitHub Actions dependencies, including <code class="docutils literal notranslate"><span class="pre">codecov/codecov-action</span></code> from version 5 to 6. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/356">#356</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/374">#374</a>)</p></li>
+<li><p>Update pre-commit hooks. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/333">#333</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/366">#366</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/372">#372</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/375">#375</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/385">#385</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/388">#388</a>)</p></li>
+<li><p>Update Ruff configuration: enable 11 additional rule sets, ignore D213 because it conflicts with D212, and remove <code class="docutils literal notranslate"><span class="pre">extend-ignore</span></code>; remove unused pylint inline pragmas. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/371">#371</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/373">#373</a>)</p></li>
+</ul>
+</section>
+<section id="ci">
+<h3>CI<a class="headerlink" href="#ci" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Run tests on pull requests without running them twice. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/368">#368</a>)</p></li>
+</ul>
+</section>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Automate changelog generation from pull request names. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/352">#352</a>)</p></li>
+<li><p>Replace pre-commit with prek in the contributing guide, update the guide, and add an AI policy. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/338">#338</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/369">#369</a>)</p></li>
+<li><p>Update documentation and simplify examples. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/334">#334</a>)</p></li>
+<li><p>Update the Stata cheat sheet. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/354">#354</a>)</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>Fix<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Correct cell ID misalignment and hierarchical reindexing. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/367">#367</a>)</p></li>
+<li><p>Correct the README Python notebook link. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/359">#359</a>)</p></li>
+<li><p>Handle invalid aggregation functions in Stata. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/365">#365</a>)</p></li>
+<li><p>Honor <code class="docutils literal notranslate"><span class="pre">zeros_are_disclosive</span></code> when checking empty histogram bins. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/308">#308</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/386">#386</a>)</p></li>
+<li><p>Resolve shape mismatches in <code class="docutils literal notranslate"><span class="pre">crosstab</span></code> and <code class="docutils literal notranslate"><span class="pre">pivot_table</span></code> with aggregation functions. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/347">#347</a>)</p></li>
+</ul>
+</section>
+<section id="refactoring">
+<h3>Refactoring<a class="headerlink" href="#refactoring" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Extract the <code class="docutils literal notranslate"><span class="pre">acro_artifacts</span></code> folder name into the <code class="docutils literal notranslate"><span class="pre">ARTIFACTS_DIR</span></code> constant. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/376">#376</a>)</p></li>
+<li><p>Use dynamic column names in <code class="docutils literal notranslate"><span class="pre">rounded_survival_table</span></code>. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/332">#332</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-12-feb-02-2026">
+<h2>Version 0.4.12 (Feb 02, 2026)<a class="headerlink" href="#version-0-4-12-feb-02-2026" title="Link to this heading">#</a></h2>
+<section id="id4">
+<h3>Additional Functionality<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add setters to toggle suppression (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/326">#326</a>)</p></li>
+<li><p>Add support for <code class="docutils literal notranslate"><span class="pre">init</span></code> options in Stata (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/320">#320</a>)</p></li>
+<li><p>Disallow <code class="docutils literal notranslate"><span class="pre">.gph</span></code> files as custom outputs in Stata (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/296">#296</a>)</p></li>
+<li><p>Make finalise non-interactive by default (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/309">#309</a>)</p></li>
+</ul>
+</section>
+<section id="id5">
+<h3>CI<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">MPLBACKEND</span></code></p></li>
+</ul>
+</section>
+<section id="id6">
+<h3>Documentation<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add documentation (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/273">#273</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/287">#287</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/288">#288</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/289">#289</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/291">#291</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/304">#304</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/306">#306</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/318">#318</a>)</p></li>
+</ul>
+</section>
+<section id="id7">
+<h3>Fix<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Handle spaces in variable names for <code class="docutils literal notranslate"><span class="pre">crosstab</span></code> (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/321">#321</a>)</p></li>
+<li><p>Update summary status logic to reflect suppression state (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/317">#317</a>)</p></li>
+</ul>
+</section>
+<section id="testing">
+<h3>Testing<a class="headerlink" href="#testing" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add test for <code class="docutils literal notranslate"><span class="pre">rounded_survival_table</span></code> function in survival analysis (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/324">#324</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-11-nov-03-2025">
+<h2>Version 0.4.11 (Nov 03, 2025)<a class="headerlink" href="#version-0-4-11-nov-03-2025" title="Link to this heading">#</a></h2>
+<section id="id8">
+<h3>Chore<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Increase max pandas to &lt;=2.3.3 to avoid building from source for Python 3.14 (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/282">#282</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-10-nov-03-2025">
+<h2>Version 0.4.10 (Nov 03, 2025)<a class="headerlink" href="#version-0-4-10-nov-03-2025" title="Link to this heading">#</a></h2>
+<section id="id9">
+<h3>Chore<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Drop Python 3.9 and support Python 3.14 (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/280">#280</a>)</p></li>
+</ul>
+</section>
+<section id="id10">
+<h3>Fix<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Various fixes and improvements for stata (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/278">#278</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-9-jul-02-2025">
+<h2>Version 0.4.9 (Jul 02, 2025)<a class="headerlink" href="#version-0-4-9-jul-02-2025" title="Link to this heading">#</a></h2>
+<section id="id11">
+<h3>Chore<a class="headerlink" href="#id11" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Cap <code class="docutils literal notranslate"><span class="pre">scipy&lt;1.16.0</span></code> (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/266">#266</a>)</p></li>
+</ul>
+</section>
+<section id="id12">
+<h3>Documentation<a class="headerlink" href="#id12" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Update notebooks for Numpy version 2 compatibility (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/258">#258</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-8-jan-29-2025">
+<h2>Version 0.4.8 (Jan 29, 2025)<a class="headerlink" href="#version-0-4-8-jan-29-2025" title="Link to this heading">#</a></h2>
+<section id="id13">
+<h3>Additional Functionality<a class="headerlink" href="#id13" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add support for Numpy version 2 (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/247">#247</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-7-oct-22-2024">
+<h2>Version 0.4.7 (Oct 22, 2024)<a class="headerlink" href="#version-0-4-7-oct-22-2024" title="Link to this heading">#</a></h2>
+<section id="id14">
+<h3>Additional Functionality<a class="headerlink" href="#id14" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add support for Pandas version 2 (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/237">#237</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-6-jun-25-2024">
+<h2>Version 0.4.6 (Jun 25, 2024)<a class="headerlink" href="#version-0-4-6-jun-25-2024" title="Link to this heading">#</a></h2>
+<section id="id15">
+<h3>Additional Functionality<a class="headerlink" href="#id15" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add mode aggregation function (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/194">#194</a>)</p></li>
+</ul>
+</section>
+<section id="id16">
+<h3>Chore<a class="headerlink" href="#id16" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add Ruff linting/formatting (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/210">#210</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/214">#214</a>)</p></li>
+<li><p>Limit numpy dependency to less than v2.0.0 (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/220">#220</a>)</p></li>
+<li><p>Remove useless pylint suppression (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/213">#213</a>)</p></li>
+<li><p>Update packaging (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/209">#209</a>)</p></li>
+</ul>
+</section>
+<section id="id17">
+<h3>CI<a class="headerlink" href="#id17" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Update CI (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/207">#207</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/208">#208</a>)</p></li>
+</ul>
+</section>
+<section id="id18">
+<h3>Documentation<a class="headerlink" href="#id18" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>PEP 257 docstring formatting (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/212">#212</a>)</p></li>
+<li><p>Update Stata examples (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/197">#197</a>)</p></li>
+</ul>
+</section>
+<section id="id19">
+<h3>Fix<a class="headerlink" href="#id19" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Correct minor issues, including suppression when <code class="docutils literal notranslate"><span class="pre">margins=True</span></code></p></li>
+<li><p>Fix code coverage reporting (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/215">#215</a>)</p></li>
+<li><p>Improve robustness of <code class="docutils literal notranslate"><span class="pre">create_dataframe()</span></code> (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/211">#211</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-5-nov-16-2023">
+<h2>Version 0.4.5 (Nov 16, 2023)<a class="headerlink" href="#version-0-4-5-nov-16-2023" title="Link to this heading">#</a></h2>
+<section id="id20">
+<h3>CI<a class="headerlink" href="#id20" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>CI updates, version numbers</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-4-nov-15-2023">
+<h2>Version 0.4.4 (Nov 15, 2023)<a class="headerlink" href="#version-0-4-4-nov-15-2023" title="Link to this heading">#</a></h2>
+<section id="id21">
+<h3>Additional Functionality<a class="headerlink" href="#id21" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add histogram support, including the R interface, and add survival analysis to R. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/176">#176</a>, <a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/182">#182</a>)</p></li>
+<li><p>Update the finalise function by checking the provided folder name and ask for new one if it exists (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/179">#179</a>)</p></li>
+</ul>
+</section>
+<section id="id22">
+<h3>Documentation<a class="headerlink" href="#id22" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add inherited members from acro_tables and acro_regression to the sphinx docs (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/177">#177</a>)</p></li>
+<li><p>Create an example notebook with simple examples of acro (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/170">#170</a>)</p></li>
+<li><p>Update the R help function (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/178">#178</a>)</p></li>
+</ul>
+</section>
+<section id="id23">
+<h3>Fix<a class="headerlink" href="#id23" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fix the problem of shape mismatch when there are two columns and the aggfunc is count or sum (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/167">#167</a>)</p></li>
+<li><p>Update table suppression when totals are true for pivot table (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/165">#165</a>)</p></li>
+</ul>
+</section>
+<section id="id24">
+<h3>Testing<a class="headerlink" href="#id24" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Remove all files and folders created during testing (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/168">#168</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-3-sep-22-2023">
+<h2>Version 0.4.3 (Sep 22, 2023)<a class="headerlink" href="#version-0-4-3-sep-22-2023" title="Link to this heading">#</a></h2>
+<section id="id25">
+<h3>Additional Functionality<a class="headerlink" href="#id25" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add a directory of outputs to an acro object and creates a results file for checking (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/130">#130</a>)</p></li>
+<li><p>Add installation support for Python 3.8 and 3.9 (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/135">#135</a>)</p></li>
+<li><p>Add support for survival analysis (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/145">#145</a>)</p></li>
+<li><p>Adding support for table function in R (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/153">#153</a>)</p></li>
+<li><p>Improve screen formatting of tables (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/139">#139</a>)</p></li>
+<li><p>Integrate Stata support (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/142">#142</a>)</p></li>
+</ul>
+</section>
+<section id="id26">
+<h3>Chore<a class="headerlink" href="#id26" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Update pandas version dependency to 1.5 (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/150">#150</a>)</p></li>
+</ul>
+</section>
+<section id="id27">
+<h3>Fix<a class="headerlink" href="#id27" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fix crosstab when index or columns is a list and there is an aggregation function (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/147">#147</a>)</p></li>
+<li><p>Update table suppression when totals are true (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/160">#160</a>)</p></li>
+</ul>
+</section>
+<section id="id28">
+<h3>Refactoring<a class="headerlink" href="#id28" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Refactor ACRO class (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/152">#152</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-2-jul-13-2023">
+<h2>Version 0.4.2 (Jul 13, 2023)<a class="headerlink" href="#version-0-4-2-jul-13-2023" title="Link to this heading">#</a></h2>
+<section id="id29">
+<h3>Additional Functionality<a class="headerlink" href="#id29" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add the version number to INFO messages and use INFO for exception handling of the finalise prompt. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/116">#116</a>)</p></li>
+<li><p>Update the R wrapper. (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/116">#116</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-4-0-jul-11-2023">
+<h2>Version 0.4.0 (Jul 11, 2023)<a class="headerlink" href="#version-0-4-0-jul-11-2023" title="Link to this heading">#</a></h2>
+<section id="id30">
+<h3>Additional Functionality<a class="headerlink" href="#id30" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add explicit exception handling and finalise prompt (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/112">#112</a>)</p></li>
+<li><p>Add version number to JSON and use new schema (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/114">#114</a>)</p></li>
+<li><p>Add writing sha256 checksums upon finalise (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/107">#107</a>)</p></li>
+<li><p>Write SDC parameters to config.json upon finalise (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/111">#111</a>)</p></li>
+</ul>
+</section>
+<section id="id31">
+<h3>Refactoring<a class="headerlink" href="#id31" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Refactor load_json Records class function to static load_results (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/110">#110</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-3-0-jul-04-2023">
+<h2>Version 0.3.0 (Jul 04, 2023)<a class="headerlink" href="#version-0-3-0-jul-04-2023" title="Link to this heading">#</a></h2>
+<section id="id32">
+<h3>Additional Functionality<a class="headerlink" href="#id32" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add lists of flagged table cells to properties (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/104">#104</a>)</p></li>
+<li><p>Add support for multiple aggregation functions (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/99">#99</a>)</p></li>
+<li><p>Change missing and negative table properties to sums (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/104">#104</a>)</p></li>
+<li><p>Disable automatic table suppression by default (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/91">#91</a>)</p></li>
+</ul>
+</section>
+<section id="id33">
+<h3>Refactoring<a class="headerlink" href="#id33" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Minor code refactor and used mypy to fix types (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/97">#97</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-2-0-jun-28-2023">
+<h2>Version 0.2.0 (Jun 28, 2023)<a class="headerlink" href="#version-0-2-0-jun-28-2023" title="Link to this heading">#</a></h2>
+<section id="id34">
+<h3>Additional Functionality<a class="headerlink" href="#id34" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add status, type and properties to the output metadata (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>Automatically copy custom outputs to the outputs folder upon finalise (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>Change output field in JSON to a list of file paths (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>Finalise now takes two arguments: path and ext to specify a folder (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>ISO format timestamps (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>Make custom file paths relative instead of absolute (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>Remove automatic reloading of existing results (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>Remove the timestamp from the output naming (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>Serialize JSON outcome field as a dictionary instead of string (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/88">#88</a>)</p></li>
+<li><p>Split statsmodels outputs into multiple csv files (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+<li><p>Store comments as a list of strings (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+</ul>
+</section>
+<section id="id35">
+<h3>Fix<a class="headerlink" href="#id35" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fix a bug attempting to write custom outputs in excel (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+</ul>
+</section>
+<section id="id36">
+<h3>Refactoring<a class="headerlink" href="#id36" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Major code refactor of output storage (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/89">#89</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-1-0-apr-28-2023">
+<h2>Version 0.1.0 (Apr 28, 2023)<a class="headerlink" href="#version-0-1-0-apr-28-2023" title="Link to this heading">#</a></h2>
+<section id="id37">
+<h3>Additional Functionality<a class="headerlink" href="#id37" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add a new line between statsmodel tables when writing csv (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/60">#60</a>)</p></li>
+<li><p>Add missing value handling (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/59">#59</a>)</p></li>
+</ul>
+</section>
+<section id="id38">
+<h3>Fix<a class="headerlink" href="#id38" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fix loading existing results (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/64">#64</a>)</p></li>
+<li><p>Fix problems with NaNs in masks (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/63">#63</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-0-6-apr-16-2023">
+<h2>Version 0.0.6 (Apr 16, 2023)<a class="headerlink" href="#version-0-0-6-apr-16-2023" title="Link to this heading">#</a></h2>
+<section id="id39">
+<h3>Additional Functionality<a class="headerlink" href="#id39" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add explicit stack level to warnings (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/45">#45</a>)</p></li>
+<li><p>Add functionality for users to rename outputs (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/52">#52</a>)</p></li>
+<li><p>Add functionality to add comments to outputs (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/54">#54</a>)</p></li>
+<li><p>Add functionality to add currently unsupported outputs (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/58">#58</a>)</p></li>
+<li><p>Add timestamps to the output names and append the new outputs to the existing JSON file (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/51">#51</a>)</p></li>
+<li><p>Separate analytic results from JSON files (<a class="reference external" href="https://github.com/AI-SDC/ACRO/pull/46">#46</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-0-5-nov-02-2022">
+<h2>Version 0.0.5 (Nov 02, 2022)<a class="headerlink" href="#version-0-0-5-nov-02-2022" title="Link to this heading">#</a></h2>
+<section id="id40">
+<h3>Chore<a class="headerlink" href="#id40" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Package for PyPI</p></li>
+</ul>
+</section>
+<section id="id41">
+<h3>Testing<a class="headerlink" href="#id41" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Clean tests</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-0-4-oct-14-2022">
+<h2>Version 0.0.4 (Oct 14, 2022)<a class="headerlink" href="#version-0-0-4-oct-14-2022" title="Link to this heading">#</a></h2>
+<section id="id42">
+<h3>Fix<a class="headerlink" href="#id42" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fix complex table checking</p></li>
+</ul>
+</section>
+</section>
+<section id="version-0-0-3-oct-14-2022">
+<h2>Version 0.0.3 (Oct 14, 2022)<a class="headerlink" href="#version-0-0-3-oct-14-2022" title="Link to this heading">#</a></h2>
+<section id="other">
+<h3>Other<a class="headerlink" href="#other" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Initial alpha</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="news.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">News</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="examples.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Examples</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-1-0-nov-05-2026">Version 1.1.0 (Nov 05, 2026)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-functionality">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chore">Chore</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fix">Fix</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-0-1-aug-10-2026">Version 1.0.1 (Aug 10, 2026)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Chore</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ci">CI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Fix</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refactoring">Refactoring</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-12-feb-02-2026">Version 0.4.12 (Feb 02, 2026)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">CI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Fix</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-11-nov-03-2025">Version 0.4.11 (Nov 03, 2025)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Chore</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-10-nov-03-2025">Version 0.4.10 (Nov 03, 2025)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Chore</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Fix</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-9-jul-02-2025">Version 0.4.9 (Jul 02, 2025)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Chore</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Documentation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-8-jan-29-2025">Version 0.4.8 (Jan 29, 2025)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Additional Functionality</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-7-oct-22-2024">Version 0.4.7 (Oct 22, 2024)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Additional Functionality</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-6-jun-25-2024">Version 0.4.6 (Jun 25, 2024)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Chore</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">CI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">Fix</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-5-nov-16-2023">Version 0.4.5 (Nov 16, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">CI</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-4-nov-15-2023">Version 0.4.4 (Nov 15, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id21">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id22">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id23">Fix</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id24">Testing</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-3-sep-22-2023">Version 0.4.3 (Sep 22, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id25">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id26">Chore</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id27">Fix</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id28">Refactoring</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-2-jul-13-2023">Version 0.4.2 (Jul 13, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id29">Additional Functionality</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-4-0-jul-11-2023">Version 0.4.0 (Jul 11, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id30">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id31">Refactoring</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-3-0-jul-04-2023">Version 0.3.0 (Jul 04, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id32">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id33">Refactoring</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-2-0-jun-28-2023">Version 0.2.0 (Jun 28, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id34">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id35">Fix</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id36">Refactoring</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-1-0-apr-28-2023">Version 0.1.0 (Apr 28, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id37">Additional Functionality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id38">Fix</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-0-6-apr-16-2023">Version 0.0.6 (Apr 16, 2023)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id39">Additional Functionality</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-0-5-nov-02-2022">Version 0.0.5 (Nov 02, 2022)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id40">Chore</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id41">Testing</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-0-4-oct-14-2022">Version 0.0.4 (Oct 14, 2022)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id42">Fix</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-0-0-3-oct-14-2022">Version 0.0.3 (Oct 14, 2022)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#other">Other</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/acro-changelog.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, SACRO Project Team.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

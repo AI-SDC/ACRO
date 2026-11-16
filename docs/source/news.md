@@ -1,4 +1,4 @@
-# Latest Release
+# News
 
 Release announcements and highlights from **ACRO**, **ACRO-R** and **SACRO-ML**.
 These tools help researchers and output checkers assess privacy disclosure risks

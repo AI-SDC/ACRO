@@ -122,7 +122,7 @@
       ${entry.uri ? `<p><a href="${escapeHtml(entry.uri)}" target="_blank" rel="noopener noreferrer">Ontology source</a></p>` : ""}
       ${examples.length ? `<p class="examples"><strong>Example analyses:</strong> ${shown.map(escapeHtml).join(", ")}${examples.length > shown.length ? ` and ${examples.length - shown.length} more` : ""}</p>` : ""}
       <fieldset>
-        <legend>Does your manual process produce or release outputs of this type?</legend>
+        <legend>Does your manual process handle output requests of this type?</legend>
         ${radio("yes", "Yes")}
         ${radio("no", "No")}
         ${radio("unsure", "Not sure – flag for review")}

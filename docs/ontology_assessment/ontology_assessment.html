@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACRO ontology alignment self-assessment</title>
+<style>
+  :root { --border: #c8ccd0; --primary: #1f5fa8; --bg: #fff; --fg: #212529; }
+  @media (prefers-color-scheme: dark) {
+    :root { --border: #444; --primary: #6ea8fe; --bg: #16181c; --fg: #e8e8e8; }
+  }
+  body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.5; margin: 0; }
+  main { max-width: 56rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  a { color: var(--primary); }
+  .notice { border-left: 4px solid var(--primary); padding: 0.25rem 1rem; margin: 1rem 0; }
+  #ontology-assessment .assessment-process { border: 1px solid var(--border); border-radius: 0.5rem; margin: 1rem 0; padding: 1rem; }
+  #ontology-assessment label { display: block; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+  #ontology-assessment input, #ontology-assessment select, #ontology-assessment textarea {
+    box-sizing: border-box; max-width: 100%; width: 100%; font: inherit; padding: 0.4rem;
+    background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: 0.25rem;
+  }
+  #ontology-assessment textarea { min-height: 5rem; }
+  #ontology-assessment details { border-left: 3px solid var(--primary); margin: 0.75rem 0; padding: 0.25rem 0.75rem; }
+  #ontology-assessment summary { cursor: pointer; font-weight: 600; }
+  #ontology-assessment .assessment-check { border-top: 1px solid var(--border); margin-top: 0.75rem; padding-top: 0.5rem; }
+  #ontology-assessment .assessment-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1rem 0; }
+  #ontology-assessment button { cursor: pointer; padding: 0.5rem 0.75rem; font: inherit; }
+  #ontology-assessment .process-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+  #ontology-assessment .process-heading h3 { margin: 0; }
+  #ontology-assessment .status { font-weight: 600; flex-basis: 100%; margin: 0; }
+  #ontology-error { color: #b00020; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ontology alignment self-assessment</h1>
+  <p>Compare your manual statistical disclosure control processes with the
+  <a href="https://www.w3id.org/statbarnsdc">StatBarn SDC ontology</a> as captured by the JSON files packaged with ACRO.
+  For each activity, choose the closest analysis term, review its linked StatBarn category, risks and checks, and record how your process addresses each check.
+  Click any term name to see its definition.</p>
+  <div class="notice">
+    <p>This is a guide for human assessment, not a certification or safety decision. Ontology links describe potential relationships and may not cover every local risk or procedure.
+    Everything you enter stays in this browser; nothing is sent to a server. Use the download button to save a JSON copy.</p>
+  </div>
+
+  <section id="ontology-assessment" aria-labelledby="assessment-heading">
+    <h2 id="assessment-heading">Build your assessment</h2>
+    <div id="ontology-loading" role="status">Loading ontology terms…</div>
+    <div id="ontology-error" role="alert" hidden></div>
+    <div id="assessment-content" hidden>
+      <div id="process-list"></div>
+      <div class="assessment-actions">
+        <button id="add-process" type="button">Add manual activity</button>
+        <button id="download-assessment" type="button" disabled>Download assessment JSON</button>
+      </div>
+      <p id="assessment-summary" aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+<script id="ontology-data" type="application/json">{"analyses": {"AdjustedRSquared": {"definition": "A statistical measure that indicates how well a regression model explains the variability of the dependent variable.", "name": "AdjustedRSquared", "prefix_label": "AdjustedRSquared", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#AdjustedRSquared"}, "AlluvialFlow": {"definition": "A type of diagram that visualizes changes in categorical data over time or between stages, showing how groups split, merge, or flow from one category to another.", "name": "AlluvialFlow", "prefix_label": "AlluvialFlow", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#AlluvialFlow"}, "AnalysisOfVariance": {"definition": "Also referred to as ANOVA is a statistical method used to compare the means of three or more groups.", "name": "AnalysisOfVariance", "prefix_label": "AnalysisOfVariance", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#AnalysisOfVariance"}, "Ancova": {"definition": "Combines ANOVA and regression to compare group means while controlling for one or more continuous covariates.", "name": "Ancova", "prefix_label": "Ancova", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#Ancova"}, "BarGraph": {"definition": "A chart that represents categorical data with rectangular bars, where the length of each bar is proportional to the value or frequency of the category.", "name": "BarGraph", "prefix_label": "BarGraph", "statbarn": "LinearAggregations", "uri": "https://www.w3id.org/statbarnsdc#BarGraph"}, "BartlettsTestOfSphericity": {"definition": "A statistical test used to check whether a correlation matrix is an identity matrix.", "name": "BartlettsTestOfSphericity", "prefix_label": "BartlettsTestOfSphericity", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#BartlettsTestOfSphericity"}, "BetaCoefficient": {"definition": "A standardized regression coefficient that indicates the strength and direction of the relationship between a predictor and the outcome.", "name": "BetaCoefficient", "prefix_label": "BetaCoefficient", "statbarn": "LinearAggregations", "uri": "https://www.w3id.org/statbarnsdc#BetaCoefficient"}, "BinaryLogisticRegression": {"definition": "A statistical model used to predict the probability of a binary outcome.", "name": "BinaryLogisticRegression", "prefix_label": "BinaryLogisticRegression", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#BinaryLogisticRegression"}, "BoxPlot": {"definition": "A graphical display that summarizes the distribution of a dataset using its minimum, first quartile, median, third quartile, and maximum, often highlighting outliers.", "name": "BoxPlot", "prefix_label": "BoxPlot", "statbarn": "Position", "uri": "https://www.w3id.org/statbarnsdc#BoxPlot"}, "BoxsTestOfEqualityOfCovarianceMatrices": {"definition": "Statistical test used to assess whether the covariance matrices of multiple groups are equal.", "name": "BoxsTestOfEqualityOfCovarianceMatrices", "prefix_label": "BoxsTestOfEqualityOfCovarianceMatrices", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#BoxsTestOfEqualityOfCovarianceMatrices"}, "CanonicalCorrelation": {"definition": "Measures the relationship between two sets of variables.", "name": "CanonicalCorrelation", "prefix_label": "CanonicalCorrelation", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#CanonicalCorrelation"}, "ChiSquaredTest": {"definition": "Statistical test used to determine whether there is a significant association between categorical variables.", "name": "ChiSquaredTest", "prefix_label": "ChiSquaredTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#ChiSquaredTest"}, "CochransQTest": {"definition": "Statistical test used to determine whether there are differences in proportions across three or more related groups for binary outcomes.", "name": "CochransQTest", "prefix_label": "CochransQTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#CochransQTest"}, "CoefficientOfDetermination": {"definition": "Statistical measure that indicates the proportion of variance in the dependent variable explained by the independent variable(s) in a regression model.", "name": "CoefficientOfDetermination", "prefix_label": "CoefficientOfDetermination", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#CoefficientOfDetermination"}, "CohensD": {"definition": "Measure of effect size that quantifies the difference between two group means in terms of standard deviation units.", "name": "CohensD", "prefix_label": "CohensD", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#CohensD"}, "CohensKappaCoefficient": {"definition": "Measures the level of agreement between two raters or observers for categorical data, adjusting for agreement occurring by chance.", "name": "CohensKappaCoefficient", "prefix_label": "CohensKappaCoefficient", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#CohensKappaCoefficient"}, "ConfidenceIntervals": {"definition": "Range of values, derived from sample data, that likely contain the true population parameter with a specified level of confidence.", "name": "ConfidenceIntervals", "prefix_label": "ConfidenceIntervals", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#ConfidenceIntervals"}, "ContrastCoefficients": {"definition": "Numerical weights assigned to group means in ANOVA or regression.", "name": "ContrastCoefficients", "prefix_label": "ContrastCoefficients", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#ContrastCoefficients"}, "Covariates": {"definition": "Continuous or categorical variables that are included in a statistical model to account for or control their effect on the outcome variable.", "name": "Covariates", "prefix_label": "Covariates", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#Covariates"}, "CoxSnellRSquared": {"definition": "Measure of goodness-of-fit for logistic regression models.", "name": "CoxSnellRSquared", "prefix_label": "CoxSnellRSquared", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#CoxSnellRSquared"}, "CramersV": {"definition": "Measure of association between two categorical variables.", "name": "CramersV", "prefix_label": "CramersV", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#CramersV"}, "Crosstabs": {"definition": "A tabular method for displaying the frequency distribution of two or more categorical variables.", "name": "Crosstabs", "prefix_label": "Crosstabs", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#Crosstabs"}, "DiscriminantFunctionAnalysis": {"definition": "Statistical technique used to classify observations into predefined groups and determine which variables best separate those groups.", "name": "DiscriminantFunctionAnalysis", "prefix_label": "DiscriminantFunctionAnalysis", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#DiscriminantFunctionAnalysis"}, "DiscriminantValidity": {"definition": "Extent to which a construct or measurement is truly distinct from other constructs, showing it measures what it is intended to and not something else.", "name": "DiscriminantValidity", "prefix_label": "DiscriminantValidity", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#DiscriminantValidity"}, "EigenvaluesScreePlots": {"definition": "Eigenvalues measure the amount of variance explained by each factor, and a scree plot visualizes these values to help decide how many factors to retain.", "name": "EigenvaluesScreePlots", "prefix_label": "EigenvaluesScreePlots", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#EigenvaluesScreePlots"}, "EtaSquared": {"definition": "Measure of effect size that indicates the proportion of total variance in a dependent variable explained by an independent variable in ANOVA or similar analyses.", "name": "EtaSquared", "prefix_label": "EtaSquared", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#EtaSquared"}, "FactorAnalysis": {"definition": "A statistical method used to identify underlying latent factors that explain the patterns of correlations among observed variables.", "name": "FactorAnalysis", "prefix_label": "FactorAnalysis", "statbarn": "CalculatedRatios", "uri": "https://www.w3id.org/statbarnsdc#FactorAnalysis"}, "FrequencyTable": {"definition": "This class covers frequencies, i.e, counts of things, either in tables (most common), in certain graphs such as histograms or bar charts, or single as in a description of the number of survey participants. This also includes frequencies expressed as a proportion of some total.", "name": "FrequencyTable", "prefix_label": "FrequencyTable", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#FrequencyTable"}, "FriedmanTest": {"definition": "Non-parametric statistical test used to detect differences in treatments across multiple related groups.", "name": "FriedmanTest", "prefix_label": "FriedmanTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#FriedmanTest"}, "GeneralLinearModel": {"definition": "Models a continuous outcome as a linear combination of predictor variables.", "name": "GeneralLinearModel", "prefix_label": "GeneralLinearModel", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#GeneralLinearModel"}, "GiniCurves": {"definition": "A graphical representation showing the cumulative proportion of the population against the cumulative proportion of the resource.", "name": "GiniCurves", "prefix_label": "GiniCurves", "statbarn": "GiniCoefficient", "uri": "https://www.w3id.org/statbarnsdc#GiniCurves"}, "HazardRatio": {"definition": "A measure used in survival analysis that compares the hazard (event rate) between two groups over time.", "name": "HazardRatio", "prefix_label": "HazardRatio", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#HazardRatio"}, "HazardTables": {"definition": "Tables that summarize the hazard (event) rates over time.", "name": "HazardTables", "prefix_label": "HazardTables", "statbarn": "HazardSurvivalTables", "uri": "https://www.w3id.org/statbarnsdc#HazardTables"}, "Heatmap": {"definition": "A graphical representation of data where values are displayed as colors in a matrix or grid.", "name": "Heatmap", "prefix_label": "Heatmap", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#Heatmap"}, "HerfindahlHirschmanIndex": {"definition": "A measure of concentration calculated by summing the squares of the shares of all elements.", "name": "HerfindahlHirschmanIndex", "prefix_label": "HerfindahlHirschmanIndex", "statbarn": "NonLinearConcentrationRatios", "uri": "https://www.w3id.org/statbarnsdc#HerfindahlHirschmanIndex"}, "Histogram": {"definition": "A graphical representation of a dataset that displays the frequency of values within consecutive intervals.", "name": "Histogram", "prefix_label": "Histogram", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#Histogram"}, "HomogeneityOfRegression": {"definition": "An assumption in ANCOVA stating that the relationship (slope) between the covariate and the dependent variable is the same across all groups.", "name": "HomogeneityOfRegression", "prefix_label": "HomogeneityOfRegression", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#HomogeneityOfRegression"}, "HomogeneityOfVariance": {"definition": "An assumption in statistical tests (like ANOVA) that the variances of the dependent variable are equal across all groups or samples being compared.", "name": "HomogeneityOfVariance", "prefix_label": "HomogeneityOfVariance", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#HomogeneityOfVariance"}, "HomogeneityOfVarianceCovarianceMatrices": {"definition": "An assumption in multivariate analyses (like MANOVA) that the variance and covariance structure of the dependent variables is equal across all groups.", "name": "HomogeneityOfVarianceCovarianceMatrices", "prefix_label": "HomogeneityOfVarianceCovarianceMatrices", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#HomogeneityOfVarianceCovarianceMatrices"}, "HosmerLemeshowTest": {"definition": "Statistical test used in logistic regression to assess the goodness-of-fit of the model by comparing observed and predicted event probabilities across subgroups.", "name": "HosmerLemeshowTest", "prefix_label": "HosmerLemeshowTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#HosmerLemeshowTest"}, "IndependentTtests": {"definition": "Statistical test used to compare the means of two independent groups to determine if there is a significant difference between them.", "name": "IndependentTtests", "prefix_label": "IndependentTtests", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#IndependentTtests"}, "InterquartileRange": {"definition": "The range between the first quartile and third quartile of a dataset.", "name": "InterquartileRange", "prefix_label": "InterquartileRange", "statbarn": "Position", "uri": "https://www.w3id.org/statbarnsdc#InterquartileRange"}, "KaiserMeyerOlkinTest": {"definition": "A measure of sampling adequacy for factor analysis, indicating whether the data are suitable for detecting underlying factors.", "name": "KaiserMeyerOlkinTest", "prefix_label": "KaiserMeyerOlkinTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#KaiserMeyerOlkinTest"}, "KaplanMeier": {"definition": "A statistical method used in survival analysis to estimate the probability of survival over time.", "name": "KaplanMeier", "prefix_label": "KaplanMeier", "statbarn": "HazardSurvivalTables", "uri": "https://www.w3id.org/statbarnsdc#KaplanMeier"}, "KappaMeasureOfAgreement": {"definition": "A statistic that quantifies the agreement between two raters or observers for categorical data, adjusting for chance agreement.", "name": "KappaMeasureOfAgreement", "prefix_label": "KappaMeasureOfAgreement", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#KappaMeasureOfAgreement"}, "KendallsRank": {"definition": "A measure of strength and direction of association between two ranked variables.", "name": "KendallsRank", "prefix_label": "KendallsRank", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#KendallsRank"}, "KernelEstimates": {"definition": "Estimate the probability density function or distribution.", "name": "KernelEstimates", "prefix_label": "KernelEstimates", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#KernelEstimates"}, "Kolmogorov-SmirnovTest": {"definition": "A statistical test used to compare a sample distribution with a reference probability distribution or to compare two sample distributions, assessing whether they differ significantly.", "name": "Kolmogorov-SmirnovTest", "prefix_label": "Kolmogorov-SmirnovTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#Kolmogorov-SmirnovTest"}, "Kruskal-WallisTest": {"definition": "A non-parametric statistical test used to compare the medians of three or more independent groups to determine if they come from the same distribution.", "name": "Kruskal-WallisTest", "prefix_label": "Kruskal-WallisTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#Kruskal-WallisTest"}, "Kurtosis": {"definition": "A statistical measure that describes the “tailedness” or peakedness of a data distribution.", "name": "Kurtosis", "prefix_label": "Kurtosis", "statbarn": "Shape", "uri": "https://www.w3id.org/statbarnsdc#Kurtosis"}, "Lambda": {"definition": "A measure of association for categorical variables, indicating the proportional reduction in error when predicting the dependent variable using the independent variable.", "name": "Lambda", "prefix_label": "Lambda", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#Lambda"}, "LevenesTest": {"definition": "A statistical test used to assess the equality of variances (homogeneity of variance) across two or more groups.", "name": "LevenesTest", "prefix_label": "LevenesTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#LevenesTest"}, "LineGraph": {"definition": "A chart that connects data points with lines to show trends, patterns, or changes of a variable over a continuous scale.", "name": "LineGraph", "prefix_label": "LineGraph", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#LineGraph"}, "LinearRegressionCoefficients": {"definition": "Numerical values in a linear regression model that quantify the effect of each predictor variable on the outcome.", "name": "LinearRegressionCoefficients", "prefix_label": "LinearRegressionCoefficients", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#LinearRegressionCoefficients"}, "LogLinearForHigherOrderTables": {"definition": "A statistical model used to analyze the relationships among three or more categorical variables.", "name": "LogLinearForHigherOrderTables", "prefix_label": "LogLinearForHigherOrderTables", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#LogLinearForHigherOrderTables"}, "LogisticRegression": {"definition": "A statistical model used to predict the probability of a binary or categorical outcome.", "name": "LogisticRegression", "prefix_label": "LogisticRegression", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#LogisticRegression"}, "Logit": {"definition": "Used as the link function in logistic regression.", "name": "Logit", "prefix_label": "Logit", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#Logit"}, "LongitudinalEstimation": {"definition": "A statistical method used to analyze data collected from the same subjects over time", "name": "LongitudinalEstimation", "prefix_label": "LongitudinalEstimation", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#LongitudinalEstimation"}, "MahalanobisDistance": {"definition": "A measure of the distance between a point and a distribution.", "name": "MahalanobisDistance", "prefix_label": "MahalanobisDistance", "statbarn": "Shape", "uri": "https://www.w3id.org/statbarnsdc#MahalanobisDistance"}, "Mancova": {"definition": "A statistical technique that extends MANOVA by including covariates.", "name": "Mancova", "prefix_label": "Mancova", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#Mancova"}, "MannWhitneyUTest": {"definition": "A non-parametric test used to compare differences between two independent groups on an ordinal or continuous outcome when the data do not assume a normal distribution.", "name": "MannWhitneyUTest", "prefix_label": "MannWhitneyUTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#MannWhitneyUTest"}, "MauchlySphericityTest": {"definition": "A statistical test used in repeated-measures ANOVA to assess whether the variances of the differences between all combinations of related groups are equal.", "name": "MauchlySphericityTest", "prefix_label": "MauchlySphericityTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#MauchlySphericityTest"}, "Maximum": {"definition": "The highest observed or recorded values of outcome.", "name": "Maximum", "prefix_label": "Maximum", "statbarn": "Endpoints", "uri": "https://www.w3id.org/statbarnsdc#Maximum"}, "McNemarsTest": {"definition": "A statistical test used to analyze paired nominal data, typically to determine whether there is a significant change or difference in proportions for two related groups.", "name": "McNemarsTest", "prefix_label": "McNemarsTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#McNemarsTest"}, "Mean": {"definition": "The arithmetic average of a set of values, calculated by summing all values and dividing by their count.", "name": "Mean", "prefix_label": "Mean", "statbarn": "LinearAggregations", "uri": "https://www.w3id.org/statbarnsdc#Mean"}, "MeanPlots": {"definition": "Graphs that display the average values of a variable for different groups or conditions.", "name": "MeanPlots", "prefix_label": "MeanPlots", "statbarn": "LinearAggregations", "uri": "https://www.w3id.org/statbarnsdc#MeanPlots"}, "Median": {"definition": "The middle value of a dataset when the values are arranged in order, dividing the data into two equal halves.", "name": "Median", "prefix_label": "Median", "statbarn": "Position", "uri": "https://www.w3id.org/statbarnsdc#Median"}, "Minimum": {"definition": "The lowest observed or recorded values of outcome.", "name": "Minimum", "prefix_label": "Minimum", "statbarn": "Endpoints", "uri": "https://www.w3id.org/statbarnsdc#Minimum"}, "ModeCalculation": {"definition": "The most frequent recorded values of outcome.", "name": "ModeCalculation", "prefix_label": "ModeCalculation", "statbarn": "Mode", "uri": "https://www.w3id.org/statbarnsdc#Mode"}, "MultinomialLogit": {"definition": "A statistical model used to predict outcomes where the dependent variable has more than two discrete categories.", "name": "MultinomialLogit", "prefix_label": "MultinomialLogit", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#MultinomialLogit"}, "MultipleRegression": {"definition": "A statistical method that models the relationship between one continuous dependent variable and two or more independent variables.", "name": "MultipleRegression", "prefix_label": "MultipleRegression", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#MultipleRegression"}, "MultivariateAnalysisOfVariance": {"definition": "Also referred to as MANOVA, is a statistical technique that tests for differences across groups on two or more dependent variables simultaneously.", "name": "MultivariateAnalysisOfVariance", "prefix_label": "MultivariateAnalysisOfVariance", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#MultivariateAnalysisOfVariance"}, "NagelkerkeRSquared": {"definition": "A pseudo R-squared measure for logistic regression.", "name": "NagelkerkeRSquared", "prefix_label": "NagelkerkeRSquared", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#NagelkerkeRSquared"}, "OddRatios": {"definition": "A measure of association that quantifies how the odds of an event occurring change with exposure to a predictor.", "name": "OddRatios", "prefix_label": "OddRatios", "statbarn": "CalculatedRatios", "uri": "https://www.w3id.org/statbarnsdc#OddRatios"}, "OmnibusTestsOfModelCoefficients": {"definition": "Statistical tests that assess whether a set of predictors, taken together, significantly improves the fit of a model compared to a null model with no predictors.", "name": "OmnibusTestsOfModelCoefficients", "prefix_label": "OmnibusTestsOfModelCoefficients", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#OmnibusTestsOfModelCoefficients"}, "PairedTtests": {"definition": "Statistical test used to compare the means of two related or matched groups to determine if there is a significant difference between them.", "name": "PairedTtests", "prefix_label": "PairedTtests", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#PairedTtests"}, "PanelDataModels": {"definition": "Statistical models designed to analyze data that follow the same units over time for both cross-sectional and time-series variation.", "name": "PanelDataModels", "prefix_label": "PanelDataModels", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#PanelDataModels"}, "ParallelAnalysis": {"definition": "A technique in factor analysis or principal component analysis used to determine the number of factors or components to retain by comparing the observed eigenvalues with those obtained from randomly generated data.", "name": "ParallelAnalysis", "prefix_label": "ParallelAnalysis", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#ParallelAnalysis"}, "PartialCorrelationCoefficients": {"definition": "Measures the relationship between two variables while controlling the effect of one or more additional variables.", "name": "PartialCorrelationCoefficients", "prefix_label": "PartialCorrelationCoefficients", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#PartialCorrelationCoefficients"}, "PartialEtaSquared": {"definition": "A measure of effect size in ANOVA that indicates the proportion of variance in the dependent variable explained by an independent variable, after controlling for other variables.", "name": "PartialEtaSquared", "prefix_label": "PartialEtaSquared", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#PartialEtaSquared"}, "PearsonsProductMomentCorrelationCoefficient": {"definition": "Statistic that measures the strength and direction of the linear relationship between two continuous variables.", "name": "PearsonsProductMomentCorrelationCoefficient", "prefix_label": "PearsonsProductMomentCorrelationCoefficient", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#PearsonsProductMomentCorrelationCoefficient"}, "PearsonsR": {"definition": "A statistic that quantifies the strength and direction of the linear relationship between two continuous variables.", "name": "PearsonsR", "prefix_label": "PearsonsR", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#PearsonsR"}, "PhiCoefficient": {"definition": "A measure of association between two binary variables.", "name": "PhiCoefficient", "prefix_label": "PhiCoefficient", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#PhiCoefficient"}, "PieChart": {"definition": "A circular chart that represents proportions of a whole by dividing the circle into slices corresponding to the relative sizes of categories.", "name": "PieChart", "prefix_label": "PieChart", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#PieChart"}, "PrevalenceRatio": {"definition": "A measure that compares the proportion of individuals with a condition in an exposed group to that in an unexposed group.", "name": "PrevalenceRatio", "prefix_label": "PrevalenceRatio", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#PrevalenceRatio"}, "PrincipalComponentAnalysis": {"definition": "A dimensionality reduction technique that transforms correlated variables into a smaller set of uncorrelated components while retaining most of the original variance.", "name": "PrincipalComponentAnalysis", "prefix_label": "PrincipalComponentAnalysis", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#PrincipalComponentAnalysis"}, "Probit": {"definition": "A regression model used to predict the probability of a binary outcome by applying the inverse standard normal cumulative distribution function.", "name": "Probit", "prefix_label": "Probit", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#Probit"}, "proportionalHazardsRegression": {"definition": "A regression model used in survival analysis to examine the relationship between survival time and one or more predictor variables", "name": "proportionalHazardsRegression", "prefix_label": "proportionalHazardsRegression", "statbarn": "CorrelationCoefficients", "uri": ""}, "PseudoRSquared": {"definition": "Measure used in models like logistic regression to indicate the proportion of variation in the dependent variable explained by the model.", "name": "PseudoRSquared", "prefix_label": "PseudoRSquared", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#PseudoRSquared"}, "Quartiles": {"definition": "Values that divide a dataset into four equal parts.", "name": "Quartiles", "prefix_label": "Quartiles", "statbarn": "Position", "uri": "https://www.w3id.org/statbarnsdc#Quartiles"}, "RSquared": {"definition": "Statistical measure that indicates the proportion of variance in the dependent variable explained by the independent variable(s) in a regression model.", "name": "RSquared", "prefix_label": "RSquared", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#RSquared"}, "Range": {"definition": "The difference between the maximum and minimum values of a dataset, summarising the dispersion of the data.", "name": "Range", "prefix_label": "Range", "statbarn": "Endpoints", "uri": "https://www.w3id.org/statbarnsdc#Range"}, "RiskRatios": {"definition": "A measure that compares the probability of an event occurring in an exposed group to the probability in an unexposed group.", "name": "RiskRatios", "prefix_label": "RiskRatios", "statbarn": "CalculatedRatios", "uri": "https://www.w3id.org/statbarnsdc#RiskRatios"}, "ScatterGraph": {"definition": "Also referred to as scatter plot, a chart that displays individual data points on a two-dimensional plane, showing the relationship or correlation between two continuous variables.", "name": "ScatterGraph", "prefix_label": "ScatterGraph", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#ScatterGraph"}, "SimpleConcentrationRatio": {"definition": "A measure that quantifies the dominance or contribution of the largest values or components in a dataset.", "name": "SimpleConcentrationRatio", "prefix_label": "SimpleConcentrationRatio", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#SimpleConcentrationRatio"}, "Skewness": {"definition": "A statistical measure that describes the asymmetry of a data distribution around its mean.", "name": "Skewness", "prefix_label": "Skewness", "statbarn": "Shape", "uri": "https://www.w3id.org/statbarnsdc#Skewness"}, "SmoothedHistogram": {"definition": "A visualization of a dataset’s distribution where raw histogram counts are smoothed to show a continuous approximation of the underlying probability density.", "name": "SmoothedHistogram", "prefix_label": "SmoothedHistogram", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#SmoothedHistogram"}, "SpearmansRankCorrelationCoefficient": {"definition": "Non-parametric measure that assesses the strength and direction of the monotonic relationship between two ranked or ordinal variables.", "name": "SpearmansRankCorrelationCoefficient", "prefix_label": "SpearmansRankCorrelationCoefficient", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#SpearmansRankCorrelationCoefficient"}, "StandardDeviation": {"definition": "A measure of how spread out or dispersed the values in a dataset are from the mean.", "name": "StandardDeviation", "prefix_label": "StandardDeviation", "statbarn": "Shape", "uri": "https://www.w3id.org/statbarnsdc#StandardDeviation"}, "StandardisedRegressionCoefficients": {"definition": "Regression coefficients that have been rescaled to have unit variance, allowing the comparison of the relative strength of different predictors in a regression model.", "name": "StandardisedRegressionCoefficients", "prefix_label": "StandardisedRegressionCoefficients", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#StandardisedRegressionCoefficients"}, "StructuralEquationModelling": {"definition": "A multivariate statistical technique that analyzes complex relationships among observed and latent variables, combining factor analysis and multiple regression into a single model.", "name": "StructuralEquationModelling", "prefix_label": "StructuralEquationModelling", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#StructuralEquationModelling"}, "Sum": {"definition": "The total obtained by adding together all the values.", "name": "Sum", "prefix_label": "Sum", "statbarn": "LinearAggregations", "uri": "https://www.w3id.org/statbarnsdc#Sum"}, "SurvivalTables": {"definition": "Tables that show the probability of survival at different time intervals", "name": "SurvivalTables", "prefix_label": "SurvivalTables", "statbarn": "HazardSurvivalTables", "uri": "https://www.w3id.org/statbarnsdc#SurvivalTables"}, "ThreeStageLeastSquares": {"definition": "An econometric method that estimates systems of simultaneous equations by combining Two-Stage Least Squares (2SLS) with seemingly unrelated regression.", "name": "ThreeStageLeastSquares", "prefix_label": "ThreeStageLeastSquares", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#ThreeStageLeastSquares"}, "TrimmedMean": {"definition": "A measure of central tendency calculated by removing a specified percentage of the smallest and largest values from a dataset and then computing the mean of the remaining values.", "name": "TrimmedMean", "prefix_label": "TrimmedMean", "statbarn": "LinearAggregations", "uri": "https://www.w3id.org/statbarnsdc#TrimmedMean"}, "TukeysHonestySignificantDifferenceTest": {"definition": "A post-hoc analysis used after ANOVA to compare all possible pairs of group means and determine which differences are statistically significant.", "name": "TukeysHonestySignificantDifferenceTest", "prefix_label": "TukeysHonestySignificantDifferenceTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#TukeysHonestySignificantDifferenceTest"}, "TwoStageLeastSquares": {"definition": "An econometric method used to estimate parameters in simultaneous equations models.", "name": "TwoStageLeastSquares", "prefix_label": "TwoStageLeastSquares", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#TwoStageLeastSquares"}, "TwoWayAnalysisOfVariance": {"definition": "Two-Way ANOVA is a statistical technique that examines the effect of two independent factors on a continuous dependent variable.", "name": "TwoWayAnalysisOfVariance", "prefix_label": "TwoWayAnalysisOfVariance", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#TwoWayAnalysisOfVariance"}, "VarianceCovarianceMatrix": {"definition": "A square matrix that displays the variances of variables along the diagonal and the covariances between variables in the off-diagonal elements.", "name": "VarianceCovarianceMatrix", "prefix_label": "VarianceCovarianceMatrix", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#VarianceCovarianceMatrix"}, "WaterfallChart": {"definition": "A type of chart that visualizes how an initial value is affected by sequential positive and negative changes.", "name": "WaterfallChart", "prefix_label": "WaterfallChart", "statbarn": "Frequencies", "uri": "https://www.w3id.org/statbarnsdc#WaterfallChart"}, "WilcoxonSignedRankTest": {"definition": "A non-parametric test used to compare two related or paired samples to assess whether their population mean ranks differ, often as an alternative to the paired t-test when data are not normally distributed.", "name": "WilcoxonSignedRankTest", "prefix_label": "WilcoxonSignedRankTest", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#WilcoxonSignedRankTest"}, "WilksLambda": {"definition": "A statistic used in multivariate analysis (like MANOVA) to test whether group means on a combination of dependent variables are equal, with smaller values indicating greater differences between groups.", "name": "WilksLambda", "prefix_label": "WilksLambda", "statbarn": "StatisticalHypothesisTests", "uri": "https://www.w3id.org/statbarnsdc#WilksLambda"}, "ZeroOrderCorrelation": {"definition": "A simple bivariate correlation between two variables", "name": "ZeroOrderCorrelation", "prefix_label": "ZeroOrderCorrelation", "statbarn": "CorrelationCoefficients", "uri": "https://www.w3id.org/statbarnsdc#ZeroOrderCorrelation"}}, "statbarns": {"CalculatedRatios": {"definition": "Calculated ratios refer to measures investigating relationship, comparison or relative magnitude between variables. These can includes odds ratios, risk ratios, or hazard ratios.", "prefix_label": "CalculatedRatios", "risks": ["AuxiliaryInformation", "Dominance"], "uri": "https://www.w3id.org/statbarnsdc#CalculatedRatios"}, "Clusters": {"definition": "Statbarn classification that covers output of cluster analysis. Cluster analysis is a statistical technique used to classify or group similar objects or individuals based on their characteristics or attributes. It aims to identify patterns, similarities, or relationships within a dataset by grouping data points into clusters.", "prefix_label": "Clusters", "risks": [], "uri": "https://www.w3id.org/statbarnsdc#Clusters"}, "CorrelationCoefficients": {"definition": "Correlation coefficients are statistical measures that quantify the relationship between two or more variables. This includes measures such as regression estimates, as well as single statistics such as Pearson's r, Spearmans's rank correlation coefficient (ρ) and Kendall's rank correlation coefficient (τ).", "prefix_label": "CorrelationCoefficients", "risks": ["LowDOF"], "uri": "https://www.w3id.org/statbarnsdc#CorrelationCoefficients"}, "Endpoints": {"definition": "Minimum and maximum values for a variable.", "prefix_label": "Endpoints", "risks": ["ClassDisclosure", "LowCount"], "uri": "https://www.w3id.org/statbarnsdc#Endpoints"}, "Frequencies": {"definition": "This class covers frequencies ie counts of things, either in tables (most common), in certain graphs such as histograms or bar charts, or single as in a description of the number of survey participants. This also includes frequencies expressed as a proportion of some total.", "prefix_label": "Frequencies", "risks": ["ClassDisclosure", "Differencing", "LowCount"], "uri": "https://www.w3id.org/statbarnsdc#Frequencies"}, "GiniCoefficient": {"definition": "The Gini coefficient is used to summarise inequality within a population. The Lorenz curve is its graphical counterpart.", "prefix_label": "GiniCoefficient", "risks": ["LowCount"], "uri": "https://www.w3id.org/statbarnsdc#GiniCoefficient"}, "HazardSurvivalTables": {"definition": "These are tables used to analyse and model survival or failure times in event-based data and business data. Commonly seen in epidemiology, actuarial science and clinical research among others. These can also underpin visualisations such as Kaplen-Meier.", "prefix_label": "HazardSurvivalTables", "risks": ["ImplicitTables", "LowDOF"], "uri": "https://www.w3id.org/statbarnsdc#HazardSurvivalTables"}, "LinearAggregations": {"definition": "This class covers sums, means, ratios etc.  These are stats that provide a snapshot of the data's characteristics that don't relate to any one data point and instead are calculated with many or all of the points in a data set. This class also includes linear concentration ratios (eg share of the top N observations).", "prefix_label": "LinearAggregations", "risks": ["Dominance", "Differencing", "LowCount"], "uri": "https://www.w3id.org/statbarnsdc#LinearAggregations"}, "LinkedMultilevelTables": {"definition": "Multilevel and linked tables are used to summarize and analyze the relationship between multiple categorical variables. These often analyse nested categorical data in formats such as two or three way contingency tables or hierarchical contingency tables.", "prefix_label": "LinkedMultilevelTables", "risks": [], "uri": "https://www.w3id.org/statbarnsdc#LinkedMultilevelTables"}, "Mode": {"definition": "The value or values that occur most frequently in a dataset. It represents the peak or highest point on a distribution's histogram.", "prefix_label": "Mode", "risks": ["Differencing", "ClassDisclosure"], "uri": "https://www.w3id.org/statbarnsdc#Mode"}, "NonLinearConcentrationRatios": {"definition": "Non-linear concentration ratios are statistical measures used to assess degree of concentration or dispersion. The most common of these are the Herfindahl–Hirschman index.", "prefix_label": "NonLinearConcentrationRatios", "risks": ["LowCount", "Dominance"], "uri": "https://www.w3id.org/statbarnsdc#NonLinearConcentrationRatios"}, "Position": {"definition": "Position refers to a statistic that provides information on a central or typical value in a dataset. These include data points such as median, percentiles, or inter-quartile range.", "prefix_label": "Position", "risks": ["ClassDisclosure", "LowCount"], "uri": "https://www.w3id.org/statbarnsdc#Position"}, "Shape": {"definition": "Shape outputs refer to measures that describe or show the characteristics of data distributions. They provide information on elements such as symmetry, peaks and tail behaviour. These comprise standard deviation, skewness, and kurtosis.", "prefix_label": "Shape", "risks": ["LowDOF"], "uri": "https://www.w3id.org/statbarnsdc#Shape"}, "StatisticalHypothesisTests": {"definition": "Statistical tests are used to make inferences and observe differences in data. These involve a wide range of tests including t-tests, p-values, F-tests, or confidence intervals.", "prefix_label": "StatisticalHypothesisTests", "risks": ["LowDOF"], "uri": "https://www.w3id.org/statbarnsdc#StatisticalHypothesisTests"}}, "risks": {"AuxiliaryInformation": {"checks": ["StatbarnDataCheck"], "definition": "The risk that external data, when combined with published statistical outputs, will allow inferences or identification of individuals, increasing disclosure risk beyond what the output alone suggests.", "mitigations": [], "prefix_label": "AuxiliaryInformation", "uri": "https://www.w3id.org/statbarnsdc#AuxiliaryInformation"}, "ClassDisclosure": {"checks": ["RequiredZeroCheck", "PresenceOfZeroCheck"], "definition": "The risk that released statistical outputs allow an attacker to infer details about an individual, as a result of their membership of a sensitive category or class who all share the same values  for some variables.", "mitigations": ["Noise", "Suppression"], "prefix_label": "ClassDisclosure", "uri": "https://www.w3id.org/statbarnsdc#ClassDisclosure"}, "Differencing": {"checks": ["PresenceOfLinkedTableCheck"], "definition": "A risk that combining multiple outputs allows to deduce sensitive information about individuals by analyzing changes or differences between them.", "mitigations": ["Noise", "Suppression"], "prefix_label": "Differencing", "uri": "https://www.w3id.org/statbarnsdc#Differencing"}, "Dominance": {"checks": ["NKCheck", "PPercentCheck"], "definition": "The risk that a small number of individuals contribute a disproportionately large share of a cells value, making it easier to identify or infer their data.", "mitigations": ["Noise", "OutlierRemoval", "Rounding", "Suppression"], "prefix_label": "Dominance", "uri": "https://www.w3id.org/statbarnsdc#Dominance"}, "ImplicitTables": {"checks": ["StatbarnDataCheck"], "definition": "A risk of tables or outputs that allow sensitive information to be inferred indirectly through calculations or combinations of published data.", "mitigations": [], "prefix_label": "ImplicitTables", "uri": "https://www.w3id.org/statbarnsdc#ImplicitTables"}, "LowCount": {"checks": ["MinimumThresholdCheck"], "definition": "The disclosure risk that arises when cells in a table have very few observations, making it easier to identify or infer information about the individuals contributing to those cells.", "mitigations": ["Noise", "Rounding", "Suppression"], "prefix_label": "LowCount", "uri": "https://www.w3id.org/statbarnsdc#LowCount"}, "LowDOF": {"checks": ["MinimumDoFCheck"], "definition": "The risk that statistical outputs are based on very few independent pieces of information make it easier to deduce individual data or sensitive values.", "mitigations": ["Aggregation", "Noise", "OutlierRemoval", "Suppression"], "prefix_label": "LowDOF", "uri": "https://www.w3id.org/statbarnsdc#LowDOF"}}, "checks": {"MinimumDoFCheck": {"definition": "Minimum degrees of freedom check is a method used to ensure that there are sufficient residual degrees of freedom to stop the model being effectively a lookup table", "prefix_label": "MinimumDoFCheck", "uri": "https://www.w3id.org/statbarnsdc#MinimumDoFCheck", "evidence": ["DoF"]}, "MinimumThresholdCheck": {"evidence": ["count_table"], "prefix_label": "MinimumThresholdCheck", "uri": "https://www.w3id.org/statbarnsdc#MinimumThresholdCheck", "definition": "Minimum threshold check is a method used to ensure that the number of record in each group is above the threshold set by the TRE."}, "NKCheck": {"definition": "NK is a checks for dominance that measures whether the top N biggest records in a group account for more than k% of the group total", "evidence": ["top_n_sum", "sum", "num_negative"], "prefix_label": "NKCheck", "uri": "https://www.w3id.org/statbarnsdc#NKCheck"}, "PPercentCheck": {"definition": "P% is a checks for dominance that measures whether the biggest record in a group accounts for more than p% of the group total", "prefix_label": "PPercentCheck", "uri": "https://www.w3id.org/statbarnsdc#PPercentCheck", "evidence": ["max", "top_2_sum", "sum", "num_negative"]}, "PresenceOfLinkedTableCheck": {"evidence": ["dimension_list", "depvars"], "prefix_label": "PresenceOfLinkedTableCheck", "uri": "https://www.w3id.org/statbarnsdc#PresenceOfLinkedTableCheck", "definition": "Presence of linked table check is a method used to check for the presence of linked tables, which can be used to identify individuals when combined with other data."}, "RequiredZeroCheck": {"evidence": ["zeros_are_disclosive"], "prefix_label": "RequiredZeroCheck", "uri": "https://www.w3id.org/statbarnsdc#RequiredZeroCheck", "definition": "Required Zero checks says whether the TRE requires checking for zeros - i.e. wheyther class idsclsoure is a potnetial risk or not"}, "PresenceOfZeroCheck": {"evidence": ["count_table"], "prefix_label": "PresenceOfZeroCheck", "uri": "https://www.w3id.org/statbarnsdc#PresenceOfZeroCheck", "definition": "Presence of zero check is a method used to check for the presence of zeros in the data."}, "StatbarnDataCheck": {"definition": "Statbarn data check is a method used to check for the presence of statbarn data, which can be used to identify individuals when combined with other data.", "evidence": ["dimension_list"], "prefix_label": "StatbarnDataCheck", "uri": "https://www.w3id.org/statbarnsdc#StatbarnDataCheck"}}}</script>
+<script>
+(() => {
+  "use strict";
+
+  const root = document.getElementById("ontology-assessment");
+  if (!root) return;
+
+  const loading = document.getElementById("ontology-loading");
+  const error = document.getElementById("ontology-error");
+  const content = document.getElementById("assessment-content");
+  const processList = document.getElementById("process-list");
+  const addButton = document.getElementById("add-process");
+  const downloadButton = document.getElementById("download-assessment");
+  const summary = document.getElementById("assessment-summary");
+  const data = {};
+  const processes = [];
+  let nextId = 1;
+
+  const escapeHtml = (value) =>
+    String(value ?? "").replace(/[&<>"']/g, (character) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    })[character]);
+
+  const termDetails = (name, entry) => `
+    <details>
+      <summary>${escapeHtml(name)}</summary>
+      <p>${escapeHtml(entry.definition || "No definition is available.")}</p>
+      ${entry.uri ? `<a href="${escapeHtml(entry.uri)}" target="_blank" rel="noopener noreferrer">Ontology source</a>` : ""}
+    </details>
+  `;
+
+  const getRelatedChecks = (statbarn) => {
+    const risks = (statbarn.risks || []).map((name) => ({
+      name,
+      entry: data.risks[name],
+    })).filter(({ entry }) => entry);
+    return risks.map(({ name, entry }) => ({
+      name,
+      entry,
+      checks: (entry.checks || []).map((checkName) => ({
+        name: checkName,
+        entry: data.checks[checkName],
+      })).filter(({ entry: check }) => check),
+    }));
+  };
+
+  const checkId = (riskName, checkName) => `${riskName}::${checkName}`;
+
+  const renderCheck = (process, riskName, checkName, check) => {
+    const id = checkId(riskName, checkName);
+    const saved = process.checks[id] || { status: "", note: "" };
+    const evidence = check.evidence?.length
+      ? `<p><strong>Evidence:</strong> ${escapeHtml(check.evidence.join(", "))}</p>`
+      : "";
+    return `
+      <div class="assessment-check">
+        ${termDetails(checkName, check)}
+        ${evidence}
+        <label for="status-${process.id}-${escapeHtml(id)}">How does your process address this check?</label>
+        <select id="status-${process.id}-${escapeHtml(id)}" data-check-id="${escapeHtml(id)}">
+          <option value="" ${saved.status === "" ? "selected" : ""}>Choose a response</option>
+          <option value="covered" ${saved.status === "covered" ? "selected" : ""}>Addressed by this process</option>
+          <option value="gap" ${saved.status === "gap" ? "selected" : ""}>Not currently addressed</option>
+          <option value="not_applicable" ${saved.status === "not_applicable" ? "selected" : ""}>Not applicable (explain below)</option>
+        </select>
+        <label for="note-${process.id}-${escapeHtml(id)}">Notes</label>
+        <textarea id="note-${process.id}-${escapeHtml(id)}" data-note-id="${escapeHtml(id)}" placeholder="Describe the procedure, evidence, or reason it is not applicable">${escapeHtml(saved.note)}</textarea>
+      </div>
+    `;
+  };
+
+  const renderProcess = (process) => {
+    const query = process.query.trim().toLowerCase();
+    const analysisNames = Object.keys(data.analyses)
+      .filter((name) => !query || `${name} ${data.analyses[name].definition || ""}`.toLowerCase().includes(query))
+      .sort((a, b) => a.localeCompare(b));
+
+    const selectedAnalysis = data.analyses[process.analysis];
+    const statbarn = selectedAnalysis && data.statbarns[selectedAnalysis.statbarn];
+    let mappedTerms = "";
+    if (selectedAnalysis && statbarn) {
+      const risks = getRelatedChecks(statbarn);
+      mappedTerms = `
+        <section class="mapped-ontology" aria-label="Ontology mapping">
+          <h4>Mapped StatBarn category</h4>
+          ${termDetails(selectedAnalysis.statbarn, statbarn)}
+          ${risks.length ? risks.map(({ name, entry, checks }) => `
+            <section class="assessment-risk">
+              <h5>Potential risk</h5>
+              ${termDetails(name, entry)}
+              ${checks.length ? checks.map(({ name: checkName, entry: check }) => renderCheck(process, name, checkName, check)).join("") : "<p>No checks are listed for this risk in the packaged ontology.</p>"}
+            </section>
+          `).join("") : "<p>No risks are listed for this StatBarn category. Review the process manually; an empty relationship does not establish safety.</p>"}
+        </section>
+      `;
+    } else if (process.analysis) {
+      mappedTerms = "<p role=\"alert\">The selected analysis does not map to a known StatBarn category in the packaged JSON files.</p>";
+    }
+
+    const status = assessmentStatus(process, statbarn);
+    return `
+      <article class="assessment-process" data-process-id="${process.id}">
+        <div class="process-heading">
+          <h3>Manual activity ${process.id}</h3>
+          <button type="button" data-remove-process="${process.id}" aria-label="Remove manual activity ${process.id}">Remove activity</button>
+          <p class="status">${escapeHtml(status)}</p>
+        </div>
+        <label for="activity-${process.id}">Describe the manual process or activity</label>
+        <textarea id="activity-${process.id}" data-activity placeholder="For example: reviewing frequency tables before release">${escapeHtml(process.activity)}</textarea>
+        <label for="analysis-search-${process.id}">Find an analysis term by name or definition</label>
+        <input id="analysis-search-${process.id}" data-analysis-search type="search" value="${escapeHtml(process.query)}" placeholder="Search ontology analysis terms">
+        <label for="analysis-${process.id}">Select the closest analysis term</label>
+        <select id="analysis-${process.id}" data-analysis>
+          <option value="">Choose an analysis term</option>
+          ${analysisNames.map((name) => `<option value="${escapeHtml(name)}" ${process.analysis === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
+        </select>
+        ${selectedAnalysis ? termDetails(process.analysis, selectedAnalysis) : ""}
+        ${mappedTerms}
+      </article>
+    `;
+  };
+
+  const assessmentStatus = (process, statbarn) => {
+    if (!process.analysis || !statbarn) return "Choose an analysis term to start mapping.";
+    if (!process.activity.trim()) return "Add an activity description.";
+    const checks = getRelatedChecks(statbarn).flatMap(({ name, checks: related }) =>
+      related.map(({ name: checkName }) => process.checks[checkId(name, checkName)]?.status || ""),
+    );
+    if (!checks.length) return "Mapped; no linked checks are listed. Review this mapping manually.";
+    if (checks.includes("gap")) return "Potential gap recorded — review this process.";
+    if (checks.some((status) => !status)) return "Assessment incomplete — record a response for each linked check.";
+    return "Responses recorded — human review still required.";
+  };
+
+  const updateSummary = () => {
+    const counts = { incomplete: 0, gaps: 0, reviewed: 0 };
+    for (const process of processes) {
+      const statbarn = data.statbarns[data.analyses[process.analysis]?.statbarn];
+      const status = assessmentStatus(process, statbarn);
+      if (status.startsWith("Potential gap")) counts.gaps += 1;
+      else if (status.startsWith("Responses recorded")) counts.reviewed += 1;
+      else counts.incomplete += 1;
+    }
+    summary.textContent = `${processes.length} activities: ${counts.reviewed} with responses recorded, ${counts.gaps} with potential gaps, ${counts.incomplete} incomplete or requiring manual review.`;
+    downloadButton.disabled = processes.length === 0;
+  };
+
+  const render = () => {
+    processList.innerHTML = processes.map(renderProcess).join("");
+    updateSummary();
+  };
+
+  const updateAnalysisOptions = (process, select) => {
+    const query = process.query.trim().toLowerCase();
+    const names = Object.keys(data.analyses)
+      .filter((name) => !query || `${name} ${data.analyses[name].definition || ""}`.toLowerCase().includes(query));
+    if (process.analysis && !names.includes(process.analysis)) names.unshift(process.analysis);
+    names.sort((a, b) => a.localeCompare(b));
+    select.innerHTML = `
+      <option value="">Choose an analysis term</option>
+      ${names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")}
+    `;
+    select.value = process.analysis;
+  };
+
+  const updateProcessStatus = (process, article) => {
+    const statbarn = data.statbarns[data.analyses[process.analysis]?.statbarn];
+    article.querySelector(".status").textContent = assessmentStatus(process, statbarn);
+  };
+
+  const saveInputState = (event) => {
+    const article = event.target.closest("[data-process-id]");
+    if (!article) return;
+    const process = processes.find((item) => item.id === Number(article.dataset.processId));
+    if (!process) return;
+
+    if (event.target.matches("[data-activity]")) {
+      process.activity = event.target.value;
+      updateProcessStatus(process, article);
+      updateSummary();
+    } else if (event.target.matches("[data-analysis-search]")) {
+      process.query = event.target.value;
+      updateAnalysisOptions(process, article.querySelector("[data-analysis]"));
+    } else if (event.target.matches("[data-analysis]")) {
+      process.analysis = event.target.value;
+      process.checks = {};
+      render();
+    } else if (event.target.matches("[data-check-id]")) {
+      const saved = process.checks[event.target.dataset.checkId] || { status: "", note: "" };
+      saved.status = event.target.value;
+      process.checks[event.target.dataset.checkId] = saved;
+      updateProcessStatus(process, article);
+      updateSummary();
+    } else if (event.target.matches("[data-note-id]")) {
+      const saved = process.checks[event.target.dataset.noteId] || { status: "", note: "" };
+      saved.note = event.target.value;
+      process.checks[event.target.dataset.noteId] = saved;
+    }
+  };
+
+  const download = () => {
+    const assessment = {
+      title: "StatBarn SDC ontology alignment self-assessment",
+      disclaimer: "Self-assessment only; not a certification or automated safety decision.",
+      source: "Ontology JSON files packaged with ACRO",
+      activities: processes.map((process) => {
+        const analysis = data.analyses[process.analysis];
+        const statbarn = analysis && data.statbarns[analysis.statbarn];
+        return {
+          activity: process.activity,
+          analysis: process.analysis || null,
+          analysis_definition: analysis?.definition || null,
+          statbarn: analysis?.statbarn || null,
+          statbarn_definition: statbarn?.definition || null,
+          checks: getRelatedChecks(statbarn || {}).flatMap(({ name: riskName, entry: risk, checks }) =>
+            checks.map(({ name, entry }) => ({
+              risk: riskName,
+              risk_definition: risk.definition,
+              check: name,
+              check_definition: entry.definition,
+              evidence: entry.evidence || [],
+              ...(process.checks[checkId(riskName, name)] || { status: "", note: "" }),
+            })),
+          ),
+        };
+      }),
+    };
+    const blob = new Blob([JSON.stringify(assessment, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ontology-alignment-assessment.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  processList.addEventListener("input", saveInputState);
+  processList.addEventListener("change", saveInputState);
+  processList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-remove-process]");
+    if (!button) return;
+    const index = processes.findIndex((process) => process.id === Number(button.dataset.removeProcess));
+    if (index >= 0) processes.splice(index, 1);
+    render();
+  });
+  addButton.addEventListener("click", () => {
+    processes.push({ id: nextId++, activity: "", query: "", analysis: "", checks: {} });
+    render();
+    processList.lastElementChild?.querySelector("[data-activity]")?.focus();
+  });
+  downloadButton.addEventListener("click", download);
+
+  try {
+    Object.assign(data, JSON.parse(document.getElementById("ontology-data").textContent));
+    loading.hidden = true;
+    content.hidden = false;
+    processes.push({ id: nextId++, activity: "", query: "", analysis: "", checks: {} });
+    render();
+  } catch (loadError) {
+    loading.hidden = true;
+    error.hidden = false;
+    error.textContent = `The embedded ontology data could not be read. ${loadError.message}`;
+  }
+})();
+
+</script>
+</body>
+</html>

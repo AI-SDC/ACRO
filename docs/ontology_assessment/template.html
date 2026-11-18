@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACRO ontology alignment self-assessment</title>
+<style>
+  :root { --border: #c8ccd0; --primary: #1f5fa8; --bg: #fff; --fg: #212529; }
+  @media (prefers-color-scheme: dark) {
+    :root { --border: #444; --primary: #6ea8fe; --bg: #16181c; --fg: #e8e8e8; }
+  }
+  body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.5; margin: 0; }
+  main { max-width: 56rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  a { color: var(--primary); }
+  .notice { border-left: 4px solid var(--primary); padding: 0.25rem 1rem; margin: 1rem 0; }
+  #ontology-assessment .assessment-process { border: 1px solid var(--border); border-radius: 0.5rem; margin: 1rem 0; padding: 1rem; }
+  #ontology-assessment label { display: block; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+  #ontology-assessment input, #ontology-assessment select, #ontology-assessment textarea {
+    box-sizing: border-box; max-width: 100%; width: 100%; font: inherit; padding: 0.4rem;
+    background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: 0.25rem;
+  }
+  #ontology-assessment textarea { min-height: 5rem; }
+  #ontology-assessment details { border-left: 3px solid var(--primary); margin: 0.75rem 0; padding: 0.25rem 0.75rem; }
+  #ontology-assessment summary { cursor: pointer; font-weight: 600; }
+  #ontology-assessment .assessment-check { border-top: 1px solid var(--border); margin-top: 0.75rem; padding-top: 0.5rem; }
+  #ontology-assessment .assessment-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1rem 0; }
+  #ontology-assessment button { cursor: pointer; padding: 0.5rem 0.75rem; font: inherit; }
+  #ontology-assessment .process-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+  #ontology-assessment .process-heading h3 { margin: 0; }
+  #ontology-assessment .status { font-weight: 600; flex-basis: 100%; margin: 0; }
+  #ontology-error { color: #b00020; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ontology alignment self-assessment</h1>
+  <p>Compare your manual statistical disclosure control processes with the
+  <a href="https://www.w3id.org/statbarnsdc">StatBarn SDC ontology</a> as captured by the JSON files packaged with ACRO.
+  For each activity, choose the closest analysis term, review its linked StatBarn category, risks and checks, and record how your process addresses each check.
+  Click any term name to see its definition.</p>
+  <div class="notice">
+    <p>This is a guide for human assessment, not a certification or safety decision. Ontology links describe potential relationships and may not cover every local risk or procedure.
+    Everything you enter stays in this browser; nothing is sent to a server. Use the download button to save a JSON copy.</p>
+  </div>
+
+  <section id="ontology-assessment" aria-labelledby="assessment-heading">
+    <h2 id="assessment-heading">Build your assessment</h2>
+    <div id="ontology-loading" role="status">Loading ontology terms…</div>
+    <div id="ontology-error" role="alert" hidden></div>
+    <div id="assessment-content" hidden>
+      <div id="process-list"></div>
+      <div class="assessment-actions">
+        <button id="add-process" type="button">Add manual activity</button>
+        <button id="download-assessment" type="button" disabled>Download assessment JSON</button>
+      </div>
+      <p id="assessment-summary" aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+<script id="ontology-data" type="application/json">/*DATA*/</script>
+<script>
+/*SCRIPT*/
+</script>
+</body>
+</html>

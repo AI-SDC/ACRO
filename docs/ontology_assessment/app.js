@@ -57,13 +57,14 @@
       : "";
     return `
       <div class="assessment-check">
+        <p class="check-label">Check</p>
         ${termDetails(checkName, check)}
         ${evidence}
-        <label for="status-${process.id}-${escapeHtml(id)}">How does your process address this check?</label>
+        <label for="status-${process.id}-${escapeHtml(id)}">Does your process perform this check for the risk of ${escapeHtml(riskName)}?</label>
         <select id="status-${process.id}-${escapeHtml(id)}" data-check-id="${escapeHtml(id)}">
           <option value="" ${saved.status === "" ? "selected" : ""}>Choose a response</option>
-          <option value="covered" ${saved.status === "covered" ? "selected" : ""}>Addressed by this process</option>
-          <option value="gap" ${saved.status === "gap" ? "selected" : ""}>Not currently addressed</option>
+          <option value="covered" ${saved.status === "covered" ? "selected" : ""}>Yes – this check is performed</option>
+          <option value="gap" ${saved.status === "gap" ? "selected" : ""}>No – not currently performed</option>
           <option value="not_applicable" ${saved.status === "not_applicable" ? "selected" : ""}>Not applicable (explain below)</option>
         </select>
         <label for="note-${process.id}-${escapeHtml(id)}">Notes</label>
@@ -91,7 +92,10 @@
             <section class="assessment-risk">
               <h5>Potential risk</h5>
               ${termDetails(name, entry)}
-              ${checks.length ? checks.map(({ name: checkName, entry: check }) => renderCheck(process, name, checkName, check)).join("") : "<p>No checks are listed for this risk in the packaged ontology.</p>"}
+              <div class="risk-checks" role="group" aria-label="Checks that assess the risk of ${escapeHtml(name)}">
+                <h6>Checks that assess whether the risk of ${escapeHtml(name)} is present</h6>
+                ${checks.length ? checks.map(({ name: checkName, entry: check }) => renderCheck(process, name, checkName, check)).join("") : "<p>No checks are listed for this risk in the packaged ontology.</p>"}
+              </div>
             </section>
           `).join("") : "<p>No risks are listed for this StatBarn category. Review the process manually; an empty relationship does not establish safety.</p>"}
         </section>

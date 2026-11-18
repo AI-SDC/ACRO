@@ -28,6 +28,12 @@
   #ontology-assessment .process-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
   #ontology-assessment .process-heading h3 { margin: 0; }
   #ontology-assessment .status { font-weight: 600; flex-basis: 100%; margin: 0; }
+  #ontology-assessment .assessment-risk { border: 2px solid #c0562b; border-radius: 0.5rem; margin: 1rem 0; padding: 0.5rem 1rem 1rem; }
+  #ontology-assessment .assessment-risk h5 { color: #c0562b; margin: 0.25rem 0; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; }
+  #ontology-assessment .risk-checks { background: rgba(31, 95, 168, 0.07); border-radius: 0.375rem; margin: 0.75rem 0 0 1.25rem; padding: 0.25rem 1rem 0.75rem; }
+  #ontology-assessment .risk-checks h6 { font-size: 0.95rem; margin: 0.5rem 0; }
+  #ontology-assessment .check-label { color: var(--primary); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; margin: 0 0 -0.5rem; text-transform: uppercase; }
+  #ontology-assessment .assessment-check:first-of-type { border-top: 0; }
   #ontology-error { color: #b00020; }
 </style>
 </head>
@@ -118,13 +124,14 @@
       : "";
     return `
       <div class="assessment-check">
+        <p class="check-label">Check</p>
         ${termDetails(checkName, check)}
         ${evidence}
-        <label for="status-${process.id}-${escapeHtml(id)}">How does your process address this check?</label>
+        <label for="status-${process.id}-${escapeHtml(id)}">Does your process perform this check for the risk of ${escapeHtml(riskName)}?</label>
         <select id="status-${process.id}-${escapeHtml(id)}" data-check-id="${escapeHtml(id)}">
           <option value="" ${saved.status === "" ? "selected" : ""}>Choose a response</option>
-          <option value="covered" ${saved.status === "covered" ? "selected" : ""}>Addressed by this process</option>
-          <option value="gap" ${saved.status === "gap" ? "selected" : ""}>Not currently addressed</option>
+          <option value="covered" ${saved.status === "covered" ? "selected" : ""}>Yes – this check is performed</option>
+          <option value="gap" ${saved.status === "gap" ? "selected" : ""}>No – not currently performed</option>
           <option value="not_applicable" ${saved.status === "not_applicable" ? "selected" : ""}>Not applicable (explain below)</option>
         </select>
         <label for="note-${process.id}-${escapeHtml(id)}">Notes</label>
@@ -152,7 +159,10 @@
             <section class="assessment-risk">
               <h5>Potential risk</h5>
               ${termDetails(name, entry)}
-              ${checks.length ? checks.map(({ name: checkName, entry: check }) => renderCheck(process, name, checkName, check)).join("") : "<p>No checks are listed for this risk in the packaged ontology.</p>"}
+              <div class="risk-checks" role="group" aria-label="Checks that assess the risk of ${escapeHtml(name)}">
+                <h6>Checks that assess whether the risk of ${escapeHtml(name)} is present</h6>
+                ${checks.length ? checks.map(({ name: checkName, entry: check }) => renderCheck(process, name, checkName, check)).join("") : "<p>No checks are listed for this risk in the packaged ontology.</p>"}
+              </div>
             </section>
           `).join("") : "<p>No risks are listed for this StatBarn category. Review the process manually; an empty relationship does not establish safety.</p>"}
         </section>

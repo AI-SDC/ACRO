@@ -138,7 +138,7 @@
     <p>This guided self-assessment walks you through each of the ${statbarnNames.length} output categories
     (<em>statbarns</em>) in the StatBarn SDC ontology, one at a time. For each one you will:</p>
     <ol>
-      <li>say whether your manual process produces outputs of that type;</li>
+      <li>say whether your manual process handles output requests of that type;</li>
       <li>if it does, see the <strong>risks</strong> the ontology associates with it, and the <strong>checks</strong> that assess whether each risk is present;</li>
       <li>record whether your process performs each check.</li>
     </ol>
@@ -253,7 +253,7 @@
       statbarns: statbarnNames.map((name) => ({
         statbarn: name,
         definition: data.statbarns[name].definition,
-        produced_by_process: answers[name].applies || null,
+        handles_output_requests: answers[name].applies || null,
         checks: answers[name].applies === "yes" ? checkRows(name).map((r) => ({
           risk: r.risk.name,
           risk_definition: r.risk.entry.definition,

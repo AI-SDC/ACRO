@@ -9,6 +9,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import statsmodels.api as sm
 from matplotlib import pyplot as plt
 from pandas import DataFrame
@@ -1090,6 +1091,116 @@ class Tables:
 
         return unique_filename
 
+    def line(
+        self,
+        data: pd.DataFrame,
+        x: str,
+        y: str,
+        hue: str | None = None,
+        filename: str = "line.png",
+        **kwargs: Any,
+    ) -> str | None:
+        """Create a line chart from two columns using pandas plot.
+
+        The underlying data points are evaluated for disclosure control. If
+        the underlying data triggers disclosure failures, the chart is
+        suppressed when suppress=True. Otherwise the chart is produced and
+        marked as "review" or "safe".
+
+        The chart is saved to the artifacts directory with a unique incrementing
+        number appended to avoid overwriting existing files.
+
+        Parameters
+        ----------
+        data : DataFrame
+            The pandas DataFrame holding the data.
+        x : str
+            The column for the x-axis.
+        y : str
+            The column for the y-axis.
+        hue:
+            Grouping variable that will produce lines with different colors. Can be either categorical or numeric, although color mapping will behave differently in latter case.
+        filename : str, default 'line.png'
+            The name of the file where the chart will be saved.
+        **kwargs
+            Additional keyword arguments forwarded to matplotlib.axes.Axes.plot().
+
+        Returns
+        -------
+        str
+            The path to the saved line chart file.
+        """
+        logger.debug("line()")
+        if utils.is_blocked_extension(filename, self.results.blocked_extensions):
+            return None
+        command: str = utils.get_command("line()", stack())
+        analysis = "LineGraph"
+
+        model_details = TableModelDetails(
+            index=[data[x]],
+            columns=[data[hue]] if hue is not None else [],
+            thekwargs=dict(kwargs),
+            risk_appetite=self.sdc_checks.risk_appetite,
+            command="line",
+        )
+
+        is_federated, collatedres = self._process_analysis_output(
+            command, [analysis], model_details
+        )
+
+        if is_federated:
+            return None
+
+        sdc_details: dict = collatedres.get_table_sdc()
+        overall_status: str = collatedres.get_overall_status()
+        fair_dict = collatedres.get_overall_fair()
+        fair_dict.update(model_details.get_variable_type_dict())
+        summary = collatedres.get_overall_summary()
+
+        output: list = []
+        unique_filename = ""
+        unique_filename1 = utils.get_unique_artefact_filename(filename)
+        if unique_filename1 is not None:
+            unique_filename = unique_filename1
+
+        # redcat if needed
+        if self.suppress and "MinimumThresholdCheck" in summary:
+            data, suppressed_points = _mask_unsafe_line_points(
+                data=data,
+                x=x,
+                y=y,
+                hue=hue,
+                threshold=self.sdc_checks.risk_appetite["safe_dof_threshold"],
+            )
+            if suppressed_points:
+                logger.warning(
+                    f"Line chart points below threshold were redacted: {suppressed_points}"
+                )
+                overall_status = "fail"
+                summary += " Line chart partially redacted."
+        else:
+            summary += " Line chart generated successfully."
+
+        # Call the seaborn lineplot()
+        sns.lineplot(data=data, x=x, y=y, hue=hue, **kwargs)
+        plt.savefig(unique_filename)
+        output = [os.path.normpath(unique_filename)]
+
+        self.results.add(
+            status=overall_status,
+            output_type="line chart",
+            properties={"method": "line"},
+            sdc=sdc_details,
+            fair=fair_dict,
+            command=command,
+            summary=summary,
+            outcome=pd.DataFrame(),
+            output=output,
+            comments=[],
+        )
+
+        return unique_filename
+
 
 def _rounded_survival_table(
     survival_table: pd.DataFrame,
@@ -1155,3 +1266,59 @@ def _rounded_survival_table(
         )
     survival_table["rounded_survival_fun"] = rounded_survival_func
     return survival_table
+
+
+def _mask_unsafe_line_points(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    hue: str | None,
+    threshold: int,
+) -> tuple[pd.DataFrame, list[tuple]]:
+    """Mask the disclosive line chart points.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The pandas DataFrame holding the data.
+    x : str
+        The column for the x-axis.
+    y : str
+        The column for the y-axis.
+    hue : str | None
+        Grouping variable that will produce lines with different colors. Can be either categorical or numeric, although color mapping will behave differently in latter case.
+    threshold : int
+        Minimum threshold check.
+
+    Returns
+    -------
+    tuple[pd.DataFrame, list[tuple]]
+        (redacted_data, unsafe_keys) where redacted_data is a copy of the data with the y set to np.nan for the disclosive group
+        and the unsafe_keys is a list of the disclosive groups.
+    """
+    redacted_data = data.copy()
+    group_cols = [x] if hue is None else [x, hue]
+
+    # Count the y observations per plotted group
+    counts = (
+        data.groupby(group_cols, observed=False, dropna=False)[y]
+        .count()
+        .reset_index(name="n_obs")
+    )
+
+    unsafe_df = counts.loc[counts["n_obs"] < threshold, group_cols]
+
+    if hue is None:
+        mask = redacted_data[x].isin(unsafe_df[x])
+    else:
+        unsafe_index = pd.MultiIndex.from_frame(unsafe_df)
+        row_index = pd.MultiIndex.from_frame(redacted_data[group_cols])
+        mask = row_index.isin(unsafe_index)
+
+    unsafe_keys: list[tuple] = sorted(
+        {tuple(row) for row in unsafe_df.itertuples(index=False, name=None)},
+        key=str,
+    )
+
+    redacted_data.loc[mask, y] = np.nan
+    return redacted_data, unsafe_keys

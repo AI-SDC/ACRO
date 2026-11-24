@@ -353,3 +353,157 @@ def test_hist_empty_data(caplog):
     result = acro_obj2.hist(empty_data, "valueA")
     assert "is empty after dropping NaN." in caplog.text
     assert result is None
+
+
+def test_line_chart_non_disclosive(acro):
+    """Test a non-disclosive line chart."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    filename = os.path.normpath("acro_artifacts/line_0.png")
+
+    # Create a synthetic dataset
+    np.random.seed(42)
+    years = [2020, 2021, 2022, 2023]
+    categories = ["Engineering", "Marketing", "Sales"]
+    df = pd.MultiIndex.from_product(
+        [years, categories], names=["year", "category"]
+    ).to_frame(index=False)
+    df = df.loc[df.index.repeat(20)].reset_index(drop=True)
+    df["performance_score"] = np.random.normal(loc=75, scale=10, size=len(df))
+
+    result = acro.line(df, "year", "performance_score")
+    assert os.path.normpath(result) == filename
+    # assert os.path.exists(filename)
+    acro.add_exception("output_0", "Let me have it")
+    results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(0)
+    assert output_0.output == [filename]
+    assert output_0.status == "pass"
+    shutil.rmtree(PATH, ignore_errors=True)
+
+
+def test_line_chart_disclosive(acro, caplog):
+    """Test a disclosive line chart."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    _ = os.path.normpath("acro_artifacts/line_0.png")
+
+    # Create a synthetic dataset
+    np.random.seed(42)
+    years = [2020, 2021, 2022, 2023]
+    categories = ["Engineering", "Marketing", "Sales"]
+    repeats_per_year = {
+        2020: 4,
+        2021: 1,
+        2022: 1,
+        2023: 10,
+    }
+    base = pd.MultiIndex.from_product(
+        [years, categories], names=["year", "category"]
+    ).to_frame(index=False)
+    row_repeats = base["year"].map(repeats_per_year)
+    df = base.loc[base.index.repeat(row_repeats)].reset_index(drop=True)
+    df["performance_score"] = np.random.normal(loc=75, scale=10, size=len(df))
+
+    acro = ACRO()
+    acro.enable_suppression()
+
+    _ = acro.line(df, "year", "performance_score")
+    # acro.add_exception("output_0", "Let me have it")
+    results = acro.results  # results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(-1)
+    summary = output_0.summary
+    assert "Line chart partially redacted." in summary, f"acro results is {output_0}"
+    assert (
+        "Line chart points below threshold were redacted: [(2021,), (2022,)]"
+        in caplog.text
+    )
+    assert output_0.status == "fail"
+    shutil.rmtree(PATH, ignore_errors=True)
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+
+
+def test_line_chart_with_hue_disclosive(acro, caplog):
+    """Test a disclosive line chart."""
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+    _ = os.path.normpath("acro_artifacts/line_0.png")
+
+    # Create a synthetic dataset
+    np.random.seed(42)
+    years = [2020, 2021, 2022, 2023]
+    categories = ["Engineering", "Marketing", "Sales"]
+    repeats_per_year = {
+        2020: 4,
+        2021: 1,
+        2022: 1,
+        2023: 10,
+    }
+    base = pd.MultiIndex.from_product(
+        [years, categories], names=["year", "category"]
+    ).to_frame(index=False)
+    row_repeats = base["year"].map(repeats_per_year)
+    df = base.loc[base.index.repeat(row_repeats)].reset_index(drop=True)
+    df["performance_score"] = np.random.normal(loc=75, scale=10, size=len(df))
+
+    acro = ACRO()
+    acro.enable_suppression()
+
+    _ = acro.line(df, "year", "performance_score", hue="category")
+    # acro.add_exception("output_0", "Let me have it")
+    results = acro.results  # results: Records = acro.finalise(path=PATH)
+    output_0 = results.get_index(-1)
+    summary = output_0.summary
+    assert "Line chart partially redacted." in summary, f"acro results is {output_0}"
+    assert (
+        "Line chart points below threshold were redacted: [(2020, 'Engineering'), (2020, 'Marketing'), (2020, 'Sales'), (2021, 'Engineering'), (2021, 'Marketing'), (2021, 'Sales'), (2022, 'Engineering'), (2022, 'Marketing'), (2022, 'Sales')]"
+        in caplog.text
+    )
+    assert output_0.status == "fail"
+    shutil.rmtree(PATH, ignore_errors=True)
+    shutil.rmtree("acro_artifacts", ignore_errors=True)
+
+
+def test_line_chart_federated_returns_none(data):
+    """Line() in federated mode stores evidence and returns None."""
+    np.random.seed(42)
+    df = pd.DataFrame(
+        {
+            "year": [2020, 2021, 2022, 2023] * 15,
+            "score": np.random.normal(loc=75, scale=8, size=60),
+        }
+    )
+    acro_obj = ACRO(federated=True)
+    result = acro_obj.line(df, "year", "score")
+    assert result is None
+    assert "output_0" in acro_obj._federated_evidence
+    assert len(acro_obj.results.results) == 0
+
+
+def test_line_chart_blocked_extension(data):
+    """Line() with a blocked extension returns None."""
+    np.random.seed(42)
+    df = pd.DataFrame(
+        {
+            "year": [2020, 2021, 2022, 2023] * 15,
+            "score": np.random.normal(loc=75, scale=8, size=60),
+        }
+    )
+    acro_obj = ACRO(suppress=True)
+    acro_obj.results.blocked_extensions = [".png"]
+    result = acro_obj.line(df, "year", "score", filename="line.png")
+    assert result is None
+    assert len(acro_obj.results.results) == 0
+
+
+def test_line_chart_records_output_non_disclosive(data):
+    """Line() on non-disclosive data records output with correct type."""
+    np.random.seed(42)
+    df = pd.DataFrame(
+        {
+            "year": [2020, 2021, 2022, 2023] * 15,
+            "score": np.random.normal(loc=75, scale=8, size=60),
+        }
+    )
+    acro_obj = ACRO(suppress=False)
+    acro_obj.line(df, "year", "score")
+    output = acro_obj.results.get_index(0)
+    assert output.output_type == "line chart"
+    assert output.status in ("pass", "review")

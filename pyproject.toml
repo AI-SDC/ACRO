@@ -44,7 +44,8 @@ dependencies = [
     "PyYAML",
     "statsmodels",
     "rdflib",
-    "tabulate"
+    "tabulate",
+    "seaborn",
 ]
 
 [tool.setuptools.dynamic]

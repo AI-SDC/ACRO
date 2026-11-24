@@ -1307,8 +1307,6 @@ def _mask_unsafe_line_points(
     )
 
     unsafe_df = counts.loc[counts["n_obs"] < threshold, group_cols]
-    if unsafe_df.empty:
-        return redacted_data, []
 
     if hue is None:
         mask = redacted_data[x].isin(unsafe_df[x])
